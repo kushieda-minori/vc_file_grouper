@@ -1,4 +1,4 @@
-package vc_decoder
+package vc_grouper
 
 // the card names match the ones listed in the MsgCardName_en.strb file
 type Card struct {
