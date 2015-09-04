@@ -1,3 +1,3 @@
-# fship
-demo app for trying out deployments on various hosting providers.
+# vc_file_grouper
+application that tries to group together game data files from Valkyrie Crusade mobile app game
  
