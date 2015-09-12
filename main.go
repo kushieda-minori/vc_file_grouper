@@ -8,8 +8,11 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"zetsuboushita.net/vc_file_grouper/vc_grouper"
 	// "strings"
 )
+
+var VcData vc_grouper.VcFile
 
 func usage() {
 	os.Stderr.WriteString("You must pass the location of the files.\n" +

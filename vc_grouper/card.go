@@ -69,7 +69,7 @@ type CardCharacter struct {
 // MsgSkillName_en.strb
 // MsgSkillDesc_en.strb - shown on the card
 // MsgSkillFire_en.strb - used during battle
-type Skills struct {
+type Skill struct {
 	// skill id
 	_id,
 	// level type for skill upgrade costs
