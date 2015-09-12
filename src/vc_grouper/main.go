@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sort"
+	// "strings"
 )
 
 func usage() {
@@ -53,13 +55,31 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// read the decoded master data file
 	masterData, _ := simplejson.NewFromReader(bufio.NewReader(f))
 
 	masterDataMap, _ := masterData.Map()
 
-	for k, _ := range masterDataMap {
+	// sort the keys
+	mk := make([]string, len(masterDataMap))
+	i := 0
+	var k string
+	for k, _ = range masterDataMap {
+		mk[i] = k
+		i++
+	}
+	sort.Strings(mk)
+
+	// print all the keys in order
+	for _, k = range mk {
+		io.WriteString(w, "<p><a href=\"")
 		io.WriteString(w, k)
-		io.WriteString(w, "<br />\n")
+		io.WriteString(w, "\">")
+		io.WriteString(w, k)
+		io.WriteString(w, "</a><div style=\"padding-left:10px\">")
+		// val, _ := masterData.Get(k).EncodePretty()
+		// io.WriteString(w, strings.Replace(string(val), "\n", "<br />", -1))
+		io.WriteString(w, "</div></p>\n")
 	}
 
 	io.WriteString(w, "</body></html>")
