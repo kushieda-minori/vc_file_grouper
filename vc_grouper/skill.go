@@ -6,56 +6,56 @@ package vc_grouper
 // MsgSkillFire_en.strb - used during battle
 type Skill struct {
 	// skill id
-	_id,
+	Id int `json:"_id"`
 	// level type for skill upgrade costs
-	level_type,
+	LevelType int `json:"level_type"`
 	// skill type
-	_type,
+	Type int `json:"_type"`
 	// id for timing
-	timing_id,
+	TimingId int `json:"timing_id"`
 	// max procs
-	max_count,
+	MaxCount int `json:"max_count"`
 	// cond scene
-	cond_scene_id,
+	CondSceneId int `json:"cond_scene_id"`
 	// cond side
-	cond_side_id,
+	CondSideId int `json:"cond_side_id"`
 	// cond
-	cond_id,
+	CondId int `json:"cond_id"`
 	// king series
-	king_series_id,
+	KingSeriesId int `json:"king_series_id"`
 	// king id
-	king_id,
+	KingId int `json:"king_id"`
 	// cond param
-	cond_param,
+	CondParam int `json:"cond_param"`
 	// default proc rate
-	default_ratio,
+	DefaultRatio int `json:"default_ratio"`
 	// max proc rate
-	max_ratio,
+	MaxRatio int `json:"max_ratio"`
 	// date accessible
-	public_start_datetime,
-	public_end_datetime,
+	PublicStartDatetime int `json:"public_start_datetime"`
+	PublicEndDatetime   int `json:"public_end_datetime"`
 	// effect info
-	effect_id,
-	effect_param,
-	effect_param_2,
-	effect_param_3,
-	effect_param_4,
-	effect_param_5,
-	effect_default_value,
-	effect_max_value,
+	EffectId           int `json:"effect_id"`
+	EffectParam        int `json:"effect_param"`
+	EffectParam2       int `json:"effect_param_2"`
+	EffectParam3       int `json:"effect_param_3"`
+	EffectParam4       int `json:"effect_param_4"`
+	EffectParam5       int `json:"effect_param_5"`
+	EffectDefaultValue int `json:"effect_default_value"`
+	EffectMaxValue     int `json:"effect_max_value"`
 	// target info
-	target_scope_id,
-	target_logic_id,
-	target_param,
+	TargetScopeId int `json:"target_scope_id"`
+	TargetLogicId int `json:"target_logic_id"`
+	TargetParam   int `json:"target_param"`
 	// animation info
-	animation_id int
+	AnimationId int `json:"animation_id"`
 
 	//skill name from strings file
-	name,
+	Name string `json:"-"`
 	// description from strings file
-	description,
+	Description string `json:"-"`
 	// fire text from strings file
-	fire string
+	Fire string `json:"-"`
 }
 
 var TargetScope = map[int]string{

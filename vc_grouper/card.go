@@ -7,129 +7,129 @@ package vc_grouper
 // the card names match the ones listed in the MsgCardName_en.strb file
 type Card struct {
 	// card id
-	_id,
+	Id int `json:"_id"`
 	// card number, matches to the image file
-	card_no,
+	CardNo int `json:"card_no"`
 	// card character id
-	card_chara_id,
+	CardCharaId int `json:"card_chara_id"`
 	// rarity of the card
-	card_rare_id,
+	CardRareId int `json:"card_rare_id"`
 	// type of the card (Passion, Cool, Light, Dark)
-	card_type_id,
+	CardTypeId int `json:"card_type_id"`
 	// unit cost
-	deck_cost,
+	DeckCost int `json:"deck_cost"`
 	// number of evolution statges available to the card
-	last_evolution_rank,
+	LastEvolutionRank int `json:"last_evolution_rank"`
 	// this card current evolution stage
-	evolution_rank,
+	EvolutionRank int `json:"evolution_rank"`
 	// id of the card that this card evolves into, -1 for no evolution
-	evolution_card_id,
+	EvolutionCardId int `json:"evolution_card_id"`
 	// id of a possible turnover accident
-	trans_card_id,
+	TransCardId int `json:"trans_card_id"`
 	// cost of the followers?
-	follower_kind_id,
+	FollowerKindId int `json:"follower_kind_id"`
 	// base soldiers
-	default_follower,
+	DefaultFollower int `json:"default_follower"`
 	// max soldiers if evolved minimally
-	max_follower,
+	MaxFollower int `json:"max_follower"`
 	// base ATK
-	default_offense,
+	DefaultOffense int `json:"default_offense"`
 	// max ATK if evolved minimally
-	max_offense,
+	MaxOffense int `json:"max_offense"`
 	// base DEF
-	default_defense,
+	DefaultDefense int `json:"default_defense"`
 	// max DEF if evolved minimally
-	max_defense,
+	MaxDefense int `json:"max_defense"`
 	// First Skill
-	skill_id_1,
+	SkillId1 int `json:"skill_id_1"`
 	// second Skill
-	skill_id_2,
+	SkillId2 int `json:"skill_id_2"`
 	// Awakened Burst type (GSR or GUR)
-	special_skill_id_1,
+	SpecialSkillId1 int `json:"special_skill_id_1"`
 	// amount of medals can be traded for
-	medal_rate,
+	MedalRate int `json:"medal_rate"`
 	// amount of gold can be traded for
-	price,
+	Price int `json:"price"`
 	// is closed
-	is_closed int
+	IsClosed int `json:"is_closed"`
 	// name from the strings file
-	name string
+	Name string `json:"-"`
 }
 
 // List of possible Fusions (Amalgamations) from master file field "fusion_list"
 type Amalgamation struct {
 	// internal id
-	_id,
+	Id int `json:"_id"`
 	// card 1
-	material_1,
+	Material1 int `json:"material_1"`
 	// card 2
-	material_2,
+	Material2 int `json:"material_2"`
 	// card 3
-	material_3,
+	Material3 int `json:"material_3"`
 	// card 4
-	material_4,
+	Material4 int `json:"material_4"`
 	// resulting card
-	fusion_card_id int
+	FusionCardId int `json:"fusion_card_id"`
 }
 
 // list of possible card awakeneings and thier cost from master file field "card_awaken"
 type CardAwaken struct {
 	// awakening id
-	_id,
+	Id int `json:"_id"`
 	// case card
-	base_card_id,
+	BaseCardId int `json:"base_card_id"`
 	// result card
-	result_card_id,
+	ResultCardId int `json:"result_card_id"`
 	// chance of success
-	percent,
+	Percent int `json:"percent"`
 	// material information
-	material_1_item,
-	material_1_count,
-	material_2_item,
-	material_2_count,
-	material_3_item,
-	material_3_count,
-	material_4_item,
-	material_4_count,
+	Material1Item  int `json:"material_1_item"`
+	Material1Count int `json:"material_1_count"`
+	Material2Item  int `json:"material_2_item"`
+	Material2Count int `json:"material_2_count"`
+	Material3Item  int `json:"material_3_item"`
+	Material3Count int `json:"material_3_count"`
+	Material4Item  int `json:"material_4_item"`
+	Material4Count int `json:"material_4_count"`
 	// ? Order in the "Awakend Card List maybe?"
-	order,
+	Order int `json:"order"`
 	// still available?
-	is_closed int
+	IsClosed int `json:"is_closed"`
 }
 
 // Card Character info from master_data field "card_character"
 // These match up with all the MsgChara*_en.strb files
 type CardCharacter struct {
-	// card  charcter _id, matches to Card -> card_chara_id
-	_id,
+	// card  charcter Id, matches to Card -> card_chara_id
+	Id int `json:"_id"`
 	// hidden param 1
-	hidden_param_1,
+	HiddenParam1 int `json:"hidden_param_1"`
 	// `hidden param 2
-	hidden_param_2,
+	HiddenParam2 int `json:"hidden_param_2"`
 	// hidden param 3
-	hidden_param_3,
+	HiddenParam3 int `json:"hidden_param_3"`
 	// max friendship 0-30
-	max_friendship int
+	MaxFriendship int `json:"max_friendship"`
 	// text from Strings file
-	description,
-	friendship,
-	login,
-	meet,
-	battle_start,
-	battle_end,
-	friendship_max,
-	friendship_event string
+	Description      string `json:"-"`
+	Friendship       string `json:"-"`
+	Login            string `json:"-"`
+	Meet             string `json:"-"`
+	Battle_start     string `json:"-"`
+	Battle_end       string `json:"-"`
+	Friendship_max   string `json:"-"`
+	Friendship_event string `json:"-"`
 }
 
 // Follower kinds for soldier replenishment on cards
 //these come from master file field "follower_kinds"
-type FollowerKinds struct {
-	_id,
-	coin,
-	iron,
-	ether,
+type FollowerKind struct {
+	Id    int `json:"_id"`
+	Coin  int `json:"coin"`
+	Iron  int `json:"iron"`
+	Ether int `json:"ether"`
 	// not really used
-	speed int
+	Speed int `json:"speed"`
 }
 
 var Elements = [5]string{"Light", "Passion", "Cool", "Dark", "Special"}

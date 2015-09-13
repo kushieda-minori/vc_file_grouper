@@ -4,17 +4,17 @@ package vc_grouper
 // this matches to the Kingdom level in the game
 type Levels struct {
 	// level
-	_id,
+	Id int `json:"_id"`
 	// energy
-	energy,
+	Energy int `json:"energy"`
 	//exp
-	exp,
+	Exp int `json:"exp"`
 	//number of friends
-	friend_num,
+	FriendNum int `json:"friend_num"`
 	// deck cost
-	deck_cost,
+	DeckCost int `json:"deck_cost"`
 	// vitality
-	npc_cost,
+	NpcCost int `json:"npc_cost"`
 	// battle points
-	king_cost int
+	KingCost int `json:"king_cost"`
 }

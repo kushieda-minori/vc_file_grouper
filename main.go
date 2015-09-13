@@ -32,6 +32,9 @@ func main() {
 	}
 
 	http.HandleFunc("/", masterDataHandler)
+	http.Handle("/cardimages", http.StripPrefix("/cardimages", http.FileServer(http.Dir(os.Args[1]+"/card/md"))))
+	http.Handle("/cardimagesHD", http.StripPrefix("/cardimagesHD", http.FileServer(http.Dir(os.Args[1]+"/../hd/"))))
+	http.Handle("/eventimages", http.StripPrefix("/eventimages", http.FileServer(http.Dir(os.Args[1]+"/event/"))))
 	http.ListenAndServe(":8080", nil)
 }
 

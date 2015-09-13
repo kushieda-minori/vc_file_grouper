@@ -5,33 +5,33 @@ package vc_grouper
 // and MsgDeckBonusDesc_en.strb
 type DeckBonus struct {
 	// bonus id
-	_id,
+	Id int `json:"_id"`
 	// Affects ATK or DEF
-	atk_def_flg,
+	AtkDefFlg int `json:"atk_def_flg"`
 	// ?
-	value_type,
+	ValueType int `json:"value_type"`
 	// amount of the modifier
-	value,
+	Value int `json:"value"`
 	// ?
-	down_grade,
+	DownGrade int `json:"down_grade"`
 	// deck condition
-	cond_type,
+	CondType int `json:"cond_type"`
 	// number of cards required
-	req_num,
+	ReqNum int `json:"req_num"`
 	// allows duplicates
-	dup_flg int
+	DupFlg int `json:"dup_flg"`
 }
 
 // Deck Bonus Conditions from masfter file field "deck_bonus_cond"
 type DeckBonusCond struct {
 	// deck condition id
-	_id,
+	Id int `json:"_id"`
 	// deck bonus id
-	deck_bonus_id,
+	DeckBonusId int `json:"deck_bonus_id"`
 	// group
-	group,
+	Group int `json:"group"`
 	// type id
-	cond_type_id,
+	CondTypeId int `json:"cond_type_id"`
 	// reference
-	ref_id int
+	RefId int `json:"ref_id"`
 }

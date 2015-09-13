@@ -9,19 +9,20 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"runtime/debug"
-	"strconv"
+	// "strconv"
 	"strings"
 )
 
 // Main Structure for the VC data file located in responce/maindata
 type VcFile struct {
-	cards          []Card
-	skills         []Skill
-	fusion_list    []Amalgamation
-	card_awaken    []CardAwaken
-	card_character []CardCharacter
-	follower_kinds []FollowerKinds
+	Cards         []Card          `json:"cards"`
+	Skills        []Skill         `json:"skills"`
+	Amalgamations []Amalgamation  `json:"fusion_list"`
+	Awakenings    []CardAwaken    `json:"card_awaken"`
+	CardCharacter []CardCharacter `json:"card_character"`
+	FollowerKinds []FollowerKind  `json:"follower_kinds"`
 }
 
 // This reads the maindata file and all associated files for strings
@@ -42,10 +43,7 @@ func (v *VcFile) Read(root string) error {
 	dataLen := len(data)
 
 	if data[len(data)-1] == 0 {
-		os.Stdout.WriteString("File ends with 0\n")
 		dataLen--
-	} else {
-		os.Stdout.WriteString("File did not end with 0\n")
 	}
 
 	// decode the main file
@@ -55,21 +53,20 @@ func (v *VcFile) Read(root string) error {
 		return err
 	}
 
-	os.Stdout.WriteString(" Length: " + strconv.Itoa(len(v.cards)) + "\n")
-
 	// card names
 	names, err := readStringFile(root + "/string/MsgCardName_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return err
 	}
-	if len(v.cards) != len(names) {
+	if len(v.Cards) != len(names) {
+		fmt.Fprintln(os.Stdout, "names: %v", names)
 		debug.PrintStack()
 		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character Names", len(v.cards), len(names))
+			"Character Names", len(v.Cards), len(names))
 	}
-	for key, value := range v.cards {
-		value.name = names[key]
+	for key, value := range v.Cards {
+		value.Name = names[key]
 	}
 	names = nil
 
@@ -78,10 +75,10 @@ func (v *VcFile) Read(root string) error {
 		debug.PrintStack()
 		return err
 	}
-	if len(v.card_character) != len(description) {
+	if len(v.CardCharacter) != len(description) {
 		debug.PrintStack()
 		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character descriptions", len(v.card_character), len(description))
+			"Character descriptions", len(v.CardCharacter), len(description))
 	}
 
 	friendship, err := readStringFile(root + "/string/MsgCharaFriendship_en.strb")
@@ -89,10 +86,10 @@ func (v *VcFile) Read(root string) error {
 		debug.PrintStack()
 		return err
 	}
-	if len(v.card_character) != len(friendship) {
+	if len(v.CardCharacter) != len(friendship) {
 		debug.PrintStack()
 		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character friendship", len(v.card_character), len(friendship))
+			"Character friendship", len(v.CardCharacter), len(friendship))
 	}
 
 	login, err := readStringFile(root + "/string/MsgCharaWelcome_en.strb")
@@ -106,10 +103,10 @@ func (v *VcFile) Read(root string) error {
 		debug.PrintStack()
 		return err
 	}
-	if len(v.card_character) != len(meet) {
+	if len(v.CardCharacter) != len(meet) {
 		debug.PrintStack()
 		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character meet", len(v.card_character), len(meet))
+			"Character meet", len(v.CardCharacter), len(meet))
 	}
 
 	battle_start, err := readStringFile(root + "/string/MsgCharaBtlStart_en.strb")
@@ -117,10 +114,10 @@ func (v *VcFile) Read(root string) error {
 		debug.PrintStack()
 		return err
 	}
-	if len(v.card_character) != len(battle_start) {
+	if len(v.CardCharacter) != len(battle_start) {
 		debug.PrintStack()
 		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character battle_start", len(v.card_character), len(battle_start))
+			"Character battle_start", len(v.CardCharacter), len(battle_start))
 	}
 
 	battle_end, err := readStringFile(root + "/string/MsgCharaBtlEnd_en.strb")
@@ -128,10 +125,10 @@ func (v *VcFile) Read(root string) error {
 		debug.PrintStack()
 		return err
 	}
-	if len(v.card_character) != len(battle_end) {
+	if len(v.CardCharacter) != len(battle_end) {
 		debug.PrintStack()
 		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character battle_end", len(v.card_character), len(battle_end))
+			"Character battle_end", len(v.CardCharacter), len(battle_end))
 	}
 
 	friendship_max, err := readStringFile(root + "/string/MsgCharaFriendshipMax_en.strb")
@@ -139,10 +136,10 @@ func (v *VcFile) Read(root string) error {
 		debug.PrintStack()
 		return err
 	}
-	if len(v.card_character) != len(friendship_max) {
+	if len(v.CardCharacter) != len(friendship_max) {
 		debug.PrintStack()
 		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character friendship_max", len(v.card_character), len(friendship_max))
+			"Character friendship_max", len(v.CardCharacter), len(friendship_max))
 	}
 
 	friendship_event, err := readStringFile(root + "/string/MsgCharaBonds_en.strb")
@@ -150,23 +147,23 @@ func (v *VcFile) Read(root string) error {
 		debug.PrintStack()
 		return err
 	}
-	if len(v.card_character) != len(friendship_event) {
+	if len(v.CardCharacter) != len(friendship_event) {
 		debug.PrintStack()
 		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character friendship_event", len(v.card_character), len(friendship_event))
+			"Character friendship_event", len(v.CardCharacter), len(friendship_event))
 	}
 
-	for key, value := range v.card_character {
-		value.description = description[key]
-		value.friendship = friendship[key]
+	for key, value := range v.CardCharacter {
+		value.Description = description[key]
+		value.Friendship = friendship[key]
 		if key < len(login) {
-			value.login = login[key]
+			value.Login = login[key]
 		}
-		value.meet = meet[key]
-		value.battle_start = battle_start[key]
-		value.battle_end = battle_end[key]
-		value.friendship_max = friendship_max[key]
-		value.friendship_event = friendship_event[key]
+		value.Meet = meet[key]
+		value.Battle_start = battle_start[key]
+		value.Battle_end = battle_end[key]
+		value.Friendship_max = friendship_max[key]
+		value.Friendship_event = friendship_event[key]
 	}
 	description = nil
 	friendship = nil
@@ -196,15 +193,15 @@ func (v *VcFile) Read(root string) error {
 		return err
 	}
 
-	for key, value := range v.skills {
+	for key, value := range v.Skills {
 		if key < len(names) {
-			value.name = names[key]
+			value.Name = names[key]
 		}
 		if key < len(description) {
-			value.description = description[key]
+			value.Description = filterSkill(description[key])
 		}
 		if key < len(fire) {
-			value.fire = fire[key]
+			value.Fire = fire[key]
 		}
 	}
 
@@ -244,7 +241,7 @@ func readStringFile(filename string) ([]string, error) {
 	}
 
 	//read the strings
-	ret := make([]string, 10)
+	ret := make([]string, 0)
 	for {
 		if line, err = r.ReadBytes('\000'); err == io.EOF {
 			break
@@ -262,11 +259,19 @@ func readStringFile(filename string) ([]string, error) {
 //User this to do common string replacements in the VC data files
 func filter(s string) string {
 	ret := strings.Replace(s, "\n", "<br />", -1)
-	// skill images
-	ret = strings.Replace(ret, "<img=24>", "{{Passion}}", -1)
+
+	return ret
+}
+
+var regExSlash, _ = regexp.Compile("\\s*/\\s*")
+
+func filterSkill(s string) string {
+	//element icons
+	ret := strings.Replace(s, "<img=24>", "{{Passion}}", -1)
 	ret = strings.Replace(ret, "<img=25>", "{{Cool}}", -1)
 	ret = strings.Replace(ret, "<img=26>", "{{Dark}}", -1)
 	ret = strings.Replace(ret, "<img=27>", "{{Light}}", -1)
-
+	// clean up '/' spacing
+	ret = regExSlash.ReplaceAllString(ret, " / ")
 	return ret
 }
