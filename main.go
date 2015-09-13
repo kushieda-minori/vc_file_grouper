@@ -1,15 +1,10 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"github.com/bitly/go-simplejson"
 	"io"
 	"net/http"
 	"os"
-	"sort"
 	"zetsuboushita.net/vc_file_grouper/vc_grouper"
-	// "strings"
 )
 
 var VcData vc_grouper.VcFile
@@ -30,60 +25,20 @@ func main() {
 		return
 	}
 
+	err := VcData.Read(os.Args[1])
+	if err != nil {
+		os.Stderr.WriteString(err.Error() + "\n")
+		return
+	}
+
 	http.HandleFunc("/", masterDataHandler)
 	http.ListenAndServe(":8080", nil)
 }
 
 func masterDataHandler(w http.ResponseWriter, r *http.Request) {
-	// 0. decode all the files (or maybe just decode on demand?)
-	// 1. load in json data from masterdata.dat
-	// 2. list main keys as navigation points
 
 	// File header
 	io.WriteString(w, "<html><body>\n")
-
-	// Step 0.
-	filename := os.Args[1] + "/response/master_all.dat"
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		// here we can check if the non converted file exists and convert it
-		fmt.Fprintf(w, "no such file or directory: %s", filename)
-		io.WriteString(w, "</body></html>")
-		return
-	}
-
-	f, err := os.Open(filename)
-	if err != nil {
-		fmt.Fprintf(w, "Error opening: %s", filename)
-		io.WriteString(w, "</body></html>")
-		return
-	}
-
-	// read the decoded master data file
-	masterData, _ := simplejson.NewFromReader(bufio.NewReader(f))
-
-	masterDataMap, _ := masterData.Map()
-
-	// sort the keys
-	mk := make([]string, len(masterDataMap))
-	i := 0
-	var k string
-	for k, _ = range masterDataMap {
-		mk[i] = k
-		i++
-	}
-	sort.Strings(mk)
-
-	// print all the keys in order
-	for _, k = range mk {
-		io.WriteString(w, "<p><a href=\"")
-		io.WriteString(w, k)
-		io.WriteString(w, "\">")
-		io.WriteString(w, k)
-		io.WriteString(w, "</a><div style=\"padding-left:10px\">")
-		// val, _ := masterData.Get(k).EncodePretty()
-		// io.WriteString(w, strings.Replace(string(val), "\n", "<br />", -1))
-		io.WriteString(w, "</div></p>\n")
-	}
 
 	io.WriteString(w, "</body></html>")
 }

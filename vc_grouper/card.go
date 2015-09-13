@@ -57,7 +57,7 @@ type Card struct {
 }
 
 // List of possible Fusions (Amalgamations) from master file field "fusion_list"
-type FusionList struct {
+type Amalgamation struct {
 	// internal id
 	_id,
 	// card 1
@@ -123,7 +123,7 @@ type CardCharacter struct {
 
 // Follower kinds for soldier replenishment on cards
 //these come from master file field "follower_kinds"
-type follower_kinds struct {
+type FollowerKinds struct {
 	_id,
 	coin,
 	iron,
