@@ -19,7 +19,9 @@ type DeckBonus struct {
 	// number of cards required
 	ReqNum int `json:"req_num"`
 	// allows duplicates
-	DupFlg int `json:"dup_flg"`
+	DupFlg      int    `json:"dup_flg"`
+	Name        string `json:"-"`
+	Description string `json:"-"`
 }
 
 // Deck Bonus Conditions from masfter file field "deck_bonus_cond"

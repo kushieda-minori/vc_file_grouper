@@ -2,7 +2,7 @@ package vc_grouper
 
 //from the master_data file, this is the "levels" field
 // this matches to the Kingdom level in the game
-type Levels struct {
+type Level struct {
 	// level
 	Id int `json:"_id"`
 	// energy

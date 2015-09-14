@@ -1,5 +1,10 @@
 package vc_grouper
 
+import (
+	"strconv"
+	"strings"
+)
+
 // Skills info from master data field "skills" These match to the string in the files:
 // MsgSkillName_en.strb
 // MsgSkillDesc_en.strb - shown on the card
@@ -56,6 +61,40 @@ type Skill struct {
 	Description string `json:"-"`
 	// fire text from strings file
 	Fire string `json:"-"`
+}
+
+func (s *Skill) GetSkillMin() string {
+	min := strings.Replace(s.Description, "{1:x}", strconv.Itoa(s.EffectDefaultValue), -1)
+	r := strconv.Itoa(s.DefaultRatio)
+	min = strings.Replace(min, "{2:}", r, -1)
+	min = strings.Replace(min, "{2:x}", r, -1)
+	min = strings.Replace(min, "{2}", r, -1)
+	return min
+}
+
+func (s *Skill) GetSkillMax() string {
+	max := strings.Replace(s.Description, "{1:x}", strconv.Itoa(s.EffectMaxValue), -1)
+	r := strconv.Itoa(s.MaxRatio)
+	max = strings.Replace(max, "{2:}", r, -1)
+	max = strings.Replace(max, "{2:x}", r, -1)
+	max = strings.Replace(max, "{2}", r, -1)
+	return max
+}
+
+func (s *Skill) GetTargetScope() string {
+	if val, ok := TargetScope[s.TargetScopeId]; ok {
+		return val
+	} else {
+		return ""
+	}
+}
+
+func (s *Skill) GetTargetLogic() string {
+	if val, ok := TargetLogic[s.TargetLogicId]; ok {
+		return val
+	} else {
+		return ""
+	}
 }
 
 var TargetScope = map[int]string{

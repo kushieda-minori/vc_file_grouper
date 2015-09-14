@@ -17,15 +17,22 @@ import (
 
 // Main Structure for the VC data file located in responce/maindata
 type VcFile struct {
-	Cards         []Card          `json:"cards"`
-	Skills        []Skill         `json:"skills"`
-	Amalgamations []Amalgamation  `json:"fusion_list"`
-	Awakenings    []CardAwaken    `json:"card_awaken"`
-	CardCharacter []CardCharacter `json:"card_character"`
-	FollowerKinds []FollowerKind  `json:"follower_kinds"`
+	Cards                []Card                `json:"cards"`
+	Skills               []Skill               `json:"skills"`
+	Amalgamations        []Amalgamation        `json:"fusion_list"`
+	Awakenings           []CardAwaken          `json:"card_awaken"`
+	CardCharacter        []CardCharacter       `json:"card_character"`
+	FollowerKinds        []FollowerKind        `json:"follower_kinds"`
+	Levels               []Level               `json:"levels"`
+	CardLevels           []CardLevel           `json:"cardlevel"`
+	DeckBonuses          []DeckBonus           `json:"deck_bonus"`
+	DeckBonusConditions  []DeckBonusCond       `json:"deck_bonus_cond"`
+	Archwitches          []Archwitch           `json"kings"`
+	ArchwitchSeriess     []ArchwitchSeries     `json"king_series"`
+	ArchwitchFriendships []ArchwitchFriendship `json"king_friendship"`
 }
 
-// This reads the maindata file and all associated files for strings
+// This reads the main data file and all associated files for strings
 // the data is inserted directly into the struct.
 func (v *VcFile) Read(root string) error {
 	filename := root + "/response/master_all.dat"
@@ -65,8 +72,8 @@ func (v *VcFile) Read(root string) error {
 		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character Names", len(v.Cards), len(names))
 	}
-	for key, value := range v.Cards {
-		value.Name = names[key]
+	for key, _ := range v.Cards {
+		v.Cards[key].Name = strings.Title(strings.ToLower(names[key]))
 	}
 	names = nil
 
@@ -153,17 +160,17 @@ func (v *VcFile) Read(root string) error {
 			"Character friendship_event", len(v.CardCharacter), len(friendship_event))
 	}
 
-	for key, value := range v.CardCharacter {
-		value.Description = description[key]
-		value.Friendship = friendship[key]
+	for key, _ := range v.CardCharacter {
+		v.CardCharacter[key].Description = description[key]
+		v.CardCharacter[key].Friendship = friendship[key]
 		if key < len(login) {
-			value.Login = login[key]
+			v.CardCharacter[key].Login = login[key]
 		}
-		value.Meet = meet[key]
-		value.Battle_start = battle_start[key]
-		value.Battle_end = battle_end[key]
-		value.Friendship_max = friendship_max[key]
-		value.Friendship_event = friendship_event[key]
+		v.CardCharacter[key].Meet = meet[key]
+		v.CardCharacter[key].BattleStart = battle_start[key]
+		v.CardCharacter[key].BattleEnd = battle_end[key]
+		v.CardCharacter[key].FriendshipMax = friendship_max[key]
+		v.CardCharacter[key].FriendshipEvent = friendship_event[key]
 	}
 	description = nil
 	friendship = nil
@@ -193,15 +200,15 @@ func (v *VcFile) Read(root string) error {
 		return err
 	}
 
-	for key, value := range v.Skills {
+	for key, _ := range v.Skills {
 		if key < len(names) {
-			value.Name = names[key]
+			v.Skills[key].Name = names[key]
 		}
 		if key < len(description) {
-			value.Description = filterSkill(description[key])
+			v.Skills[key].Description = filterSkill(description[key])
 		}
 		if key < len(fire) {
-			value.Fire = fire[key]
+			v.Skills[key].Fire = fire[key]
 		}
 	}
 
@@ -259,7 +266,10 @@ func readStringFile(filename string) ([]string, error) {
 //User this to do common string replacements in the VC data files
 func filter(s string) string {
 	ret := strings.Replace(s, "\n", "<br />", -1)
-
+	ret = strings.Replace(ret, "ÔºÖ", "%", -1)
+	ret = strings.Replace(ret, "<i><break>", "<br />", -1)
+	ret = strings.Replace(ret, "‚ô™", "♪", -1)
+	ret = strings.Replace(ret, "‚Ä¶‚Ä¶", "..... ", -1)
 	return ret
 }
 

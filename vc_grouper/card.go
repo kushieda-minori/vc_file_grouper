@@ -1,5 +1,11 @@
 package vc_grouper
 
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
+
 //HD Images are located at the followinf URL Pattern:
 //https://d2n1d3zrlbtx8o.cloudfront.net/download/CardHD.zip/CARDFILE.TIMESTAMP
 //we have yet to determine how the timestamp is decided
@@ -54,6 +60,197 @@ type Card struct {
 	IsClosed int `json:"is_closed"`
 	// name from the strings file
 	Name string `json:"-"`
+	//Character Link
+	Character *CardCharacter
+	//Skill Links
+	Skill1        *Skill
+	Skill2        *Skill
+	SpecialSkill1 *Skill
+}
+
+func (c *Card) GetImage() string {
+	return fmt.Sprintf("cd_%05d.png", c.CardNo)
+}
+
+func (c *Card) GetRarity() string {
+	if c.CardRareId >= 0 {
+		return Rarity[c.CardRareId-1]
+	} else {
+		return ""
+	}
+}
+
+func (c *Card) GetElement() string {
+	if c.CardTypeId >= 0 {
+		return Elements[c.CardTypeId-1]
+	} else {
+		return ""
+	}
+}
+
+func (c *Card) GetCharacter(v *VcFile) *CardCharacter {
+	if c.Character == nil && c.CardCharaId > 0 {
+		c.Character = &v.CardCharacter[c.CardCharaId-1]
+	}
+	return c.Character
+}
+
+func (c *Card) GetSkill1(v *VcFile) *Skill {
+	if c.Skill1 == nil && c.SkillId1 > 0 {
+		c.Skill1 = &v.Skills[c.SkillId1-1]
+	}
+	return c.Skill1
+}
+
+func (c *Card) GetSkill2(v *VcFile) *Skill {
+	if c.Skill2 == nil && c.SkillId2 > 0 {
+		c.Skill2 = &v.Skills[c.SkillId2-1]
+	}
+	return c.Skill2
+}
+
+func (c *Card) GetSpecialSkill1(v *VcFile) *Skill {
+	if c.SpecialSkill1 == nil && c.SpecialSkillId1 > 0 {
+		c.SpecialSkill1 = &v.Skills[c.SpecialSkillId1-1]
+	}
+	return c.SpecialSkill1
+}
+
+func (c *Card) GetSkill1Name(v *VcFile) string {
+	s := c.GetSkill1(v)
+	if s == nil {
+		return ""
+	}
+	return s.Name
+}
+
+func (c *Card) GetSkillMin(v *VcFile) string {
+	s := c.GetSkill1(v)
+	if s == nil {
+		return ""
+	}
+	return s.GetSkillMin()
+}
+
+func (c *Card) GetSkillMax(v *VcFile) string {
+	s := c.GetSkill1(v)
+	if s == nil {
+		return ""
+	}
+	return s.GetSkillMax()
+}
+
+func (c *Card) GetSkillProcs(v *VcFile) string {
+	s := c.GetSkill1(v)
+	if s == nil {
+		return ""
+	}
+	// battle start skills seem to have random Max Count values. Force it to 1
+	// since they can only proc once anyway
+	if strings.Contains(strings.ToLower(c.GetSkillMin(v)), "battle start") {
+		return "1"
+	}
+	// -1 MaxCount indicates no limit
+	if s.MaxCount < 0 {
+		return "Infinte"
+	}
+	return strconv.Itoa(s.MaxCount)
+}
+
+func (c *Card) GetSkillTarget(v *VcFile) string {
+	s := c.GetSkill1(v)
+	if s == nil {
+		return ""
+	}
+	return s.GetTargetScope()
+}
+
+func (c *Card) GetSkillTargetLogic(v *VcFile) string {
+	s := c.GetSkill1(v)
+	if s == nil {
+		return ""
+	}
+	return s.GetTargetLogic()
+}
+
+func (c *Card) GetSkill2Name(v *VcFile) string {
+	s := c.GetSkill2(v)
+	if s == nil {
+		return ""
+	}
+	return s.Name
+}
+
+func (c *Card) GetSpecialSkill1Name(v *VcFile) string {
+	s := c.GetSpecialSkill1(v)
+	if s == nil {
+		return ""
+	}
+	return s.Name
+}
+
+func (c *Card) GetDescription(v *VcFile) string {
+	ch := c.GetCharacter(v)
+	if ch == nil {
+		return ""
+	}
+	return ch.Description
+}
+
+func (c *Card) GetFriendship(v *VcFile) string {
+	ch := c.GetCharacter(v)
+	if ch == nil {
+		return ""
+	}
+	return ch.Friendship
+}
+
+func (c *Card) GetLogin(v *VcFile) string {
+	ch := c.GetCharacter(v)
+	if ch == nil {
+		return ""
+	}
+	return ch.Login
+}
+
+func (c *Card) GetMeet(v *VcFile) string {
+	ch := c.GetCharacter(v)
+	if ch == nil {
+		return ""
+	}
+	return ch.Meet
+}
+
+func (c *Card) GetBattleStart(v *VcFile) string {
+	ch := c.GetCharacter(v)
+	if ch == nil {
+		return ""
+	}
+	return ch.BattleStart
+}
+
+func (c *Card) GetBattleEnd(v *VcFile) string {
+	ch := c.GetCharacter(v)
+	if ch == nil {
+		return ""
+	}
+	return ch.BattleEnd
+}
+
+func (c *Card) GetFriendshipMax(v *VcFile) string {
+	ch := c.GetCharacter(v)
+	if ch == nil {
+		return ""
+	}
+	return ch.FriendshipMax
+}
+
+func (c *Card) GetFriendshipEvent(v *VcFile) string {
+	ch := c.GetCharacter(v)
+	if ch == nil {
+		return ""
+	}
+	return ch.FriendshipEvent
 }
 
 // List of possible Fusions (Amalgamations) from master file field "fusion_list"
@@ -111,14 +308,14 @@ type CardCharacter struct {
 	// max friendship 0-30
 	MaxFriendship int `json:"max_friendship"`
 	// text from Strings file
-	Description      string `json:"-"`
-	Friendship       string `json:"-"`
-	Login            string `json:"-"`
-	Meet             string `json:"-"`
-	Battle_start     string `json:"-"`
-	Battle_end       string `json:"-"`
-	Friendship_max   string `json:"-"`
-	Friendship_event string `json:"-"`
+	Description     string `json:"-"`
+	Friendship      string `json:"-"`
+	Login           string `json:"-"`
+	Meet            string `json:"-"`
+	BattleStart     string `json:"-"`
+	BattleEnd       string `json:"-"`
+	FriendshipMax   string `json:"-"`
+	FriendshipEvent string `json:"-"`
 }
 
 // Follower kinds for soldier replenishment on cards
