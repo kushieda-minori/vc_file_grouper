@@ -161,7 +161,7 @@ func (v *VcFile) Read(root string) error {
 	}
 
 	for key, _ := range v.CardCharacter {
-		v.CardCharacter[key].Description = description[key]
+		v.CardCharacter[key].Description = strings.Replace(description[key], "<br />", " ", -1)
 		v.CardCharacter[key].Friendship = friendship[key]
 		if key < len(login) {
 			v.CardCharacter[key].Login = login[key]
