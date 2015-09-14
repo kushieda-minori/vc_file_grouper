@@ -61,11 +61,11 @@ type Card struct {
 	// name from the strings file
 	Name string `json:"-"`
 	//Character Link
-	Character *CardCharacter
+	character *CardCharacter
 	//Skill Links
-	Skill1        *Skill
-	Skill2        *Skill
-	SpecialSkill1 *Skill
+	skill1        *Skill
+	skill2        *Skill
+	specialSkill1 *Skill
 }
 
 func (c *Card) GetImage() string {
@@ -89,31 +89,76 @@ func (c *Card) GetElement() string {
 }
 
 func (c *Card) GetCharacter(v *VcFile) *CardCharacter {
-	if c.Character == nil && c.CardCharaId > 0 {
-		c.Character = &v.CardCharacter[c.CardCharaId-1]
+	if c.character == nil && c.CardCharaId > 0 {
+		c.character = &v.CardCharacter[c.CardCharaId-1]
 	}
-	return c.Character
+	return c.character
+}
+
+func (c *Card) GetEvoAccident(cards []Card) *Card {
+	if c.TransCardId > 0 {
+		return &(cards[c.TransCardId-1])
+	}
+	return nil
+}
+
+func (c *Card) IsEvoAccidentOf(cards []Card) *Card {
+	for key, val := range cards {
+		if val.TransCardId == c.Id {
+			return &(cards[key])
+		}
+	}
+	return nil
+}
+
+func (c *Card) GetAmalgamations(v *VcFile) []Amalgamation {
+	ret := make([]Amalgamation, 0)
+	for _, v := range v.Amalgamations {
+		if c.Id == v.FusionCardId ||
+			c.Id == v.Material1 ||
+			c.Id == v.Material2 ||
+			c.Id == v.Material3 ||
+			c.Id == v.Material4 {
+			ret = append(ret, v)
+		}
+	}
+	return ret
 }
 
 func (c *Card) GetSkill1(v *VcFile) *Skill {
-	if c.Skill1 == nil && c.SkillId1 > 0 {
-		c.Skill1 = &v.Skills[c.SkillId1-1]
+	if c.skill1 == nil && c.SkillId1 > 0 {
+		c.skill1 = skillScan(c.SkillId1, v.Skills)
 	}
-	return c.Skill1
+	return c.skill1
 }
 
 func (c *Card) GetSkill2(v *VcFile) *Skill {
-	if c.Skill2 == nil && c.SkillId2 > 0 {
-		c.Skill2 = &v.Skills[c.SkillId2-1]
+	if c.skill2 == nil && c.SkillId2 > 0 {
+		c.skill2 = skillScan(c.SkillId2, v.Skills)
 	}
-	return c.Skill2
+	return c.skill2
 }
 
 func (c *Card) GetSpecialSkill1(v *VcFile) *Skill {
-	if c.SpecialSkill1 == nil && c.SpecialSkillId1 > 0 {
-		c.SpecialSkill1 = &v.Skills[c.SpecialSkillId1-1]
+	if c.specialSkill1 == nil && c.SpecialSkillId1 > 0 {
+		c.specialSkill1 = skillScan(c.SpecialSkillId1, v.Skills)
 	}
-	return c.SpecialSkill1
+	return c.specialSkill1
+}
+
+func skillScan(id int, skills []Skill) *Skill {
+	if id <= 0 {
+		return nil
+	}
+	if id < len(skills) && id == skills[id-1].Id {
+		return &(skills[id-1])
+	}
+	for k, v := range skills {
+		if id == v.Id {
+			return &(skills[k])
+		}
+	}
+	return nil
 }
 
 func (c *Card) GetSkill1Name(v *VcFile) string {
@@ -152,7 +197,7 @@ func (c *Card) GetSkillProcs(v *VcFile) string {
 	}
 	// -1 MaxCount indicates no limit
 	if s.MaxCount < 0 {
-		return "Infinte"
+		return "Infinite"
 	}
 	return strconv.Itoa(s.MaxCount)
 }

@@ -49,7 +49,7 @@ func (v *VcFile) Read(root string) error {
 
 	dataLen := len(data)
 
-	if data[len(data)-1] == 0 {
+	for data[dataLen-1] == 0 {
 		dataLen--
 	}
 
@@ -265,11 +265,17 @@ func readStringFile(filename string) ([]string, error) {
 
 //User this to do common string replacements in the VC data files
 func filter(s string) string {
+	if s == "null" {
+		return ""
+	}
 	ret := strings.Replace(s, "\n", "<br />", -1)
 	ret = strings.Replace(ret, "ÔºÖ", "%", -1)
 	ret = strings.Replace(ret, "<i><break>", "<br />", -1)
 	ret = strings.Replace(ret, "‚ô™", "♪", -1)
 	ret = strings.Replace(ret, "‚Ä¶‚Ä¶", "..... ", -1)
+	for strings.Contains(ret, "<br /><br />") {
+		ret = strings.Replace(ret, "<br /><br />", "<br />", -1)
+	}
 	return ret
 }
 
@@ -282,6 +288,8 @@ func filterSkill(s string) string {
 	ret = strings.Replace(ret, "<img=26>", "{{Dark}}", -1)
 	ret = strings.Replace(ret, "<img=27>", "{{Light}}", -1)
 	// clean up '/' spacing
+	//for regExSlash.MatchString(ret) {
 	ret = regExSlash.ReplaceAllString(ret, " / ")
+	// }
 	return ret
 }
