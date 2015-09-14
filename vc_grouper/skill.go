@@ -63,7 +63,7 @@ type Skill struct {
 	Fire string `json:"-"`
 }
 
-func (s *Skill) GetSkillMin() string {
+func (s *Skill) SkillMin() string {
 	min := strings.Replace(s.Description, "{1:x}", strconv.Itoa(s.EffectDefaultValue), -1)
 	r := strconv.Itoa(s.DefaultRatio)
 	min = strings.Replace(min, "{2:}", r, -1)
@@ -72,7 +72,7 @@ func (s *Skill) GetSkillMin() string {
 	return min
 }
 
-func (s *Skill) GetSkillMax() string {
+func (s *Skill) SkillMax() string {
 	max := strings.Replace(s.Description, "{1:x}", strconv.Itoa(s.EffectMaxValue), -1)
 	r := strconv.Itoa(s.MaxRatio)
 	max = strings.Replace(max, "{2:}", r, -1)
@@ -81,7 +81,7 @@ func (s *Skill) GetSkillMax() string {
 	return max
 }
 
-func (s *Skill) GetTargetScope() string {
+func (s *Skill) TargetScope() string {
 	if val, ok := TargetScope[s.TargetScopeId]; ok {
 		return val
 	} else {
@@ -89,7 +89,7 @@ func (s *Skill) GetTargetScope() string {
 	}
 }
 
-func (s *Skill) GetTargetLogic() string {
+func (s *Skill) TargetLogic() string {
 	if val, ok := TargetLogic[s.TargetLogicId]; ok {
 		return val
 	} else {

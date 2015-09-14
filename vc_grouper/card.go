@@ -68,11 +68,11 @@ type Card struct {
 	specialSkill1 *Skill
 }
 
-func (c *Card) GetImage() string {
+func (c *Card) Image() string {
 	return fmt.Sprintf("cd_%05d.png", c.CardNo)
 }
 
-func (c *Card) GetRarity() string {
+func (c *Card) Rarity() string {
 	if c.CardRareId >= 0 {
 		return Rarity[c.CardRareId-1]
 	} else {
@@ -80,7 +80,7 @@ func (c *Card) GetRarity() string {
 	}
 }
 
-func (c *Card) GetElement() string {
+func (c *Card) Element() string {
 	if c.CardTypeId >= 0 {
 		return Elements[c.CardTypeId-1]
 	} else {
@@ -88,21 +88,21 @@ func (c *Card) GetElement() string {
 	}
 }
 
-func (c *Card) GetCharacter(v *VcFile) *CardCharacter {
+func (c *Card) Character(v *VcFile) *CardCharacter {
 	if c.character == nil && c.CardCharaId > 0 {
 		c.character = &v.CardCharacter[c.CardCharaId-1]
 	}
 	return c.character
 }
 
-func (c *Card) GetEvoAccident(cards []Card) *Card {
+func (c *Card) EvoAccident(cards []Card) *Card {
 	if c.TransCardId > 0 {
 		return &(cards[c.TransCardId-1])
 	}
 	return nil
 }
 
-func (c *Card) IsEvoAccidentOf(cards []Card) *Card {
+func (c *Card) EvoAccidentOf(cards []Card) *Card {
 	for key, val := range cards {
 		if val.TransCardId == c.Id {
 			return &(cards[key])
@@ -111,7 +111,7 @@ func (c *Card) IsEvoAccidentOf(cards []Card) *Card {
 	return nil
 }
 
-func (c *Card) GetAmalgamations(v *VcFile) []Amalgamation {
+func (c *Card) Amalgamations(v *VcFile) []Amalgamation {
 	ret := make([]Amalgamation, 0)
 	for _, v := range v.Amalgamations {
 		if c.Id == v.FusionCardId ||
@@ -125,21 +125,21 @@ func (c *Card) GetAmalgamations(v *VcFile) []Amalgamation {
 	return ret
 }
 
-func (c *Card) GetSkill1(v *VcFile) *Skill {
+func (c *Card) Skill1(v *VcFile) *Skill {
 	if c.skill1 == nil && c.SkillId1 > 0 {
 		c.skill1 = skillScan(c.SkillId1, v.Skills)
 	}
 	return c.skill1
 }
 
-func (c *Card) GetSkill2(v *VcFile) *Skill {
+func (c *Card) Skill2(v *VcFile) *Skill {
 	if c.skill2 == nil && c.SkillId2 > 0 {
 		c.skill2 = skillScan(c.SkillId2, v.Skills)
 	}
 	return c.skill2
 }
 
-func (c *Card) GetSpecialSkill1(v *VcFile) *Skill {
+func (c *Card) SpecialSkill1(v *VcFile) *Skill {
 	if c.specialSkill1 == nil && c.SpecialSkillId1 > 0 {
 		c.specialSkill1 = skillScan(c.SpecialSkillId1, v.Skills)
 	}
@@ -161,38 +161,38 @@ func skillScan(id int, skills []Skill) *Skill {
 	return nil
 }
 
-func (c *Card) GetSkill1Name(v *VcFile) string {
-	s := c.GetSkill1(v)
+func (c *Card) Skill1Name(v *VcFile) string {
+	s := c.Skill1(v)
 	if s == nil {
 		return ""
 	}
 	return s.Name
 }
 
-func (c *Card) GetSkillMin(v *VcFile) string {
-	s := c.GetSkill1(v)
+func (c *Card) SkillMin(v *VcFile) string {
+	s := c.Skill1(v)
 	if s == nil {
 		return ""
 	}
-	return s.GetSkillMin()
+	return s.SkillMin()
 }
 
-func (c *Card) GetSkillMax(v *VcFile) string {
-	s := c.GetSkill1(v)
+func (c *Card) SkillMax(v *VcFile) string {
+	s := c.Skill1(v)
 	if s == nil {
 		return ""
 	}
-	return s.GetSkillMax()
+	return s.SkillMax()
 }
 
-func (c *Card) GetSkillProcs(v *VcFile) string {
-	s := c.GetSkill1(v)
+func (c *Card) SkillProcs(v *VcFile) string {
+	s := c.Skill1(v)
 	if s == nil {
 		return ""
 	}
 	// battle start skills seem to have random Max Count values. Force it to 1
 	// since they can only proc once anyway
-	if strings.Contains(strings.ToLower(c.GetSkillMin(v)), "battle start") {
+	if strings.Contains(strings.ToLower(c.SkillMin(v)), "battle start") {
 		return "1"
 	}
 	// -1 MaxCount indicates no limit
@@ -202,96 +202,96 @@ func (c *Card) GetSkillProcs(v *VcFile) string {
 	return strconv.Itoa(s.MaxCount)
 }
 
-func (c *Card) GetSkillTarget(v *VcFile) string {
-	s := c.GetSkill1(v)
+func (c *Card) SkillTarget(v *VcFile) string {
+	s := c.Skill1(v)
 	if s == nil {
 		return ""
 	}
-	return s.GetTargetScope()
+	return s.TargetScope()
 }
 
-func (c *Card) GetSkillTargetLogic(v *VcFile) string {
-	s := c.GetSkill1(v)
+func (c *Card) SkillTargetLogic(v *VcFile) string {
+	s := c.Skill1(v)
 	if s == nil {
 		return ""
 	}
-	return s.GetTargetLogic()
+	return s.TargetLogic()
 }
 
-func (c *Card) GetSkill2Name(v *VcFile) string {
-	s := c.GetSkill2(v)
-	if s == nil {
-		return ""
-	}
-	return s.Name
-}
-
-func (c *Card) GetSpecialSkill1Name(v *VcFile) string {
-	s := c.GetSpecialSkill1(v)
+func (c *Card) Skill2Name(v *VcFile) string {
+	s := c.Skill2(v)
 	if s == nil {
 		return ""
 	}
 	return s.Name
 }
 
-func (c *Card) GetDescription(v *VcFile) string {
-	ch := c.GetCharacter(v)
+func (c *Card) SpecialSkill1Name(v *VcFile) string {
+	s := c.SpecialSkill1(v)
+	if s == nil {
+		return ""
+	}
+	return s.Name
+}
+
+func (c *Card) Description(v *VcFile) string {
+	ch := c.Character(v)
 	if ch == nil {
 		return ""
 	}
 	return ch.Description
 }
 
-func (c *Card) GetFriendship(v *VcFile) string {
-	ch := c.GetCharacter(v)
+func (c *Card) Friendship(v *VcFile) string {
+	ch := c.Character(v)
 	if ch == nil {
 		return ""
 	}
 	return ch.Friendship
 }
 
-func (c *Card) GetLogin(v *VcFile) string {
-	ch := c.GetCharacter(v)
+func (c *Card) Login(v *VcFile) string {
+	ch := c.Character(v)
 	if ch == nil {
 		return ""
 	}
 	return ch.Login
 }
 
-func (c *Card) GetMeet(v *VcFile) string {
-	ch := c.GetCharacter(v)
+func (c *Card) Meet(v *VcFile) string {
+	ch := c.Character(v)
 	if ch == nil {
 		return ""
 	}
 	return ch.Meet
 }
 
-func (c *Card) GetBattleStart(v *VcFile) string {
-	ch := c.GetCharacter(v)
+func (c *Card) BattleStart(v *VcFile) string {
+	ch := c.Character(v)
 	if ch == nil {
 		return ""
 	}
 	return ch.BattleStart
 }
 
-func (c *Card) GetBattleEnd(v *VcFile) string {
-	ch := c.GetCharacter(v)
+func (c *Card) BattleEnd(v *VcFile) string {
+	ch := c.Character(v)
 	if ch == nil {
 		return ""
 	}
 	return ch.BattleEnd
 }
 
-func (c *Card) GetFriendshipMax(v *VcFile) string {
-	ch := c.GetCharacter(v)
+func (c *Card) FriendshipMax(v *VcFile) string {
+	ch := c.Character(v)
 	if ch == nil {
 		return ""
 	}
 	return ch.FriendshipMax
 }
 
-func (c *Card) GetFriendshipEvent(v *VcFile) string {
-	ch := c.GetCharacter(v)
+func (c *Card) FriendshipEvent(v *VcFile) string {
+	ch := c.Character(v)
 	if ch == nil {
 		return ""
 	}
@@ -312,6 +312,55 @@ type Amalgamation struct {
 	Material4 int `json:"material_4"`
 	// resulting card
 	FusionCardId int `json:"fusion_card_id"`
+}
+
+func (a *Amalgamation) MaterialCount() int {
+	if a.Material4 > 0 {
+		return 4
+	}
+	if a.Material3 > 0 {
+		return 3
+	}
+	return 2
+}
+func (a *Amalgamation) Materials(v *VcFile) []*Card {
+	ret := make([]*Card, 0)
+	ret = append(ret, cardScan(a.Material1, v.Cards))
+	ret = append(ret, cardScan(a.Material2, v.Cards))
+	if a.Material3 > 0 {
+		ret = append(ret, cardScan(a.Material3, v.Cards))
+	}
+	if a.Material4 > 0 {
+		ret = append(ret, cardScan(a.Material4, v.Cards))
+	}
+	ret = append(ret, cardScan(a.FusionCardId, v.Cards))
+	return ret
+}
+
+func cardScan(cardId int, cards []Card) *Card {
+	if cardId > 0 {
+		if cardId < len(cards) && cards[cardId-1].Id == cardId {
+			return &cards[cardId-1]
+		}
+		for k, val := range cards {
+			if val.Id == cardId {
+				return &cards[k]
+			}
+		}
+	}
+	return nil
+}
+
+type ByMaterialCount []Amalgamation
+
+func (s ByMaterialCount) Len() int {
+	return len(s)
+}
+func (s ByMaterialCount) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+func (s ByMaterialCount) Less(i, j int) bool {
+	return s[i].MaterialCount() < s[j].MaterialCount()
 }
 
 // list of possible card awakeneings and thier cost from master file field "card_awaken"
