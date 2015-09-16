@@ -148,7 +148,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		avail += " [[Amalgamation]]"
 	}
 
-	io.WriteString(w, "<html><body>\n")
+	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", card.Name)
 	fmt.Fprintf(w, "Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>", card.Name)
 	io.WriteString(w, "<textarea style=\"width:100%;height:100%\">")
 	if card.IsClosed != 0 {
@@ -183,13 +183,13 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "|cost g = %d\n|atk g = %d / ?\n|def g = %d / ?\n|soldiers g = %d / ?\n",
 			evo.DeckCost, evo.DefaultOffense, evo.DefaultDefense, evo.DefaultFollower)
 		fmt.Fprintf(w, "|skill g = %s\n|skill g lv1 = %s\n|skill g lv10 = %s\n|proc g = %s\n",
-			evo.Skill1Name(&VcData), evo.SkillMin(&VcData), evo.SkillMax(&VcData), evo.SkillProcs(&VcData))
+			html.EscapeString(strings.Replace(evo.Skill1Name(&VcData), "\n", "<br />", -1)), evo.SkillMin(&VcData), evo.SkillMax(&VcData), evo.SkillProcs(&VcData))
 	}
 	fmt.Fprintf(w, "|description = %s\n|friendship = %s\n|login = %s\n|meet = %s\n|battle start = %s\n|battle end = %s\n|friendship max = %s\n|friendship event = %s\n",
-		html.EscapeString(card.Description(&VcData)), html.EscapeString(card.Friendship(&VcData)),
-		html.EscapeString(card.Login(&VcData)), html.EscapeString(card.Meet(&VcData)),
-		html.EscapeString(card.BattleStart(&VcData)), html.EscapeString(card.BattleEnd(&VcData)),
-		html.EscapeString(card.FriendshipMax(&VcData)), html.EscapeString(card.FriendshipEvent(&VcData)))
+		html.EscapeString(card.Description(&VcData)), html.EscapeString(strings.Replace(card.Friendship(&VcData), "\n", "<br />", -1)),
+		html.EscapeString(strings.Replace(card.Login(&VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.Meet(&VcData), "\n", "<br />", -1)),
+		html.EscapeString(strings.Replace(card.BattleStart(&VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.BattleEnd(&VcData), "\n", "<br />", -1)),
+		html.EscapeString(strings.Replace(card.FriendshipMax(&VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.FriendshipEvent(&VcData), "\n", "<br />", -1)))
 	fmt.Fprintf(w, "|availability = %s\n", avail)
 	// fmt.Fprintf(w,"|likeability 0 = %s\n|likeability 1 = %s\n|likeability 2 = %s\n|likeability 3 = %s\n|likeability 4 = %s\n|likeability 5 =%s\n",)
 	io.WriteString(w, "}}")
@@ -262,8 +262,8 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><body>\n")
 	io.WriteString(w, "<table><thead><tr><th>_id</th><th>card_no</th><th>name</th><th>evolution_rank</th><th>Rarity</th><th>Element</th><th>deck_cost</th><th>default_offense</th><th>default_defense</th><th>default_follower</th><th>max_offense</th><th>max_defense</th><th>max_follower</th><th>Skill 1 Name</th><th>Skill Min</th><th>Skill Max</th><th>Skill Procs</th><th>Target Scope</th><th>Target Logic</th><th>Skill 2</th><th>Skill Special</th><th>Description</th><th>Friendship</th><th>Login</th><th>Meet</th><th>Battle Start</th><th>Battle End</th><th>Friendship Max</th><th>Friendship Event</th></tr></thead><tbody>\n")
 	for _, value := range VcData.Cards {
-		fmt.Fprintf(w, "<tr><td>%d</td><td>%05d</td><td><a href=\"/cards/detail/%d\">%s</a></td><td>%d</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></td>\n",
-			value.Id, value.CardNo, value.Id, value.Name, value.EvolutionRank, value.Rarity(), value.Element(),
+		fmt.Fprintf(w, "<tr><td>%d</td><td>%05d</td><td><a href=\"/cards/detail/%[1]d\">%[3]s</a></td><td>%d</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></td>\n",
+			value.Id, value.CardNo, value.Name, value.EvolutionRank, value.Rarity(), value.Element(),
 			value.DeckCost, value.DefaultOffense, value.DefaultDefense, value.DefaultFollower, value.MaxOffense,
 			value.MaxDefense, value.MaxFollower, value.Skill1Name(&VcData), value.SkillMin(&VcData), value.SkillMax(&VcData),
 			value.SkillProcs(&VcData), value.SkillTarget(&VcData), value.SkillTargetLogic(&VcData), value.Skill2Name(&VcData),

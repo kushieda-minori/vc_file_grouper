@@ -161,7 +161,7 @@ func (v *VcFile) Read(root string) error {
 	}
 
 	for key, _ := range v.CardCharacter {
-		v.CardCharacter[key].Description = strings.Replace(description[key], "<br />", " ", -1)
+		v.CardCharacter[key].Description = strings.Replace(description[key], "\n", " ", -1)
 		v.CardCharacter[key].Friendship = friendship[key]
 		if key < len(login) {
 			v.CardCharacter[key].Login = login[key]
@@ -200,15 +200,15 @@ func (v *VcFile) Read(root string) error {
 		return err
 	}
 
-	for key, _ := range v.Skills {
+	for key, val := range v.Skills {
 		if key < len(names) {
-			v.Skills[key].Name = names[key]
+			v.Skills[key].Name = names[val.Id-1]
 		}
 		if key < len(description) {
-			v.Skills[key].Description = filterSkill(description[key])
+			v.Skills[key].Description = filterSkill(description[val.Id-1])
 		}
 		if key < len(fire) {
-			v.Skills[key].Fire = fire[key]
+			v.Skills[key].Fire = fire[val.Id-1]
 		}
 	}
 
@@ -268,18 +268,18 @@ func filter(s string) string {
 	if s == "null" {
 		return ""
 	}
-	ret := strings.Replace(s, "\n", "<br />", -1)
-	ret = strings.Replace(ret, "ÔºÖ", "%", -1)
-	ret = strings.Replace(ret, "<i><break>", "<br />", -1)
+	ret := strings.Replace(s, "ÔºÖ", "%", -1)
+	ret = strings.Replace(ret, "<i><break>", "\n", -1)
 	ret = strings.Replace(ret, "‚ô™", "♪", -1)
 	ret = strings.Replace(ret, "‚Ä¶‚Ä¶", "..... ", -1)
-	for strings.Contains(ret, "<br /><br />") {
-		ret = strings.Replace(ret, "<br /><br />", "<br />", -1)
+	for strings.Contains(ret, "\n\n") {
+		ret = strings.Replace(ret, "\n\n", "\n", -1)
 	}
+	//ret = strings.Replace(ret, "\n", "<br />", -1)
 	return ret
 }
 
-var regExSlash, _ = regexp.Compile("\\s*/\\s*")
+var regexpSlash = regexp.MustCompile("\\s*[/／]\\s*")
 
 func filterSkill(s string) string {
 	//element icons
@@ -288,8 +288,6 @@ func filterSkill(s string) string {
 	ret = strings.Replace(ret, "<img=26>", "{{Dark}}", -1)
 	ret = strings.Replace(ret, "<img=27>", "{{Light}}", -1)
 	// clean up '/' spacing
-	//for regExSlash.MatchString(ret) {
-	ret = regExSlash.ReplaceAllString(ret, " / ")
-	// }
+	ret = regexpSlash.ReplaceAllString(ret, " / ")
 	return ret
 }
