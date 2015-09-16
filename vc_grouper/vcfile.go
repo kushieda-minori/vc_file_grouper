@@ -11,12 +11,40 @@ import (
 	"os"
 	"regexp"
 	"runtime/debug"
-	// "strconv"
+	"strconv"
 	"strings"
+	"time"
 )
+
+type Timestamp struct {
+	time.Time
+}
+
+func (t *Timestamp) MarshalJSON() ([]byte, error) {
+	ts := t.Time.Unix()
+	stamp := fmt.Sprint(ts)
+
+	return []byte(stamp), nil
+}
+
+func (t *Timestamp) UnmarshalJSON(b []byte) error {
+	ts, err := strconv.Atoi(string(b))
+	if err != nil {
+		return err
+	}
+
+	t.Time = time.Unix(int64(ts), 0)
+
+	return nil
+}
 
 // Main Structure for the VC data file located in responce/maindata
 type VcFile struct {
+	Code   int `json:"code"`
+	Common struct {
+		UnixTime Timestamp `json:"unixtime"`
+	} `json:"common"`
+	Version              int                   `json:"version"`
 	Cards                []Card                `json:"cards"`
 	Skills               []Skill               `json:"skills"`
 	Amalgamations        []Amalgamation        `json:"fusion_list"`
@@ -268,18 +296,25 @@ func filter(s string) string {
 	if s == "null" {
 		return ""
 	}
-	ret := strings.Replace(s, "ÔºÖ", "%", -1)
+	// standardize utf enocoded symbols
+	ret := strings.Replace(s, "％", "%", -1)
+	ret = strings.Replace(ret, "　", " ", -1)
+	ret = strings.Replace(ret, "／", "/", -1)
+	// game controls that aren't needed for wikia
 	ret = strings.Replace(ret, "<i><break>", "\n", -1)
-	ret = strings.Replace(ret, "‚ô™", "♪", -1)
-	ret = strings.Replace(ret, "‚Ä¶‚Ä¶", "..... ", -1)
+	// remove duplicate newlines
 	for strings.Contains(ret, "\n\n") {
 		ret = strings.Replace(ret, "\n\n", "\n", -1)
+	}
+	//remove duplicate spaces
+	for strings.Contains(ret, "  ") {
+		ret = strings.Replace(ret, "  ", " ", -1)
 	}
 	//ret = strings.Replace(ret, "\n", "<br />", -1)
 	return ret
 }
 
-var regexpSlash = regexp.MustCompile("\\s*[/／]\\s*")
+var regexpSlash = regexp.MustCompile("\\s*[/]\\s*")
 
 func filterSkill(s string) string {
 	//element icons
@@ -289,5 +324,7 @@ func filterSkill(s string) string {
 	ret = strings.Replace(ret, "<img=27>", "{{Light}}", -1)
 	// clean up '/' spacing
 	ret = regexpSlash.ReplaceAllString(ret, " / ")
+	// make counter attack consistent
+	ret = strings.Replace(ret, "% Counter", "%\nCounter", -1)
 	return ret
 }

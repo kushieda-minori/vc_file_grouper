@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"html"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 	"zetsuboushita.net/vc_file_grouper/vc_grouper"
 )
 
@@ -118,34 +120,61 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	card := &(VcData.Cards[cardId-1])
+	card := vc_grouper.CardScan(cardId, VcData.Cards)
 	evolutions := getEvolutions(*card)
 
 	amalgamations := make([]vc_grouper.Amalgamation, 0)
 	var turnOverTo, turnOverFrom *vc_grouper.Card
-	for _, v := range evolutions {
-		a := v.Amalgamations(&VcData)
-		if len(a) > 0 {
+	for _, evo := range evolutions {
+		// os.Stdout.WriteString(fmt.Sprintf("Evo: %d Accident: %d\n", evo.Id, evo.TransCardId))
+		a := evo.Amalgamations(&VcData)
+		if len(a) > 0 && len(amalgamations) == 0 {
 			amalgamations = append(amalgamations, a...)
 		}
-		if v.TransCardId > 0 {
-			turnOverTo = v.EvoAccident(VcData.Cards)
-			break
+		if evo.TransCardId > 0 && turnOverTo == nil {
+			turnOverTo = evo.EvoAccident(VcData.Cards)
 		} else {
-			turnOverFrom = v.EvoAccidentOf(VcData.Cards)
-			if turnOverFrom != nil {
-				break
+			if turnOverFrom == nil {
+				turnOverFrom = evo.EvoAccidentOf(VcData.Cards)
 			}
 		}
 	}
 	sort.Sort(vc_grouper.ByMaterialCount(amalgamations))
 
 	var avail string
-	if turnOverFrom != nil {
-		avail += fmt.Sprintf("{{Card Icon|%s|Evolution Accident}}", turnOverFrom.Name)
-	}
-	if len(amalgamations) > 0 {
-		avail += " [[Amalgamation]]"
+
+	for _, av := range amalgamations {
+		// check to see ig this card is the result of an amalgamation
+		resultAmalgFound := false
+		if !resultAmalgFound {
+			for _, ev := range evolutions {
+				if ev.Id == av.FusionCardId {
+					avail += " [[Amalgamation]]"
+					resultAmalgFound = true
+					break
+				}
+			}
+		}
+		// look for a self amalgamation
+		if _, ok := evolutions["A"]; !ok {
+			var materialFuseId int
+			for _, ev := range evolutions {
+				switch ev.Id {
+				case av.Material1, av.Material2, av.Material3, av.Material4:
+					materialFuseId = av.FusionCardId
+				}
+			}
+			if materialFuseId > 0 {
+				fuseCard := vc_grouper.CardScan(materialFuseId, VcData.Cards)
+				if fuseCard.Name == card.Name {
+					evolutions["A"] = *fuseCard
+					avail += " [[Amalgamation]]"
+				}
+			}
+		}
+		if _, ok := evolutions["A"]; ok && resultAmalgFound {
+			break
+		}
 	}
 
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", card.Name)
@@ -154,49 +183,80 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if card.IsClosed != 0 {
 		io.WriteString(w, "{{Unreleased}}")
 	}
-	fmt.Fprintf(w, "{{Card\n|element = %s\n|rarity = %s\n|skill = %s\n|skill lv1 = %s\n|skill lv10 = %s\n|procs = %s\n",
-		card.Element(), card.Rarity(), card.Skill1Name(&VcData), card.SkillMin(&VcData), card.SkillMax(&VcData), card.SkillProcs(&VcData))
-	if evo, ok := evolutions["0"]; ok {
-		fmt.Fprintf(w, "|cost 0 = %d\n|atk 0 = %d / %d\n|def 0 = %d / %d\n|soldiers 0 = %d / %d\n",
-			evo.DeckCost, evo.DefaultOffense, evo.MaxOffense, evo.DefaultDefense, evo.MaxDefense, evo.DefaultFollower, evo.MaxFollower)
+	fmt.Fprintf(w, "{{Card\n|element = %s\n", card.Element())
+	var firstEvo vc_grouper.Card
+	var ok bool
+	if firstEvo, ok = evolutions["0"]; ok {
+		fmt.Fprintf(w, "|rarity = %s\n|skill = %s\n|skill lv1 = %s\n|skill lv10 = %s\n|procs = %s\n",
+			firstEvo.Rarity(),
+			html.EscapeString(firstEvo.Skill1Name(&VcData)),
+			html.EscapeString(strings.Replace(firstEvo.SkillMin(&VcData), "\n", "<br />", -1)),
+			html.EscapeString(strings.Replace(firstEvo.SkillMax(&VcData), "\n", "<br />", -1)),
+			firstEvo.SkillProcs(&VcData))
+	} else if firstEvo, ok = evolutions["1"]; ok {
+		fmt.Fprintf(w, "|rarity = %s\n|skill = %s\n|skill lv1 = %s\n|skill lv10 = %s\n|procs = %s\n",
+			firstEvo.Rarity(),
+			html.EscapeString(firstEvo.Skill1Name(&VcData)),
+			html.EscapeString(strings.Replace(firstEvo.SkillMin(&VcData), "\n", "<br />", -1)),
+			html.EscapeString(strings.Replace(firstEvo.SkillMax(&VcData), "\n", "<br />", -1)),
+			firstEvo.SkillProcs(&VcData))
+	} else {
+		io.WriteString(w, "|rarity = \n|skill = \n|skill lv1 = \n|skill lv10 = \n|procs = \n")
 	}
-	if evo, ok := evolutions["1"]; ok {
-		fmt.Fprintf(w, "|cost 1 = %d\n|atk 1 = %d / ?\n|def 1 = %d / ?\n|soldiers 1 = %d / ?\n",
-			evo.DeckCost, evo.DefaultOffense, evo.DefaultDefense, evo.DefaultFollower)
+	if evo, ok := evolutions["A"]; ok {
+		aSkillName := evo.Skill1Name(&VcData)
+		if aSkillName != firstEvo.Skill1Name(&VcData) {
+			fmt.Fprintf(w, "|skill a = %s\n", html.EscapeString(aSkillName))
+			fmt.Fprintf(w, "|skill a lv1 = %s\n|skill a lv10 = %s\n|proc a = %s\n",
+				html.EscapeString(strings.Replace(evo.SkillMin(&VcData), "\n", "<br />", -1)),
+				html.EscapeString(strings.Replace(evo.SkillMax(&VcData), "\n", "<br />", -1)),
+				evo.SkillProcs(&VcData))
+		}
 	}
-	if evo, ok := evolutions["2"]; ok {
-		fmt.Fprintf(w, "|cost 2 = %d\n|atk 2 = %d / ?\n|def 2 = %d / ?\n|soldiers 2 = %d / ?\n",
-			evo.DeckCost, evo.DefaultOffense, evo.DefaultDefense, evo.DefaultFollower)
-	}
-	if evo, ok := evolutions["3"]; ok {
-		fmt.Fprintf(w, "|cost 3 = %d\n|atk 3 = %d / ?\n|def 3 = %d / ?\n|soldiers 3 = %d / ?\n",
-			evo.DeckCost, evo.DefaultOffense, evo.DefaultDefense, evo.DefaultFollower)
-	}
-	if evo, ok := evolutions["4"]; ok {
-		fmt.Fprintf(w, "|cost 4 = %d\n|atk 4 = %d / ?\n|def 4 = %d / ?\n|soldiers 4 = %d / ?\n",
-			evo.DeckCost, evo.DefaultOffense, evo.DefaultDefense, evo.DefaultFollower)
-	}
-	//TODO get amalgamation logic to work here
-	// fmt.Fprintf(w,"|cost a = %s\n|atk a = %s\n|def a = %s\n|soldiers a = %s\n",)
-	// fmt.Fprintf(w,"|skill a = %s\n|skill a lv1 = %s\n|skill a lv10 = %s\n|proc a = %s\n",)
 	if evo, ok := evolutions["G"]; ok {
-		fmt.Fprintf(w, "|cost g = %d\n|atk g = %d / ?\n|def g = %d / ?\n|soldiers g = %d / ?\n",
-			evo.DeckCost, evo.DefaultOffense, evo.DefaultDefense, evo.DefaultFollower)
-		fmt.Fprintf(w, "|skill g = %s\n|skill g lv1 = %s\n|skill g lv10 = %s\n|proc g = %s\n",
-			html.EscapeString(strings.Replace(evo.Skill1Name(&VcData), "\n", "<br />", -1)), evo.SkillMin(&VcData), evo.SkillMax(&VcData), evo.SkillProcs(&VcData))
+		gSkillName := strings.Replace(evo.Skill1Name(&VcData), "☆", "", 1)
+		if gSkillName != firstEvo.Skill1Name(&VcData) {
+			fmt.Fprintf(w, "|skill g = %s\n", html.EscapeString(gSkillName))
+		}
+		fmt.Fprintf(w, "|skill g lv1 = %s\n|skill g lv10 = %s\n|proc g = %s\n",
+			html.EscapeString(strings.Replace(evo.SkillMin(&VcData), "\n", "<br />", -1)),
+			html.EscapeString(strings.Replace(evo.SkillMax(&VcData), "\n", "<br />", -1)),
+			evo.SkillProcs(&VcData))
 	}
-	fmt.Fprintf(w, "|description = %s\n|friendship = %s\n|login = %s\n|meet = %s\n|battle start = %s\n|battle end = %s\n|friendship max = %s\n|friendship event = %s\n",
-		html.EscapeString(card.Description(&VcData)), html.EscapeString(strings.Replace(card.Friendship(&VcData), "\n", "<br />", -1)),
-		html.EscapeString(strings.Replace(card.Login(&VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.Meet(&VcData), "\n", "<br />", -1)),
+
+	//traverse evolutions in order
+	var evokeys []string
+	for k := range evolutions {
+		evokeys = append(evokeys, k)
+	}
+	sort.Strings(evokeys)
+	for _, k := range evokeys {
+		evo := evolutions[k]
+		fmt.Fprintf(w, "|cost %[1]s = %[2]d\n|atk %[1]s = %[3]d / %s\n|def %[1]s = %[5]d / %s\n|soldiers %[1]s = %[7]d / %s\n",
+			strings.ToLower(k),
+			evo.DeckCost,
+			evo.DefaultOffense, maxStatAtk(evo, len(evolutions)),
+			evo.DefaultDefense, maxStatDef(evo, len(evolutions)),
+			evo.DefaultFollower, maxStatFollower(evo, len(evolutions)))
+	}
+	fmt.Fprintf(w, "|description = %s\n|friendship = %s\n",
+		html.EscapeString(card.Description(&VcData)), html.EscapeString(strings.Replace(card.Friendship(&VcData), "\n", "<br />", -1)))
+	login := card.Login(&VcData)
+	if len(strings.TrimSpace(login)) > 0 {
+		fmt.Fprintf(w, "|login = %s\n", html.EscapeString(strings.Replace(login, "\n", "<br />", -1)))
+	}
+	fmt.Fprintf(w, "|meet = %s\n|battle start = %s\n|battle end = %s\n|friendship max = %s\n|friendship event = %s\n", html.EscapeString(strings.Replace(card.Meet(&VcData), "\n", "<br />", -1)),
 		html.EscapeString(strings.Replace(card.BattleStart(&VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.BattleEnd(&VcData), "\n", "<br />", -1)),
 		html.EscapeString(strings.Replace(card.FriendshipMax(&VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.FriendshipEvent(&VcData), "\n", "<br />", -1)))
-	fmt.Fprintf(w, "|availability = %s\n", avail)
 	// fmt.Fprintf(w,"|likeability 0 = %s\n|likeability 1 = %s\n|likeability 2 = %s\n|likeability 3 = %s\n|likeability 4 = %s\n|likeability 5 =%s\n",)
-	io.WriteString(w, "}}")
-
-	if turnOverTo != nil {
-		fmt.Fprintf(w, "\n==Evolution Accident==\n{{Card Icon|%s}}\n", turnOverTo.Name)
+	if turnOverFrom != nil {
+		fmt.Fprintf(w, "|turnoverfrom = %s\n", turnOverFrom.Name)
+	} else if turnOverTo != nil {
+		fmt.Fprintf(w, "|turnoverto = %s\n", turnOverTo.Name)
+	} else {
+		fmt.Fprintf(w, "|availability = %s\n", avail)
 	}
+	io.WriteString(w, "}}")
 
 	//Write out amalgamations here
 	if len(amalgamations) > 0 {
@@ -216,13 +276,26 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if turnOverFrom != nil {
-		io.WriteString(w, "[[Category:Is Evolution Accident]]")
-	} else if turnOverTo != nil {
-		io.WriteString(w, "[[Category:Has Evolution Accident]]")
-	}
-
 	io.WriteString(w, "</textarea></body></html>")
+}
+
+func maxStatAtk(evo vc_grouper.Card, numOfEvos int) string {
+	if evo.EvolutionRank == 0 {
+		return strconv.Itoa(evo.MaxOffense)
+	}
+	return "?"
+}
+func maxStatDef(evo vc_grouper.Card, numOfEvos int) string {
+	if evo.EvolutionRank == 0 {
+		return strconv.Itoa(evo.MaxDefense)
+	}
+	return "?"
+}
+func maxStatFollower(evo vc_grouper.Card, numOfEvos int) string {
+	if evo.EvolutionRank == 0 {
+		return strconv.Itoa(evo.MaxFollower)
+	}
+	return "?"
 }
 
 func getEvolutions(card vc_grouper.Card) map[string]vc_grouper.Card {
@@ -232,7 +305,13 @@ func getEvolutions(card vc_grouper.Card) map[string]vc_grouper.Card {
 			if val.Rarity()[0] == 'G' {
 				ret["G"] = val
 			} else {
-				ret[strconv.Itoa(val.EvolutionRank)] = val
+				evo := strconv.Itoa(val.EvolutionRank)
+				if _, ok := ret[evo]; ok {
+					// evo already exists... probably a self amalgamation
+					ret["A"] = val
+				} else {
+					ret[evo] = val
+				}
 			}
 		}
 	}
@@ -241,20 +320,25 @@ func getEvolutions(card vc_grouper.Card) map[string]vc_grouper.Card {
 
 func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 	// File header
-	io.WriteString(w, "<html><body>\n")
-	io.WriteString(w, "_id,card_no,name,evolution_rank,Rarity,Element,deck_cost,default_offense,default_defense,default_follower,max_offense,max_defense,max_follower,Skill 1 Name,Skill Min,Skill Max,Skill Procs,Target Scope,Target Logic,Skill 2,Skill Special,Description,Friendship,Login,Meet,Battle Start,Battle End,Friendship Max,Friendship Event<br>\n")
+	w.Header().Set("Content-Disposition", "attachment; filename=vcData-"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv")
+	w.Header().Set("Content-Type", "text/csv")
+	cw := csv.NewWriter(w)
+	cw.Write([]string{"Id", "Card #", "Name", "Evo Rank", "TransCardId", "Rarity", "Element", "Deck Cost", "Base ATK",
+		"Base DEF", "Base Sol", "Max ATK", "Max DEF", "Max Sold", "Skill 1 Name", "Skill Min",
+		"Skill Max", "Skill Procs", "Target Scope", "Target Logic", "Skill 2", "Skill Special", "Description", "Friendship",
+		"Login", "Meet", "Battle Start", "Battle End", "Friendship Max", "Friendship Event", "Is Closed"})
 	for _, value := range VcData.Cards {
-		fmt.Fprintf(w, "%d, %05d, %s, %d, %s, %s, %d, %d, %d, %d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s <br />",
-			value.Id, value.CardNo, value.Name, value.EvolutionRank, value.Rarity(), value.Element(),
-			value.DeckCost, value.DefaultOffense, value.DefaultDefense, value.DefaultFollower, value.MaxOffense,
-			value.MaxDefense, value.MaxFollower, value.Skill1Name(&VcData), value.SkillMin(&VcData), value.SkillMax(&VcData),
-			value.SkillProcs(&VcData), value.SkillTarget(&VcData), value.SkillTargetLogic(&VcData), value.Skill2Name(&VcData),
-			value.SpecialSkill1Name(&VcData), value.Description(&VcData), value.Friendship(&VcData), value.Login(&VcData),
-			value.Meet(&VcData), value.BattleStart(&VcData), value.BattleEnd(&VcData), value.FriendshipMax(&VcData),
-			value.FriendshipEvent(&VcData))
+		cw.Write([]string{strconv.Itoa(value.Id), fmt.Sprintf("cd_%05d", value.CardNo), value.Name, strconv.Itoa(value.EvolutionRank),
+			strconv.Itoa(value.TransCardId), value.Rarity(), value.Element(), strconv.Itoa(value.DeckCost), strconv.Itoa(value.DefaultOffense),
+			strconv.Itoa(value.DefaultDefense), strconv.Itoa(value.DefaultFollower), strconv.Itoa(value.MaxOffense),
+			strconv.Itoa(value.MaxDefense), strconv.Itoa(value.MaxFollower), value.Skill1Name(&VcData),
+			value.SkillMin(&VcData), value.SkillMax(&VcData), value.SkillProcs(&VcData), value.SkillTarget(&VcData),
+			value.SkillTargetLogic(&VcData), value.Skill2Name(&VcData), value.SpecialSkill1Name(&VcData),
+			value.Description(&VcData), value.Friendship(&VcData), value.Login(&VcData), value.Meet(&VcData),
+			value.BattleStart(&VcData), value.BattleEnd(&VcData), value.FriendshipMax(&VcData), value.FriendshipEvent(&VcData),
+			strconv.Itoa(value.IsClosed),
+		})
 	}
-
-	io.WriteString(w, "</body></html>")
 }
 
 func cardTableHandler(w http.ResponseWriter, r *http.Request) {

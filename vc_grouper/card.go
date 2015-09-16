@@ -61,11 +61,11 @@ type Card struct {
 	// name from the strings file
 	Name string `json:"-"`
 	//Character Link
-	character *CardCharacter
+	character *CardCharacter `json:"-"`
 	//Skill Links
-	skill1        *Skill
-	skill2        *Skill
-	specialSkill1 *Skill
+	skill1        *Skill `json:"-"`
+	skill2        *Skill `json:"-"`
+	specialSkill1 *Skill `json:"-"`
 }
 
 func (c *Card) Image() string {
@@ -96,10 +96,7 @@ func (c *Card) Character(v *VcFile) *CardCharacter {
 }
 
 func (c *Card) EvoAccident(cards []Card) *Card {
-	if c.TransCardId > 0 {
-		return &(cards[c.TransCardId-1])
-	}
-	return nil
+	return CardScan(c.TransCardId, cards)
 }
 
 func (c *Card) EvoAccidentOf(cards []Card) *Card {
@@ -144,6 +141,20 @@ func (c *Card) SpecialSkill1(v *VcFile) *Skill {
 		c.specialSkill1 = skillScan(c.SpecialSkillId1, v.Skills)
 	}
 	return c.specialSkill1
+}
+
+func CardScan(cardId int, cards []Card) *Card {
+	if cardId > 0 {
+		if cardId < len(cards) && cards[cardId-1].Id == cardId {
+			return &cards[cardId-1]
+		}
+		for k, val := range cards {
+			if val.Id == cardId {
+				return &cards[k]
+			}
+		}
+	}
+	return nil
 }
 
 func skillScan(id int, skills []Skill) *Skill {
@@ -325,30 +336,16 @@ func (a *Amalgamation) MaterialCount() int {
 }
 func (a *Amalgamation) Materials(v *VcFile) []*Card {
 	ret := make([]*Card, 0)
-	ret = append(ret, cardScan(a.Material1, v.Cards))
-	ret = append(ret, cardScan(a.Material2, v.Cards))
+	ret = append(ret, CardScan(a.Material1, v.Cards))
+	ret = append(ret, CardScan(a.Material2, v.Cards))
 	if a.Material3 > 0 {
-		ret = append(ret, cardScan(a.Material3, v.Cards))
+		ret = append(ret, CardScan(a.Material3, v.Cards))
 	}
 	if a.Material4 > 0 {
-		ret = append(ret, cardScan(a.Material4, v.Cards))
+		ret = append(ret, CardScan(a.Material4, v.Cards))
 	}
-	ret = append(ret, cardScan(a.FusionCardId, v.Cards))
+	ret = append(ret, CardScan(a.FusionCardId, v.Cards))
 	return ret
-}
-
-func cardScan(cardId int, cards []Card) *Card {
-	if cardId > 0 {
-		if cardId < len(cards) && cards[cardId-1].Id == cardId {
-			return &cards[cardId-1]
-		}
-		for k, val := range cards {
-			if val.Id == cardId {
-				return &cards[k]
-			}
-		}
-	}
-	return nil
 }
 
 type ByMaterialCount []Amalgamation
