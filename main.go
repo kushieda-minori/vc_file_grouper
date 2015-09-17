@@ -11,10 +11,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"zetsuboushita.net/vc_file_grouper/vc_grouper"
+	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-var VcData vc_grouper.VcFile
+var VcData vc.VcFile
 
 func usage() {
 	os.Stderr.WriteString("You must pass the location of the files.\n" +
@@ -88,14 +88,12 @@ func cardHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// render a card list here
-	for key, value := range VcData.Cards {
+	for _, value := range VcData.Cards {
 		fmt.Fprintf(w,
-			"<div style=\"float: left; margin: 3px\"><img src=\"/cardthumbs/%s\"/><br />%s</div>",
+			"<div style=\"float: left; margin: 3px\"><img src=\"/cardthumbs/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></div>",
 			value.Image(),
+			value.Id,
 			value.Name)
-		if key > 99 {
-			break
-		}
 	}
 }
 
@@ -120,11 +118,11 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	card := vc_grouper.CardScan(cardId, VcData.Cards)
+	card := vc.CardScan(cardId, VcData.Cards)
 	evolutions := getEvolutions(*card)
 
-	amalgamations := make([]vc_grouper.Amalgamation, 0)
-	var turnOverTo, turnOverFrom *vc_grouper.Card
+	amalgamations := make([]vc.Amalgamation, 0)
+	var turnOverTo, turnOverFrom *vc.Card
 	for _, evo := range evolutions {
 		// os.Stdout.WriteString(fmt.Sprintf("Evo: %d Accident: %d\n", evo.Id, evo.TransCardId))
 		a := evo.Amalgamations(&VcData)
@@ -139,7 +137,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	sort.Sort(vc_grouper.ByMaterialCount(amalgamations))
+	sort.Sort(vc.ByMaterialCount(amalgamations))
 
 	var avail string
 
@@ -165,7 +163,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			if materialFuseId > 0 {
-				fuseCard := vc_grouper.CardScan(materialFuseId, VcData.Cards)
+				fuseCard := vc.CardScan(materialFuseId, VcData.Cards)
 				if fuseCard.Name == card.Name {
 					evolutions["A"] = *fuseCard
 					avail += " [[Amalgamation]]"
@@ -178,13 +176,13 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", card.Name)
-	fmt.Fprintf(w, "Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>", card.Name)
-	io.WriteString(w, "<textarea style=\"width:100%;height:100%\">")
+	fmt.Fprintf(w, "<div style=\"float:left\">Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", card.Name)
+	io.WriteString(w, "<textarea style=\"width:800px;height:400px\">")
 	if card.IsClosed != 0 {
 		io.WriteString(w, "{{Unreleased}}")
 	}
 	fmt.Fprintf(w, "{{Card\n|element = %s\n", card.Element())
-	var firstEvo vc_grouper.Card
+	var firstEvo vc.Card
 	var ok bool
 	if firstEvo, ok = evolutions["0"]; ok {
 		fmt.Fprintf(w, "|rarity = %s\n|skill = %s\n|skill lv1 = %s\n|skill lv10 = %s\n|procs = %s\n",
@@ -275,31 +273,49 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, "}}\n")
 		}
 	}
-
-	io.WriteString(w, "</textarea></body></html>")
+	io.WriteString(w, "</textarea></div>")
+	// show images here
+	io.WriteString(w, "<div style=\"float:left\">")
+	for _, k := range evokeys {
+		evo := evolutions[k]
+		fmt.Fprintf(w,
+			"<div style=\"float: left; margin: 3px\"><img src=\"/cardthumbs/%s\"/><br />%s : %s☆</div>",
+			evo.Image(),
+			evo.Name, k)
+	}
+	io.WriteString(w, "<div style=\"clear: both\">")
+	for _, k := range evokeys {
+		evo := evolutions[k]
+		fmt.Fprintf(w,
+			"<div style=\"float: left; margin: 3px\"><img src=\"/cardimages/%s\"/><br />%s : %s☆</div>",
+			evo.Image(),
+			evo.Name, k)
+	}
+	io.WriteString(w, "</div>")
+	io.WriteString(w, "</body></html>")
 }
 
-func maxStatAtk(evo vc_grouper.Card, numOfEvos int) string {
+func maxStatAtk(evo vc.Card, numOfEvos int) string {
 	if evo.EvolutionRank == 0 {
 		return strconv.Itoa(evo.MaxOffense)
 	}
 	return "?"
 }
-func maxStatDef(evo vc_grouper.Card, numOfEvos int) string {
+func maxStatDef(evo vc.Card, numOfEvos int) string {
 	if evo.EvolutionRank == 0 {
 		return strconv.Itoa(evo.MaxDefense)
 	}
 	return "?"
 }
-func maxStatFollower(evo vc_grouper.Card, numOfEvos int) string {
+func maxStatFollower(evo vc.Card, numOfEvos int) string {
 	if evo.EvolutionRank == 0 {
 		return strconv.Itoa(evo.MaxFollower)
 	}
 	return "?"
 }
 
-func getEvolutions(card vc_grouper.Card) map[string]vc_grouper.Card {
-	ret := make(map[string]vc_grouper.Card)
+func getEvolutions(card vc.Card) map[string]vc.Card {
+	ret := make(map[string]vc.Card)
 	for _, val := range VcData.Cards {
 		if card.CardCharaId == val.CardCharaId {
 			if val.Rarity()[0] == 'G' {

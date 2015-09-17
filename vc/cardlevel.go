@@ -1,4 +1,4 @@
-package vc_grouper
+package vc
 
 // From the master data file, this is the "cardlevel" field
 type CardLevel struct {

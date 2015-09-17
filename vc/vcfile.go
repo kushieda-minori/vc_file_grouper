@@ -1,4 +1,4 @@
-package vc_grouper
+package vc
 
 import (
 	"bufio"
@@ -101,7 +101,7 @@ func (v *VcFile) Read(root string) error {
 			"Character Names", len(v.Cards), len(names))
 	}
 	for key, _ := range v.Cards {
-		v.Cards[key].Name = strings.Title(strings.ToLower(names[key]))
+		v.Cards[key].Name = strings.Replace(strings.Title(strings.ToLower(names[key])), "'S", "'s", -1)
 	}
 	names = nil
 

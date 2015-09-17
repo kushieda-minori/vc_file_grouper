@@ -1,4 +1,4 @@
-package vc_grouper
+package vc
 
 //"kings" is the list of Archwitches
 type Archwitch struct {

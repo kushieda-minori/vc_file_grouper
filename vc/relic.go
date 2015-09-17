@@ -1,4 +1,4 @@
-package vc_grouper
+package vc
 
 //"series" is the list of scared relics and the prizes for completeing them.
 type Relic struct {

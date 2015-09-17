@@ -1,4 +1,4 @@
-package vc_grouper
+package vc
 
 //from the master_data file, this is the "levels" field
 // this matches to the Kingdom level in the game

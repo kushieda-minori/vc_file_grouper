@@ -1,4 +1,4 @@
-package vc_grouper
+package vc
 
 // the "garden" field lists some details about the kindoms available to the players
 // "garden": [{

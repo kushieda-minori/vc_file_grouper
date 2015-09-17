@@ -1,4 +1,4 @@
-package vc_grouper
+package vc
 
 import (
 	"strconv"

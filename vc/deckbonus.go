@@ -1,4 +1,4 @@
-package vc_grouper
+package vc
 
 // Unit Bonuses from master file field "deck_bonus"
 // these match with the strings in MsgDeckBonusName_en.strb
