@@ -63,26 +63,24 @@ type VcFile struct {
 // This reads the main data file and all associated files for strings
 // the data is inserted directly into the struct.
 func (v *VcFile) Read(root string) error {
-	filename := root + "/response/master_all.dat"
+	filename := root + "/response/master_all"
 
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		debug.PrintStack()
-		return errors.New("no such file or directory: " + filename)
-	}
-
-	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-
-	dataLen := len(data)
-
-	for data[dataLen-1] == 0 {
-		dataLen--
+	var data []byte
+	var err error
+	if _, err = os.Stat(filename + ".json"); os.IsNotExist(err) {
+		_, data, err = DecodeAndSave(filename)
+		if err != nil {
+			return errors.New("no such file or directory: " + filename)
+		}
+	} else {
+		data, err = ioutil.ReadFile(filename + ".json")
+		if err != nil {
+			return err
+		}
 	}
 
 	// decode the main file
-	err = json.Unmarshal(data[:dataLen], v)
+	err = json.Unmarshal(data[:], v)
 	if err != nil {
 		debug.PrintStack()
 		return err
