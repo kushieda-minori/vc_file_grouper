@@ -7,11 +7,18 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	//"io"
 	"io/ioutil"
 	"os"
 )
 
+// File header : 16 bytes
+// 4 bytes for the signature (CODE)
+// 8 bytes of unknown data
+// 4 bytes for one of the encoding's keys (the second key is a magic number
+// known from the app, 0x45AF6E5D at the time of writing)
+//
+// The remainder of the file is encoded 4 bytes by 4 bytes, the last few
+// bytes unencoded if the file's length is not a multiple of 4
 func Decode(file string) ([]byte, error) {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -44,6 +51,7 @@ func Decode(file string) ([]byte, error) {
 	return result, nil
 }
 
+//Decodes the file and saves the result in the same location as the coded file
 func DecodeAndSave(file string) (string, []byte, error) {
 	data, err := Decode(file)
 	if err != nil {

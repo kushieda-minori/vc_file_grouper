@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"encoding/csv"
 	"fmt"
 	"html"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -48,46 +50,31 @@ func main() {
 
 	//dynamic pages
 	http.HandleFunc("/cards/", cardHandler)
+	http.HandleFunc("/cards/table/", cardTableHandler)
+	http.HandleFunc("/cards/csv/", cardCsvHandler)
+	http.HandleFunc("/cards/detail/", cardDetailHandler)
+	http.HandleFunc("/decode/", decodeHandler)
 
-	http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":8080", nil)
+	if err != nil {
+		os.Stderr.WriteString(err.Error() + "\n")
+	}
 }
 
 func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	// File header
 	io.WriteString(w, "<html><body>\n")
-
-	io.WriteString(w, "<a href=\"cards\" >Card List</a><br />\n")
-	io.WriteString(w, "<a href=\"cards/table\" >Card List as a Table</a><br />\n")
-	io.WriteString(w, "<a href=\"cards/csv\" >Card List as CSV</a><br />\n")
+	io.WriteString(w, "<a href=\"/decode\" >Decode All Files</a><br />\n")
+	io.WriteString(w, "<a href=\"/cards\" >Card List</a><br />\n")
+	io.WriteString(w, "<a href=\"/cards/table\" >Card List as a Table</a><br />\n")
+	io.WriteString(w, "<a href=\"/cards/csv\" >Card List as CSV</a><br />\n")
 
 	io.WriteString(w, "</body></html>")
 }
 
 func cardHandler(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
-	var pathLen int
-	if path[len(path)-1] == '/' {
-		pathLen = len(path) - 1
-	} else {
-		pathLen = len(path)
-	}
-
-	pathParts := strings.Split(path[1:pathLen], "/")
-	if len(pathParts) > 1 {
-		switch pathParts[1] {
-		case "csv":
-			cardCsvHandler(w, r)
-		case "table":
-			cardTableHandler(w, r)
-		case "detail":
-			cardDetailHandler(w, r)
-		default:
-			http.Error(w, "Unknown card option "+pathParts[1], http.StatusNotFound)
-		}
-		return
-	}
-	// render a card list here
+	io.WriteString(w, "<html><head><title>All Cards</title></head><body>\n")
 	for _, value := range VcData.Cards {
 		fmt.Fprintf(w,
 			"<div style=\"float: left; margin: 3px\"><img src=\"/cardthumbs/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></div>",
@@ -95,6 +82,7 @@ func cardHandler(w http.ResponseWriter, r *http.Request) {
 			value.Id,
 			value.Name)
 	}
+	io.WriteString(w, "</body></html>")
 }
 
 func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
@@ -359,7 +347,7 @@ func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 
 func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 	// File header
-	io.WriteString(w, "<html><body>\n")
+	io.WriteString(w, "<html><head><title>All Cards</title></head><body>\n")
 	io.WriteString(w, "<table><thead><tr><th>_id</th><th>card_no</th><th>name</th><th>evolution_rank</th><th>Rarity</th><th>Element</th><th>deck_cost</th><th>default_offense</th><th>default_defense</th><th>default_follower</th><th>max_offense</th><th>max_defense</th><th>max_follower</th><th>Skill 1 Name</th><th>Skill Min</th><th>Skill Max</th><th>Skill Procs</th><th>Target Scope</th><th>Target Logic</th><th>Skill 2</th><th>Skill Special</th><th>Description</th><th>Friendship</th><th>Login</th><th>Meet</th><th>Battle Start</th><th>Battle End</th><th>Friendship Max</th><th>Friendship Event</th></tr></thead><tbody>\n")
 	for _, value := range VcData.Cards {
 		fmt.Fprintf(w, "<tr><td>%d</td><td>%05d</td><td><a href=\"/cards/detail/%[1]d\">%[3]s</a></td><td>%d</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></td>\n",
@@ -373,4 +361,41 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	io.WriteString(w, "</tbody></table></body></html>")
+}
+
+func decodeHandler(w http.ResponseWriter, r *http.Request) {
+	io.WriteString(w, "<html><head><title>File Decode</title></head><body>\nDecodng files<br />\n")
+	err := filepath.Walk(os.Args[1], func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		b := make([]byte, 4)
+		_, err = f.Read(b)
+		f.Close()
+		if err != nil {
+			return err
+		}
+		if bytes.Equal(b, []byte("CODE")) {
+			fmt.Fprintf(w, "Decoding: %s ", path)
+			nf, _, err := vc.DecodeAndSave(path)
+			if err != nil {
+				fmt.Fprintf(w, " : ERROR: %s<br />\n", err.Error())
+				return err
+			}
+			fmt.Fprintf(w, " : %s<br />\n", nf)
+			// } else {
+			// 	fmt.Fprintf(w, "NOT A CODED FILE: %v : %s<br />\n", b, path)
+		}
+		return nil
+	})
+	if err == nil {
+		io.WriteString(w, "Decode complete<br />\n")
+	} else {
+		io.WriteString(w, err.Error()+"<br />\n")
+	}
+	io.WriteString(w, "</body></html>")
 }
