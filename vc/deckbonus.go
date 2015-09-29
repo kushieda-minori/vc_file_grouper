@@ -20,8 +20,8 @@ type DeckBonus struct {
 	ReqNum int `json:"req_num"`
 	// allows duplicates
 	DupFlg      int    `json:"dup_flg"`
-	Name        string `json:"-"`
-	Description string `json:"-"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 // Deck Bonus Conditions from masfter file field "deck_bonus_cond"

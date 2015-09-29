@@ -59,13 +59,89 @@ type Card struct {
 	// is closed
 	IsClosed int `json:"is_closed"`
 	// name from the strings file
-	Name string `json:"-"`
+	Name string `json:"name"`
 	//Character Link
 	character *CardCharacter `json:"-"`
 	//Skill Links
 	skill1        *Skill `json:"-"`
 	skill2        *Skill `json:"-"`
 	specialSkill1 *Skill `json:"-"`
+}
+
+// List of possible Fusions (Amalgamations) from master file field "fusion_list"
+type Amalgamation struct {
+	// internal id
+	Id int `json:"_id"`
+	// card 1
+	Material1 int `json:"material_1"`
+	// card 2
+	Material2 int `json:"material_2"`
+	// card 3
+	Material3 int `json:"material_3"`
+	// card 4
+	Material4 int `json:"material_4"`
+	// resulting card
+	FusionCardId int `json:"fusion_card_id"`
+}
+
+// list of possible card awakeneings and thier cost from master file field "card_awaken"
+type CardAwaken struct {
+	// awakening id
+	Id int `json:"_id"`
+	// case card
+	BaseCardId int `json:"base_card_id"`
+	// result card
+	ResultCardId int `json:"result_card_id"`
+	// chance of success
+	Percent int `json:"percent"`
+	// material information
+	Material1Item  int `json:"material_1_item"`
+	Material1Count int `json:"material_1_count"`
+	Material2Item  int `json:"material_2_item"`
+	Material2Count int `json:"material_2_count"`
+	Material3Item  int `json:"material_3_item"`
+	Material3Count int `json:"material_3_count"`
+	Material4Item  int `json:"material_4_item"`
+	Material4Count int `json:"material_4_count"`
+	// ? Order in the "Awakend Card List maybe?"
+	Order int `json:"order"`
+	// still available?
+	IsClosed int `json:"is_closed"`
+}
+
+// Card Character info from master_data field "card_character"
+// These match up with all the MsgChara*_en.strb files
+type CardCharacter struct {
+	// card  charcter Id, matches to Card -> card_chara_id
+	Id int `json:"_id"`
+	// hidden param 1
+	HiddenParam1 int `json:"hidden_param_1"`
+	// `hidden param 2
+	HiddenParam2 int `json:"hidden_param_2"`
+	// hidden param 3
+	HiddenParam3 int `json:"hidden_param_3"`
+	// max friendship 0-30
+	MaxFriendship int `json:"max_friendship"`
+	// text from Strings file
+	Description     string `json:"description"`
+	Friendship      string `json:"friendship"`
+	Login           string `json:"login"`
+	Meet            string `json:"meet"`
+	BattleStart     string `json:"battleStart"`
+	BattleEnd       string `json:"battleEnd"`
+	FriendshipMax   string `json:"friendshipMax"`
+	FriendshipEvent string `json:"friendshipEvent"`
+}
+
+// Follower kinds for soldier replenishment on cards
+//these come from master file field "follower_kinds"
+type FollowerKind struct {
+	Id    int `json:"_id"`
+	Coin  int `json:"coin"`
+	Iron  int `json:"iron"`
+	Ether int `json:"ether"`
+	// not really used
+	Speed int `json:"speed"`
 }
 
 func (c *Card) Image() string {
@@ -120,6 +196,45 @@ func (c *Card) Amalgamations(v *VcFile) []Amalgamation {
 		}
 	}
 	return ret
+}
+
+func (c *Card) AwakensTo(v *VcFile) *Card {
+	for _, val := range v.Awakenings {
+		if c.Id == val.BaseCardId {
+			return CardScan(val.ResultCardId, v.Cards)
+		}
+	}
+	return nil
+}
+
+func (c *Card) AwakensFrom(v *VcFile) *Card {
+	for _, val := range v.Awakenings {
+		if c.Id == val.ResultCardId {
+			return CardScan(val.BaseCardId, v.Cards)
+		}
+	}
+	return nil
+}
+
+func (c *Card) HasAmalgamation(a []Amalgamation) bool {
+	for _, v := range a {
+		if c.Id == v.Material1 ||
+			c.Id == v.Material2 ||
+			c.Id == v.Material3 ||
+			c.Id == v.Material4 {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *Card) IsAmalgamation(a []Amalgamation) bool {
+	for _, v := range a {
+		if c.Id == v.FusionCardId {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Card) Skill1(v *VcFile) *Skill {
@@ -309,22 +424,6 @@ func (c *Card) FriendshipEvent(v *VcFile) string {
 	return ch.FriendshipEvent
 }
 
-// List of possible Fusions (Amalgamations) from master file field "fusion_list"
-type Amalgamation struct {
-	// internal id
-	Id int `json:"_id"`
-	// card 1
-	Material1 int `json:"material_1"`
-	// card 2
-	Material2 int `json:"material_2"`
-	// card 3
-	Material3 int `json:"material_3"`
-	// card 4
-	Material4 int `json:"material_4"`
-	// resulting card
-	FusionCardId int `json:"fusion_card_id"`
-}
-
 func (a *Amalgamation) MaterialCount() int {
 	if a.Material4 > 0 {
 		return 4
@@ -358,66 +457,6 @@ func (s ByMaterialCount) Swap(i, j int) {
 }
 func (s ByMaterialCount) Less(i, j int) bool {
 	return s[i].MaterialCount() < s[j].MaterialCount()
-}
-
-// list of possible card awakeneings and thier cost from master file field "card_awaken"
-type CardAwaken struct {
-	// awakening id
-	Id int `json:"_id"`
-	// case card
-	BaseCardId int `json:"base_card_id"`
-	// result card
-	ResultCardId int `json:"result_card_id"`
-	// chance of success
-	Percent int `json:"percent"`
-	// material information
-	Material1Item  int `json:"material_1_item"`
-	Material1Count int `json:"material_1_count"`
-	Material2Item  int `json:"material_2_item"`
-	Material2Count int `json:"material_2_count"`
-	Material3Item  int `json:"material_3_item"`
-	Material3Count int `json:"material_3_count"`
-	Material4Item  int `json:"material_4_item"`
-	Material4Count int `json:"material_4_count"`
-	// ? Order in the "Awakend Card List maybe?"
-	Order int `json:"order"`
-	// still available?
-	IsClosed int `json:"is_closed"`
-}
-
-// Card Character info from master_data field "card_character"
-// These match up with all the MsgChara*_en.strb files
-type CardCharacter struct {
-	// card  charcter Id, matches to Card -> card_chara_id
-	Id int `json:"_id"`
-	// hidden param 1
-	HiddenParam1 int `json:"hidden_param_1"`
-	// `hidden param 2
-	HiddenParam2 int `json:"hidden_param_2"`
-	// hidden param 3
-	HiddenParam3 int `json:"hidden_param_3"`
-	// max friendship 0-30
-	MaxFriendship int `json:"max_friendship"`
-	// text from Strings file
-	Description     string `json:"-"`
-	Friendship      string `json:"-"`
-	Login           string `json:"-"`
-	Meet            string `json:"-"`
-	BattleStart     string `json:"-"`
-	BattleEnd       string `json:"-"`
-	FriendshipMax   string `json:"-"`
-	FriendshipEvent string `json:"-"`
-}
-
-// Follower kinds for soldier replenishment on cards
-//these come from master file field "follower_kinds"
-type FollowerKind struct {
-	Id    int `json:"_id"`
-	Coin  int `json:"coin"`
-	Iron  int `json:"iron"`
-	Ether int `json:"ether"`
-	// not really used
-	Speed int `json:"speed"`
 }
 
 var Elements = [5]string{"Light", "Passion", "Cool", "Dark", "Special"}

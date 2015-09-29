@@ -21,6 +21,10 @@ type Timestamp struct {
 }
 
 func (t *Timestamp) MarshalJSON() ([]byte, error) {
+	if t.Time.IsZero() {
+		return []byte("-1"), nil
+	}
+
 	ts := t.Time.Unix()
 	stamp := fmt.Sprint(ts)
 
@@ -33,7 +37,11 @@ func (t *Timestamp) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	t.Time = time.Unix(int64(ts), 0)
+	if ts == -1 {
+		t.Time = time.Time{}
+	} else {
+		t.Time = time.Unix(int64(ts), 0)
+	}
 
 	return nil
 }
@@ -44,6 +52,19 @@ type VcFile struct {
 	Common struct {
 		UnixTime Timestamp `json:"unixtime"`
 	} `json:"common"`
+	Defs []struct {
+		Id    int `json:"_id"`
+		Value int `json:"value"`
+	} `json:"defs"`
+	DefsTune []struct {
+		Id            int       `json:"_id"`
+		MstDefsId     int       `json:"mst_defs_id"`
+		Value         int       `json:"value"`
+		PublicFlg     int       `json:"public_flg"`
+		StartDateTime Timestamp `json:"start_datetime"`
+		EndDateTime   Timestamp `json:"end_datetime"`
+	} `json:"defs_tune"`
+	ShortcutUrl          string                `json:"shortcut_url"`
 	Version              int                   `json:"version"`
 	Cards                []Card                `json:"cards"`
 	Skills               []Skill               `json:"skills"`
@@ -62,7 +83,7 @@ type VcFile struct {
 
 // This reads the main data file and all associated files for strings
 // the data is inserted directly into the struct.
-func (v *VcFile) Read(root string) error {
+func (v *VcFile) Read(root string) ([]byte, error) {
 	filename := root + "/response/master_all"
 
 	var data []byte
@@ -70,12 +91,12 @@ func (v *VcFile) Read(root string) error {
 	if _, err = os.Stat(filename + ".json"); os.IsNotExist(err) {
 		_, data, err = DecodeAndSave(filename)
 		if err != nil {
-			return errors.New("no such file or directory: " + filename)
+			return nil, errors.New("no such file or directory: " + filename)
 		}
 	} else {
 		data, err = ioutil.ReadFile(filename + ".json")
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
@@ -83,19 +104,19 @@ func (v *VcFile) Read(root string) error {
 	err = json.Unmarshal(data[:], v)
 	if err != nil {
 		debug.PrintStack()
-		return err
+		return nil, err
 	}
 
 	// card names
 	names, err := readStringFile(root + "/string/MsgCardName_en.strb")
 	if err != nil {
 		debug.PrintStack()
-		return err
+		return nil, err
 	}
 	if len(v.Cards) != len(names) {
 		fmt.Fprintln(os.Stdout, "names: %v", names)
 		debug.PrintStack()
-		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character Names", len(v.Cards), len(names))
 	}
 	for key, _ := range v.Cards {
@@ -106,83 +127,83 @@ func (v *VcFile) Read(root string) error {
 	description, err := readStringFile(root + "/string/MsgCharaDesc_en.strb")
 	if err != nil {
 		debug.PrintStack()
-		return err
+		return nil, err
 	}
 	if len(v.CardCharacter) != len(description) {
 		debug.PrintStack()
-		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character descriptions", len(v.CardCharacter), len(description))
 	}
 
 	friendship, err := readStringFile(root + "/string/MsgCharaFriendship_en.strb")
 	if err != nil {
 		debug.PrintStack()
-		return err
+		return nil, err
 	}
 	if len(v.CardCharacter) != len(friendship) {
 		debug.PrintStack()
-		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character friendship", len(v.CardCharacter), len(friendship))
 	}
 
 	login, err := readStringFile(root + "/string/MsgCharaWelcome_en.strb")
 	if err != nil {
 		debug.PrintStack()
-		return err
+		return nil, err
 	}
 
 	meet, err := readStringFile(root + "/string/MsgCharaMeet_en.strb")
 	if err != nil {
 		debug.PrintStack()
-		return err
+		return nil, err
 	}
 	if len(v.CardCharacter) != len(meet) {
 		debug.PrintStack()
-		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character meet", len(v.CardCharacter), len(meet))
 	}
 
 	battle_start, err := readStringFile(root + "/string/MsgCharaBtlStart_en.strb")
 	if err != nil {
 		debug.PrintStack()
-		return err
+		return nil, err
 	}
 	if len(v.CardCharacter) != len(battle_start) {
 		debug.PrintStack()
-		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character battle_start", len(v.CardCharacter), len(battle_start))
 	}
 
 	battle_end, err := readStringFile(root + "/string/MsgCharaBtlEnd_en.strb")
 	if err != nil {
 		debug.PrintStack()
-		return err
+		return nil, err
 	}
 	if len(v.CardCharacter) != len(battle_end) {
 		debug.PrintStack()
-		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character battle_end", len(v.CardCharacter), len(battle_end))
 	}
 
 	friendship_max, err := readStringFile(root + "/string/MsgCharaFriendshipMax_en.strb")
 	if err != nil {
 		debug.PrintStack()
-		return err
+		return nil, err
 	}
 	if len(v.CardCharacter) != len(friendship_max) {
 		debug.PrintStack()
-		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character friendship_max", len(v.CardCharacter), len(friendship_max))
 	}
 
 	friendship_event, err := readStringFile(root + "/string/MsgCharaBonds_en.strb")
 	if err != nil {
 		debug.PrintStack()
-		return err
+		return nil, err
 	}
 	if len(v.CardCharacter) != len(friendship_event) {
 		debug.PrintStack()
-		return fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character friendship_event", len(v.CardCharacter), len(friendship_event))
 	}
 
@@ -211,34 +232,34 @@ func (v *VcFile) Read(root string) error {
 	names, err = readStringFile(root + "/string/MsgSkillName_en.strb")
 	if err != nil {
 		debug.PrintStack()
-		return err
+		return nil, err
 	}
 
 	description, err = readStringFile(root + "/string/MsgSkillDesc_en.strb")
 	if err != nil {
 		debug.PrintStack()
-		return err
+		return nil, err
 	}
 
 	fire, err := readStringFile(root + "/string/MsgSkillFire_en.strb")
 	if err != nil {
 		debug.PrintStack()
-		return err
+		return nil, err
 	}
 
-	for key, val := range v.Skills {
+	for key, _ := range v.Skills {
 		if key < len(names) {
-			v.Skills[key].Name = names[val.Id-1]
+			v.Skills[key].Name = names[key]
 		}
 		if key < len(description) {
-			v.Skills[key].Description = filterSkill(description[val.Id-1])
+			v.Skills[key].Description = filterSkill(description[key])
 		}
 		if key < len(fire) {
-			v.Skills[key].Fire = fire[val.Id-1]
+			v.Skills[key].Fire = filterSkill(fire[key])
 		}
 	}
 
-	return nil
+	return data, nil
 }
 
 func readStringFile(filename string) ([]string, error) {

@@ -37,8 +37,8 @@ type Skill struct {
 	// max proc rate
 	MaxRatio int `json:"max_ratio"`
 	// date accessible
-	PublicStartDatetime int `json:"public_start_datetime"`
-	PublicEndDatetime   int `json:"public_end_datetime"`
+	PublicStartDatetime Timestamp `json:"public_start_datetime"`
+	PublicEndDatetime   Timestamp `json:"public_end_datetime"`
 	// effect info
 	EffectId           int `json:"effect_id"`
 	EffectParam        int `json:"effect_param"`
@@ -56,11 +56,11 @@ type Skill struct {
 	AnimationId int `json:"animation_id"`
 
 	//skill name from strings file
-	Name string `json:"-"`
+	Name string `json:"name"`
 	// description from strings file
-	Description string `json:"-"`
+	Description string `json:"description"`
 	// fire text from strings file
-	Fire string `json:"-"`
+	Fire string `json:"fire"`
 }
 
 func (s *Skill) SkillMin() string {
@@ -79,6 +79,10 @@ func (s *Skill) SkillMax() string {
 	max = strings.Replace(max, "{2:x}", r, -1)
 	max = strings.Replace(max, "{2}", r, -1)
 	return max
+}
+
+func (s *Skill) FireMin() string {
+	return strings.Replace(s.Fire, "{1:x}", strconv.Itoa(s.EffectDefaultValue), -1)
 }
 
 func (s *Skill) TargetScope() string {

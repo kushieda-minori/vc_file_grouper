@@ -80,6 +80,7 @@ func DecodeAndSave(file string) (string, []byte, error) {
 	return fileName, data, nil
 }
 
+// reads a single 32bit int from the data starting at sliceStart position.
 func toInt32(data []byte, sliceStart int) (ret int32) {
 	buf := bytes.NewBuffer(data[sliceStart:(sliceStart + 4)])
 	binary.Read(buf, binary.LittleEndian, &ret)
