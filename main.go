@@ -59,7 +59,8 @@ func main() {
 	http.HandleFunc("/decode/", decodeHandler)
 	http.HandleFunc("/raw/", rawDataHandler)
 
-	err = http.ListenAndServe(":8080", nil)
+	os.Stdout.WriteString("Listening on port 8585\n")
+	err = http.ListenAndServe(":8585", nil)
 	if err != nil {
 		os.Stderr.WriteString(err.Error() + "\n")
 	}

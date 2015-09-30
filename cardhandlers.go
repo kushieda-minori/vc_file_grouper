@@ -6,7 +6,7 @@ import (
 	"html"
 	"io"
 	"net/http"
-	"os"
+	//"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -322,7 +322,6 @@ func getEvolutions(card vc.Card) map[string]vc.Card {
 		if card.CardCharaId == val.CardCharaId {
 			if val.Rarity()[0] == 'G' {
 				baseCard := val.AwakensFrom(&VcData)
-				os.Stdout.WriteString(strconv.Itoa(baseCard.Id) + "\n")
 				// if base card is nil, that means it's not available yet
 				if baseCard != nil && baseCard.IsAmalgamation(VcData.Amalgamations) {
 					if gas == 0 {
