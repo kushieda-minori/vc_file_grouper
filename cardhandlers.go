@@ -6,7 +6,7 @@ import (
 	"html"
 	"io"
 	"net/http"
-	//"os"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -244,7 +244,7 @@ func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 		"Skill Max", "Skill Procs", "Target Scope", "Target Logic", "Skill 2", "Skill Special", "Description", "Friendship",
 		"Login", "Meet", "Battle Start", "Battle End", "Friendship Max", "Friendship Event", "Is Closed"})
 	for _, card := range VcData.Cards {
-		cw.Write([]string{strconv.Itoa(card.Id), fmt.Sprintf("cd_%05d", card.CardNo), card.Name, strconv.Itoa(card.EvolutionRank),
+		err := cw.Write([]string{strconv.Itoa(card.Id), fmt.Sprintf("cd_%05d", card.CardNo), card.Name, strconv.Itoa(card.EvolutionRank),
 			strconv.Itoa(card.TransCardId), card.Rarity(), card.Element(), strconv.Itoa(card.DeckCost), strconv.Itoa(card.DefaultOffense),
 			strconv.Itoa(card.DefaultDefense), strconv.Itoa(card.DefaultFollower), strconv.Itoa(card.MaxOffense),
 			strconv.Itoa(card.MaxDefense), strconv.Itoa(card.MaxFollower), card.Skill1Name(&VcData),
@@ -254,7 +254,11 @@ func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 			card.BattleStart(&VcData), card.BattleEnd(&VcData), card.FriendshipMax(&VcData), card.FriendshipEvent(&VcData),
 			strconv.Itoa(card.IsClosed),
 		})
+		if err != nil {
+			os.Stderr.WriteString(err.Error() + "\n")
+		}
 	}
+	cw.Flush()
 }
 
 func cardTableHandler(w http.ResponseWriter, r *http.Request) {

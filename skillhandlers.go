@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -61,7 +62,7 @@ func skillCsvHandler(w http.ResponseWriter, r *http.Request) {
 			startDate = s.PublicStartDatetime.Format(time.RFC3339)
 			endDate = s.PublicEndDatetime.Format(time.RFC3339)
 		}
-		cw.Write([]string{strconv.Itoa(s.Id),
+		err := cw.Write([]string{strconv.Itoa(s.Id),
 			s.Name,
 			s.Description,
 			s.Fire,
@@ -97,6 +98,9 @@ func skillCsvHandler(w http.ResponseWriter, r *http.Request) {
 			strconv.Itoa(s.TargetParam),
 			strconv.Itoa(s.AnimationId),
 		})
+		if err != nil {
+			os.Stderr.WriteString(err.Error() + "\n")
+		}
 	}
-
+	cw.Flush()
 }
