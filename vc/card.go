@@ -239,21 +239,21 @@ func (c *Card) IsAmalgamation(a []Amalgamation) bool {
 
 func (c *Card) Skill1(v *VcFile) *Skill {
 	if c.skill1 == nil && c.SkillId1 > 0 {
-		c.skill1 = skillScan(c.SkillId1, v.Skills)
+		c.skill1 = SkillScan(c.SkillId1, v.Skills)
 	}
 	return c.skill1
 }
 
 func (c *Card) Skill2(v *VcFile) *Skill {
 	if c.skill2 == nil && c.SkillId2 > 0 {
-		c.skill2 = skillScan(c.SkillId2, v.Skills)
+		c.skill2 = SkillScan(c.SkillId2, v.Skills)
 	}
 	return c.skill2
 }
 
 func (c *Card) SpecialSkill1(v *VcFile) *Skill {
 	if c.specialSkill1 == nil && c.SpecialSkillId1 > 0 {
-		c.specialSkill1 = skillScan(c.SpecialSkillId1, v.Skills)
+		c.specialSkill1 = SkillScan(c.SpecialSkillId1, v.Skills)
 	}
 	return c.specialSkill1
 }
@@ -267,21 +267,6 @@ func CardScan(cardId int, cards []Card) *Card {
 			if val.Id == cardId {
 				return &cards[k]
 			}
-		}
-	}
-	return nil
-}
-
-func skillScan(id int, skills []Skill) *Skill {
-	if id <= 0 {
-		return nil
-	}
-	if id < len(skills) && id == skills[id-1].Id {
-		return &(skills[id-1])
-	}
-	for k, v := range skills {
-		if id == v.Id {
-			return &(skills[k])
 		}
 	}
 	return nil

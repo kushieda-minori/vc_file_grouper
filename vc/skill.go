@@ -63,6 +63,14 @@ type Skill struct {
 	Fire string `json:"fire"`
 }
 
+func (s *Skill) Effect() string {
+	if val, ok := Effect[s.EffectId]; ok {
+		return val
+	} else {
+		return "New/Unknown"
+	}
+}
+
 func (s *Skill) SkillMin() string {
 	min := strings.Replace(s.Description, "{1:x}", strconv.Itoa(s.EffectDefaultValue), -1)
 	r := strconv.Itoa(s.DefaultRatio)
@@ -85,6 +93,10 @@ func (s *Skill) FireMin() string {
 	return strings.Replace(s.Fire, "{1:x}", strconv.Itoa(s.EffectDefaultValue), -1)
 }
 
+func (s *Skill) FireMax() string {
+	return strings.Replace(s.Fire, "{1:x}", strconv.Itoa(s.EffectMaxValue), -1)
+}
+
 func (s *Skill) TargetScope() string {
 	if val, ok := TargetScope[s.TargetScopeId]; ok {
 		return val
@@ -101,8 +113,23 @@ func (s *Skill) TargetLogic() string {
 	}
 }
 
+func SkillScan(id int, skills []Skill) *Skill {
+	if id <= 0 {
+		return nil
+	}
+	if id < len(skills) && id == skills[id-1].Id {
+		return &(skills[id-1])
+	}
+	for k, v := range skills {
+		if id == v.Id {
+			return &(skills[k])
+		}
+	}
+	return nil
+}
+
 var TargetScope = map[int]string{
-	-1: "N/A",
+	-1: "",
 	1:  "Allies",
 	2:  "Enemies",
 }
@@ -118,6 +145,38 @@ var TargetLogic = map[int]string{
 	12: "All Dead",
 	13: "Single Dead, Random",
 	14: "Same Element",
-	16: "Random Target Skill",
+	16: "Random Target (Skill)",
 	17: "Dead and Alive",
+	20: "Random Target (Salvo)",
+}
+
+var Effect = map[int]string{
+	1:  "Heal",
+	2:  "Deal Damage",
+	3:  "Deal Element Damage",
+	4:  "Turn Skip",
+	5:  "ATK Up",
+	6:  "ATK Down",
+	7:  "DEF Up",
+	8:  "DEF Down",
+	10: "Battle EXP",
+	11: "Cancel Buffs / Weak Effects",
+	12: "Fully Ressurect",
+	13: "Deal Element Damage and Suck",
+	14: "Deal Damage and Suck",
+	15: "Receive Rewards",
+	16: "Unleash Skill",
+	17: "Gold Conversion",
+	20: "AW Hunt Point+",
+	22: "Counter Attack",
+	23: "Skill Nullification",
+	24: "ATK • DEF Up",
+	26: "Resurect and Heal",
+	27: "Turn Skip / Deal Element Damage",
+	30: "Knock out single Enemy",
+	31: "Awakened Burst",
+	32: "Elemental Wave",
+	35: "Elemental Salvo",
+	36: "Random Skill",
+	38: "Single Salvo",
 }

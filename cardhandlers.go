@@ -212,6 +212,17 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, "}}\n")
 		}
 	}
+	if card.Skill1(&VcData) != nil && card.Skill1(&VcData).EffectId == 36 {
+		// Random Skill
+		bs := card.Skill1(&VcData)
+		io.WriteString(w, "\n==''Notes''==\nThe list of random skills she may fire are as follows:\n")
+		for _, v := range []int{bs.EffectParam, bs.EffectParam2, bs.EffectParam3, bs.EffectParam4, bs.EffectParam5} {
+			rs := vc.SkillScan(v, VcData.Skills)
+			if rs != nil {
+				fmt.Fprintf(w, "* %s \n", rs.SkillMin())
+			}
+		}
+	}
 	io.WriteString(w, "</textarea></div>")
 	// show images here
 	io.WriteString(w, "<div style=\"float:left\">")
