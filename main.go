@@ -83,6 +83,7 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<a href=\"/cards/csv\" >Card List as CSV</a><br />\n")
 	io.WriteString(w, "<a href=\"/skills/csv\" >Skill List as CSV</a><br />\n")
 	io.WriteString(w, "<a href=\"/awakenings\" >List of Awakenings</a><br />\n")
+	io.WriteString(w, "<a href=\"/awakenings/csv\" >List of Awakenings as CSV</a><br />\n")
 	io.WriteString(w, "<a href=\"/raw\" >Raw data</a><br />\n")
 
 	io.WriteString(w, "</body></html>")
