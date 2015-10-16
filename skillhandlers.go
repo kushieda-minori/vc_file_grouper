@@ -14,7 +14,7 @@ func skillTableHandler(w http.ResponseWriter, r *http.Request) {
 
 func skillCsvHandler(w http.ResponseWriter, r *http.Request) {
 	// File header
-	w.Header().Set("Content-Disposition", "attachment; filename=vcData-skills-"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv")
+	w.Header().Set("Content-Disposition", "attachment; filename=vcData-skills-"+strconv.Itoa(VcData.Version)+"_"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv")
 	w.Header().Set("Content-Type", "text/csv")
 	cw := csv.NewWriter(w)
 	cw.Write([]string{"Id",

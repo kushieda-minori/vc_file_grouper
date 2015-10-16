@@ -48,15 +48,21 @@ func main() {
 	http.HandleFunc("/cards/", cardHandler)
 	http.HandleFunc("/cards/table/", cardTableHandler)
 	http.HandleFunc("/cards/csv/", cardCsvHandler)
-	// http.HandleFunc("/cards/raw/", cardRawHandler)
 	http.HandleFunc("/cards/detail/", cardDetailHandler)
-	http.HandleFunc("/character/", characterTableHandler)
-	http.HandleFunc("/character/csv/", characterCsvHandler)
+	// http.HandleFunc("/character/", characterTableHandler)
+	// http.HandleFunc("/character/csv/", characterCsvHandler)
+
 	http.HandleFunc("/skills/", skillTableHandler)
 	http.HandleFunc("/skills/csv/", skillCsvHandler)
+
+	http.HandleFunc("/events/", eventHandler)
+	http.HandleFunc("/events/detail/", eventDetailHandler)
+
 	http.HandleFunc("/awakenings/", awakeningsTableHandler)
 	http.HandleFunc("/awakenings/csv/", awakeningsCsvHandler)
+
 	http.HandleFunc("/decode/", decodeHandler)
+
 	http.HandleFunc("/raw/", rawDataHandler)
 
 	os.Stdout.WriteString("Listening on port 8585\n")
@@ -82,6 +88,7 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<a href=\"/cards/table\" >Card List as a Table</a><br />\n")
 	io.WriteString(w, "<a href=\"/cards/csv\" >Card List as CSV</a><br />\n")
 	io.WriteString(w, "<a href=\"/skills/csv\" >Skill List as CSV</a><br />\n")
+	io.WriteString(w, "<a href=\"/events\" >Event List</a><br />\n")
 	io.WriteString(w, "<a href=\"/awakenings\" >List of Awakenings</a><br />\n")
 	io.WriteString(w, "<a href=\"/awakenings/csv\" >List of Awakenings as CSV</a><br />\n")
 	io.WriteString(w, "<a href=\"/raw\" >Raw data</a><br />\n")

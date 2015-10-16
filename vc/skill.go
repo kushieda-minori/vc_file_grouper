@@ -72,29 +72,19 @@ func (s *Skill) Effect() string {
 }
 
 func (s *Skill) SkillMin() string {
-	min := strings.Replace(s.Description, "{1:x}", strconv.Itoa(s.EffectDefaultValue), -1)
-	r := strconv.Itoa(s.DefaultRatio)
-	min = strings.Replace(min, "{2:}", r, -1)
-	min = strings.Replace(min, "{2:x}", r, -1)
-	min = strings.Replace(min, "{2}", r, -1)
-	return min
+	return formatSkill(s.Description, s.EffectDefaultValue, s.DefaultRatio)
 }
 
 func (s *Skill) SkillMax() string {
-	max := strings.Replace(s.Description, "{1:x}", strconv.Itoa(s.EffectMaxValue), -1)
-	r := strconv.Itoa(s.MaxRatio)
-	max = strings.Replace(max, "{2:}", r, -1)
-	max = strings.Replace(max, "{2:x}", r, -1)
-	max = strings.Replace(max, "{2}", r, -1)
-	return max
+	return formatSkill(s.Description, s.EffectMaxValue, s.MaxRatio)
 }
 
 func (s *Skill) FireMin() string {
-	return strings.Replace(s.Fire, "{1:x}", strconv.Itoa(s.EffectDefaultValue), -1)
+	return formatSkill(s.Fire, s.EffectDefaultValue, -1)
 }
 
 func (s *Skill) FireMax() string {
-	return strings.Replace(s.Fire, "{1:x}", strconv.Itoa(s.EffectMaxValue), -1)
+	return formatSkill(s.Fire, s.EffectMaxValue, -1)
 }
 
 func (s *Skill) TargetScope() string {
@@ -126,6 +116,20 @@ func SkillScan(id int, skills []Skill) *Skill {
 		}
 	}
 	return nil
+}
+
+func formatSkill(descr string, effect, ratio int) (s string) {
+	eff := strconv.Itoa(effect)
+	r := strconv.Itoa(ratio)
+
+	s = strings.Replace(descr, "{1:x}", eff, -1)
+	s = strings.Replace(s, "{1:}", eff, -1)
+	s = strings.Replace(s, "{1}", eff, -1)
+
+	s = strings.Replace(s, "{2:}", r, -1)
+	s = strings.Replace(s, "{2:x}", r, -1)
+	s = strings.Replace(s, "{2}", r, -1)
+	return s
 }
 
 var TargetScope = map[int]string{

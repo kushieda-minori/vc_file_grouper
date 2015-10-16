@@ -247,7 +247,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 	// File header
-	w.Header().Set("Content-Disposition", "attachment; filename=vcData-cards-"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv")
+	w.Header().Set("Content-Disposition", "attachment; filename=vcData-cards-"+strconv.Itoa(VcData.Version)+"_"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv")
 	w.Header().Set("Content-Type", "text/csv")
 	cw := csv.NewWriter(w)
 	cw.Write([]string{"Id", "Card #", "Name", "Evo Rank", "TransCardId", "Rarity", "Element", "Deck Cost", "Base ATK",
@@ -278,8 +278,8 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
 	io.WriteString(w, "</head><body>\n")
 	io.WriteString(w, "<div>\n")
-	io.WriteString(w, "<table><thead>\n")
-	io.WriteString(w, "<tr><th>_id</th><th>card_no</th><th>name</th><th>evolution_rank</th><th>Rarity</th><th>Element</th><th>Character ID</th><th>deck_cost</th><th>default_offense</th><th>default_defense</th><th>default_follower</th><th>max_offense</th><th>max_defense</th><th>max_follower</th><th>Skill 1 Name</th><th>Skill Min</th><th>Skill Max</th><th>Skill Procs</th><th>Min Effect</th><th>Min Rate</th><th>Max Effect</th><th>Max Rate</th><th>Target Scope</th><th>Target Logic</th><th>Skill 2</th><th>Skill Special</th><th>Description</th><th>Friendship</th><th>Login</th><th>Meet</th><th>Battle Start</th><th>Battle End</th><th>Friendship Max</th><th>Friendship Event</th>\n")
+	io.WriteString(w, "<table><thead><tr>\n")
+	io.WriteString(w, "<th>_id</th><th>card_no</th><th>name</th><th>evolution_rank</th><th>Rarity</th><th>Element</th><th>Character ID</th><th>deck_cost</th><th>default_offense</th><th>default_defense</th><th>default_follower</th><th>max_offense</th><th>max_defense</th><th>max_follower</th><th>Skill 1 Name</th><th>Skill Min</th><th>Skill Max</th><th>Skill Procs</th><th>Min Effect</th><th>Min Rate</th><th>Max Effect</th><th>Max Rate</th><th>Target Scope</th><th>Target Logic</th><th>Skill 2</th><th>Skill Special</th><th>Description</th><th>Friendship</th><th>Login</th><th>Meet</th><th>Battle Start</th><th>Battle End</th><th>Friendship Max</th><th>Friendship Event</th>\n")
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
 	for _, card := range VcData.Cards {
@@ -289,7 +289,7 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		// skill2 := card.Skill2(&VcData)
 		// skillS1 := card.SpecialSkill1(&VcData)
-		fmt.Fprintf(w, "<tr><td>%d</td><td>%05d</td><td><a href=\"/cards/detail/%[1]d\">%[3]s</a></td><td>%d</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></td>\n",
+		fmt.Fprintf(w, "<tr><td>%d</td><td><a href=\"/cards/detail/%[1]d\">%05[2]d</a></td><td><a href=\"/cards/detail/%[1]d\">%[3]s</a></td><td>%d</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></td></tr>\n",
 			card.Id, card.CardNo, card.Name, card.EvolutionRank, card.Rarity(), card.Element(), card.CardCharaId,
 			card.DeckCost, card.DefaultOffense, card.DefaultDefense, card.DefaultFollower, card.MaxOffense,
 			card.MaxDefense, card.MaxFollower, card.Skill1Name(&VcData), card.SkillMin(&VcData), card.SkillMax(&VcData),

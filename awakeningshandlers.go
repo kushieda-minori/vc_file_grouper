@@ -31,7 +31,7 @@ func awakeningsTableHandler(w http.ResponseWriter, r *http.Request) {
 
 func awakeningsCsvHandler(w http.ResponseWriter, r *http.Request) {
 	// File header
-	w.Header().Set("Content-Disposition", "attachment; filename=vcData-awaken-"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv")
+	w.Header().Set("Content-Disposition", "attachment; filename=vcData-awaken-"+strconv.Itoa(VcData.Version)+"_"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv")
 	w.Header().Set("Content-Type", "text/csv")
 	cw := csv.NewWriter(w)
 	cw.Write([]string{

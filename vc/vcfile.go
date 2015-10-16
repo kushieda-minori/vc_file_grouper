@@ -31,6 +31,8 @@ func (t *Timestamp) MarshalJSON() ([]byte, error) {
 	return []byte(stamp), nil
 }
 
+var location, _ = time.LoadLocation("Japan")
+
 func (t *Timestamp) UnmarshalJSON(b []byte) error {
 	ts, err := strconv.Atoi(string(b))
 	if err != nil {
@@ -40,7 +42,7 @@ func (t *Timestamp) UnmarshalJSON(b []byte) error {
 	if ts == -1 {
 		t.Time = time.Time{}
 	} else {
-		t.Time = time.Unix(int64(ts), 0)
+		t.Time = time.Unix(int64(ts), 0).In(location)
 	}
 
 	return nil
@@ -76,9 +78,12 @@ type VcFile struct {
 	CardLevels           []CardLevel           `json:"cardlevel"`
 	DeckBonuses          []DeckBonus           `json:"deck_bonus"`
 	DeckBonusConditions  []DeckBonusCond       `json:"deck_bonus_cond"`
-	Archwitches          []Archwitch           `json"kings"`
-	ArchwitchSeriess     []ArchwitchSeries     `json"king_series"`
-	ArchwitchFriendships []ArchwitchFriendship `json"king_friendship"`
+	Archwitches          []Archwitch           `json:"kings"`
+	ArchwitchSeries      []ArchwitchSeries     `json:"king_series"`
+	ArchwitchFriendships []ArchwitchFriendship `json:"king_friendship"`
+	Events               []Event               `json:"mst_event"`
+	EventBooks           []EventBook           `json:"mst_event_book"`
+	EventCards           []EventCard           `json:"mst_event_card"`
 }
 
 // This reads the main data file and all associated files for strings
@@ -259,6 +264,26 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		}
 	}
 
+	evntNames, err := readStringFile(root + "/string/MsgEventName_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	evntDescrs, err := readStringFile(root + "/string/MsgEventDesc_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+
+	for key, _ := range v.Events {
+		if key < len(evntNames) {
+			v.Events[key].Name = evntNames[key]
+		}
+		if key < len(evntDescrs) {
+			v.Events[key].Description = filter(filterColors(evntDescrs[key]))
+		}
+	}
+
 	return data, nil
 }
 
@@ -345,5 +370,13 @@ func filterSkill(s string) string {
 	ret = regexpSlash.ReplaceAllString(ret, " / ")
 	// make counter attack consistent
 	ret = strings.Replace(ret, "% Counter", "%\nCounter", -1)
+	return ret
+}
+
+func filterColors(s string) string {
+	ret := strings.Replace(s, "<col=6>", "<div style=\"color:gold\">", -1)
+	ret = strings.Replace(ret, "<col=7>", "<div style=\"color:cyan\">", -1)
+	ret = strings.Replace(ret, "</col>", "</div>", -1)
+
 	return ret
 }
