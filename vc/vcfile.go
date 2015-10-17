@@ -84,6 +84,8 @@ type VcFile struct {
 	Events               []Event               `json:"mst_event"`
 	EventBooks           []EventBook           `json:"mst_event_book"`
 	EventCards           []EventCard           `json:"mst_event_card"`
+	Maps                 []Map                 `json:"map"`
+	Areas                []Area                `json:"area"`
 }
 
 // This reads the main data file and all associated files for strings
@@ -264,6 +266,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		}
 	}
 
+	// event strings
 	evntNames, err := readStringFile(root + "/string/MsgEventName_en.strb")
 	if err != nil {
 		debug.PrintStack()
@@ -281,6 +284,88 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		}
 		if key < len(evntDescrs) {
 			v.Events[key].Description = filter(filterColors(evntDescrs[key]))
+		}
+	}
+
+	// map strings
+	mapNames, err := readStringFile(root + "/string/MsgNPCMapName_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+
+	mapStart, err := readStringFile(root + "/string/MsgNPCMapStart_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+
+	for key, _ := range v.Maps {
+		if key < len(mapNames) {
+			v.Maps[key].Name = mapNames[key]
+		}
+		if key < len(mapStart) {
+			v.Maps[key].StartMsg = filter(filterColors(mapStart[key]))
+		}
+	}
+
+	areaName, err := readStringFile(root + "/string/MsgNPCAreaName_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	areaLongName, err := readStringFile(root + "/string/MsgNPCAreaLongName_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	areaStart, err := readStringFile(root + "/string/MsgNPCAreaStart_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	areaEnd, err := readStringFile(root + "/string/MsgNPCAreaEnd_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	areaStory, err := readStringFile(root + "/string/MsgNPCAreaStory_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	bossStart, err := readStringFile(root + "/string/MsgNPCBossEnd_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	bossEnd, err := readStringFile(root + "/string/MsgNPCBossStart_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+
+	for key, _ := range v.Areas {
+		if key < len(bossStart) {
+			v.Areas[key].BossStart = bossStart[key]
+		}
+		if key < len(bossEnd) {
+			v.Areas[key].BossEnd = bossEnd[key]
+		}
+		if key < len(areaStart) {
+			v.Areas[key].Start = areaStart[key]
+		}
+		if key < len(areaEnd) {
+			v.Areas[key].End = areaEnd[key]
+		}
+		if key < len(areaName) {
+			v.Areas[key].Name = areaName[key]
+		}
+		if key < len(areaLongName) {
+			v.Areas[key].LongName = areaLongName[key]
+		}
+		if key < len(areaStory) {
+			v.Areas[key].Story = areaStory[key]
 		}
 	}
 

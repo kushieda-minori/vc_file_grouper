@@ -57,6 +57,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", event.Name)
 	fmt.Fprintf(w, "<div style=\"float:left\">Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", event.Name)
+	fmt.Fprintf(w, "<a href=\"/maps/%d\">Map Information</a>\n<br />", event.MapId)
 	io.WriteString(w, "<textarea style=\"width:800px;height:760px\">")
 	io.WriteString(w, html.EscapeString(event.Description))
 	io.WriteString(w, "</textarea></div>")

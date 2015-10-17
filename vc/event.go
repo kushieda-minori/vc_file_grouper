@@ -43,6 +43,7 @@ type Event struct {
 	TickerFlg             int       `json:"ticker_flg"`
 	Name                  string    `json:"name"`        // MsgEventName_en.strb
 	Description           string    `json:"description"` // MsgEventDesc_en.strb
+	_map                  *Map      `json:"-"`
 }
 
 type EventBook struct {
@@ -56,6 +57,13 @@ type EventCard struct {
 	CardId      int    `json:"card_id"`
 	KindId      int    `json:"kind_id"`
 	KindName    string `json:"kind_name"` // MsgEventCardKindName_en.strb
+}
+
+func (e *Event) Map(v *VcFile) *Map {
+	if e._map == nil && e.MapId > 0 {
+		e._map = MapScan(e.MapId, v.Maps)
+	}
+	return e._map
 }
 
 func EventScan(eventId int, events []Event) *Event {

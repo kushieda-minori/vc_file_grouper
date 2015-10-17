@@ -58,6 +58,8 @@ func main() {
 	http.HandleFunc("/events/", eventHandler)
 	http.HandleFunc("/events/detail/", eventDetailHandler)
 
+	http.HandleFunc("/maps/", mapHandler)
+
 	http.HandleFunc("/awakenings/", awakeningsTableHandler)
 	http.HandleFunc("/awakenings/csv/", awakeningsCsvHandler)
 

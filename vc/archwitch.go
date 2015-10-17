@@ -45,3 +45,27 @@ type ArchwitchFriendship struct {
 	Likability4 string `json:"-"`
 	Likability5 string `json:"-"`
 }
+
+/*
+Limited items and enemies
+*/
+type Limited struct {
+	Id               int       `json:"_id"`
+	LmtdTypeId       int       `json:"lmtd_type_id"`
+	DayTypeId        int       `json:"day_type_id"`
+	StartDatetime    Timestamp `json:"start_datetime"`
+	EndDatetime      Timestamp `json:"end_datetime"`
+	GroupId          int       `json:"group_id"`
+	Enable           int       `json:"enable"`
+	JumpBanner       int       `json:"jump_banner"`
+	MapId            int       `json:"map_id"`
+	QuestId          int       `json:"quest_id"`
+	JumpButton       int       `json:"jump_button"`
+	TexIdCell        int       `json:"tex_id_cell"`
+	TexIdImage       int       `json:"tex_id_image"`
+	TexIdImage2      int       `json:"tex_id_image2"`
+	EnableDoButton   int       `json:"enable_do_button"`
+	EnableRewardDisp int       `json:"enable_reward_disp"`
+	RewardCardId     int       `json:"reward_card_id"`
+	RewardItemId     int       `json:"reward_item_id"`
+}
