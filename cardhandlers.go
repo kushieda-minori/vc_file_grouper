@@ -134,7 +134,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		aSkillName := evo.Skill1Name(&VcData)
 		if aSkillName != firstEvo.Skill1Name(&VcData) {
 			fmt.Fprintf(w, "|skill a = %s\n", html.EscapeString(aSkillName))
-			fmt.Fprintf(w, "|skill a lv1 = %s\n|skill a lv10 = %s\n|proc a = %s\n",
+			fmt.Fprintf(w, "|skill a lv1 = %s\n|skill a lv10 = %s\n|procs a = %s\n",
 				html.EscapeString(strings.Replace(evo.SkillMin(&VcData), "\n", "<br />", -1)),
 				html.EscapeString(strings.Replace(evo.SkillMax(&VcData), "\n", "<br />", -1)),
 				evo.SkillProcs(&VcData))
@@ -144,7 +144,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			if gSkillName != aSkillName {
 				fmt.Fprintf(w, "|skill ga = %s\n", html.EscapeString(gSkillName))
 			}
-			fmt.Fprintf(w, "|skill ga lv1 = %s\n|skill ga lv10 = %s\n|proc ga = %s\n",
+			fmt.Fprintf(w, "|skill ga lv1 = %s\n|skill ga lv10 = %s\n|procs ga = %s\n",
 				html.EscapeString(strings.Replace(gevo.SkillMin(&VcData), "\n", "<br />", -1)),
 				html.EscapeString(strings.Replace(gevo.SkillMax(&VcData), "\n", "<br />", -1)),
 				gevo.SkillProcs(&VcData))
@@ -155,7 +155,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		if gSkillName != firstEvo.Skill1Name(&VcData) {
 			fmt.Fprintf(w, "|skill g = %s\n", html.EscapeString(gSkillName))
 		}
-		fmt.Fprintf(w, "|skill g lv1 = %s\n|skill g lv10 = %s\n|proc g = %s\n",
+		fmt.Fprintf(w, "|skill g lv1 = %s\n|skill g lv10 = %s\n|procs g = %s\n",
 			html.EscapeString(strings.Replace(evo.SkillMin(&VcData), "\n", "<br />", -1)),
 			html.EscapeString(strings.Replace(evo.SkillMax(&VcData), "\n", "<br />", -1)),
 			evo.SkillProcs(&VcData))
