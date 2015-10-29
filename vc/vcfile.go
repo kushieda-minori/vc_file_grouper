@@ -347,25 +347,25 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 
 	for key, _ := range v.Areas {
 		if key < len(bossStart) {
-			v.Areas[key].BossStart = bossStart[key]
+			v.Areas[key].BossStart = filterColors(bossStart[key])
 		}
 		if key < len(bossEnd) {
-			v.Areas[key].BossEnd = bossEnd[key]
+			v.Areas[key].BossEnd = filterColors(bossEnd[key])
 		}
 		if key < len(areaStart) {
-			v.Areas[key].Start = areaStart[key]
+			v.Areas[key].Start = filterColors(areaStart[key])
 		}
 		if key < len(areaEnd) {
-			v.Areas[key].End = areaEnd[key]
+			v.Areas[key].End = filterColors(areaEnd[key])
 		}
 		if key < len(areaName) {
-			v.Areas[key].Name = areaName[key]
+			v.Areas[key].Name = filterColors(areaName[key])
 		}
 		if key < len(areaLongName) {
-			v.Areas[key].LongName = areaLongName[key]
+			v.Areas[key].LongName = filterColors(areaLongName[key])
 		}
 		if key < len(areaStory) {
-			v.Areas[key].Story = areaStory[key]
+			v.Areas[key].Story = filterColors(areaStory[key])
 		}
 	}
 
@@ -459,9 +459,13 @@ func filterSkill(s string) string {
 }
 
 func filterColors(s string) string {
-	ret := strings.Replace(s, "<col=6>", "<div style=\"color:gold\">", -1)
-	ret = strings.Replace(ret, "<col=7>", "<div style=\"color:cyan\">", -1)
-	ret = strings.Replace(ret, "</col>", "</div>", -1)
+	ret := s
+	rc, _ := regexp.Compile("<col=(.+?)>")
+	ret = rc.ReplaceAllString(ret, "<span class=\"vc_color$1\">")
 
+	ret = strings.Replace(ret, "</col>", "</span>", -1)
+
+	rs, _ := regexp.Compile("<(/?)size(=.+?)?>")
+	ret = rs.ReplaceAllLiteralString(ret, "")
 	return ret
 }
