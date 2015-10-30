@@ -48,25 +48,31 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	card := vc.CardScan(cardId, VcData.Cards)
-	evolutions := getEvolutions(*card)
+	evolutions := getEvolutions(card)
+	amalgamations := getAmalgamations(evolutions)
 
-	amalgamations := make([]vc.Amalgamation, 0)
-	var turnOverTo, turnOverFrom *vc.Card
-	for _, evo := range evolutions {
-		// os.Stdout.WriteString(fmt.Sprintf("Evo: %d Accident: %d\n", evo.Id, evo.TransCardId))
-		a := evo.Amalgamations(&VcData)
-		if len(a) > 0 && len(amalgamations) == 0 {
-			amalgamations = append(amalgamations, a...)
-		}
-		if evo.TransCardId > 0 && turnOverTo == nil {
-			turnOverTo = evo.EvoAccident(VcData.Cards)
-		} else {
-			if turnOverFrom == nil {
-				turnOverFrom = evo.EvoAccidentOf(VcData.Cards)
-			}
+	lastEvo, ok := evolutions["H"]
+	if ok {
+		delete(evolutions, "H")
+	}
+	firstEvo, ok := evolutions["F"]
+	if ok {
+		delete(evolutions, "F")
+	} else {
+		firstEvo, ok = evolutions["0"]
+		if !ok {
+			firstEvo = evolutions["1"]
 		}
 	}
-	sort.Sort(vc.ByMaterialCount(amalgamations))
+
+	var turnOverTo, turnOverFrom *vc.Card
+	if firstEvo.Id > 0 {
+		if firstEvo.TransCardId > 0 {
+			turnOverTo = firstEvo.EvoAccident(VcData.Cards)
+		} else {
+			turnOverFrom = firstEvo.EvoAccidentOf(VcData.Cards)
+		}
+	}
 
 	var avail string
 
@@ -105,28 +111,40 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", card.Name)
-	fmt.Fprintf(w, "<div style=\"float:left\">Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", card.Name)
-	io.WriteString(w, "<textarea style=\"width:800px;height:760px\">")
+	fmt.Fprintf(w, "<div>Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", card.Name)
+	io.WriteString(w, "<textarea readonly=\"readonly\" style=\"width:100%;height:450px\">")
 	if card.IsClosed != 0 {
 		io.WriteString(w, "{{Unreleased}}")
 	}
 	fmt.Fprintf(w, "{{Card\n|element = %s\n", card.Element())
-	var firstEvo vc.Card
-	var ok bool
-	if firstEvo, ok = evolutions["0"]; ok {
+	if firstEvo.Id > 0 {
 		fmt.Fprintf(w, "|rarity = %s\n|skill = %s\n|skill lv1 = %s\n|skill lv10 = %s\n|procs = %s\n",
 			firstEvo.Rarity(),
 			html.EscapeString(firstEvo.Skill1Name(&VcData)),
 			html.EscapeString(strings.Replace(firstEvo.SkillMin(&VcData), "\n", "<br />", -1)),
 			html.EscapeString(strings.Replace(firstEvo.SkillMax(&VcData), "\n", "<br />", -1)),
 			firstEvo.SkillProcs(&VcData))
-	} else if firstEvo, ok = evolutions["1"]; ok {
-		fmt.Fprintf(w, "|rarity = %s\n|skill = %s\n|skill lv1 = %s\n|skill lv10 = %s\n|procs = %s\n",
-			firstEvo.Rarity(),
-			html.EscapeString(firstEvo.Skill1Name(&VcData)),
-			html.EscapeString(strings.Replace(firstEvo.SkillMin(&VcData), "\n", "<br />", -1)),
-			html.EscapeString(strings.Replace(firstEvo.SkillMax(&VcData), "\n", "<br />", -1)),
-			firstEvo.SkillProcs(&VcData))
+		skill2 := firstEvo.Skill2(&VcData)
+		if skill2 != nil {
+			lastEvoSkill2Max := ""
+			if lastEvo.Id > 0 {
+				lastEvoSkill2 := lastEvo.Skill2(&VcData)
+				if lastEvoSkill2.Id != skill2.Id {
+					lastEvoSkill2Max = "\n|skill 2 lv10 = " +
+						html.EscapeString(strings.Replace(lastEvoSkill2.SkillMax(), "\n", "<br />", -1))
+				}
+			}
+			fmt.Fprintf(w, "|skill 2 = %s\n|skill 2 lv1 = %s%s\n|procs 2 = %d\n",
+				html.EscapeString(skill2.Name),
+				html.EscapeString(strings.Replace(skill2.SkillMin(), "\n", "<br />", -1)),
+				lastEvoSkill2Max,
+				skill2.MaxCount)
+
+			// Check if the second skill expires
+			if (skill2.PublicEndDatetime.After(time.Time{})) {
+				fmt.Fprintf(w, "|skill 2 end = %v\n", skill2.PublicEndDatetime)
+			}
+		}
 	} else {
 		io.WriteString(w, "|rarity = \n|skill = \n|skill lv1 = \n|skill lv10 = \n|procs = \n")
 	}
@@ -159,6 +177,25 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			html.EscapeString(strings.Replace(evo.SkillMin(&VcData), "\n", "<br />", -1)),
 			html.EscapeString(strings.Replace(evo.SkillMax(&VcData), "\n", "<br />", -1)),
 			evo.SkillProcs(&VcData))
+		skill2 := evo.Skill2(&VcData)
+		if skill2 != nil {
+			fs2 := firstEvo.Skill2(&VcData)
+			if fs2 == nil || fs2.Id != skill2.Id {
+				gSkill2Name := strings.Replace(skill2.Name, "☆", "", 1)
+				if gSkill2Name != gSkillName {
+					fmt.Fprintf(w, "|skill g = %s\n", html.EscapeString(gSkill2Name))
+				}
+				fmt.Fprintf(w, "|skill g2 lv1 = %s\n|procs g2 = %d\n",
+					html.EscapeString(strings.Replace(skill2.SkillMin(), "\n", "<br />", -1)),
+					skill2.MaxCount)
+
+				// Check if the second skill expires
+				if (skill2.PublicEndDatetime.After(time.Time{})) {
+					fmt.Fprintf(w, "|skill g2 end = %v\n", skill2.PublicEndDatetime)
+				}
+			}
+		}
+
 	}
 
 	//traverse evolutions in order
@@ -185,11 +222,30 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "|meet = %s\n|battle start = %s\n|battle end = %s\n|friendship max = %s\n|friendship event = %s\n", html.EscapeString(strings.Replace(card.Meet(&VcData), "\n", "<br />", -1)),
 		html.EscapeString(strings.Replace(card.BattleStart(&VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.BattleEnd(&VcData), "\n", "<br />", -1)),
 		html.EscapeString(strings.Replace(card.FriendshipMax(&VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.FriendshipEvent(&VcData), "\n", "<br />", -1)))
+
+	var awakenInfo *vc.CardAwaken
+	for _, val := range VcData.Awakenings {
+		if lastEvo.Id == val.BaseCardId {
+			awakenInfo = &val
+		}
+	}
+	if awakenInfo != nil {
+		fmt.Fprintf(w, "|awaken chance = %d\n|awaken orb = %d\n|awaken l = %d\n|awaken m = %d\n|awaken s = %d\n",
+			awakenInfo.Percent,
+			awakenInfo.Material1Count,
+			awakenInfo.Material2Count,
+			awakenInfo.Material3Count,
+			awakenInfo.Material4Count,
+		)
+	}
+
 	// fmt.Fprintf(w,"|likeability 0 = %s\n|likeability 1 = %s\n|likeability 2 = %s\n|likeability 3 = %s\n|likeability 4 = %s\n|likeability 5 =%s\n",)
+
 	if turnOverFrom != nil {
 		fmt.Fprintf(w, "|turnoverfrom = %s\n", turnOverFrom.Name)
 	} else if turnOverTo != nil {
 		fmt.Fprintf(w, "|turnoverto = %s\n", turnOverTo.Name)
+		fmt.Fprintf(w, "|availability = %s\n", avail)
 	} else {
 		fmt.Fprintf(w, "|availability = %s\n", avail)
 	}
@@ -322,58 +378,121 @@ func maxStatFollower(evo vc.Card, numOfEvos int) string {
 	return "?"
 }
 
-func getEvolutions(card vc.Card) map[string]vc.Card {
+func getEvolutions(card *vc.Card) map[string]vc.Card {
 	ret := make(map[string]vc.Card)
 
+	// handle cards like Chimrey and Time Traveler (enemy)
 	if card.CardCharaId < 1 {
-		ret["0"] = card
+		ret["0"] = *card
+		ret["F"] = *card
+		ret["H"] = *card
 		return ret
 	}
 
-	amalgs := 0
-	gs := 0
-	gas := 0
-	for _, val := range VcData.Cards {
-		if card.CardCharaId == val.CardCharaId {
-			if val.Rarity()[0] == 'G' {
-				baseCard := val.AwakensFrom(&VcData)
-				// if base card is nil, that means it's not available yet
-				if baseCard != nil && baseCard.IsAmalgamation(VcData.Amalgamations) {
-					if gas == 0 {
-						ret["GA"] = val
-					} else {
-						ret["GA"+strconv.Itoa(gas)] = val
+	getAmalBaseCard := func(card *vc.Card) map[string]vc.Card {
+		if card.IsAmalgamation(VcData.Amalgamations) {
+			// check for a base amalgamation with the same name
+			// if there is one, use that for the base card
+			for _, amal := range card.Amalgamations(&VcData) {
+				if card.Id == amal.FusionCardId {
+					// material 1
+					ac := vc.CardScan(amal.Material1, VcData.Cards)
+					if ac.Id != card.Id && ac.Name == card.Name {
+						return getEvolutions(ac)
 					}
-					gas++
-				} else {
-					if gs == 0 {
-						ret["G"] = val
-					} else {
-						ret["G"+strconv.Itoa(gs)] = val
+					// material 2
+					ac = vc.CardScan(amal.Material2, VcData.Cards)
+					if ac.Id != card.Id && ac.Name == card.Name {
+						return getEvolutions(ac)
 					}
-					gs++
-				}
-			} else if val.IsAmalgamation(VcData.Amalgamations) {
-				if amalgs == 0 {
-					ret["A"] = val
-				} else {
-					ret["A"+strconv.Itoa(amalgs)] = val
-				}
-				amalgs++
-			} else {
-				iEvo := val.EvolutionRank
-				evo := strconv.Itoa(iEvo)
-				if _, ok := ret[evo]; ok {
-					for ; ok; _, ok = ret[evo] {
-						iEvo++
-						evo = strconv.Itoa(iEvo)
+					// material 3
+					ac = vc.CardScan(amal.Material3, VcData.Cards)
+					if ac != nil && ac.Id != card.Id && ac.Name == card.Name {
+						return getEvolutions(ac)
 					}
-					ret[evo] = val
-				} else {
-					ret[evo] = val
+					// material 4
+					ac = vc.CardScan(amal.Material4, VcData.Cards)
+					if ac != nil && ac.Id != card.Id && ac.Name == card.Name {
+						return getEvolutions(ac)
+					}
 				}
 			}
 		}
+		return nil
 	}
+
+	// find the lowest evolution and work from there.
+	if card.Rarity()[0] == 'G' {
+		bc := card.AwakensFrom(&VcData)
+		if bc != nil {
+			// look for self amalgamation (like sulis)
+			amalBaseCard := getAmalBaseCard(bc)
+			if amalBaseCard != nil {
+				return amalBaseCard
+			}
+			return getEvolutions(bc)
+		}
+	} else if card.EvolutionRank != 0 {
+		// check for a previous evolution
+		for _, c := range VcData.Cards {
+			if c.EvolutionCardId == card.Id {
+				return getEvolutions(&c)
+			}
+		}
+	} else {
+		// check for self amalgamation (like sulis)
+		amalBaseCard := getAmalBaseCard(card)
+		if amalBaseCard != nil {
+			return amalBaseCard
+		}
+	}
+
+	// get the actual evolution list
+
+	ret[strconv.Itoa(card.EvolutionRank)] = *card
+	ret["F"] = *card
+	nextId := card.EvolutionCardId
+	lastEvo := card
+	for nextId > 1 {
+		nextCard := vc.CardScan(nextId, VcData.Cards)
+		ret[strconv.Itoa(nextCard.EvolutionRank)] = *nextCard
+		nextId = nextCard.EvolutionCardId
+		lastEvo = nextCard
+	}
+	ret["H"] = *lastEvo
+
+	// check if the card has a known awakening:
+	cardg := lastEvo.AwakensTo(&VcData)
+	// this doesn't mean that the card has an awakening, it just makes it easier to find
+	if cardg != nil {
+		ret["G"] = *cardg
+	} else {
+		// look for the awakening the hard way now, based on the character id
+		gs := 0
+		for _, val := range VcData.Cards {
+			if card.CardCharaId == val.CardCharaId && val.Rarity()[0] == 'G' {
+				if gs == 0 {
+					ret["G"] = val
+				} else {
+					ret["G"+strconv.Itoa(gs)] = val
+				}
+				gs++
+			}
+		}
+	}
+
 	return ret
+}
+
+func getAmalgamations(evolutions map[string]vc.Card) []vc.Amalgamation {
+	amalgamations := make([]vc.Amalgamation, 0)
+	for _, evo := range evolutions {
+		// os.Stdout.WriteString(fmt.Sprintf("Evo: %d Accident: %d\n", evo.Id, evo.TransCardId))
+		a := evo.Amalgamations(&VcData)
+		if len(a) > 0 && len(amalgamations) == 0 {
+			amalgamations = append(amalgamations, a...)
+		}
+	}
+	sort.Sort(vc.ByMaterialCount(amalgamations))
+	return amalgamations
 }

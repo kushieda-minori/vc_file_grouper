@@ -91,7 +91,7 @@ func mapDetailWikiHandler(w http.ResponseWriter, r *http.Request, m *vc.Map) {
 			fmt.Fprintf(w, "|-\n| align=\"center\" |%s\n|\n", e.LongName)
 
 			if e.Story != "" {
-				fmt.Fprintf(w, "\n; Prologue\n: %s\n", html.EscapeString(strings.Replace(e.Story, "\n", " ", -1)))
+				fmt.Fprintf(w, "; Prologue\n: %s\n", html.EscapeString(strings.Replace(e.Story, "\n", " ", -1)))
 				if e.Start != "" || e.BossStart != "" {
 					io.WriteString(w, "----\n\n")
 				}
@@ -108,7 +108,7 @@ func mapDetailWikiHandler(w http.ResponseWriter, r *http.Request, m *vc.Map) {
 			}
 
 			if e.BossStart != "" {
-				fmt.Fprintf(w, "\n; Boss Dialogue\n: %s<br />&amp;nbsp;<br />\n: %s\n",
+				fmt.Fprintf(w, "; Boss Dialogue\n: %s<br />&amp;nbsp;<br />\n: %s\n",
 					html.EscapeString(strings.Replace(e.BossStart, "\n", " ", -1)),
 					html.EscapeString(strings.Replace(e.BossEnd, "\n", " ", -1)),
 				)
