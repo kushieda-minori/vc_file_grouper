@@ -227,6 +227,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	for _, val := range VcData.Awakenings {
 		if lastEvo.Id == val.BaseCardId {
 			awakenInfo = &val
+			break
 		}
 	}
 	if awakenInfo != nil {
