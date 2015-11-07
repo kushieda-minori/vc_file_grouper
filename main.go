@@ -49,6 +49,7 @@ func main() {
 	http.HandleFunc("/cards/table/", cardTableHandler)
 	http.HandleFunc("/cards/csv/", cardCsvHandler)
 	http.HandleFunc("/cards/detail/", cardDetailHandler)
+	http.HandleFunc("/archwitches/", archwitchHandler)
 	// http.HandleFunc("/character/", characterTableHandler)
 	// http.HandleFunc("/character/csv/", characterCsvHandler)
 
@@ -89,6 +90,7 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<a href=\"/cards\" >Card List</a><br />\n")
 	io.WriteString(w, "<a href=\"/cards/table\" >Card List as a Table</a><br />\n")
 	io.WriteString(w, "<a href=\"/cards/csv\" >Card List as CSV</a><br />\n")
+	io.WriteString(w, "<a href=\"/archwitches\" >Archwitch List</a><br />\n")
 	io.WriteString(w, "<a href=\"/skills/csv\" >Skill List as CSV</a><br />\n")
 	io.WriteString(w, "<a href=\"/events\" >Event List</a><br />\n")
 	io.WriteString(w, "<a href=\"/awakenings\" >List of Awakenings</a><br />\n")

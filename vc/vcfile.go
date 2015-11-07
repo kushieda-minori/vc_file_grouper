@@ -369,6 +369,19 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		}
 	}
 
+	awlikeability, err := readStringFile(root + "/string/MsgKingFriendshipDesc_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+
+	// Archwitch Likeability
+	for key, _ := range v.ArchwitchFriendships {
+		if key < len(awlikeability) {
+			v.ArchwitchFriendships[key].Likability = filter(awlikeability[key])
+		}
+	}
+
 	return data, nil
 }
 

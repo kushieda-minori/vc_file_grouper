@@ -118,12 +118,15 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "{{Card\n|element = %s\n", card.Element())
 	if firstEvo.Id > 0 {
-		fmt.Fprintf(w, "|rarity = %s\n|skill = %s\n|skill lv1 = %s\n|skill lv10 = %s\n|procs = %s\n",
+		fmt.Fprintf(w, "|rarity = %s\n|skill = %s\n|skill lv1 = %s\n|skill lv10 = %s\n|procs = %s\n%s",
 			firstEvo.Rarity(),
 			html.EscapeString(firstEvo.Skill1Name(&VcData)),
 			html.EscapeString(strings.Replace(firstEvo.SkillMin(&VcData), "\n", "<br />", -1)),
 			html.EscapeString(strings.Replace(firstEvo.SkillMax(&VcData), "\n", "<br />", -1)),
-			firstEvo.SkillProcs(&VcData))
+			firstEvo.SkillProcs(&VcData),
+			randomSkillEffects(firstEvo.Skill1(&VcData), ""),
+		)
+
 		skill2 := firstEvo.Skill2(&VcData)
 		if skill2 != nil {
 			lastEvoSkill2Max := ""
@@ -134,11 +137,13 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 						html.EscapeString(strings.Replace(lastEvoSkill2.SkillMax(), "\n", "<br />", -1))
 				}
 			}
-			fmt.Fprintf(w, "|skill 2 = %s\n|skill 2 lv1 = %s%s\n|procs 2 = %d\n",
+			fmt.Fprintf(w, "|skill 2 = %s\n|skill 2 lv1 = %s%s\n|procs 2 = %d\n%s",
 				html.EscapeString(skill2.Name),
 				html.EscapeString(strings.Replace(skill2.SkillMin(), "\n", "<br />", -1)),
 				lastEvoSkill2Max,
-				skill2.MaxCount)
+				skill2.MaxCount,
+				randomSkillEffects(skill2, "2"),
+			)
 
 			// Check if the second skill expires
 			if (skill2.PublicEndDatetime.After(time.Time{})) {
@@ -152,20 +157,24 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		aSkillName := evo.Skill1Name(&VcData)
 		if aSkillName != firstEvo.Skill1Name(&VcData) {
 			fmt.Fprintf(w, "|skill a = %s\n", html.EscapeString(aSkillName))
-			fmt.Fprintf(w, "|skill a lv1 = %s\n|skill a lv10 = %s\n|procs a = %s\n",
+			fmt.Fprintf(w, "|skill a lv1 = %s\n|skill a lv10 = %s\n|procs a = %s\n%s",
 				html.EscapeString(strings.Replace(evo.SkillMin(&VcData), "\n", "<br />", -1)),
 				html.EscapeString(strings.Replace(evo.SkillMax(&VcData), "\n", "<br />", -1)),
-				evo.SkillProcs(&VcData))
+				evo.SkillProcs(&VcData),
+				randomSkillEffects(evo.Skill1(&VcData), "a"),
+			)
 		}
 		if gevo, ok := evolutions["GA"]; ok {
 			gSkillName := strings.Replace(gevo.Skill1Name(&VcData), "☆", "", 1)
 			if gSkillName != aSkillName {
 				fmt.Fprintf(w, "|skill ga = %s\n", html.EscapeString(gSkillName))
 			}
-			fmt.Fprintf(w, "|skill ga lv1 = %s\n|skill ga lv10 = %s\n|procs ga = %s\n",
+			fmt.Fprintf(w, "|skill ga lv1 = %s\n|skill ga lv10 = %s\n|procs ga = %s\n%s",
 				html.EscapeString(strings.Replace(gevo.SkillMin(&VcData), "\n", "<br />", -1)),
 				html.EscapeString(strings.Replace(gevo.SkillMax(&VcData), "\n", "<br />", -1)),
-				gevo.SkillProcs(&VcData))
+				gevo.SkillProcs(&VcData),
+				randomSkillEffects(gevo.Skill1(&VcData), "ga"),
+			)
 		}
 	}
 	if evo, ok := evolutions["G"]; ok {
@@ -173,21 +182,25 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		if gSkillName != firstEvo.Skill1Name(&VcData) {
 			fmt.Fprintf(w, "|skill g = %s\n", html.EscapeString(gSkillName))
 		}
-		fmt.Fprintf(w, "|skill g lv1 = %s\n|skill g lv10 = %s\n|procs g = %s\n",
+		fmt.Fprintf(w, "|skill g lv1 = %s\n|skill g lv10 = %s\n|procs g = %s\n%s",
 			html.EscapeString(strings.Replace(evo.SkillMin(&VcData), "\n", "<br />", -1)),
 			html.EscapeString(strings.Replace(evo.SkillMax(&VcData), "\n", "<br />", -1)),
-			evo.SkillProcs(&VcData))
+			evo.SkillProcs(&VcData),
+			randomSkillEffects(evo.Skill1(&VcData), "g"),
+		)
 		skill2 := evo.Skill2(&VcData)
 		if skill2 != nil {
 			fs2 := firstEvo.Skill2(&VcData)
 			if fs2 == nil || fs2.Id != skill2.Id {
 				gSkill2Name := strings.Replace(skill2.Name, "☆", "", 1)
 				if gSkill2Name != gSkillName {
-					fmt.Fprintf(w, "|skill g = %s\n", html.EscapeString(gSkill2Name))
+					fmt.Fprintf(w, "|skill g2 = %s\n", html.EscapeString(gSkill2Name))
 				}
-				fmt.Fprintf(w, "|skill g2 lv1 = %s\n|procs g2 = %d\n",
+				fmt.Fprintf(w, "|skill g2 lv1 = %s\n|procs g2 = %d\n%s",
 					html.EscapeString(strings.Replace(skill2.SkillMin(), "\n", "<br />", -1)),
-					skill2.MaxCount)
+					skill2.MaxCount,
+					randomSkillEffects(skill2, "g2"),
+				)
 
 				// Check if the second skill expires
 				if (skill2.PublicEndDatetime.After(time.Time{})) {
@@ -240,7 +253,21 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	// fmt.Fprintf(w,"|likeability 0 = %s\n|likeability 1 = %s\n|likeability 2 = %s\n|likeability 3 = %s\n|likeability 4 = %s\n|likeability 5 =%s\n",)
+	var aw *vc.Archwitch
+	for _, evo := range evolutions {
+		if nil != evo.Archwitch(&VcData) {
+			aw = evo.Archwitch(&VcData)
+			break
+		}
+	}
+	if aw != nil {
+		for _, like := range aw.Likeability(&VcData) {
+			fmt.Fprintf(w, "|likeability %d = %s\n",
+				like.Friendship,
+				html.EscapeString(strings.Replace(like.Likability, "\n", "<br />", -1)),
+			)
+		}
+	}
 
 	if turnOverFrom != nil {
 		fmt.Fprintf(w, "|turnoverfrom = %s\n", turnOverFrom.Name)
@@ -267,17 +294,6 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprintf(w, "|name 5 = %s|rarity 5 = %s\n", mats[4].Name, mats[4].Rarity())
 			}
 			io.WriteString(w, "}}\n")
-		}
-	}
-	if card.Skill1(&VcData) != nil && card.Skill1(&VcData).EffectId == 36 {
-		// Random Skill
-		bs := card.Skill1(&VcData)
-		io.WriteString(w, "\n==''Notes''==\nThe list of random skills she may fire are as follows:\n")
-		for _, v := range []int{bs.EffectParam, bs.EffectParam2, bs.EffectParam3, bs.EffectParam4, bs.EffectParam5} {
-			rs := vc.SkillScan(v, VcData.Skills)
-			if rs != nil {
-				fmt.Fprintf(w, "* %s \n", rs.SkillMin())
-			}
 		}
 	}
 	io.WriteString(w, "</textarea></div>")
@@ -377,6 +393,23 @@ func maxStatFollower(evo vc.Card, numOfEvos int) string {
 		return strconv.Itoa(evo.MaxFollower)
 	}
 	return "?"
+}
+
+func randomSkillEffects(bs *vc.Skill, evoMod string) (ret string) {
+	ret = ""
+	if evoMod != "" {
+		evoMod += " "
+	}
+	if bs != nil && bs.EffectId == 36 {
+		// Random Skill
+		for k, v := range []int{bs.EffectParam, bs.EffectParam2, bs.EffectParam3, bs.EffectParam4, bs.EffectParam5} {
+			rs := vc.SkillScan(v, VcData.Skills)
+			if rs != nil {
+				ret += fmt.Sprintf("|random %s%d = %s \n", evoMod, k+1, rs.FireMin())
+			}
+		}
+	}
+	return ret
 }
 
 func getEvolutions(card *vc.Card) map[string]vc.Card {

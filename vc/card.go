@@ -62,6 +62,7 @@ type Card struct {
 	Name string `json:"name"`
 	//Character Link
 	character *CardCharacter `json:"-"`
+	archwitch *Archwitch     `json:"-"`
 	//Skill Links
 	skill1        *Skill `json:"-"`
 	skill2        *Skill `json:"-"`
@@ -169,6 +170,18 @@ func (c *Card) Character(v *VcFile) *CardCharacter {
 		c.character = &v.CardCharacter[c.CardCharaId-1]
 	}
 	return c.character
+}
+
+func (c *Card) Archwitch(v *VcFile) *Archwitch {
+	if c.archwitch == nil {
+		for _, aw := range v.Archwitches {
+			if c.Id == aw.CardMasterId {
+				c.archwitch = &aw
+				break
+			}
+		}
+	}
+	return c.archwitch
 }
 
 func (c *Card) EvoAccident(cards []Card) *Card {

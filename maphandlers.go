@@ -115,7 +115,7 @@ func mapDetailWikiHandler(w http.ResponseWriter, r *http.Request, m *vc.Map) {
 			}
 		}
 	}
-	io.WriteString(w, "|}\n</textarea></div></body></html>")
+	io.WriteString(w, "|}\n[[Category:Story]]\n</textarea></div></body></html>")
 }
 
 func mapTableHandler(w http.ResponseWriter, r *http.Request) {
