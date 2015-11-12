@@ -11,6 +11,10 @@ import (
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
+const (
+	wikiFmt = "15:04 January 2 2006"
+)
+
 func eventHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>All Events</title>\n")
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
@@ -55,11 +59,66 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	event := vc.EventScan(eventId, VcData.Events)
 
+	evntTemplate := `{{Event
+|start jst = %s
+|end jst = %s
+|image = Banner {{PAGENAME}}.png
+|story = yes
+|%s|Ranking Reward
+|%s|Legendary Archwitch
+|%s|Fantasy Archwitch
+|%s|Archwitch
+}}
+
+%s
+
+==Rewards==
+{{Rewards8
+|ranking ur = %[3]s
+|ranking sr = %[5]s
+|ranking r = %[8]s
+|progress point = 
+|progress point sr = 
+}}
+
+==Ranking Trend==
+{| class="article-table" style="text-align:right" border="1"
+|-
+!Date (JST)
+!Rank 1
+!Rank 50
+!Rank 100
+!Rank 300
+!Rank 1000
+!Rank 3000%s
+|}
+%s
+
+{{NavEvent|%s|%s}}`
+
+	rtrend := ""
+	for i := event.StartDatetime.Add(24 * time.Hour); event.EndDatetime.After(i.Add(-24 * time.Hour)); i = i.Add(24 * time.Hour) {
+		rtrend += fmt.Sprintf("\n|-\n|%s\n|\n|\n|\n|\n|\n|", i.Format("January _2"))
+	}
+
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", event.Name)
 	fmt.Fprintf(w, "<div style=\"float:left\">Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", event.Name)
 	fmt.Fprintf(w, "<a href=\"/maps/%d\">Map Information</a>\n<br />", event.MapId)
 	io.WriteString(w, "<textarea style=\"width:800px;height:760px\">")
-	io.WriteString(w, html.EscapeString(event.Description))
+	fmt.Fprintf(w, evntTemplate,
+		event.StartDatetime.Format(wikiFmt), // start
+		event.EndDatetime.Format(wikiFmt),   // end
+		"", // rank reward
+		"", // legendary archwitch
+		"", // Fantasy Archwitch
+		"", // Regular Archwitch
+		html.EscapeString(event.Description),
+		"",     // R reward
+		rtrend, // Rank trend
+		"",     // sub event (AUB)
+		"",     //Previous event name
+		"",     // next event name
+	)
 	io.WriteString(w, "</textarea></div>")
 
 	io.WriteString(w, "</body></html>")
