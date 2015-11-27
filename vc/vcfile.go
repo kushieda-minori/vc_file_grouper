@@ -438,8 +438,9 @@ func filter(s string) string {
 	if s == "null" {
 		return ""
 	}
+	ret := strings.TrimSpace(s)
 	// standardize utf enocoded symbols
-	ret := strings.Replace(s, "％", "%", -1)
+	ret = strings.Replace(ret, "％", "%", -1)
 	ret = strings.Replace(ret, "　", " ", -1)
 	ret = strings.Replace(ret, "／", "/", -1)
 	// game controls that aren't needed for wikia
@@ -459,8 +460,9 @@ func filter(s string) string {
 var regexpSlash = regexp.MustCompile("\\s*[/]\\s*")
 
 func filterSkill(s string) string {
+	ret := strings.TrimSpace(s)
 	//element icons
-	ret := strings.Replace(s, "<img=24>", "{{Passion}}", -1)
+	ret = strings.Replace(ret, "<img=24>", "{{Passion}}", -1)
 	ret = strings.Replace(ret, "<img=25>", "{{Cool}}", -1)
 	ret = strings.Replace(ret, "<img=26>", "{{Dark}}", -1)
 	ret = strings.Replace(ret, "<img=27>", "{{Light}}", -1)
@@ -472,12 +474,13 @@ func filterSkill(s string) string {
 }
 
 func filterColors(s string) string {
-	ret := s
+	ret := strings.TrimSpace(s)
 	rc, _ := regexp.Compile("<col=(.+?)>")
 	ret = rc.ReplaceAllString(ret, "<span class=\"vc_color$1\">")
 
 	ret = strings.Replace(ret, "</col>", "</span>", -1)
 
+	// strip all size commands out
 	rs, _ := regexp.Compile("<(/?)size(=.+?)?>")
 	ret = rs.ReplaceAllLiteralString(ret, "")
 	return ret
