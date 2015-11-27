@@ -192,10 +192,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		if skill2 != nil {
 			fs2 := firstEvo.Skill2(&VcData)
 			if fs2 == nil || fs2.Id != skill2.Id {
-				gSkill2Name := strings.Replace(skill2.Name, "☆", "", 1)
-				if gSkill2Name != gSkillName {
-					fmt.Fprintf(w, "|skill g2 = %s\n", html.EscapeString(gSkill2Name))
-				}
+				fmt.Fprintf(w, "|skill g2 = %s\n", html.EscapeString(skill2.Name))
 				fmt.Fprintf(w, "|skill g2 lv1 = %s\n|procs g2 = %d\n%s",
 					html.EscapeString(strings.Replace(skill2.SkillMin(), "\n", "<br />", -1)),
 					skill2.MaxCount,
