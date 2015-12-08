@@ -149,6 +149,21 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			if (skill2.PublicEndDatetime.After(time.Time{})) {
 				fmt.Fprintf(w, "|skill 2 end = %v\n", skill2.PublicEndDatetime)
 			}
+		} else if lastEvo.Id > 0 {
+			skill2 = lastEvo.Skill2(&VcData)
+			if skill2 != nil {
+				fmt.Fprintf(w, "|skill 2 = %s\n|skill 2 lv10 = %s\n|procs 2 = %d\n%s",
+					html.EscapeString(skill2.Name),
+					html.EscapeString(strings.Replace(skill2.SkillMin(), "\n", "<br />", -1)),
+					skill2.MaxCount,
+					randomSkillEffects(skill2, "2"),
+				)
+
+				// Check if the second skill expires
+				if (skill2.PublicEndDatetime.After(time.Time{})) {
+					fmt.Fprintf(w, "|skill 2 end = %v\n", skill2.PublicEndDatetime)
+				}
+			}
 		}
 	} else {
 		io.WriteString(w, "|rarity = \n|skill = \n|skill lv1 = \n|skill lv10 = \n|procs = \n")
