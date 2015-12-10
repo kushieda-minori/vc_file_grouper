@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -86,6 +87,11 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	// File header
 	io.WriteString(w, "<html><body>\n")
+	fmt.Fprintf(w, "<p>Version: %d,&nbsp;&nbsp;&nbsp;&nbsp;Timestamp: %d,&nbsp;&nbsp;&nbsp;&nbsp;JST: %s</p>\n",
+		VcData.Version,
+		VcData.Common.UnixTime.Unix(),
+		VcData.Common.UnixTime.Format(time.RFC3339),
+	)
 	io.WriteString(w, "<a href=\"/decode\" >Decode All Files</a><br />\n")
 	io.WriteString(w, "<a href=\"/cards\" >Card List</a><br />\n")
 	io.WriteString(w, "<a href=\"/cards/table\" >Card List as a Table</a><br />\n")
