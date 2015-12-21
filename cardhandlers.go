@@ -358,6 +358,29 @@ func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func cardTableHandler(w http.ResponseWriter, r *http.Request) {
+	filter := func(card *vc.Card) (match bool) {
+		qs := r.URL.Query()
+		match = true
+		if len(qs) < 1 {
+			return
+		}
+		if name := qs.Get("name"); name != "" {
+			match = match && strings.Contains(strings.ToLower(card.Name), strings.ToLower(name))
+		}
+		if skillname := qs.Get("skillname"); skillname != "" && match {
+			var s1, s2 bool
+			if skill1 := card.Skill1(&VcData); skill1 != nil {
+				s1 = skill1.Name != "" && strings.Contains(strings.ToLower(skill1.Name), strings.ToLower(skillname))
+				//os.Stdout.WriteString(skill1.Name + " " + strconv.FormatBool(s1) + "\n")
+			}
+			if skill2 := card.Skill2(&VcData); skill2 != nil {
+				s2 = skill2.Name != "" && strings.Contains(strings.ToLower(skill2.Name), strings.ToLower(skillname))
+				//os.Stdout.WriteString(skill2.Name + " " + strconv.FormatBool(s2) + "\n")
+			}
+			match = match && (s1 || s2)
+		}
+		return
+	}
 	// File header
 	io.WriteString(w, "<html><head><title>All Cards</title>\n")
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
@@ -368,6 +391,9 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
 	for _, card := range VcData.Cards {
+		if !filter(&card) {
+			continue
+		}
 		skill1 := card.Skill1(&VcData)
 		if skill1 == nil {
 			skill1 = &vc.Skill{}

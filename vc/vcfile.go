@@ -197,7 +197,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) != len(friendship_max) {
+	if len(v.CardCharacter) > len(friendship_max) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character friendship_max", len(v.CardCharacter), len(friendship_max))
@@ -470,6 +470,7 @@ func filterSkill(s string) string {
 	ret = regexpSlash.ReplaceAllString(ret, " / ")
 	// make counter attack consistent
 	ret = strings.Replace(ret, "% Counter", "%\nCounter", -1)
+	ret = strings.Replace(ret, "%, Counter", "%\nCounter", -1)
 	return ret
 }
 
