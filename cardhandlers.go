@@ -358,8 +358,8 @@ func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func cardTableHandler(w http.ResponseWriter, r *http.Request) {
+	qs := r.URL.Query()
 	filter := func(card *vc.Card) (match bool) {
-		qs := r.URL.Query()
 		match = true
 		if len(qs) < 1 {
 			return
@@ -382,14 +382,24 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// File header
-	io.WriteString(w, "<html><head><title>All Cards</title>\n")
-	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
-	io.WriteString(w, "</head><body>\n")
-	io.WriteString(w, "<div>\n")
-	io.WriteString(w, "<table><thead><tr>\n")
-	io.WriteString(w, "<th>_id</th><th>card_no</th><th>name</th><th>evolution_rank</th><th>Next Evo</th><th>Rarity</th><th>Element</th><th>Character ID</th><th>deck_cost</th><th>default_offense</th><th>default_defense</th><th>default_follower</th><th>max_offense</th><th>max_defense</th><th>max_follower</th><th>Skill 1 Name</th><th>Skill Min</th><th>Skill Max</th><th>Skill Procs</th><th>Min Effect</th><th>Min Rate</th><th>Max Effect</th><th>Max Rate</th><th>Target Scope</th><th>Target Logic</th><th>Skill 2</th><th>Skill Special</th><th>Description</th><th>Friendship</th><th>Login</th><th>Meet</th><th>Battle Start</th><th>Battle End</th><th>Friendship Max</th><th>Friendship Event</th>\n")
-	io.WriteString(w, "</tr></thead>\n")
-	io.WriteString(w, "<tbody>\n")
+	fmt.Fprintf(w, `<html><head><title>All Cards</title>
+<style>table, th, td {border: 1px solid black;};</style>
+</head>
+<body>
+<form method="GET">
+<label for="f_name">Name:</label><input id="f_name" name="name" value="%s" />
+<label for="f_skillname">Skill Name:</label><input id="f_skillname" name="skillname" value="%s" />
+<button type="submit">Submit</button>
+</form>
+<div>
+<table><thead><tr>
+<th>_id</th><th>card_no</th><th>name</th><th>evolution_rank</th><th>Next Evo</th><th>Rarity</th><th>Element</th><th>Character ID</th><th>deck_cost</th><th>default_offense</th><th>default_defense</th><th>default_follower</th><th>max_offense</th><th>max_defense</th><th>max_follower</th><th>Skill 1 Name</th><th>Skill Min</th><th>Skill Max</th><th>Skill Procs</th><th>Min Effect</th><th>Min Rate</th><th>Max Effect</th><th>Max Rate</th><th>Target Scope</th><th>Target Logic</th><th>Skill 2</th><th>Skill Special</th><th>Description</th><th>Friendship</th><th>Login</th><th>Meet</th><th>Battle Start</th><th>Battle End</th><th>Friendship Max</th><th>Friendship Event</th>
+</tr></thead>
+<tbody>
+`,
+		qs.Get("name"),
+		qs.Get("skillname"),
+	)
 	for _, card := range VcData.Cards {
 		if !filter(&card) {
 			continue

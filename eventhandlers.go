@@ -112,7 +112,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		"", // legendary archwitch
 		"", // Fantasy Archwitch
 		"", // Regular Archwitch
-		html.EscapeString(event.Description),
+		html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 		"",     // R reward
 		rtrend, // Rank trend
 		"",     // sub event (AUB)
