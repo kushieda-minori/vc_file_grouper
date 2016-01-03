@@ -285,6 +285,21 @@ func CardScan(cardId int, cards []Card) *Card {
 	return nil
 }
 
+func CardScanImage(cardId string, cards []Card) *Card {
+	if cardId != "" {
+		i, err := strconv.Atoi(cardId)
+		if err != nil {
+			return nil
+		}
+		for k, val := range cards {
+			if val.CardNo == i {
+				return &cards[k]
+			}
+		}
+	}
+	return nil
+}
+
 func (c *Card) Skill1Name(v *VcFile) string {
 	s := c.Skill1(v)
 	if s == nil {

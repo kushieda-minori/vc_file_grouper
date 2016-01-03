@@ -18,7 +18,7 @@ func cardHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>All Cards</title></head><body>\n")
 	for _, card := range VcData.Cards {
 		fmt.Fprintf(w,
-			"<div style=\"float: left; margin: 3px\"><img src=\"/cardthumbs/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></div>",
+			"<div style=\"float: left; margin: 3px\"><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/images/cards/detail/%d\">%s</a></div>",
 			card.Image(),
 			card.Id,
 			card.Name)
@@ -120,18 +120,18 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if firstEvo.Id > 0 {
 		fmt.Fprintf(w, "|rarity = %s\n|skill = %s\n|skill lv1 = %s\n|skill lv10 = %s\n|procs = %s\n%s",
 			firstEvo.Rarity(),
-			html.EscapeString(firstEvo.Skill1Name(&VcData)),
-			html.EscapeString(strings.Replace(firstEvo.SkillMin(&VcData), "\n", "<br />", -1)),
-			html.EscapeString(strings.Replace(firstEvo.SkillMax(&VcData), "\n", "<br />", -1)),
-			firstEvo.SkillProcs(&VcData),
-			randomSkillEffects(firstEvo.Skill1(&VcData), ""),
+			html.EscapeString(firstEvo.Skill1Name(VcData)),
+			html.EscapeString(strings.Replace(firstEvo.SkillMin(VcData), "\n", "<br />", -1)),
+			html.EscapeString(strings.Replace(firstEvo.SkillMax(VcData), "\n", "<br />", -1)),
+			firstEvo.SkillProcs(VcData),
+			randomSkillEffects(firstEvo.Skill1(VcData), ""),
 		)
 
-		skill2 := firstEvo.Skill2(&VcData)
+		skill2 := firstEvo.Skill2(VcData)
 		if skill2 != nil {
 			lastEvoSkill2Max := ""
 			if lastEvo.Id > 0 {
-				lastEvoSkill2 := lastEvo.Skill2(&VcData)
+				lastEvoSkill2 := lastEvo.Skill2(VcData)
 				if lastEvoSkill2.Id != skill2.Id {
 					lastEvoSkill2Max = "\n|skill 2 lv10 = " +
 						html.EscapeString(strings.Replace(lastEvoSkill2.SkillMax(), "\n", "<br />", -1))
@@ -150,7 +150,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprintf(w, "|skill 2 end = %v\n", skill2.PublicEndDatetime)
 			}
 		} else if lastEvo.Id > 0 {
-			skill2 = lastEvo.Skill2(&VcData)
+			skill2 = lastEvo.Skill2(VcData)
 			if skill2 != nil {
 				fmt.Fprintf(w, "|skill 2 = %s\n|skill 2 lv10 = %s\n|procs 2 = %d\n%s",
 					html.EscapeString(skill2.Name),
@@ -169,43 +169,43 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "|rarity = \n|skill = \n|skill lv1 = \n|skill lv10 = \n|procs = \n")
 	}
 	if evo, ok := evolutions["A"]; ok {
-		aSkillName := evo.Skill1Name(&VcData)
-		if aSkillName != firstEvo.Skill1Name(&VcData) {
+		aSkillName := evo.Skill1Name(VcData)
+		if aSkillName != firstEvo.Skill1Name(VcData) {
 			fmt.Fprintf(w, "|skill a = %s\n", html.EscapeString(aSkillName))
 			fmt.Fprintf(w, "|skill a lv1 = %s\n|skill a lv10 = %s\n|procs a = %s\n%s",
-				html.EscapeString(strings.Replace(evo.SkillMin(&VcData), "\n", "<br />", -1)),
-				html.EscapeString(strings.Replace(evo.SkillMax(&VcData), "\n", "<br />", -1)),
-				evo.SkillProcs(&VcData),
-				randomSkillEffects(evo.Skill1(&VcData), "a"),
+				html.EscapeString(strings.Replace(evo.SkillMin(VcData), "\n", "<br />", -1)),
+				html.EscapeString(strings.Replace(evo.SkillMax(VcData), "\n", "<br />", -1)),
+				evo.SkillProcs(VcData),
+				randomSkillEffects(evo.Skill1(VcData), "a"),
 			)
 		}
 		if gevo, ok := evolutions["GA"]; ok {
-			gSkillName := strings.Replace(gevo.Skill1Name(&VcData), "☆", "", 1)
+			gSkillName := strings.Replace(gevo.Skill1Name(VcData), "☆", "", 1)
 			if gSkillName != aSkillName {
 				fmt.Fprintf(w, "|skill ga = %s\n", html.EscapeString(gSkillName))
 			}
 			fmt.Fprintf(w, "|skill ga lv1 = %s\n|skill ga lv10 = %s\n|procs ga = %s\n%s",
-				html.EscapeString(strings.Replace(gevo.SkillMin(&VcData), "\n", "<br />", -1)),
-				html.EscapeString(strings.Replace(gevo.SkillMax(&VcData), "\n", "<br />", -1)),
-				gevo.SkillProcs(&VcData),
-				randomSkillEffects(gevo.Skill1(&VcData), "ga"),
+				html.EscapeString(strings.Replace(gevo.SkillMin(VcData), "\n", "<br />", -1)),
+				html.EscapeString(strings.Replace(gevo.SkillMax(VcData), "\n", "<br />", -1)),
+				gevo.SkillProcs(VcData),
+				randomSkillEffects(gevo.Skill1(VcData), "ga"),
 			)
 		}
 	}
 	if evo, ok := evolutions["G"]; ok {
-		gSkillName := strings.Replace(evo.Skill1Name(&VcData), "☆", "", 1)
-		if gSkillName != firstEvo.Skill1Name(&VcData) {
+		gSkillName := strings.Replace(evo.Skill1Name(VcData), "☆", "", 1)
+		if gSkillName != firstEvo.Skill1Name(VcData) {
 			fmt.Fprintf(w, "|skill g = %s\n", html.EscapeString(gSkillName))
 		}
 		fmt.Fprintf(w, "|skill g lv1 = %s\n|skill g lv10 = %s\n|procs g = %s\n%s",
-			html.EscapeString(strings.Replace(evo.SkillMin(&VcData), "\n", "<br />", -1)),
-			html.EscapeString(strings.Replace(evo.SkillMax(&VcData), "\n", "<br />", -1)),
-			evo.SkillProcs(&VcData),
-			randomSkillEffects(evo.Skill1(&VcData), "g"),
+			html.EscapeString(strings.Replace(evo.SkillMin(VcData), "\n", "<br />", -1)),
+			html.EscapeString(strings.Replace(evo.SkillMax(VcData), "\n", "<br />", -1)),
+			evo.SkillProcs(VcData),
+			randomSkillEffects(evo.Skill1(VcData), "g"),
 		)
-		skill2 := evo.Skill2(&VcData)
+		skill2 := evo.Skill2(VcData)
 		if skill2 != nil {
-			fs2 := firstEvo.Skill2(&VcData)
+			fs2 := firstEvo.Skill2(VcData)
 			if fs2 == nil || fs2.Id != skill2.Id {
 				fmt.Fprintf(w, "|skill g2 = %s\n", html.EscapeString(skill2.Name))
 				fmt.Fprintf(w, "|skill g2 lv1 = %s\n|procs g2 = %d\n%s",
@@ -239,14 +239,14 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			evo.DefaultFollower, maxStatFollower(evo, len(evolutions)))
 	}
 	fmt.Fprintf(w, "|description = %s\n|friendship = %s\n",
-		html.EscapeString(card.Description(&VcData)), html.EscapeString(strings.Replace(card.Friendship(&VcData), "\n", "<br />", -1)))
-	login := card.Login(&VcData)
+		html.EscapeString(card.Description(VcData)), html.EscapeString(strings.Replace(card.Friendship(VcData), "\n", "<br />", -1)))
+	login := card.Login(VcData)
 	if len(strings.TrimSpace(login)) > 0 {
 		fmt.Fprintf(w, "|login = %s\n", html.EscapeString(strings.Replace(login, "\n", "<br />", -1)))
 	}
-	fmt.Fprintf(w, "|meet = %s\n|battle start = %s\n|battle end = %s\n|friendship max = %s\n|friendship event = %s\n", html.EscapeString(strings.Replace(card.Meet(&VcData), "\n", "<br />", -1)),
-		html.EscapeString(strings.Replace(card.BattleStart(&VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.BattleEnd(&VcData), "\n", "<br />", -1)),
-		html.EscapeString(strings.Replace(card.FriendshipMax(&VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.FriendshipEvent(&VcData), "\n", "<br />", -1)))
+	fmt.Fprintf(w, "|meet = %s\n|battle start = %s\n|battle end = %s\n|friendship max = %s\n|friendship event = %s\n", html.EscapeString(strings.Replace(card.Meet(VcData), "\n", "<br />", -1)),
+		html.EscapeString(strings.Replace(card.BattleStart(VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.BattleEnd(VcData), "\n", "<br />", -1)),
+		html.EscapeString(strings.Replace(card.FriendshipMax(VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.FriendshipEvent(VcData), "\n", "<br />", -1)))
 
 	var awakenInfo *vc.CardAwaken
 	for _, val := range VcData.Awakenings {
@@ -267,13 +267,13 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	var aw *vc.Archwitch
 	for _, evo := range evolutions {
-		if nil != evo.Archwitch(&VcData) {
-			aw = evo.Archwitch(&VcData)
+		if nil != evo.Archwitch(VcData) {
+			aw = evo.Archwitch(VcData)
 			break
 		}
 	}
 	if aw != nil {
-		for _, like := range aw.Likeability(&VcData) {
+		for _, like := range aw.Likeability(VcData) {
 			fmt.Fprintf(w, "|likeability %d = %s\n",
 				like.Friendship,
 				html.EscapeString(strings.Replace(like.Likability, "\n", "<br />", -1)),
@@ -295,7 +295,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if len(amalgamations) > 0 {
 		io.WriteString(w, "\n==''[[Amalgamation]]''==\n")
 		for _, v := range amalgamations {
-			mats := v.Materials(&VcData)
+			mats := v.Materials(VcData)
 			l := len(mats)
 			fmt.Fprintf(w, "{{Amalgamation|matcount = %d\n|name 1 = %s|rarity 1 = %s\n|name 2 = %s|rarity 2 = %s\n|name 3 = %s|rarity 3 = %s\n",
 				l-1, mats[0].Name, mats[0].Rarity(), mats[1].Name, mats[1].Rarity(), mats[2].Name, mats[2].Rarity())
@@ -314,7 +314,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	for _, k := range evokeys {
 		evo := evolutions[k]
 		fmt.Fprintf(w,
-			"<div style=\"float: left; margin: 3px\"><img src=\"/cardthumbs/%s\"/><br />%s : %s☆</div>",
+			"<div style=\"float: left; margin: 3px\"><img src=\"/images/cardthumb/%s\"/><br />%s : %s☆</div>",
 			evo.Image(),
 			evo.Name, k)
 	}
@@ -322,7 +322,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	for _, k := range evokeys {
 		evo := evolutions[k]
 		fmt.Fprintf(w,
-			"<div style=\"float: left; margin: 3px\"><img src=\"/cardimages/%s\"/><br />%s : %s☆</div>",
+			"<div style=\"float: left; margin: 3px\"><img src=\"/images/card/%s\"/><br />%s : %s☆</div>",
 			evo.Image(),
 			evo.Name, k)
 	}
@@ -343,11 +343,11 @@ func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 		err := cw.Write([]string{strconv.Itoa(card.Id), fmt.Sprintf("cd_%05d", card.CardNo), card.Name, strconv.Itoa(card.EvolutionRank),
 			strconv.Itoa(card.TransCardId), card.Rarity(), card.Element(), strconv.Itoa(card.DeckCost), strconv.Itoa(card.DefaultOffense),
 			strconv.Itoa(card.DefaultDefense), strconv.Itoa(card.DefaultFollower), strconv.Itoa(card.MaxOffense),
-			strconv.Itoa(card.MaxDefense), strconv.Itoa(card.MaxFollower), card.Skill1Name(&VcData),
-			card.SkillMin(&VcData), card.SkillMax(&VcData), card.SkillProcs(&VcData), card.SkillTarget(&VcData),
-			card.SkillTargetLogic(&VcData), card.Skill2Name(&VcData), card.SpecialSkill1Name(&VcData),
-			card.Description(&VcData), card.Friendship(&VcData), card.Login(&VcData), card.Meet(&VcData),
-			card.BattleStart(&VcData), card.BattleEnd(&VcData), card.FriendshipMax(&VcData), card.FriendshipEvent(&VcData),
+			strconv.Itoa(card.MaxDefense), strconv.Itoa(card.MaxFollower), card.Skill1Name(VcData),
+			card.SkillMin(VcData), card.SkillMax(VcData), card.SkillProcs(VcData), card.SkillTarget(VcData),
+			card.SkillTargetLogic(VcData), card.Skill2Name(VcData), card.SpecialSkill1Name(VcData),
+			card.Description(VcData), card.Friendship(VcData), card.Login(VcData), card.Meet(VcData),
+			card.BattleStart(VcData), card.BattleEnd(VcData), card.FriendshipMax(VcData), card.FriendshipEvent(VcData),
 			strconv.Itoa(card.IsClosed),
 		})
 		if err != nil {
@@ -369,11 +369,11 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if skillname := qs.Get("skillname"); skillname != "" && match {
 			var s1, s2 bool
-			if skill1 := card.Skill1(&VcData); skill1 != nil {
+			if skill1 := card.Skill1(VcData); skill1 != nil {
 				s1 = skill1.Name != "" && strings.Contains(strings.ToLower(skill1.Name), strings.ToLower(skillname))
 				//os.Stdout.WriteString(skill1.Name + " " + strconv.FormatBool(s1) + "\n")
 			}
-			if skill2 := card.Skill2(&VcData); skill2 != nil {
+			if skill2 := card.Skill2(VcData); skill2 != nil {
 				s2 = skill2.Name != "" && strings.Contains(strings.ToLower(skill2.Name), strings.ToLower(skillname))
 				//os.Stdout.WriteString(skill2.Name + " " + strconv.FormatBool(s2) + "\n")
 			}
@@ -404,21 +404,21 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 		if !filter(&card) {
 			continue
 		}
-		skill1 := card.Skill1(&VcData)
+		skill1 := card.Skill1(VcData)
 		if skill1 == nil {
 			skill1 = &vc.Skill{}
 		}
-		// skill2 := card.Skill2(&VcData)
-		// skillS1 := card.SpecialSkill1(&VcData)
+		// skill2 := card.Skill2(VcData)
+		// skillS1 := card.SpecialSkill1(VcData)
 		fmt.Fprintf(w, "<tr><td>%d</td><td><a href=\"/cards/detail/%[1]d\">%05[2]d</a></td><td><a href=\"/cards/detail/%[1]d\">%[3]s</a></td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></td></tr>\n",
 			card.Id, card.CardNo, card.Name, card.EvolutionRank, card.EvolutionCardId, card.Rarity(), card.Element(), card.CardCharaId,
 			card.DeckCost, card.DefaultOffense, card.DefaultDefense, card.DefaultFollower, card.MaxOffense,
-			card.MaxDefense, card.MaxFollower, card.Skill1Name(&VcData), card.SkillMin(&VcData), card.SkillMax(&VcData),
-			card.SkillProcs(&VcData), skill1.EffectDefaultValue, skill1.DefaultRatio, skill1.EffectMaxValue, skill1.MaxRatio,
-			card.SkillTarget(&VcData), card.SkillTargetLogic(&VcData), card.Skill2Name(&VcData),
-			card.SpecialSkill1Name(&VcData), card.Description(&VcData), card.Friendship(&VcData), card.Login(&VcData),
-			card.Meet(&VcData), card.BattleStart(&VcData), card.BattleEnd(&VcData), card.FriendshipMax(&VcData),
-			card.FriendshipEvent(&VcData))
+			card.MaxDefense, card.MaxFollower, card.Skill1Name(VcData), card.SkillMin(VcData), card.SkillMax(VcData),
+			card.SkillProcs(VcData), skill1.EffectDefaultValue, skill1.DefaultRatio, skill1.EffectMaxValue, skill1.MaxRatio,
+			card.SkillTarget(VcData), card.SkillTargetLogic(VcData), card.Skill2Name(VcData),
+			card.SpecialSkill1Name(VcData), card.Description(VcData), card.Friendship(VcData), card.Login(VcData),
+			card.Meet(VcData), card.BattleStart(VcData), card.BattleEnd(VcData), card.FriendshipMax(VcData),
+			card.FriendshipEvent(VcData))
 	}
 
 	io.WriteString(w, "</tbody></table></div></body></html>")
@@ -475,7 +475,7 @@ func getEvolutions(card *vc.Card) map[string]vc.Card {
 		if card.IsAmalgamation(VcData.Amalgamations) {
 			// check for a base amalgamation with the same name
 			// if there is one, use that for the base card
-			for _, amal := range card.Amalgamations(&VcData) {
+			for _, amal := range card.Amalgamations(VcData) {
 				if card.Id == amal.FusionCardId {
 					// material 1
 					ac := vc.CardScan(amal.Material1, VcData.Cards)
@@ -505,7 +505,7 @@ func getEvolutions(card *vc.Card) map[string]vc.Card {
 
 	// find the lowest evolution and work from there.
 	if card.Rarity()[0] == 'G' {
-		bc := card.AwakensFrom(&VcData)
+		bc := card.AwakensFrom(VcData)
 		if bc != nil {
 			// look for self amalgamation (like sulis)
 			amalBaseCard := getAmalBaseCard(bc)
@@ -548,7 +548,7 @@ func getEvolutions(card *vc.Card) map[string]vc.Card {
 	ret["H"] = *lastEvo
 
 	// check if the card has a known awakening:
-	cardg := lastEvo.AwakensTo(&VcData)
+	cardg := lastEvo.AwakensTo(VcData)
 	// this doesn't mean that the card has an awakening, it just makes it easier to find
 	if cardg != nil {
 		ret["G"] = *cardg
@@ -574,7 +574,7 @@ func getAmalgamations(evolutions map[string]vc.Card) []vc.Amalgamation {
 	amalgamations := make([]vc.Amalgamation, 0)
 	for _, evo := range evolutions {
 		// os.Stdout.WriteString(fmt.Sprintf("Evo: %d Accident: %d\n", evo.Id, evo.TransCardId))
-		a := evo.Amalgamations(&VcData)
+		a := evo.Amalgamations(VcData)
 		if len(a) > 0 && len(amalgamations) == 0 {
 			amalgamations = append(amalgamations, a...)
 		}

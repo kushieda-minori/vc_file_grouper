@@ -15,36 +15,37 @@ import (
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-var VcData vc.VcFile
+var VcData *vc.VcFile
 var masterDataStr string
+var vcfilepath string
 
 // Main function that starts the program
 func main() {
 	if len(os.Args) == 1 {
 		usage()
 		return
+	} else {
+		vcfilepath = os.Args[1]
 	}
 
-	if _, err := os.Stat(os.Args[1]); os.IsNotExist(err) {
+	if _, err := os.Stat(vcfilepath); os.IsNotExist(err) {
 		usage()
-		return
+		VcData = &vc.VcFile{}
+		//return
+	} else {
+		readMasterData(vcfilepath)
 	}
-
-	b, err := VcData.Read(os.Args[1])
-	if err != nil {
-		os.Stderr.WriteString(err.Error() + "\n")
-		return
-	}
-	masterDataStr = string(b)
 
 	//main page
 	http.HandleFunc("/", masterDataHandler)
 	//image locations
-	http.Handle("/cardimages/", http.StripPrefix("/cardimages/", http.FileServer(http.Dir(os.Args[1]+"/card/md"))))
-	http.Handle("/cardthumbs/", http.StripPrefix("/cardthumbs/", http.FileServer(http.Dir(os.Args[1]+"/card/thumb"))))
-	http.Handle("/cardimagesHD/", http.StripPrefix("/cardimagesHD/", http.FileServer(http.Dir(os.Args[1]+"/../hd/"))))
-	http.Handle("/eventimages/", http.StripPrefix("/eventimages/", http.FileServer(http.Dir(os.Args[1]+"/event/largeimage"))))
+	http.HandleFunc("/images/card/", imageCardHandler)
+	http.HandleFunc("/images/cardthumb/", imageCardThumbHandler)
+	http.HandleFunc("/images/cardHD/", imageCardHDHandler)
+	http.HandleFunc("/images/event/", imageEventHandler)
 
+	// vc master data
+	http.HandleFunc("/data/", dataHandler)
 	//dynamic pages
 	http.HandleFunc("/cards/", cardHandler)
 	http.HandleFunc("/cards/table/", cardTableHandler)
@@ -69,8 +70,10 @@ func main() {
 
 	http.HandleFunc("/raw/", rawDataHandler)
 
-	os.Stdout.WriteString("Listening on port 8585\n")
-	err = http.ListenAndServe(":8585", nil)
+	http.HandleFunc("/SHUTDOWN/", func(w http.ResponseWriter, r *http.Request) { os.Exit(0) })
+
+	os.Stdout.WriteString("Listening on port 8585. Connect to http://localhost:8585/\nPress <CTRL>+C to stop or close the terminal.\n")
+	err := http.ListenAndServe(":8585", nil)
 	if err != nil {
 		os.Stderr.WriteString(err.Error() + "\n")
 	}
@@ -80,6 +83,21 @@ func main() {
 func usage() {
 	os.Stderr.WriteString("You must pass the location of the files.\n" +
 		"Usage: " + os.Args[0] + " /path/to/com.nubee.valkyriecrusade/files\n")
+}
+
+func readMasterData(files string) error {
+	data := vc.VcFile{}
+	b, err := data.Read(files)
+	if err != nil {
+		if VcData == nil {
+			VcData = &data
+		}
+		os.Stderr.WriteString(err.Error() + "\n")
+		return err
+	}
+	VcData = &data
+	masterDataStr = string(b)
+	return nil
 }
 
 //Main index page
@@ -92,16 +110,20 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 		VcData.Common.UnixTime.Unix(),
 		VcData.Common.UnixTime.Format(time.RFC3339),
 	)
+	io.WriteString(w, "<a href=\"/data\" >Set Data Location</a><br />\n")
+	io.WriteString(w, "<br />\n")
 	io.WriteString(w, "<a href=\"/decode\" >Decode All Files</a><br />\n")
-	io.WriteString(w, "<a href=\"/cards\" >Card List</a><br />\n")
+	// io.WriteString(w, "<a href=\"/cards\" >Card List</a><br />\n")
 	io.WriteString(w, "<a href=\"/cards/table\" >Card List as a Table</a><br />\n")
 	io.WriteString(w, "<a href=\"/cards/csv\" >Card List as CSV</a><br />\n")
+	io.WriteString(w, "<a href=\"/events\" >Event List</a><br />\n")
 	io.WriteString(w, "<a href=\"/archwitches\" >Archwitch List</a><br />\n")
 	io.WriteString(w, "<a href=\"/skills/csv\" >Skill List as CSV</a><br />\n")
-	io.WriteString(w, "<a href=\"/events\" >Event List</a><br />\n")
 	io.WriteString(w, "<a href=\"/awakenings\" >List of Awakenings</a><br />\n")
 	io.WriteString(w, "<a href=\"/awakenings/csv\" >List of Awakenings as CSV</a><br />\n")
 	io.WriteString(w, "<a href=\"/raw\" >Raw data</a><br />\n")
+	io.WriteString(w, "<br />\n<br />\n")
+	io.WriteString(w, "<a href=\"/SHUTDOWN\" >SHUTDOWN</a><br />\n")
 
 	io.WriteString(w, "</body></html>")
 }
@@ -152,7 +174,7 @@ func rawDataHandler(w http.ResponseWriter, r *http.Request) {
 
 func decodeHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>File Decode</title></head><body>\nDecodng files<br />\n")
-	err := filepath.Walk(os.Args[1], func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(vcfilepath, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}

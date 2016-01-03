@@ -31,7 +31,7 @@ func (t *Timestamp) MarshalJSON() ([]byte, error) {
 	return []byte(stamp), nil
 }
 
-var location, _ = time.LoadLocation("Japan")
+var location, _ = time.LoadLocation("Asia/Tokyo")
 
 func (t *Timestamp) UnmarshalJSON(b []byte) error {
 	ts, err := strconv.Atoi(string(b))
@@ -454,6 +454,9 @@ func filter(s string) string {
 		ret = strings.Replace(ret, "  ", " ", -1)
 	}
 	//ret = strings.Replace(ret, "\n", "<br />", -1)
+
+	ret = strings.Replace(ret, "<img=5>", "[[File:Gemstone.png]]", -1)
+
 	return ret
 }
 
