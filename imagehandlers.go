@@ -42,12 +42,12 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 	if strings.HasSuffix(strings.ToLower(imgname), ".png") {
 		if _, err := os.Stat(fullpath); os.IsNotExist(err) {
 			// png file is not cached
-			if _, err := os.Stat(fullpath[len(fullpath)-4:]); os.IsNotExist(err) {
+			if _, err := os.Stat(fullpath[:len(fullpath)-4]); os.IsNotExist(err) {
 				// base image does not exist
 				http.Error(w, "Invalid Image location "+fullpath, http.StatusNotFound)
 				return
 			}
-			fullpath = fullpath[len(fullpath)-4:]
+			fullpath = fullpath[:len(fullpath)-4]
 			decodeOnFly = true
 		}
 		cardId = imgname[3 : len(imgname)-4]
@@ -83,7 +83,7 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 			fileName = fileName + "_" + strconv.Itoa(card.EvolutionRank) + ext
 		}
 	} else {
-		os.Stderr.WriteString("Card infor not found for image " + cardId + "\n")
+		os.Stderr.WriteString("Card info not found for image " + cardId + "\n")
 		if decodeOnFly {
 			fileName = imgname + ext
 		} else {
