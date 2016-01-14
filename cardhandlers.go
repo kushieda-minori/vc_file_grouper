@@ -18,7 +18,7 @@ func cardHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>All Cards</title></head><body>\n")
 	for _, card := range VcData.Cards {
 		fmt.Fprintf(w,
-			"<div style=\"float: left; margin: 3px\"><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/images/cards/detail/%d\">%s</a></div>",
+			"<div style=\"float: left; margin: 3px\"><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></div>",
 			card.Image(),
 			card.Id,
 			card.Name)
@@ -379,6 +379,18 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			match = match && (s1 || s2)
 		}
+		if skilldesc := qs.Get("skilldesc"); skilldesc != "" && match {
+			var s1, s2 bool
+			if skill1 := card.Skill1(VcData); skill1 != nil {
+				s1 = skill1.Fire != "" && strings.Contains(strings.ToLower(skill1.Fire), strings.ToLower(skilldesc))
+				//os.Stdout.WriteString(skill1.Fire + " " + strconv.FormatBool(s1) + "\n")
+			}
+			if skill2 := card.Skill2(VcData); skill2 != nil {
+				s2 = skill2.Fire != "" && strings.Contains(strings.ToLower(skill2.Fire), strings.ToLower(skilldesc))
+				//os.Stdout.WriteString(skill2.Fire + " " + strconv.FormatBool(s2) + "\n")
+			}
+			match = match && (s1 || s2)
+		}
 		return
 	}
 	// File header
@@ -389,6 +401,7 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 <form method="GET">
 <label for="f_name">Name:</label><input id="f_name" name="name" value="%s" />
 <label for="f_skillname">Skill Name:</label><input id="f_skillname" name="skillname" value="%s" />
+<label for="f_skilldesc">Skill Description:</label><input id="f_skilldesc" name="skilldesc" value="%s" />
 <button type="submit">Submit</button>
 </form>
 <div>
@@ -399,6 +412,7 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 `,
 		qs.Get("name"),
 		qs.Get("skillname"),
+		qs.Get("skilldesc"),
 	)
 	for _, card := range VcData.Cards {
 		if !filter(&card) {

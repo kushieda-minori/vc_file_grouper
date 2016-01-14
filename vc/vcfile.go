@@ -31,7 +31,7 @@ func (t *Timestamp) MarshalJSON() ([]byte, error) {
 	return []byte(stamp), nil
 }
 
-var location = time.FixedZone("Asia/Tokyo", 32400) //time.LoadLocation("Asia/Tokyo")
+var location = time.FixedZone("JST", 32400) //time.LoadLocation("Asia/Tokyo")
 
 func (t *Timestamp) UnmarshalJSON(b []byte) error {
 	ts, err := strconv.Atoi(string(b))

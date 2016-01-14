@@ -22,8 +22,7 @@ var vcfilepath string
 // Main function that starts the program
 func main() {
 	if len(os.Args) == 1 {
-		usage()
-		return
+		vcfilepath = "."
 	} else {
 		vcfilepath = os.Args[1]
 	}

@@ -77,10 +77,40 @@ func mapDetailWikiHandler(w http.ResponseWriter, r *http.Request, m *vc.Map) {
 	fmt.Fprintf(w, "<html><head><title>Map %s</title>\n", m.Name)
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
 	io.WriteString(w, "</head><body>\n")
-	fmt.Fprintf(w, "<h1>%s</h1>\n%s", m.Name, m.StartMsg)
+	fmt.Fprintf(w, `<h1>%s</h1>
+<p><a href="../%d/WIKI">prev</a> &nbsp; <a href="../%d/WIKI">next</a></p>
+<p>%s</p>`,
+		m.Name,
+		m.Id-1,
+		m.Id+1,
+		m.StartMsg,
+	)
 	io.WriteString(w, "<div>\n")
 	io.WriteString(w, "<textarea style=\"width:800px;height:760px\">\n")
-	io.WriteString(w, "[[File:Banner {{#titleparts:{{PAGENAME}}|1}}.png|link={{#titleparts:{{PAGENAME}}|1}}|680px]]\n\n{| border=\"0\" cellpadding=\"1\" cellspacing=\"1\" class=\"article-table wikitable\" style=\"width:680px;\" \n|-\n! scope=\"col\" style=\"width:120px;\" |Area\n! scope=\"col\"|Dialogue\n")
+	fmt.Fprintf(w, `{{#tag:gallery|
+Banner {{#titleparts:{{PAGENAME}}|1}}.png
+AreaMap %s.png
+BattleBG %d.png
+|type="slider"
+|widths="680"
+|position="left"
+|captionposition="within"
+|captionalign="center"
+|captionsize="small"
+|bordersize="none"
+|bordercolor="transparent"
+|hideaddbutton="true"
+|spacing="small"
+}}
+
+{| border="0" cellpadding="1" cellspacing="1" class="article-table wikitable" style="width:680px;" 
+|-
+! scope="col" style="width:120px;" |Area
+! scope="col"|Dialogue
+`,
+		m.Name,
+		0,
+	)
 
 	if m.StartMsg != "" {
 		fmt.Fprintf(w, "|-\n| align=\"center\" |%s\n|%s\n", m.Name, html.EscapeString(strings.Replace(m.StartMsg, "\n", " ", -1)))
