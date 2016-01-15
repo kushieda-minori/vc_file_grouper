@@ -2,9 +2,12 @@ package main
 
 import (
 	"bytes"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"zetsuboushita.net/vc_file_grouper/vc"
@@ -14,17 +17,58 @@ func imageCardHandler(w http.ResponseWriter, r *http.Request) {
 	//vcfilepath+"/card/md"
 	serveCardImage(vcfilepath+"/card/md/", "/images/card/", w, r)
 }
+
 func imageCardThumbHandler(w http.ResponseWriter, r *http.Request) {
-	//(vcfilepath+"/card/thumb"
+	//vcfilepath+"/card/thumb"
 	serveCardImage(vcfilepath+"/card/thumb/", "/images/cardthumb/", w, r)
 }
+
 func imageCardHDHandler(w http.ResponseWriter, r *http.Request) {
-	//vcfilepath+"/card/hd/"
+	//vcfilepath+"/card/hd"
 	serveCardImage(vcfilepath+"/card/hd/", "/images/cardHD/", w, r)
 }
+
 func imageEventHandler(w http.ResponseWriter, r *http.Request) {
-	//vcfilepath+"/event/largeimage"
-	//imgname := r.URL.Path[len("/images/event/"):]
+	//vcfilepath+"/event"
+	imgname := r.URL.Path[len("/images/event/"):]
+	if imgname == "" {
+		io.WriteString(w, "<html><body>")
+		err := filepath.Walk(vcfilepath+"/event", func(path string, info os.FileInfo, err error) error {
+			if info.IsDir() {
+				return nil
+			}
+			f, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			b := make([]byte, 4)
+			_, err = f.Read(b)
+			f.Close()
+			if err != nil {
+				return err
+			}
+			if bytes.Equal(b, []byte("CODE")) {
+				relPath := path[len(vcfilepath+"/event/"):]
+				fmt.Fprintf(w, `<div><a href="%[1]s"><img src="%[1]s"/></a><br />%[1]s</div>`, relPath)
+			}
+			return nil
+		})
+
+		if err != nil {
+			io.WriteString(w, err.Error()+"<br />\n")
+		}
+		io.WriteString(w, "</body></html>")
+		return
+	}
+	http.Error(w, "Invalid Image location "+imgname, http.StatusNotFound)
+}
+
+func imageBattleBGHandler(w http.ResponseWriter, r *http.Request) {
+	//imgname := r.URL.Path[len("/images/battle/bg/"):]
+}
+
+func imageBattleMapHandler(w http.ResponseWriter, r *http.Request) {
+	//imgname := r.URL.Path[len("/images/battle/map/"):]
 }
 
 func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r *http.Request) {
@@ -91,6 +135,11 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 		}
 	}
 
+	writeout(decodeOnFly, fullpath, fileName, w, r)
+
+}
+
+func writeout(decodeOnFly bool, fullpath string, fileName string, w http.ResponseWriter, r *http.Request) {
 	var b []byte
 	var err error
 	if decodeOnFly {
@@ -114,7 +163,6 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 	var buff bytes.Buffer
 	buff.Write(b)
 	buff.WriteTo(w)
-
 }
 
 func nthPos(s string, pat string, n int) int {

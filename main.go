@@ -42,6 +42,8 @@ func main() {
 	http.HandleFunc("/images/cardthumb/", imageCardThumbHandler)
 	http.HandleFunc("/images/cardHD/", imageCardHDHandler)
 	http.HandleFunc("/images/event/", imageEventHandler)
+	http.HandleFunc("/images/battle/bg/", imageBattleBGHandler)
+	http.HandleFunc("/images/battle/map/", imageBattleMapHandler)
 
 	// vc master data
 	http.HandleFunc("/data/", dataHandler)
@@ -103,28 +105,33 @@ func readMasterData(files string) error {
 func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	// File header
-	io.WriteString(w, "<html><body>\n")
-	fmt.Fprintf(w, "<p>Version: %d,&nbsp;&nbsp;&nbsp;&nbsp;Timestamp: %d,&nbsp;&nbsp;&nbsp;&nbsp;JST: %s</p>\n",
+	fmt.Fprintf(w, `<html><body>
+<p>Version: %d,&nbsp;&nbsp;&nbsp;&nbsp;Timestamp: %d,&nbsp;&nbsp;&nbsp;&nbsp;JST: %s</p>
+<a href="/data" >Set Data Location</a><br />
+<br />
+<a href="/decode" >Decode All Files</a><br />
+<br />
+<a href="/cards/table" >Card List as a Table</a><br />
+<a href="/events" >Event List</a><br />
+<a href="/archwitches" >Archwitch List</a><br />
+<br />
+<a href="/images/event/">Event Images</a>
+<br />
+<a href="/cards/csv" >Card List as CSV</a><br />
+<a href="/skills/csv" >Skill List as CSV</a><br />
+<br />
+<a href="/awakenings" >List of Awakenings</a><br />
+<a href="/awakenings/csv" >List of Awakenings as CSV</a><br />
+<a href="/raw" >Raw data</a><br />
+<br />
+<br />
+<a href="/SHUTDOWN" >SHUTDOWN</a><br />
+</body></html>`,
 		VcData.Version,
 		VcData.Common.UnixTime.Unix(),
 		VcData.Common.UnixTime.Format(time.RFC3339),
 	)
-	io.WriteString(w, "<a href=\"/data\" >Set Data Location</a><br />\n")
-	io.WriteString(w, "<br />\n")
-	io.WriteString(w, "<a href=\"/decode\" >Decode All Files</a><br />\n")
 	// io.WriteString(w, "<a href=\"/cards\" >Card List</a><br />\n")
-	io.WriteString(w, "<a href=\"/cards/table\" >Card List as a Table</a><br />\n")
-	io.WriteString(w, "<a href=\"/cards/csv\" >Card List as CSV</a><br />\n")
-	io.WriteString(w, "<a href=\"/events\" >Event List</a><br />\n")
-	io.WriteString(w, "<a href=\"/archwitches\" >Archwitch List</a><br />\n")
-	io.WriteString(w, "<a href=\"/skills/csv\" >Skill List as CSV</a><br />\n")
-	io.WriteString(w, "<a href=\"/awakenings\" >List of Awakenings</a><br />\n")
-	io.WriteString(w, "<a href=\"/awakenings/csv\" >List of Awakenings as CSV</a><br />\n")
-	io.WriteString(w, "<a href=\"/raw\" >Raw data</a><br />\n")
-	io.WriteString(w, "<br />\n<br />\n")
-	io.WriteString(w, "<a href=\"/SHUTDOWN\" >SHUTDOWN</a><br />\n")
-
-	io.WriteString(w, "</body></html>")
 }
 
 func rawDataHandler(w http.ResponseWriter, r *http.Request) {
