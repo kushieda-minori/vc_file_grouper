@@ -14,7 +14,7 @@ func archwitchHandler(w http.ResponseWriter, r *http.Request) {
 		baseCard := vc.CardScan(value.BaseCardId, VcData.Cards)
 		resultCard := vc.CardScan(value.ResultCardId, VcData.Cards)
 		fmt.Fprintf(w,
-			"<tr><td><img src=\"/cardthumbs/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td><img src=\"/cardthumbs/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td>%d%%</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>",
+			"<tr><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td>%d%%</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>",
 			baseCard.Image(),
 			baseCard.Id,
 			baseCard.Name,

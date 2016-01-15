@@ -314,15 +314,17 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	for _, k := range evokeys {
 		evo := evolutions[k]
 		fmt.Fprintf(w,
-			"<div style=\"float: left; margin: 3px\"><img src=\"/images/cardthumb/%s\"/><br />%s : %s☆</div>",
+			`<div style="float: left; margin: 3px"><a href="/images/cardthumb/%s"><img src="/images/cardthumb/%[1]s"/></a><br />%s : %s☆</div>`,
 			evo.Image(),
-			evo.Name, k)
+			evo.Name,
+			k,
+		)
 	}
 	io.WriteString(w, "<div style=\"clear: both\">")
 	for _, k := range evokeys {
 		evo := evolutions[k]
 		fmt.Fprintf(w,
-			"<div style=\"float: left; margin: 3px\"><img src=\"/images/card/%s\"/><br />%s : %s☆</div>",
+			`<div style="float: left; margin: 3px"><a href="/images/card/%s"><img src="/images/card/%[1]s"/></a><br />%s : %s☆</div>`,
 			evo.Image(),
 			evo.Name, k)
 	}
