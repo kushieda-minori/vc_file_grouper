@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
@@ -135,47 +136,22 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func rawDataHandler(w http.ResponseWriter, r *http.Request) {
-	// File header
-	io.WriteString(w, "<html><body>\n")
-
-	io.WriteString(w, "<pre>")
 	var prettyJSON bytes.Buffer
 	err := json.Indent(&prettyJSON, []byte(masterDataStr), "", "\t")
 	if err != nil {
+		// File header
+		io.WriteString(w, "<html><body>\n")
+
+		io.WriteString(w, "<pre>")
 		fmt.Fprintf(w, " : ERROR: %s<br />\n", err.Error())
+		io.WriteString(w, "</pre>")
+		io.WriteString(w, "</body></html>")
 		return
 	}
+	w.Header().Set("Content-Disposition", "filename="+"vcData-raw-"+strconv.Itoa(VcData.Version)+"_"+VcData.Common.UnixTime.Format(time.RFC3339)+".json")
+	w.Header().Set("Content-Type", "application/json")
 
 	io.WriteString(w, string(prettyJSON.Bytes()))
-	io.WriteString(w, "</pre>")
-	// // read the decoded master data file
-	// masterData, _ := simplejson.NewJson(bytes(masterDataStr))
-
-	// *masterDataMap, _ = masterData.Map()
-
-	// // sort the keys
-	// mk := make([]string, len(*masterDataMap))
-	// i := 0
-	// var k string
-	// for k, _ = range *masterDataMap {
-	// 	mk[i] = k
-	// 	i++
-	// }
-	// sort.Strings(mk)
-
-	// // print all the keys in order
-	// for _, k = range mk {
-	// 	io.WriteString(w, "<p><a href=\"")
-	// 	io.WriteString(w, k)
-	// 	io.WriteString(w, "\">")
-	// 	io.WriteString(w, k)
-	// 	io.WriteString(w, "</a><div style=\"padding-left:10px\">")
-	// 	// val, _ := masterData.Get(k).EncodePretty()
-	// 	// io.WriteString(w, strings.Replace(string(val), "\n", "<br />", -1))
-	// 	io.WriteString(w, "</div></p>\n")
-	// }
-
-	io.WriteString(w, "</body></html>")
 }
 
 func decodeHandler(w http.ResponseWriter, r *http.Request) {
