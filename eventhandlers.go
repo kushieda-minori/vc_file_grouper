@@ -59,7 +59,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	event := vc.EventScan(eventId, VcData.Events)
 
-	evntTemplate := `{{Event
+	evntTemplate1 := `{{Event
 |start jst = %s
 |end jst = %s
 |image = Banner {{PAGENAME}}.png
@@ -102,10 +102,19 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", event.Name)
+	if event.BannerId > 0 {
+		fmt.Fprintf(w, `<img src="/images/event/largeimage/%d/event_image_en" alt="Banner"/><br />`, event.BannerId)
+	}
+	if event.TexIdImage > 0 {
+		fmt.Fprintf(w, `<img src="/images/event/largeimage/%d/event_image_en" alt="Texture Image" /><br />`, event.TexIdImage)
+	}
+	if event.TexIdImage2 > 0 {
+		fmt.Fprintf(w, `<img src="/images/event/largeimage/%d/event_image_en" alt="Texture Image 2" /><br />`, event.TexIdImage2)
+	}
 	fmt.Fprintf(w, "<div style=\"float:left\">Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", event.Name)
 	fmt.Fprintf(w, "<a href=\"/maps/%d\">Map Information</a>\n<br />", event.MapId)
 	io.WriteString(w, "<textarea style=\"width:800px;height:760px\">")
-	fmt.Fprintf(w, evntTemplate,
+	fmt.Fprintf(w, evntTemplate1,
 		event.StartDatetime.Format(wikiFmt), // start
 		event.EndDatetime.Format(wikiFmt),   // end
 		"", // rank reward

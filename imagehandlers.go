@@ -31,6 +31,12 @@ func imageCardHDHandler(w http.ResponseWriter, r *http.Request) {
 func imageEventHandler(w http.ResponseWriter, r *http.Request) {
 	//vcfilepath+"/event"
 	imgname := r.URL.Path[len("/images/event/"):]
+	for strings.HasPrefix(imgname, "/") {
+		imgname = strings.TrimPrefix(imgname, "/")
+	}
+	for strings.HasPrefix(imgname, "../") {
+		imgname = strings.TrimPrefix(imgname, "../")
+	}
 	if imgname == "" {
 		io.WriteString(w, "<html><body>")
 		err := filepath.Walk(vcfilepath+"/event", func(path string, info os.FileInfo, err error) error {
@@ -58,6 +64,15 @@ func imageEventHandler(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, err.Error()+"<br />\n")
 		}
 		io.WriteString(w, "</body></html>")
+		return
+	} else {
+		_, err := os.Stat(vcfilepath + "/event/" + imgname)
+		if os.IsNotExist(err) {
+			http.Error(w, "Invalid Image location "+imgname+"<br />"+err.Error(), http.StatusNotFound)
+			return
+		}
+		_, fName := filepath.Split(vcfilepath + "/event/" + imgname)
+		writeout(true, vcfilepath+"/event/"+imgname, fName+".png", w, r)
 		return
 	}
 	http.Error(w, "Invalid Image location "+imgname, http.StatusNotFound)

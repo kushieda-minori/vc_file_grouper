@@ -285,6 +285,18 @@ func CardScan(cardId int, cards []Card) *Card {
 	return nil
 }
 
+func CardScanCharacter(charId int, cards []Card) *Card {
+	if charId > 0 {
+		for k, val := range cards {
+			//return the first one we find.
+			if val.CardCharaId == charId {
+				return &cards[k]
+			}
+		}
+	}
+	return nil
+}
+
 func CardScanImage(cardId string, cards []Card) *Card {
 	if cardId != "" {
 		i, err := strconv.Atoi(cardId)

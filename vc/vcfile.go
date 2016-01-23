@@ -386,6 +386,27 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		}
 	}
 
+	dbonusName, err := readStringFile(root + "/string/MsgDeckBonusName_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	dbonusDesc, err := readStringFile(root + "/string/MsgDeckBonusDesc_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+
+	// Deck Bonuses
+	for key, _ := range v.DeckBonuses {
+		if key < len(dbonusName) {
+			v.DeckBonuses[key].Name = filter(dbonusName[key])
+		}
+		if key < len(dbonusDesc) {
+			v.DeckBonuses[key].Description = filter(dbonusDesc[key])
+		}
+	}
+
 	return data, nil
 }
 

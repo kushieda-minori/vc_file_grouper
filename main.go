@@ -60,6 +60,9 @@ func main() {
 	http.HandleFunc("/skills/", skillTableHandler)
 	http.HandleFunc("/skills/csv/", skillCsvHandler)
 
+	http.HandleFunc("/deckbonus/", deckBonusHandler)
+	http.HandleFunc("/deckbonus/WIKI/", deckBonusWikiHandler)
+
 	http.HandleFunc("/events/", eventHandler)
 	http.HandleFunc("/events/detail/", eventDetailHandler)
 
@@ -75,7 +78,7 @@ func main() {
 	http.HandleFunc("/SHUTDOWN/", func(w http.ResponseWriter, r *http.Request) { os.Exit(0) })
 
 	os.Stdout.WriteString("Listening on port 8585. Connect to http://localhost:8585/\nPress <CTRL>+C to stop or close the terminal.\n")
-	err := http.ListenAndServe(":8585", nil)
+	err := http.ListenAndServe("localhost:8585", nil)
 	if err != nil {
 		os.Stderr.WriteString(err.Error() + "\n")
 	}
@@ -113,6 +116,7 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 <a href="/decode" >Decode All Files</a><br />
 <br />
 <a href="/cards/table" >Card List as a Table</a><br />
+<a href="/deckbonus" >Deck Bonuses</a><br />
 <a href="/events" >Event List</a><br />
 <a href="/archwitches" >Archwitch List</a><br />
 <br />
@@ -187,4 +191,16 @@ func decodeHandler(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, err.Error()+"<br />\n")
 	}
 	io.WriteString(w, "</body></html>")
+}
+
+func removeDuplicates(a []string) []string {
+	result := []string{}
+	seen := map[string]string{}
+	for _, val := range a {
+		if _, ok := seen[val]; !ok {
+			result = append(result, val)
+			seen[val] = val
+		}
+	}
+	return result
 }
