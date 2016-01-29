@@ -30,7 +30,22 @@ func imageCardHDHandler(w http.ResponseWriter, r *http.Request) {
 
 func imageEventHandler(w http.ResponseWriter, r *http.Request) {
 	//vcfilepath+"/event"
-	imgname := r.URL.Path[len("/images/event/"):]
+	servImageDir(w, r, "/event/")
+
+}
+
+func imageBattleBGHandler(w http.ResponseWriter, r *http.Request) {
+	//imgname := r.URL.Path[len("/images/battle/bg/"):]
+	servImageDir(w, r, "/battle/bg/")
+}
+
+func imageBattleMapHandler(w http.ResponseWriter, r *http.Request) {
+	//imgname := r.URL.Path[len("/images/battle/map/"):]
+	servImageDir(w, r, "/battle/map/")
+}
+
+func servImageDir(w http.ResponseWriter, r *http.Request, root string) {
+	imgname := r.URL.Path[len("/images"+root):]
 	for strings.HasPrefix(imgname, "/") {
 		imgname = strings.TrimPrefix(imgname, "/")
 	}
@@ -39,7 +54,7 @@ func imageEventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if imgname == "" {
 		io.WriteString(w, "<html><body>")
-		err := filepath.Walk(vcfilepath+"/event", func(path string, info os.FileInfo, err error) error {
+		err := filepath.Walk(vcfilepath+root, func(path string, info os.FileInfo, err error) error {
 			if info.IsDir() {
 				return nil
 			}
@@ -54,7 +69,7 @@ func imageEventHandler(w http.ResponseWriter, r *http.Request) {
 				return err
 			}
 			if bytes.Equal(b, []byte("CODE")) {
-				relPath := path[len(vcfilepath+"/event/"):]
+				relPath := path[len(vcfilepath+root):]
 				fmt.Fprintf(w, `<div><a href="%[1]s"><img src="%[1]s"/></a><br />%[1]s</div>`, relPath)
 			}
 			return nil
@@ -66,24 +81,16 @@ func imageEventHandler(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "</body></html>")
 		return
 	} else {
-		_, err := os.Stat(vcfilepath + "/event/" + imgname)
+		_, err := os.Stat(vcfilepath + root + imgname)
 		if os.IsNotExist(err) {
 			http.Error(w, "Invalid Image location "+imgname+"<br />"+err.Error(), http.StatusNotFound)
 			return
 		}
-		_, fName := filepath.Split(vcfilepath + "/event/" + imgname)
-		writeout(true, vcfilepath+"/event/"+imgname, fName+".png", w, r)
+		_, fName := filepath.Split(vcfilepath + root + imgname)
+		writeout(true, vcfilepath+root+imgname, fName+".png", w, r)
 		return
 	}
 	http.Error(w, "Invalid Image location "+imgname, http.StatusNotFound)
-}
-
-func imageBattleBGHandler(w http.ResponseWriter, r *http.Request) {
-	//imgname := r.URL.Path[len("/images/battle/bg/"):]
-}
-
-func imageBattleMapHandler(w http.ResponseWriter, r *http.Request) {
-	//imgname := r.URL.Path[len("/images/battle/map/"):]
 }
 
 func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r *http.Request) {

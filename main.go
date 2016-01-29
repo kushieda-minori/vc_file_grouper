@@ -120,7 +120,8 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 <a href="/events" >Event List</a><br />
 <a href="/archwitches" >Archwitch List</a><br />
 <br />
-<a href="/images/event/">Event Images</a>
+<a href="/images/battle/bg/">Battle Backgrounds</a><br />
+<a href="/images/battle/map/">Battle Maps</a><br />
 <br />
 <a href="/cards/csv" >Card List as CSV</a><br />
 <a href="/skills/csv" >Skill List as CSV</a><br />
