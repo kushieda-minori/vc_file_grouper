@@ -43,8 +43,7 @@ func main() {
 	http.HandleFunc("/images/cardthumb/", imageCardThumbHandler)
 	http.HandleFunc("/images/cardHD/", imageCardHDHandler)
 	http.HandleFunc("/images/event/", imageEventHandler)
-	http.HandleFunc("/images/battle/bg/", imageBattleBGHandler)
-	http.HandleFunc("/images/battle/map/", imageBattleMapHandler)
+	http.HandleFunc("/images/battle/", imageBattleHandler)
 
 	// vc master data
 	http.HandleFunc("/data/", dataHandler)
@@ -113,8 +112,6 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 <p>Version: %d,&nbsp;&nbsp;&nbsp;&nbsp;Timestamp: %d,&nbsp;&nbsp;&nbsp;&nbsp;JST: %s</p>
 <a href="/data" >Set Data Location</a><br />
 <br />
-<a href="/decode" >Decode All Files</a><br />
-<br />
 <a href="/cards/table" >Card List as a Table</a><br />
 <a href="/deckbonus" >Deck Bonuses</a><br />
 <a href="/events" >Event List</a><br />
@@ -130,6 +127,8 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 <a href="/awakenings/csv" >List of Awakenings as CSV</a><br />
 <a href="/raw" >Raw data</a><br />
 <br />
+<br />
+<a href="/decode" >Decode All Files</a><br />
 <br />
 <a href="/SHUTDOWN" >SHUTDOWN</a><br />
 </body></html>`,

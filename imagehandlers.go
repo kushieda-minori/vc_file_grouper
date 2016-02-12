@@ -34,14 +34,9 @@ func imageEventHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func imageBattleBGHandler(w http.ResponseWriter, r *http.Request) {
+func imageBattleHandler(w http.ResponseWriter, r *http.Request) {
 	//imgname := r.URL.Path[len("/images/battle/bg/"):]
-	servImageDir(w, r, "/battle/bg/")
-}
-
-func imageBattleMapHandler(w http.ResponseWriter, r *http.Request) {
-	//imgname := r.URL.Path[len("/images/battle/map/"):]
-	servImageDir(w, r, "/battle/map/")
+	servImageDir(w, r, "/battle/")
 }
 
 func servImageDir(w http.ResponseWriter, r *http.Request, root string) {
@@ -52,9 +47,20 @@ func servImageDir(w http.ResponseWriter, r *http.Request, root string) {
 	for strings.HasPrefix(imgname, "../") {
 		imgname = strings.TrimPrefix(imgname, "../")
 	}
-	if imgname == "" {
+	fullpath := vcfilepath + root + imgname
+
+	finfo, err := os.Stat(fullpath)
+	if err != nil {
+		http.Error(w, "Invalid Image location "+imgname+"<br />"+err.Error(), http.StatusNotFound)
+		return
+	}
+	if finfo.Mode().IsRegular() {
+		_, fName := filepath.Split(fullpath)
+		writeout(true, fullpath, fName+".png", w, r)
+		return
+	} else if finfo.IsDir() {
 		io.WriteString(w, "<html><body>")
-		err := filepath.Walk(vcfilepath+root, func(path string, info os.FileInfo, err error) error {
+		err := filepath.Walk(fullpath, func(path string, info os.FileInfo, err error) error {
 			if info.IsDir() {
 				return nil
 			}
@@ -69,7 +75,7 @@ func servImageDir(w http.ResponseWriter, r *http.Request, root string) {
 				return err
 			}
 			if bytes.Equal(b, []byte("CODE")) {
-				relPath := path[len(vcfilepath+root):]
+				relPath := path[len(fullpath):]
 				fmt.Fprintf(w, `<div><a href="%[1]s"><img src="%[1]s"/></a><br />%[1]s</div>`, relPath)
 			}
 			return nil
@@ -79,15 +85,6 @@ func servImageDir(w http.ResponseWriter, r *http.Request, root string) {
 			io.WriteString(w, err.Error()+"<br />\n")
 		}
 		io.WriteString(w, "</body></html>")
-		return
-	} else {
-		_, err := os.Stat(vcfilepath + root + imgname)
-		if os.IsNotExist(err) {
-			http.Error(w, "Invalid Image location "+imgname+"<br />"+err.Error(), http.StatusNotFound)
-			return
-		}
-		_, fName := filepath.Split(vcfilepath + root + imgname)
-		writeout(true, vcfilepath+root+imgname, fName+".png", w, r)
 		return
 	}
 	http.Error(w, "Invalid Image location "+imgname, http.StatusNotFound)
