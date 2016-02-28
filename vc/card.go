@@ -199,13 +199,14 @@ func (c *Card) EvoAccidentOf(cards []Card) *Card {
 
 func (c *Card) Amalgamations(v *VcFile) []Amalgamation {
 	ret := make([]Amalgamation, 0)
-	for _, v := range v.Amalgamations {
-		if c.Id == v.FusionCardId ||
-			c.Id == v.Material1 ||
-			c.Id == v.Material2 ||
-			c.Id == v.Material3 ||
-			c.Id == v.Material4 {
-			ret = append(ret, v)
+	for _, a := range v.Amalgamations {
+		if c.Id == a.FusionCardId ||
+			c.Id == a.Material1 ||
+			c.Id == a.Material2 ||
+			c.Id == a.Material3 ||
+			c.Id == a.Material4 {
+
+			ret = append(ret, a)
 		}
 	}
 	return ret
