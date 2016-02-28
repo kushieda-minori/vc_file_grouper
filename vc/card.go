@@ -151,7 +151,11 @@ func (c *Card) Image() string {
 
 func (c *Card) Rarity() string {
 	if c.CardRareId >= 0 {
-		return Rarity[c.CardRareId-1]
+		t := Rarity[c.CardRareId-1]
+		if t == "X" && c.EvolutionRank != 0 {
+			return "H" + t
+		}
+		return t
 	} else {
 		return ""
 	}
