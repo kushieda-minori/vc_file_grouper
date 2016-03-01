@@ -64,21 +64,31 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 |end jst = %s
 |image = Banner {{PAGENAME}}.png
 |story = yes
-|%s|Ranking Reward
+||Ranking Reward
+||Amalgamation Material
 |%s|Legendary Archwitch
 |%s|Fantasy Archwitch
 |%s|Archwitch
+||Archwitch
+||Amalgamation
+||Elemental Hall
+||Area Completion Reward
+||Event 10/15x damage
+||Event 10/15x damage
+||Event 10/15x damage
+||Event 5/7x damage|%s|Ranking Reward
 }}
 
 %s
 
 ==Rewards==
-{{Rewards8
+{{Rewards11
 |ranking ur = %[3]s
 |ranking sr = %[5]s
+|ranking sub2k =
 |ranking r = %[8]s
-|progress point = 
-|progress point sr = 
+|progress point =
+|progress point sr =
 }}
 
 ==Ranking Trend==
@@ -90,7 +100,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 !Rank 100
 !Rank 300
 !Rank 1000
-!Rank 3000%s
+!Rank 2000%s
 |}
 %s
 

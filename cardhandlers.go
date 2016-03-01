@@ -416,7 +416,8 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 		qs.Get("skillname"),
 		qs.Get("skilldesc"),
 	)
-	for _, card := range VcData.Cards {
+	for i := len(VcData.Cards) - 1; i >= 0; i-- {
+		card := VcData.Cards[i]
 		if !filter(&card) {
 			continue
 		}

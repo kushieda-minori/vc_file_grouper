@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -28,26 +29,27 @@ func imageCardHDHandler(w http.ResponseWriter, r *http.Request) {
 	serveCardImage(vcfilepath+"/card/hd/", "/images/cardHD/", w, r)
 }
 
-func imageEventHandler(w http.ResponseWriter, r *http.Request) {
-	//vcfilepath+"/event"
-	servImageDir(w, r, "/event/")
-
+func imageHandlerFor(urlPath string, imageDir string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		//vcfilepath+"/event"
+		servImageDir(w, r, urlPath, imageDir)
+	}
 }
 
-func imageBattleHandler(w http.ResponseWriter, r *http.Request) {
-	//imgname := r.URL.Path[len("/images/battle/bg/"):]
-	servImageDir(w, r, "/battle/")
-}
-
-func servImageDir(w http.ResponseWriter, r *http.Request, root string) {
-	imgname := r.URL.Path[len("/images"+root):]
+func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root string) {
+	imgname := r.URL.Path[len("/images"+urlPath):]
 	for strings.HasPrefix(imgname, "/") {
 		imgname = strings.TrimPrefix(imgname, "/")
 	}
 	for strings.HasPrefix(imgname, "../") {
 		imgname = strings.TrimPrefix(imgname, "../")
 	}
-	fullpath := vcfilepath + root + imgname
+	if strings.Contains(imgname, "../") {
+		http.Error(w, "Invalid Image location "+imgname+
+			"<br />Relative path modification not allowed", http.StatusNotFound)
+		return
+	}
+	fullpath := path.Join(vcfilepath, root, imgname)
 
 	finfo, err := os.Stat(fullpath)
 	if err != nil {
@@ -59,7 +61,14 @@ func servImageDir(w http.ResponseWriter, r *http.Request, root string) {
 		writeout(true, fullpath, fName+".png", w, r)
 		return
 	} else if finfo.IsDir() {
-		io.WriteString(w, "<html><body>")
+		if !strings.HasSuffix(fullpath, "/") {
+			fullpath = fullpath + "/"
+		}
+		io.WriteString(w, `<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="/css/style.css">
+</head>
+<body class="stary-night">`)
 		err := filepath.Walk(fullpath, func(path string, info os.FileInfo, err error) error {
 			if info.IsDir() {
 				return nil

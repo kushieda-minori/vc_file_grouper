@@ -38,12 +38,18 @@ func main() {
 
 	//main page
 	http.HandleFunc("/", masterDataHandler)
+	http.HandleFunc("/css/", cssHandler)
 	//image locations
 	http.HandleFunc("/images/card/", imageCardHandler)
 	http.HandleFunc("/images/cardthumb/", imageCardThumbHandler)
 	http.HandleFunc("/images/cardHD/", imageCardHDHandler)
-	http.HandleFunc("/images/event/", imageEventHandler)
-	http.HandleFunc("/images/battle/", imageBattleHandler)
+	http.HandleFunc("/images/event/", imageHandlerFor("/event/", "/event/"))
+	http.HandleFunc("/images/battle/", imageHandlerFor("/battle/", "/battle/"))
+	http.HandleFunc("/images/garden/", imageHandlerFor("/garden/", "/garden/"))
+	http.HandleFunc("/images/alliance/", imageHandlerFor("/alliance/", "/guild/"))
+	http.HandleFunc("/images/summon/", imageHandlerFor("/summon/", "/gacha/"))
+	http.HandleFunc("/images/item/", imageHandlerFor("/item/", "/item/"))
+	http.HandleFunc("/images/treasure/", imageHandlerFor("/treasure/", "/treasure/"))
 
 	// vc master data
 	http.HandleFunc("/data/", dataHandler)
@@ -117,8 +123,14 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 <a href="/events" >Event List</a><br />
 <a href="/archwitches" >Archwitch List</a><br />
 <br />
+Images:<br />
 <a href="/images/battle/bg/">Battle Backgrounds</a><br />
 <a href="/images/battle/map/">Battle Maps</a><br />
+<a href="/images/garden/">Garden</a><br />
+<a href="/images/alliance/">Alliance</a><br />
+<a href="/images/summon/">Summon</a><br />
+<a href="/images/item/">Items</a><br />
+<a href="/images/treasure/">Sacred Relics</a><br />
 <br />
 <a href="/cards/csv" >Card List as CSV</a><br />
 <a href="/skills/csv" >Skill List as CSV</a><br />
