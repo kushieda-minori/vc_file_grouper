@@ -117,31 +117,51 @@ BattleBG %d.png
 	}
 
 	for _, e := range m.Areas(VcData) {
-		if e.Story != "" || e.Start != "" || e.BossStart != "" {
+		if e.Story != "" || e.Start != "" || e.End != "" || e.BossStart != "" || e.BossEnd != "" {
 			fmt.Fprintf(w, "|-\n| align=\"center\" |%s\n|\n", e.LongName)
 
 			if e.Story != "" {
 				fmt.Fprintf(w, "; Prologue\n: %s\n", html.EscapeString(strings.Replace(e.Story, "\n", " ", -1)))
-				if e.Start != "" || e.BossStart != "" {
+				if e.Start != "" || e.End != "" || e.BossStart != "" || e.BossEnd != "" {
 					io.WriteString(w, "----\n\n")
 				}
 			}
 
-			if e.Start != "" {
-				fmt.Fprintf(w, "; Guide Dialogue\n: ''%s''<br />&amp;nbsp;<br />\n: ''%s''\n",
-					html.EscapeString(strings.Replace(e.Start, "\n", " ", -1)),
-					html.EscapeString(strings.Replace(e.End, "\n", " ", -1)),
-				)
+			if e.Start != "" || e.End != "" {
+				io.WriteString(w, "; Guide Dialogue")
+				if e.Start != "" {
+					fmt.Fprintf(w, "\n: ''%s''",
+						html.EscapeString(strings.Replace(e.Start, "\n", " ", -1)))
+					if e.End != "" {
+						io.WriteString(w, "<br />&amp;nbsp;<br />")
+					}
+				}
+				if e.End != "" {
+					fmt.Fprintf(w, "\n: ''%s''\n",
+						html.EscapeString(strings.Replace(e.End, "\n", " ", -1)))
+				} else {
+					io.WriteString(w, "\n")
+				}
+				if e.BossStart != "" || e.BossEnd != "" {
+					io.WriteString(w, "----\n\n")
+				}
+			}
+
+			if e.BossStart != "" || e.BossEnd != "" {
+				fmt.Fprintf(w, "; Boss Dialogue")
 				if e.BossStart != "" {
-					io.WriteString(w, "----\n\n")
+					fmt.Fprintf(w, "\n: %s",
+						html.EscapeString(strings.Replace(e.BossStart, "\n", " ", -1)))
+					if e.BossEnd != "" {
+						io.WriteString(w, "<br />&amp;nbsp;<br />")
+					}
 				}
-			}
-
-			if e.BossStart != "" {
-				fmt.Fprintf(w, "; Boss Dialogue\n: %s<br />&amp;nbsp;<br />\n: %s\n",
-					html.EscapeString(strings.Replace(e.BossStart, "\n", " ", -1)),
-					html.EscapeString(strings.Replace(e.BossEnd, "\n", " ", -1)),
-				)
+				if e.BossEnd != "" {
+					fmt.Fprintf(w, "\n: %s\n",
+						html.EscapeString(strings.Replace(e.BossEnd, "\n", " ", -1)))
+				} else {
+					io.WriteString(w, "\n")
+				}
 			}
 		}
 	}
