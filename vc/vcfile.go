@@ -468,6 +468,8 @@ func filter(s string) string {
 	ret = strings.Replace(ret, "％", "%", -1)
 	ret = strings.Replace(ret, "　", " ", -1)
 	ret = strings.Replace(ret, "／", "/", -1)
+	ret = strings.Replace(ret, "＞", ">", -1)
+	ret = strings.Replace(ret, "・", " • ", -1)
 	// game controls that aren't needed for wikia
 	ret = strings.Replace(ret, "<i><break>", "\n", -1)
 	// remove duplicate newlines
@@ -506,6 +508,9 @@ func filterColors(s string) string {
 	ret := strings.TrimSpace(s)
 	rc, _ := regexp.Compile("<col=(.+?)>")
 	ret = rc.ReplaceAllString(ret, "<span class=\"vc_color$1\">")
+
+	rc, _ = regexp.Compile("<colrgb=(.+)>")
+	ret = rc.ReplaceAllString(ret, "<span style=\"color:rgb($1);\">")
 
 	ret = strings.Replace(ret, "</col>", "</span>", -1)
 
