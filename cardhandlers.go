@@ -82,7 +82,9 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		if !resultAmalgFound {
 			for _, ev := range evolutions {
 				if ev.Id == av.FusionCardId {
-					avail += " [[Amalgamation]]"
+					if !strings.Contains(avail, "[[Amalgamation]]") {
+						avail += " [[Amalgamation]]"
+					}
 					resultAmalgFound = true
 					break
 				}
@@ -101,7 +103,9 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 				fuseCard := vc.CardScan(materialFuseId, VcData.Cards)
 				if fuseCard.Name == card.Name {
 					evolutions["A"] = *fuseCard
-					avail += " [[Amalgamation]]"
+					if !strings.Contains(avail, "[[Amalgamation]]") {
+						avail += " [[Amalgamation]]"
+					}
 				}
 			}
 		}
@@ -109,6 +113,12 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
+
+	skipFirstEvo := false
+	if gevo, ok := evolutions["G"]; ok {
+		skipFirstEvo = gevo.Id == firstEvo.Id
+	}
+	skipFirstEvo = skipFirstEvo || firstEvo.Id == lastEvo.Id
 
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", card.Name)
 	fmt.Fprintf(w, "<div>Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", card.Name)
@@ -118,14 +128,17 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "{{Card\n|element = %s\n", card.Element())
 	if firstEvo.Id > 0 {
-		fmt.Fprintf(w, "|rarity = %s\n|skill = %s\n|skill lv1 = %s\n|skill lv10 = %s\n|procs = %s\n%s",
-			fixRarity(firstEvo.Rarity()),
-			html.EscapeString(firstEvo.Skill1Name(VcData)),
-			html.EscapeString(strings.Replace(firstEvo.SkillMin(VcData), "\n", "<br />", -1)),
-			html.EscapeString(strings.Replace(firstEvo.SkillMax(VcData), "\n", "<br />", -1)),
-			firstEvo.SkillProcs(VcData),
-			randomSkillEffects(firstEvo.Skill1(VcData), ""),
-		)
+		fmt.Fprintf(w, "|rarity = %s\n", fixRarity(firstEvo.Rarity()))
+
+		if !skipFirstEvo {
+			fmt.Fprintf(w, "|skill = %s\n|skill lv1 = %s\n|skill lv10 = %s\n|procs = %s\n%s",
+				html.EscapeString(firstEvo.Skill1Name(VcData)),
+				html.EscapeString(strings.Replace(firstEvo.SkillMin(VcData), "\n", "<br />", -1)),
+				html.EscapeString(strings.Replace(firstEvo.SkillMax(VcData), "\n", "<br />", -1)),
+				firstEvo.SkillProcs(VcData),
+				randomSkillEffects(firstEvo.Skill1(VcData), ""),
+			)
+		}
 
 		skill2 := firstEvo.Skill2(VcData)
 		if skill2 != nil {
@@ -179,16 +192,16 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 				randomSkillEffects(evo.Skill1(VcData), "a"),
 			)
 		}
-		if gevo, ok := evolutions["GA"]; ok {
-			gSkillName := strings.Replace(gevo.Skill1Name(VcData), "☆", "", 1)
+		if gaevo, ok := evolutions["GA"]; ok {
+			gSkillName := strings.Replace(gaevo.Skill1Name(VcData), "☆", "", 1)
 			if gSkillName != aSkillName {
 				fmt.Fprintf(w, "|skill ga = %s\n", html.EscapeString(gSkillName))
 			}
 			fmt.Fprintf(w, "|skill ga lv1 = %s\n|skill ga lv10 = %s\n|procs ga = %s\n%s",
-				html.EscapeString(strings.Replace(gevo.SkillMin(VcData), "\n", "<br />", -1)),
-				html.EscapeString(strings.Replace(gevo.SkillMax(VcData), "\n", "<br />", -1)),
-				gevo.SkillProcs(VcData),
-				randomSkillEffects(gevo.Skill1(VcData), "ga"),
+				html.EscapeString(strings.Replace(gaevo.SkillMin(VcData), "\n", "<br />", -1)),
+				html.EscapeString(strings.Replace(gaevo.SkillMax(VcData), "\n", "<br />", -1)),
+				gaevo.SkillProcs(VcData),
+				randomSkillEffects(gaevo.Skill1(VcData), "ga"),
 			)
 		}
 	}
@@ -229,8 +242,11 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		evokeys = append(evokeys, k)
 	}
 	sort.Strings(evokeys)
-	for _, k := range evokeys {
+	for i, k := range evokeys {
 		evo := evolutions[k]
+		if i == 0 && skipFirstEvo {
+			continue
+		}
 		fmt.Fprintf(w, "|cost %[1]s = %[2]d\n|atk %[1]s = %[3]d / %s\n|def %[1]s = %[5]d / %s\n|soldiers %[1]s = %[7]d / %s\n",
 			strings.ToLower(k),
 			evo.DeckCost,
@@ -594,7 +610,7 @@ func getEvolutions(card *vc.Card) map[string]vc.Card {
 func getAmalgamations(evolutions map[string]vc.Card) []vc.Amalgamation {
 	amalgamations := make([]vc.Amalgamation, 0)
 	for idx, evo := range evolutions {
-		if idx == "H" || idx == "F" {
+		if idx == "H" || idx == "F" || idx == "G" {
 			continue
 		}
 		//os.Stdout.WriteString(fmt.Sprintf("Card: %d, Name: %s, Evo: %s", evo.Id, evo.Name, idx))
