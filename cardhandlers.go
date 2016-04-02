@@ -619,11 +619,8 @@ func getAmalgamations(evolutions map[string]vc.Card) []vc.Amalgamation {
 		if len(as) > 0 {
 			for _, a := range as {
 				if _, ok := seen[a]; !ok {
-					//os.Stdout.WriteString("	Found\n")
-					amalgamations = append(amalgamations, as...)
+					amalgamations = append(amalgamations, a)
 					seen[a] = true
-					//} else {
-					//	os.Stdout.WriteString("	Not Found\n")
 				}
 			}
 		}
