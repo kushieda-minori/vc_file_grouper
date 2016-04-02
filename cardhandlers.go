@@ -119,7 +119,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "{{Card\n|element = %s\n", card.Element())
 	if firstEvo.Id > 0 {
 		fmt.Fprintf(w, "|rarity = %s\n|skill = %s\n|skill lv1 = %s\n|skill lv10 = %s\n|procs = %s\n%s",
-			firstEvo.Rarity(),
+			fixRarity(firstEvo.Rarity()),
 			html.EscapeString(firstEvo.Skill1Name(VcData)),
 			html.EscapeString(strings.Replace(firstEvo.SkillMin(VcData), "\n", "<br />", -1)),
 			html.EscapeString(strings.Replace(firstEvo.SkillMax(VcData), "\n", "<br />", -1)),
@@ -330,6 +330,10 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	io.WriteString(w, "</div>")
 	io.WriteString(w, "</body></html>")
+}
+
+func fixRarity(s string) string {
+	return strings.TrimPrefix(strings.TrimPrefix(s, "G"), "H")
 }
 
 func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
