@@ -609,17 +609,23 @@ func getEvolutions(card *vc.Card) map[string]vc.Card {
 
 func getAmalgamations(evolutions map[string]vc.Card) []vc.Amalgamation {
 	amalgamations := make([]vc.Amalgamation, 0)
+	seen := map[vc.Amalgamation]bool{}
 	for idx, evo := range evolutions {
-		if idx == "H" || idx == "F" || idx == "G" {
+		if idx == "H" || idx == "F" {
 			continue
 		}
 		//os.Stdout.WriteString(fmt.Sprintf("Card: %d, Name: %s, Evo: %s", evo.Id, evo.Name, idx))
-		a := evo.Amalgamations(VcData)
-		if len(a) > 0 {
-			//os.Stdout.WriteString("	Found\n")
-			amalgamations = append(amalgamations, a...)
-			//} else {
-			//	os.Stdout.WriteString("	Not Found\n")
+		as := evo.Amalgamations(VcData)
+		if len(as) > 0 {
+			for _, a := range as {
+				if _, ok := seen[a]; !ok {
+					//os.Stdout.WriteString("	Found\n")
+					amalgamations = append(amalgamations, as...)
+					seen[a] = true
+					//} else {
+					//	os.Stdout.WriteString("	Not Found\n")
+				}
+			}
 		}
 	}
 	sort.Sort(vc.ByMaterialCount(amalgamations))
