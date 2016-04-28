@@ -14,6 +14,11 @@ import (
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
+func imageCardSDHandler(w http.ResponseWriter, r *http.Request) {
+	//vcfilepath+"/card/md"
+	serveCardImage(vcfilepath+"/card/sd/", "/images/cardSD/", w, r)
+}
+
 func imageCardHandler(w http.ResponseWriter, r *http.Request) {
 	//vcfilepath+"/card/md"
 	serveCardImage(vcfilepath+"/card/md/", "/images/card/", w, r)

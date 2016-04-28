@@ -146,7 +146,7 @@ type FollowerKind struct {
 }
 
 func (c *Card) Image() string {
-	return fmt.Sprintf("cd_%05d.png", c.CardNo)
+	return fmt.Sprintf("cd_%05d", c.CardNo)
 }
 
 func (c *Card) Rarity() string {

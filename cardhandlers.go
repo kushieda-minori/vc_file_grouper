@@ -118,7 +118,8 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if gevo, ok := evolutions["G"]; ok {
 		skipFirstEvo = gevo.Id == firstEvo.Id
 	}
-	skipFirstEvo = skipFirstEvo || firstEvo.Id == lastEvo.Id
+	//skipFirstEvo = skipFirstEvo || (firstEvo.Id == lastEvo.Id && firstEvo.Rarity() != "X")
+	//fmt.Fprintf(os.Stdout, "Skip First Evo: %v\n", skipFirstEvo)
 
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", card.Name)
 	fmt.Fprintf(w, "<div>Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", card.Name)
@@ -339,10 +340,23 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<div style=\"clear: both\">")
 	for _, k := range evokeys {
 		evo := evolutions[k]
-		fmt.Fprintf(w,
-			`<div style="float: left; margin: 3px"><a href="/images/card/%s"><img src="/images/card/%[1]s"/></a><br />%s : %s☆</div>`,
-			evo.Image(),
-			evo.Name, k)
+
+		if _, err := os.Stat(vcfilepath + "/card/hd/" + evo.Image()); err == nil {
+			fmt.Fprintf(w,
+				`<div style="float: left; margin: 3px"><a href="/images/cardHD/%s.png"><img src="/images/cardHD/%[1]s.png"/></a><br />%s : %s☆</div>`,
+				evo.Image(),
+				evo.Name, k)
+		} else if _, err := os.Stat(vcfilepath + "/card/md/" + evo.Image()); err == nil {
+			fmt.Fprintf(w,
+				`<div style="float: left; margin: 3px"><a href="/images/card/%s.png"><img src="/images/card/%[1]s.png"/></a><br />%s : %s☆</div>`,
+				evo.Image(),
+				evo.Name, k)
+		} else {
+			fmt.Fprintf(w,
+				`<div style="float: left; margin: 3px"><a href="/images/cardSD/%s.png"><img src="/images/cardSD/%[1]s.png"/></a><br />%s : %s☆</div>`,
+				evo.Image(),
+				evo.Name, k)
+		}
 	}
 	io.WriteString(w, "</div>")
 	io.WriteString(w, "</body></html>")
