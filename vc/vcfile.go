@@ -124,7 +124,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.Cards) != len(names) {
+	if len(v.Cards) > len(names) {
 		fmt.Fprintln(os.Stdout, "names: %v", names)
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
@@ -140,7 +140,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) != len(description) {
+	if len(v.CardCharacter) > len(description) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character descriptions", len(v.CardCharacter), len(description))
@@ -151,7 +151,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) != len(friendship) {
+	if len(v.CardCharacter) > len(friendship) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character friendship", len(v.CardCharacter), len(friendship))
@@ -168,7 +168,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) != len(meet) {
+	if len(v.CardCharacter) > len(meet) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character meet", len(v.CardCharacter), len(meet))
@@ -179,7 +179,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) != len(battle_start) {
+	if len(v.CardCharacter) > len(battle_start) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character battle_start", len(v.CardCharacter), len(battle_start))
@@ -190,7 +190,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) != len(battle_end) {
+	if len(v.CardCharacter) > len(battle_end) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character battle_end", len(v.CardCharacter), len(battle_end))
@@ -260,7 +260,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 
 	for key, _ := range v.Skills {
 		if key < len(names) {
-			v.Skills[key].Name = names[key]
+			v.Skills[key].Name = filterSkill(names[key])
 		}
 		if key < len(description) {
 			v.Skills[key].Description = filterSkill(description[key])
@@ -496,6 +496,10 @@ func filterSkill(s string) string {
 	ret = strings.Replace(ret, "<img=25>", "{{Cool}}", -1)
 	ret = strings.Replace(ret, "<img=26>", "{{Dark}}", -1)
 	ret = strings.Replace(ret, "<img=27>", "{{Light}}", -1)
+	//atk def icons
+	ret = strings.Replace(ret, "<img=48>", "{{Atk}}", -1)
+	ret = strings.Replace(ret, "<img=51>", "{{Atkdef}}", -1)
+
 	// clean up '/' spacing
 	ret = regexpSlash.ReplaceAllString(ret, " / ")
 	// make counter attack consistent
