@@ -212,7 +212,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) != len(friendship_event) {
+	if len(v.CardCharacter) > len(friendship_event) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character friendship_event", len(v.CardCharacter), len(friendship_event))
