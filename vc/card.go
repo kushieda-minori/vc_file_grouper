@@ -351,10 +351,6 @@ func (c *Card) SkillProcs(v *VcFile) string {
 	if strings.Contains(strings.ToLower(c.SkillMin(v)), "battle start") {
 		return "1"
 	}
-	// -1 MaxCount indicates no limit
-	if s.MaxCount < 0 {
-		return "Infinite"
-	}
 	return strconv.Itoa(s.MaxCount)
 }
 

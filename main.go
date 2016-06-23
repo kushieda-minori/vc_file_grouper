@@ -126,6 +126,7 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 Images:<br />
 <a href="/images/battle/bg/">Battle Backgrounds</a><br />
 <a href="/images/battle/map/">Battle Maps</a><br />
+<a href="/images/event/">Event</a><br />
 <a href="/images/garden/">Garden</a><br />
 <a href="/images/alliance/">Alliance</a><br />
 <a href="/images/summon/">Summon</a><br />
