@@ -24,7 +24,7 @@ func archwitchHandler(w http.ResponseWriter, r *http.Request) {
 			series.IsBeginnerKing,
 		)
 		io.WriteString(w, "\n<tr><td></td><td></td><td colspan=5><table border=1>")
-		io.WriteString(w, "<thead><tr><th>ID</th><th>Card Master / servants</th><th>Status Group</th><th>Publid</th><th>Rarity</th><th>RareIntensity</th><th>Battle Time</th><th>Exp</th><th>Max Friendship</th><th>Skill 1</th><th>Skill 2</th><th>Weather</th><th>Model</th><th>Chain Ratio 2</th></tr></thead><tbody>")
+		io.WriteString(w, "<thead><tr><th>ID</th><th>Card Master / servants</th><th>Status Group</th><th>Public</th><th>Rarity</th><th>RareIntensity</th><th>Battle Time</th><th>Exp</th><th>Max Friendship</th><th>Skill 1</th><th>Skill 2</th><th>Weather</th><th>Model</th><th>Chain Ratio 2</th><th>Likability</th></tr></thead><tbody>")
 		for _, aw := range series.Archwitches(VcData) {
 			cardMaster := vc.CardScan(aw.CardMasterId, VcData.Cards)
 			skill1 := vc.SkillScan(aw.SkillId1, VcData.Skills)
