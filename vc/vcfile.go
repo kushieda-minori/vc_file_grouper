@@ -386,6 +386,14 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		}
 	}
 
+	kingDescription, err := readStringFile(root + "/string/MsgKingTitle_en.strb")
+	// king series descriptions
+	for key, _ := range v.ArchwitchSeries {
+		if key < len(kingDescription) {
+			v.ArchwitchSeries[key].Description = filter(kingDescription[key])
+		}
+	}
+
 	dbonusName, err := readStringFile(root + "/string/MsgDeckBonusName_en.strb")
 	if err != nil {
 		debug.PrintStack()

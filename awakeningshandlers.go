@@ -31,7 +31,7 @@ func awakeningsTableHandler(w http.ResponseWriter, r *http.Request) {
 			value.Material4Count,
 		)
 	}
-	io.WriteString(w, "</tbody>\n")
+	io.WriteString(w, "</tbody></table>\n")
 	io.WriteString(w, "</body></html>")
 }
 

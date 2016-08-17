@@ -1,6 +1,7 @@
 package vc
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 )
@@ -10,32 +11,19 @@ import (
 // MsgSkillDesc_en.strb - shown on the card
 // MsgSkillFire_en.strb - used during battle
 type Skill struct {
-	// skill id
-	Id int `json:"_id"`
-	// level type for skill upgrade costs
-	LevelType int `json:"level_type"`
-	// skill type
-	Type int `json:"_type"`
-	// id for timing
-	TimingId int `json:"timing_id"`
-	// max procs
-	MaxCount int `json:"max_count"`
-	// cond scene
-	CondSceneId int `json:"cond_scene_id"`
-	// cond side
-	CondSideId int `json:"cond_side_id"`
-	// cond
-	CondId int `json:"cond_id"`
-	// king series
-	KingSeriesId int `json:"king_series_id"`
-	// king id
-	KingId int `json:"king_id"`
-	// cond param
-	CondParam int `json:"cond_param"`
-	// default proc rate
-	DefaultRatio int `json:"default_ratio"`
-	// max proc rate
-	MaxRatio int `json:"max_ratio"`
+	Id           int `json:"_id"`            // skill id
+	LevelType    int `json:"level_type"`     // level type for skill upgrade costs
+	Type         int `json:"_type"`          // skill type
+	TimingId     int `json:"timing_id"`      // id for timing
+	MaxCount     int `json:"max_count"`      // max procs
+	CondSceneId  int `json:"cond_scene_id"`  // cond scene
+	CondSideId   int `json:"cond_side_id"`   // cond side
+	CondId       int `json:"cond_id"`        // cond
+	KingSeriesId int `json:"king_series_id"` // king series
+	KingId       int `json:"king_id"`        // king id
+	CondParam    int `json:"cond_param"`     // cond param
+	DefaultRatio int `json:"default_ratio"`  // default proc rate
+	MaxRatio     int `json:"max_ratio"`      // max proc rate
 	// date accessible
 	PublicStartDatetime Timestamp `json:"public_start_datetime"`
 	PublicEndDatetime   Timestamp `json:"public_end_datetime"`
@@ -53,7 +41,8 @@ type Skill struct {
 	TargetLogicId int `json:"target_logic_id"`
 	TargetParam   int `json:"target_param"`
 	// animation info
-	AnimationId int `json:"animation_id"`
+	AnimationId             int             `json:"animation_id"`
+	ThorHammerAnimationType json.RawMessage `json:"thorhammer_animation_type"`
 
 	//skill name from strings file
 	Name string `json:"name"`

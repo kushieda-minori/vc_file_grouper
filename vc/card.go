@@ -12,54 +12,32 @@ import (
 
 // the card names match the ones listed in the MsgCardName_en.strb file
 type Card struct {
-	// card id
-	Id int `json:"_id"`
-	// card number, matches to the image file
-	CardNo int `json:"card_no"`
-	// card character id
-	CardCharaId int `json:"card_chara_id"`
-	// rarity of the card
-	CardRareId int `json:"card_rare_id"`
-	// type of the card (Passion, Cool, Light, Dark)
-	CardTypeId int `json:"card_type_id"`
-	// unit cost
-	DeckCost int `json:"deck_cost"`
-	// number of evolution statges available to the card
-	LastEvolutionRank int `json:"last_evolution_rank"`
-	// this card current evolution stage
-	EvolutionRank int `json:"evolution_rank"`
-	// id of the card that this card evolves into, -1 for no evolution
-	EvolutionCardId int `json:"evolution_card_id"`
-	// id of a possible turnover accident
-	TransCardId int `json:"trans_card_id"`
-	// cost of the followers?
-	FollowerKindId int `json:"follower_kind_id"`
-	// base soldiers
-	DefaultFollower int `json:"default_follower"`
-	// max soldiers if evolved minimally
-	MaxFollower int `json:"max_follower"`
-	// base ATK
-	DefaultOffense int `json:"default_offense"`
-	// max ATK if evolved minimally
-	MaxOffense int `json:"max_offense"`
-	// base DEF
-	DefaultDefense int `json:"default_defense"`
-	// max DEF if evolved minimally
-	MaxDefense int `json:"max_defense"`
-	// First Skill
-	SkillId1 int `json:"skill_id_1"`
-	// second Skill
-	SkillId2 int `json:"skill_id_2"`
-	// Awakened Burst type (GSR or GUR)
-	SpecialSkillId1 int `json:"special_skill_id_1"`
-	// amount of medals can be traded for
-	MedalRate int `json:"medal_rate"`
-	// amount of gold can be traded for
-	Price int `json:"price"`
-	// is closed
-	IsClosed int `json:"is_closed"`
-	// name from the strings file
-	Name string `json:"name"`
+	Id                int    `json:"_id"`                 // card id
+	CardNo            int    `json:"card_no"`             // card number, matches to the image file
+	CardCharaId       int    `json:"card_chara_id"`       // card character id
+	CardRareId        int    `json:"card_rare_id"`        // rarity of the card
+	CardTypeId        int    `json:"card_type_id"`        // type of the card (Passion, Cool, Light, Dark)
+	DeckCost          int    `json:"deck_cost"`           // unit cost
+	LastEvolutionRank int    `json:"last_evolution_rank"` // number of evolution statges available to the card
+	EvolutionRank     int    `json:"evolution_rank"`      // this card current evolution stage
+	EvolutionCardId   int    `json:"evolution_card_id"`   // id of the card that this card evolves into, -1 for no evolution
+	TransCardId       int    `json:"trans_card_id"`       // id of a possible turnover accident
+	FollowerKindId    int    `json:"follower_kind_id"`    // cost of the followers?
+	DefaultFollower   int    `json:"default_follower"`    // base soldiers
+	MaxFollower       int    `json:"max_follower"`        // max soldiers if evolved minimally
+	DefaultOffense    int    `json:"default_offense"`     // base ATK
+	MaxOffense        int    `json:"max_offense"`         // max ATK if evolved minimally
+	DefaultDefense    int    `json:"default_defense"`     // base DEF
+	MaxDefense        int    `json:"max_defense"`         // max DEF if evolved minimally
+	SkillId1          int    `json:"skill_id_1"`          // First Skill
+	SkillId2          int    `json:"skill_id_2"`          // second Skill
+	SpecialSkillId1   int    `json:"special_skill_id_1"`  // Awakened Burst type (GSR or GUR)
+	ThorSkillId1      int    `json:"thor_skill_id_1"`     // no one knows
+	MedalRate         int    `json:"medal_rate"`          // amount of medals can be traded for
+	Price             int    `json:"price"`               // amount of gold can be traded for
+	IsClosed          int    `json:"is_closed"`           // is closed
+	Name              string `json:"name"`                // name from the strings file
+
 	//Character Link
 	character *CardCharacter `json:"-"`
 	archwitch *Archwitch     `json:"-"`

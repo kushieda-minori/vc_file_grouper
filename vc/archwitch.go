@@ -25,12 +25,14 @@ type Archwitch struct {
 //"king_series" is the list of AW events and the RR prizes
 //Indicates what "event" the archwitch was a part of
 type ArchwitchSeries struct {
-	Id                   int       `json:"_id"`
-	RewardCardId         int       `json:"reward_card_id"`
-	PublicStartDatetime  Timestamp `json:"public_start_datetime"`
-	PublicEndDatetime    Timestamp `json:"public_end_datetime"`
-	ReceiveLimitDatetime Timestamp `json:"receive_limit_datetime"`
-	IsBeginnerKing       int       `json:"is_beginner_king"`
+	Id                   int         `json:"_id"`
+	RewardCardId         int         `json:"reward_card_id"`
+	PublicStartDatetime  Timestamp   `json:"public_start_datetime"`
+	PublicEndDatetime    Timestamp   `json:"public_end_datetime"`
+	ReceiveLimitDatetime Timestamp   `json:"receive_limit_datetime"`
+	IsBeginnerKing       int         `json:"is_beginner_king"`
+	Description          string      `json:-`
+	archwitches          []Archwitch `json:-`
 }
 
 //"king_friendship" is the chance of friendship increasing on an AW
@@ -39,7 +41,7 @@ type ArchwitchFriendship struct {
 	KingId     int    `json:"king_id"`
 	Friendship int    `json:"friendship"`
 	UpRate     int    `json:"up_rate"`
-	Likability string `json:"likeability"` // MsgKingFriendshipDesc_en.strb
+	Likability string `json:"-"` // MsgKingFriendshipDesc_en.strb
 }
 
 /*
@@ -76,4 +78,16 @@ func (a *Archwitch) Likeability(v *VcFile) []ArchwitchFriendship {
 		}
 	}
 	return a.likeability
+}
+
+func (as *ArchwitchSeries) Archwitches(v *VcFile) []Archwitch {
+	if as.archwitches == nil {
+		as.archwitches = make([]Archwitch, 0)
+		for _, a := range v.Archwitches {
+			if as.Id == a.KingSeriesId {
+				as.archwitches = append(as.archwitches, a)
+			}
+		}
+	}
+	return as.archwitches
 }
