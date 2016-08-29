@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-//HD Images are located at the followinf URL Pattern:
+//HD Images are located at the following URL Pattern:
 //https://d2n1d3zrlbtx8o.cloudfront.net/download/CardHD.zip/CARDFILE.TIMESTAMP
 //we have yet to determine how the timestamp is decided
 
@@ -82,7 +82,7 @@ type CardAwaken struct {
 	Material3Count int `json:"material_3_count"`
 	Material4Item  int `json:"material_4_item"`
 	Material4Count int `json:"material_4_count"`
-	// ? Order in the "Awakend Card List maybe?"
+	// ? Order in the "Awoken Card List maybe?"
 	Order int `json:"order"`
 	// still available?
 	IsClosed int `json:"is_closed"`

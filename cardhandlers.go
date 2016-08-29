@@ -121,8 +121,13 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	//skipFirstEvo = skipFirstEvo || (firstEvo.Id == lastEvo.Id && firstEvo.Rarity() != "X")
 	//fmt.Fprintf(os.Stdout, "Skip First Evo: %v\n", skipFirstEvo)
 
-	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", card.Name)
-	fmt.Fprintf(w, "<div>Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", card.Name)
+	cardName := card.Name
+	if len(cardName) == 0 {
+		cardName = card.Image()
+	}
+
+	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", cardName)
+	fmt.Fprintf(w, "<div>Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", cardName)
 	io.WriteString(w, "<textarea readonly=\"readonly\" style=\"width:100%;height:450px\">")
 	if card.IsClosed != 0 {
 		io.WriteString(w, "{{Unreleased}}")

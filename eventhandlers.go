@@ -52,7 +52,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	eventId, err := strconv.Atoi(pathParts[2])
-	if err != nil || eventId < 1 || eventId > len(VcData.Events) {
+	if err != nil || eventId < 1 {
 		http.Error(w, "Invalid event id "+pathParts[2], http.StatusNotFound)
 		return
 	}

@@ -45,7 +45,7 @@ type ArchwitchFriendship struct {
 }
 
 /*
-Limited items and enemies
+Limited items and enemies `lmtd`
 */
 type Limited struct {
 	Id               int       `json:"_id"`

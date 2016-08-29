@@ -20,6 +20,7 @@ type Map struct {
 	Flags               int       `json:"flags"`
 	ForBeginner         int       `json:"for_beginner"`
 	NaviId              int       `json:"navi_id"`
+	ExchangeItemId      int       `json:"exchange_item_id"`
 	Name                string    `json:"name_tl"`   // MsgNPCMapName_en.strb
 	StartMsg            string    `json:"start_msg"` // MsgNPCMapStart_en.strb
 	areas               []Area    `json:"-"`

@@ -41,6 +41,10 @@ type Event struct {
 	Param                 int       `json:"param"`
 	Category              int       `json:"category"`
 	TickerFlg             int       `json:"ticker_flg"`
+	TargetLanguages       string    `json:"target_languages"`
+	TargetMarkets         string    `json:"target_markets"`
+	CollaboId             int       `json:"collabo_id"`
+	MaintenanceTarget     int       `json:"maintenance_target"`
 	Name                  string    `json:"name"`        // MsgEventName_en.strb
 	Description           string    `json:"description"` // MsgEventDesc_en.strb
 	_map                  *Map      `json:"-"`
