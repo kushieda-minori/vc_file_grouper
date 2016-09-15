@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"time"
 	"zetsuboushita.net/vc_file_grouper/vc"
@@ -191,7 +192,16 @@ func rawDataKeysHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	io.WriteString(w, "[\n")
+
+	mk := make([]string, len(c))
+	i := 0
 	for s, _ := range c {
+		mk[i] = s
+		i++
+	}
+	sort.Strings(mk)
+
+	for _, s := range mk {
 		fmt.Fprintf(w, "\t%s,\n", s)
 	}
 	io.WriteString(w, "]")
