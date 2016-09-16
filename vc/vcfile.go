@@ -518,10 +518,10 @@ func filterSkill(s string) string {
 
 func filterColors(s string) string {
 	ret := strings.TrimSpace(s)
-	rc, _ := regexp.Compile("<col=(.+?)>")
+	rc, _ := regexp.Compile("<col=(.+?)>\\n*")
 	ret = rc.ReplaceAllString(ret, "<span class=\"vc_color$1\">")
 
-	rc, _ = regexp.Compile("<colrgb=(.+)>")
+	rc, _ = regexp.Compile("<colrgb=(.+?)>\\n*")
 	ret = rc.ReplaceAllString(ret, "<span style=\"color:rgb($1);\">")
 
 	ret = strings.Replace(ret, "</col>", "</span>", -1)
