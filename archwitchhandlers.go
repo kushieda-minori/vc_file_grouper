@@ -24,7 +24,7 @@ func archwitchHandler(w http.ResponseWriter, r *http.Request) {
 			series.IsBeginnerKing,
 		)
 		io.WriteString(w, "\n<tr><td></td><td></td><td colspan=5><table border=1>")
-		io.WriteString(w, "<thead><tr><th>ID</th><th>Card Master / servants</th><th>Status Group</th><th>Public</th><th>Rarity</th><th>RareIntensity</th><th>Battle Time</th><th>Exp</th><th>Max Friendship</th><th>Skill 1</th><th>Skill 2</th><th>Weather</th><th>Model</th><th>Chain Ratio 2</th><th>Likability</th></tr></thead><tbody>")
+		io.WriteString(w, "<thead><tr><th>ID</th><th>Card Master / servants</th><th>Skill 1</th><th>Skill 2</th><th>Status Group</th><th>Public</th><th>Rarity</th><th>RareIntensity</th><th>Battle Time</th><th>Exp</th><th>Max Friendship</th><th>Weather</th><th>Model</th><th>Chain Ratio 2</th><th>Likability</th></tr></thead><tbody>")
 		for _, aw := range series.Archwitches(VcData) {
 			cardMaster := vc.CardScan(aw.CardMasterId, VcData.Cards)
 			skill1 := vc.SkillScan(aw.SkillId1, VcData.Skills)
@@ -46,7 +46,9 @@ func archwitchHandler(w http.ResponseWriter, r *http.Request) {
 				)
 			}
 			io.WriteString(w, "</td>")
-			fmt.Fprintf(w, "<td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%d</td><td>%s</td><td>%d</td><td>%s</td>",
+			fmt.Fprintf(w, "<td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%d</td><td>%s</td>",
+				printSkill(skill1),
+				printSkill(skill2),
 				aw.StatusGroupId,
 				aw.PublicFlg,
 				aw.RareFlg,
@@ -54,8 +56,6 @@ func archwitchHandler(w http.ResponseWriter, r *http.Request) {
 				aw.BattleTime,
 				aw.Exp,
 				aw.MaxFriendship,
-				printSkill(skill1),
-				printSkill(skill2),
 				aw.WeatherId,
 				aw.ModelName,
 				aw.ChainRatio2,
@@ -84,7 +84,7 @@ func printSkill(skill *vc.Skill) string {
 	if skill == nil {
 		return ""
 	}
-	return "<b>" + skill.Name + "</b><br />" + skill.FireMin()
+	return fmt.Sprintf("<b>%s</b><br />%s<br /> Procs: %d<br /> Chance: %d%% - %d%%", skill.Name, skill.FireMin(), skill.MaxCount, skill.DefaultRatio, skill.MaxRatio)
 }
 
 func printFriendship(aw *vc.Archwitch) string {
