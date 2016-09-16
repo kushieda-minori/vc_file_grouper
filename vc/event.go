@@ -74,11 +74,18 @@ func (e *Event) Map(v *VcFile) *Map {
 func (e *Event) Archwitches(v *VcFile) []Archwitch {
 	if e.KingSeriesId > 0 {
 		if e._archwitches == nil {
-			e._archwitches = make([]Archwitch, 0)
+
+			// picks only unique Cards for the event
+			set := make(map[int]Archwitch)
 			for _, a := range v.Archwitches {
 				if e.KingSeriesId == a.KingSeriesId {
-					e._archwitches = append(e._archwitches, a)
+					set[a.CardMasterId] = a
 				}
+			}
+
+			e._archwitches = make([]Archwitch, 0)
+			for _, a := range set {
+				e._archwitches = append(e._archwitches, a)
 			}
 		}
 	} else if e._archwitches == nil {
@@ -122,7 +129,7 @@ var EventType = map[int]string{
 	8:  "Background Present",
 	9:  "BINGO",
 	10: "Alliance Battle",
-	11: "Jewels Special Campain",
+	11: "Special Campain",
 	12: "Alliance Duel",
 	13: "Alliance Ultimate Battle",
 	14: "Beginners Campaign",

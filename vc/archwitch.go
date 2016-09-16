@@ -1,5 +1,7 @@
 package vc
 
+import ()
+
 //"kings" is the list of Archwitches
 type Archwitch struct {
 	Id            int                   `json:"_id"`
@@ -78,6 +80,18 @@ func (a *Archwitch) Likeability(v *VcFile) []ArchwitchFriendship {
 		}
 	}
 	return a.likeability
+}
+
+func (a *Archwitch) IsFAW() bool {
+	return a.ServantId1 > 0 && a.StatusGroupId != 25
+}
+
+func (a *Archwitch) IsLAW() bool {
+	return a.ServantId1 > 0 && a.StatusGroupId == 25
+}
+
+func (a *Archwitch) IsAW() bool {
+	return !(a.IsFAW() || a.IsLAW())
 }
 
 func (as *ArchwitchSeries) Archwitches(v *VcFile) []Archwitch {

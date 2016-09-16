@@ -74,7 +74,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		prevEventName = strings.Replace(prevEvent.Name, "【New Event】", "", -1)
 	}
 
-	for i := event.Id + 1; i < vc.MaxEventId(VcData.Events); i++ {
+	for i := event.Id + 1; i <= vc.MaxEventId(VcData.Events); i++ {
 		tmp := vc.EventScan(i, VcData.Events)
 		if tmp != nil && tmp.EventTypeId == event.EventTypeId {
 			nextEvent = tmp
@@ -95,16 +95,9 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 |image = Banner {{PAGENAME}}.png
 |story = yes
 |%s|Ranking Reward
-||Amalgamation Material
 |%s|Legendary Archwitch
-|%s|Fantasy Archwitch
-||Fantasy Archwitch
-|%s|Archwitch
-||Archwitch
-||Archwitch
-||Archwitch
+%s%s||Amalgamation Material
 ||Amalgamation
-||Elemental Hall
 ||Elemental Hall
 ||Event 10/15x damage<br/>60/120%% Points+
 ||Event 10/15x damage<br/>60/120%% Points+
@@ -134,11 +127,6 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 {{NavEvent|%s|%s}}`
 
-	rtrend := ""
-	for i := event.StartDatetime.Add(24 * time.Hour); event.EndDatetime.After(i.Add(-24 * time.Hour)); i = i.Add(24 * time.Hour) {
-		rtrend += fmt.Sprintf("\n|-\n|%s\n|\n|\n|\n|\n|\n|\n|", i.Format("January _2"))
-	}
-
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", event.Name)
 	if event.BannerId > 0 {
 		fmt.Fprintf(w, `<img src="/images/event/largeimage/%d/event_image_en" alt="Banner"/><br />`, event.BannerId)
@@ -150,24 +138,46 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `<img src="/images/event/largeimage/%d/event_image_en" alt="Texture Image 2" /><br />`, event.TexIdImage2)
 	}
 	if prevEventName != "" {
-		fmt.Fprintf(w, "<div style=\"float:left\"><a href=\"%d?action=edit\">%s</a>\n</div>", prevEvent.Id, prevEventName)
+		fmt.Fprintf(w, "<div style=\"float:left\"><a href=\"%d\">%s</a>\n</div>", prevEvent.Id, prevEventName)
 	}
 	if nextEventName != "" {
-		fmt.Fprintf(w, "<div style=\"float:right\"><a href=\"%d?action=edit\">%s</a>\n</div>", nextEvent.Id, nextEventName)
+		fmt.Fprintf(w, "<div style=\"float:right\"><a href=\"%d\">%s</a>\n</div>", nextEvent.Id, nextEventName)
 	}
 	fmt.Fprintf(w, "<div style=\"clear:both;float:left\">Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", strings.Replace(event.Name, "【New Event】", "", -1))
-	fmt.Fprintf(w, "<a href=\"/maps/%d\">Map Information</a>\n<br />", event.MapId)
+	if event.MapId > 0 {
+		fmt.Fprintf(w, "<a href=\"/maps/%d\">Map Information</a>\n<br />", event.MapId)
+	}
 	io.WriteString(w, "<textarea style=\"width:800px;height:760px\">")
 	if event.EventTypeId == 1 {
+		rtrend := ""
+		for i := event.StartDatetime.Add(24 * time.Hour); event.EndDatetime.After(i.Add(-24 * time.Hour)); i = i.Add(24 * time.Hour) {
+			rtrend += fmt.Sprintf("\n|-\n|%s\n|\n|\n|\n|\n|\n|\n|", i.Format("January _2"))
+		}
+
+		var legendary string
+		var faws string
+		var aws string
+
+		for _, aw := range event.Archwitches(VcData) {
+			cardMaster := vc.CardScan(aw.CardMasterId, VcData.Cards)
+			if aw.IsLAW() {
+				legendary = cardMaster.Name
+			} else if aw.IsFAW() {
+				faws += "|" + cardMaster.Name + "|Fantasy Archwitch\n"
+			} else {
+				aws += "|" + cardMaster.Name + "|Archwitch\n"
+			}
+		}
+
 		fmt.Fprintf(w, evntTemplate1,
 			event.StartDatetime.Format(wikiFmt), // start
 			event.EndDatetime.Format(wikiFmt),   // end
-			"", // E-Hall opening
-			"", // E-Hall rotation
-			"", // rank reward
-			"", // legendary archwitch
-			"", // Fantasy Archwitch
-			"", // Regular Archwitch
+			"",        // E-Hall opening
+			"",        // E-Hall rotation
+			"",        // rank reward
+			legendary, // legendary archwitch
+			faws,      // Fantasy Archwitch
+			aws,       // Regular Archwitch
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 			rtrend,        // Rank trend
 			"",            // sub event (Alliance Battle)
