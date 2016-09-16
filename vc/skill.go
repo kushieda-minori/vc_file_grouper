@@ -44,12 +44,9 @@ type Skill struct {
 	AnimationId             int             `json:"animation_id"`
 	ThorHammerAnimationType json.RawMessage `json:"thorhammer_animation_type"`
 
-	//skill name from strings file
-	Name string `json:"name"`
-	// description from strings file
-	Description string `json:"description"`
-	// fire text from strings file
-	Fire string `json:"fire"`
+	Name        string `json:"name"`        //skill name from strings file
+	Description string `json:"description"` // description from strings file
+	Fire        string `json:"fire"`        // fire text from strings file
 }
 
 func (s *Skill) Effect() string {

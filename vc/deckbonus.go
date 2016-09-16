@@ -10,22 +10,14 @@ import (
 // these match with the strings in MsgDeckBonusName_en.strb
 // and MsgDeckBonusDesc_en.strb
 type DeckBonus struct {
-	// bonus id
-	Id int `json:"_id"`
-	// Affects ATK or DEF
-	AtkDefFlg int `json:"atk_def_flg"`
-	// ?
-	ValueType int `json:"value_type"`
-	// amount of the modifier
-	Value int `json:"value"`
-	// ?
-	DownGrade int `json:"down_grade"`
-	// deck condition
-	CondType int `json:"cond_type"`
-	// number of cards required
-	ReqNum int `json:"req_num"`
-	// allows duplicates
-	DupFlg      int    `json:"dup_flg"`
+	Id          int    `json:"_id"`         // bonus id
+	AtkDefFlg   int    `json:"atk_def_flg"` // Affects ATK or DEF
+	ValueType   int    `json:"value_type"`  // ?
+	Value       int    `json:"value"`       // amount of the modifier
+	DownGrade   int    `json:"down_grade"`  // ?
+	CondType    int    `json:"cond_type"`   // deck condition
+	ReqNum      int    `json:"req_num"`     // number of cards required
+	DupFlg      int    `json:"dup_flg"`     // allows duplicates
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
@@ -92,23 +84,18 @@ func (d *DeckBonus) Conditions(v *VcFile) DeckBonusCondArray {
 
 // Deck Bonus Conditions from masfter file field "deck_bonus_cond"
 type DeckBonusCond struct {
-	// deck condition id
-	Id int `json:"_id"`
-	// deck bonus id
-	DeckBonusId int `json:"deck_bonus_id"`
-	// group
-	Group int `json:"group"`
-	// type id
-	CondTypeId int `json:"cond_type_id"`
+	Id          int `json:"_id"`           // deck condition id
+	DeckBonusId int `json:"deck_bonus_id"` // deck bonus id
+	Group       int `json:"group"`         // group
+	CondTypeId  int `json:"cond_type_id"`  // type id
 	/* reference to the card character id, (type 2)
 	* the element, (type 3)
 	* or the rarity (type 8)
 	* Elements: 2=Passion, 3=Cool, 1=Light, 4=Dark
 	* Rarity: 4=H/HN, 5=R/HR, 6=SR/HSR, 9=UR/HUR, 11=GSR/GUR
 	 */
-	RefId int `json:"ref_id"`
-	//lookup of card name
-	RefName string
+	RefId   int    `json:"ref_id"`
+	RefName string `json:"-"` //lookup of card name
 }
 
 type DeckBonusByCountAndName []DeckBonus
