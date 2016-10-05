@@ -43,6 +43,14 @@ func imageHandlerFor(urlPath string, imageDir string) func(http.ResponseWriter, 
 
 func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root string) {
 	imgname := r.URL.Path[len("/images"+urlPath):]
+	queryValues := r.URL.Query()
+
+	var forceFileName string
+	_, qok := queryValues["filename"]
+	if qok {
+		forceFileName = queryValues["filename"][0]
+	}
+
 	for strings.HasPrefix(imgname, "/") {
 		imgname = strings.TrimPrefix(imgname, "/")
 	}
@@ -62,7 +70,12 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 		return
 	}
 	if finfo.Mode().IsRegular() {
-		_, fName := filepath.Split(fullpath)
+		var fName string
+		if forceFileName == "" {
+			_, fName = filepath.Split(fullpath)
+		} else {
+			fName = forceFileName
+		}
 		writeout(true, fullpath, fName+".png", w, r)
 		return
 	} else if finfo.IsDir() {

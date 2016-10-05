@@ -63,6 +63,8 @@ func main() {
 	// http.HandleFunc("/character/", characterTableHandler)
 	// http.HandleFunc("/character/csv/", characterCsvHandler)
 
+	http.HandleFunc("/items/", itemHandler)
+
 	http.HandleFunc("/skills/", skillTableHandler)
 	http.HandleFunc("/skills/csv/", skillCsvHandler)
 
@@ -125,6 +127,7 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 <a href="/events">Event List</a><br />
 <a href="/maps">Map List</a><br />
 <a href="/archwitches">Archwitch List</a><br />
+<a href="/items">Item List</a><br />
 <br />
 Images:<br />
 <a href="/images/battle/bg/">Battle Backgrounds</a><br />

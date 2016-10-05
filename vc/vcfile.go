@@ -90,6 +90,7 @@ type VcFile struct {
 	EventCards           []EventCard           `json:"mst_event_card"`
 	Maps                 []Map                 `json:"map"`
 	Areas                []Area                `json:"area"`
+	Items                []Item                `json:"items"`
 }
 
 // This reads the main data file and all associated files for strings
@@ -412,6 +413,51 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		}
 		if key < len(dbonusDesc) {
 			v.DeckBonuses[key].Description = filter(dbonusDesc[key])
+		}
+	}
+
+	//Items
+	itemdsc, err := readStringFile(root + "/string/MsgShopItemDesc_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	itemdscshp, err := readStringFile(root + "/string/MsgShopItemDescInShop_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	itemdscsub, err := readStringFile(root + "/string/MsgShopItemDescSub_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	itemname, err := readStringFile(root + "/string/MsgShopItemName_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	itemuse, err := readStringFile(root + "/string/MsgShopItemUseResult_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+
+	for key, _ := range v.Items {
+		if key < len(itemdsc) {
+			v.Items[key].Description = filter(itemdsc[key])
+		}
+		if key < len(itemdscshp) {
+			v.Items[key].DescriptionInShop = filter(itemdscshp[key])
+		}
+		if key < len(itemdscsub) {
+			v.Items[key].DescriptionSub = filter(itemdscsub[key])
+		}
+		if key < len(itemname) {
+			v.Items[key].NameEng = filter(itemname[key])
+		}
+		if key < len(itemuse) {
+			v.Items[key].MsgUse = filter(itemuse[key])
 		}
 	}
 
