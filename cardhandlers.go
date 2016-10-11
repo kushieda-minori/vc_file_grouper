@@ -378,7 +378,7 @@ func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 	cw := csv.NewWriter(w)
 	cw.Write([]string{"Id", "Card #", "Name", "Evo Rank", "TransCardId", "Rarity", "Element", "Deck Cost", "Base ATK",
 		"Base DEF", "Base Sol", "Max ATK", "Max DEF", "Max Sold", "Skill 1 Name", "Skill Min",
-		"Skill Max", "Skill Procs", "Target Scope", "Target Logic", "Skill 2", "Skill Special", "Description", "Friendship",
+		"Skill Max", "Skill Procs", "Target Scope", "Target Logic", "Skill 2", "Thor Skill 1", "Skill Special", "Description", "Friendship",
 		"Login", "Meet", "Battle Start", "Battle End", "Friendship Max", "Friendship Event", "Is Closed"})
 	for _, card := range VcData.Cards {
 		err := cw.Write([]string{strconv.Itoa(card.Id), fmt.Sprintf("cd_%05d", card.CardNo), card.Name, strconv.Itoa(card.EvolutionRank),
@@ -386,7 +386,7 @@ func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 			strconv.Itoa(card.DefaultDefense), strconv.Itoa(card.DefaultFollower), strconv.Itoa(card.MaxOffense),
 			strconv.Itoa(card.MaxDefense), strconv.Itoa(card.MaxFollower), card.Skill1Name(VcData),
 			card.SkillMin(VcData), card.SkillMax(VcData), card.SkillProcs(VcData), card.SkillTarget(VcData),
-			card.SkillTargetLogic(VcData), card.Skill2Name(VcData), card.SpecialSkill1Name(VcData),
+			card.SkillTargetLogic(VcData), card.Skill2Name(VcData), card.ThorSkill1Name(VcData), card.SpecialSkill1Name(VcData),
 			card.Description(VcData), card.Friendship(VcData), card.Login(VcData), card.Meet(VcData),
 			card.BattleStart(VcData), card.BattleEnd(VcData), card.FriendshipMax(VcData), card.FriendshipEvent(VcData),
 			strconv.Itoa(card.IsClosed),
@@ -447,7 +447,42 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 </form>
 <div>
 <table><thead><tr>
-<th>_id</th><th>card_no</th><th>name</th><th>evolution_rank</th><th>Next Evo</th><th>Rarity</th><th>Element</th><th>Character ID</th><th>deck_cost</th><th>default_offense</th><th>default_defense</th><th>default_follower</th><th>max_offense</th><th>max_defense</th><th>max_follower</th><th>Skill 1 Name</th><th>Skill Min</th><th>Skill Max</th><th>Skill Procs</th><th>Min Effect</th><th>Min Rate</th><th>Max Effect</th><th>Max Rate</th><th>Target Scope</th><th>Target Logic</th><th>Skill 2</th><th>Skill Special</th><th>Description</th><th>Friendship</th><th>Login</th><th>Meet</th><th>Battle Start</th><th>Battle End</th><th>Friendship Max</th><th>Friendship Event</th>
+<th>_id</th>
+<th>card_no</th>
+<th>name</th>
+<th>evolution_rank</th>
+<th>Next Evo</th>
+<th>Rarity</th>
+<th>Element</th>
+<th>Character ID</th>
+<th>deck_cost</th>
+<th>default_offense</th>
+<th>default_defense</th>
+<th>default_follower</th>
+<th>max_offense</th>
+<th>max_defense</th>
+<th>max_follower</th>
+<th>Skill 1 Name</th>
+<th>Skill Min</th>
+<th>Skill Max</th>
+<th>Skill Procs</th>
+<th>Min Effect</th>
+<th>Min Rate</th>
+<th>Max Effect</th>
+<th>Max Rate</th>
+<th>Target Scope</th>
+<th>Target Logic</th>
+<th>Skill 2</th>
+<th>Thor Skill</th>
+<th>Skill Special</th>
+<th>Description</th>
+<th>Friendship</th>
+<th>Login</th>
+<th>Meet</th>
+<th>Battle Start</th>
+<th>Battle End</th>
+<th>Friendship Max</th>
+<th>Friendship Event</th>
 </tr></thead>
 <tbody>
 `,
@@ -466,15 +501,79 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		// skill2 := card.Skill2(VcData)
 		// skillS1 := card.SpecialSkill1(VcData)
-		fmt.Fprintf(w, "<tr><td>%d</td><td><a href=\"/cards/detail/%[1]d\">%05[2]d</a></td><td><a href=\"/cards/detail/%[1]d\">%[3]s</a></td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></td></tr>\n",
-			card.Id, card.CardNo, card.Name, card.EvolutionRank, card.EvolutionCardId, card.Rarity(), card.Element(), card.CardCharaId,
-			card.DeckCost, card.DefaultOffense, card.DefaultDefense, card.DefaultFollower, card.MaxOffense,
-			card.MaxDefense, card.MaxFollower, card.Skill1Name(VcData), card.SkillMin(VcData), card.SkillMax(VcData),
-			card.SkillProcs(VcData), skill1.EffectDefaultValue, skill1.DefaultRatio, skill1.EffectMaxValue, skill1.MaxRatio,
-			card.SkillTarget(VcData), card.SkillTargetLogic(VcData), card.Skill2Name(VcData),
-			card.SpecialSkill1Name(VcData), card.Description(VcData), card.Friendship(VcData), card.Login(VcData),
-			card.Meet(VcData), card.BattleStart(VcData), card.BattleEnd(VcData), card.FriendshipMax(VcData),
-			card.FriendshipEvent(VcData))
+		fmt.Fprintf(w, "<tr><td>%d</td>"+
+			"<td><a href=\"/cards/detail/%[1]d\">%05[2]d</a></td>"+
+			"<td><a href=\"/cards/detail/%[1]d\">%[3]s</a></td>"+
+			"<td>%d</td>"+
+			"<td>%d</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%d</td>"+
+			"<td>%d</td>"+
+			"<td>%d</td>"+
+			"<td>%d</td>"+
+			"<td>%d</td>"+
+			"<td>%d</td>"+
+			"<td>%d</td>"+
+			"<td>%d</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%d</td>"+
+			"<td>%d</td>"+
+			"<td>%d</td>"+
+			"<td>%d</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td>"+
+			"<td>%s</td></tr>\n",
+			card.Id,
+			card.CardNo,
+			card.Name,
+			card.EvolutionRank,
+			card.EvolutionCardId,
+			card.Rarity(),
+			card.Element(),
+			card.CardCharaId,
+			card.DeckCost,
+			card.DefaultOffense,
+			card.DefaultDefense,
+			card.DefaultFollower,
+			card.MaxOffense,
+			card.MaxDefense,
+			card.MaxFollower,
+			card.Skill1Name(VcData),
+			card.SkillMin(VcData),
+			card.SkillMax(VcData),
+			card.SkillProcs(VcData),
+			skill1.EffectDefaultValue,
+			skill1.DefaultRatio,
+			skill1.EffectMaxValue,
+			skill1.MaxRatio,
+			card.SkillTarget(VcData),
+			card.SkillTargetLogic(VcData),
+			card.Skill2Name(VcData),
+			card.ThorSkill1Name(VcData),
+			card.SpecialSkill1Name(VcData),
+			card.Description(VcData),
+			card.Friendship(VcData),
+			card.Login(VcData),
+			card.Meet(VcData),
+			card.BattleStart(VcData),
+			card.BattleEnd(VcData),
+			card.FriendshipMax(VcData),
+			card.FriendshipEvent(VcData),
+		)
 	}
 
 	io.WriteString(w, "</tbody></table></div></body></html>")
@@ -593,7 +692,7 @@ func getEvolutions(card *vc.Card) map[string]vc.Card {
 	lastEvo := card
 	for nextId > 1 {
 		nextCard := vc.CardScan(nextId, VcData.Cards)
-		// verify that we haven't switched characters
+		// verify that we haven't switched characters like Terra -> Rhea
 		if card.CardCharaId == nextCard.CardCharaId {
 			nextEvo := strconv.Itoa(nextCard.EvolutionRank)
 			ret[nextEvo] = *nextCard

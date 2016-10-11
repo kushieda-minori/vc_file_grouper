@@ -74,6 +74,8 @@ func main() {
 	http.HandleFunc("/events/", eventHandler)
 	http.HandleFunc("/events/detail/", eventDetailHandler)
 
+	http.HandleFunc("/thor/", thorHandler)
+
 	http.HandleFunc("/maps/", mapHandler)
 
 	http.HandleFunc("/awakenings/", awakeningsTableHandler)
@@ -127,6 +129,7 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 <a href="/events">Event List</a><br />
 <a href="/maps">Map List</a><br />
 <a href="/archwitches">Archwitch List</a><br />
+<a href="/thor">Thor Event List</a><br />
 <a href="/items">Item List</a><br />
 <br />
 Images:<br />

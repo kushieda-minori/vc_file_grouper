@@ -45,6 +45,7 @@ type Card struct {
 	skill1        *Skill `json:"-"`
 	skill2        *Skill `json:"-"`
 	specialSkill1 *Skill `json:"-"`
+	thorSkill1    *Skill `json:"-"`
 }
 
 // List of possible Fusions (Amalgamations) from master file field "fusion_list"
@@ -254,6 +255,13 @@ func (c *Card) SpecialSkill1(v *VcFile) *Skill {
 	return c.specialSkill1
 }
 
+func (c *Card) ThorSkill1(v *VcFile) *Skill {
+	if c.thorSkill1 == nil && c.ThorSkillId1 > 0 {
+		c.thorSkill1 = SkillScan(c.ThorSkillId1, v.Skills)
+	}
+	return c.thorSkill1
+}
+
 func CardScan(cardId int, cards []Card) *Card {
 	if cardId > 0 {
 		if cardId < len(cards) && cards[cardId-1].Id == cardId {
@@ -358,6 +366,14 @@ func (c *Card) Skill2Name(v *VcFile) string {
 
 func (c *Card) SpecialSkill1Name(v *VcFile) string {
 	s := c.SpecialSkill1(v)
+	if s == nil {
+		return ""
+	}
+	return s.Name
+}
+
+func (c *Card) ThorSkill1Name(v *VcFile) string {
+	s := c.ThorSkill1(v)
 	if s == nil {
 		return ""
 	}

@@ -91,6 +91,11 @@ type VcFile struct {
 	Maps                 []Map                 `json:"map"`
 	Areas                []Area                `json:"area"`
 	Items                []Item                `json:"items"`
+	ThorEvents           []ThorEvent           `json:"mst_thorhammer"`
+	ThorKings            []ThorKing            `json:"mst_thorhammer_king"`
+	ThorKingCosts        []ThorKingCost        `json:"mst_thorhammer_king_cost"`
+	ThorRankRewards      []ThorReward          `json:"mst_thorhammer_ranking_reward"`
+	ThorPointRewards     []ThorReward          `json:"mst_thorhammer_point_reward"`
 }
 
 // This reads the main data file and all associated files for strings
