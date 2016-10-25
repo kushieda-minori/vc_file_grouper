@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -52,6 +53,7 @@ func skillCsvHandler(w http.ResponseWriter, r *http.Request) {
 		"TargetLogic",
 		"TargetParam",
 		"AnimationId",
+		"ThorHammerAnimationType",
 	})
 	for _, s := range VcData.Skills {
 		var startDate, endDate string
@@ -97,6 +99,7 @@ func skillCsvHandler(w http.ResponseWriter, r *http.Request) {
 			s.TargetLogic(),
 			strconv.Itoa(s.TargetParam),
 			strconv.Itoa(s.AnimationId),
+			strings.Replace(string(s.ThorHammerAnimationType[:]), "\"", "", -1),
 		})
 		if err != nil {
 			os.Stderr.WriteString(err.Error() + "\n")
