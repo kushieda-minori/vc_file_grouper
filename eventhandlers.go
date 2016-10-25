@@ -171,11 +171,12 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		eventMap := event.Map(VcData)
 		var eHallStart string
-		if event.Map(VcData).ElementalhallStart.IsZero() {
+		if eventMap.ElementalhallStart.IsZero() || event.EndDatetime.Before(eventMap.ElementalhallStart.Time) {
 			eHallStart = ""
 		} else {
-			eHallStart = event.Map(VcData).ElementalhallStart.Format(wikiFmt)
+			eHallStart = eventMap.ElementalhallStart.Format(wikiFmt)
 		}
 
 		var midrewards string
