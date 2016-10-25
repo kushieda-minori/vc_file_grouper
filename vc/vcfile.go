@@ -88,6 +88,8 @@ type VcFile struct {
 	Events               []Event               `json:"mst_event"`
 	EventBooks           []EventBook           `json:"mst_event_book"`
 	EventCards           []EventCard           `json:"mst_event_card"`
+	RankRewards          []RankReward          `json:"ranking_bonus"`
+	RankRewardSheets     []RankRewardSheet     `json:"ranking_bonussheet"`
 	Maps                 []Map                 `json:"map"`
 	Areas                []Area                `json:"area"`
 	Items                []Item                `json:"items"`

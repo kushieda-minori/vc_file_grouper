@@ -31,3 +31,17 @@ type Item struct {
 	NameEng           string    `json:-` // MsgShopItemName_en.strb
 	MsgUse            string    `json:-` // MsgShopItemUseResult_en.strb
 }
+
+func ItemScan(id int, items []Item) *Item {
+	if id > 0 {
+		if id < len(items) && items[id-1].Id == id {
+			return &items[id-1]
+		}
+		for k, val := range items {
+			if val.Id == id {
+				return &items[k]
+			}
+		}
+	}
+	return nil
+}

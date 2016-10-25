@@ -66,6 +66,33 @@ type EventCard struct {
 	KindName    string `json:"kind_name"` // MsgEventCardKindName_en.strb
 }
 
+type RankReward struct {
+	Id                       int `json:"_id"`
+	KingListId               int `json:"king_list_id"` // same as King Series
+	SheetId                  int `json:"sheet_id"`     // maps to the reward sheet below
+	GroupId                  int `json:"group_id"`
+	MidSheetId               int `json:"mid_sheet_id"`
+	MidBonusDistributionDate int `json:"mid_bonus_distribution_date"`
+	IndividualPointReward    int `json:"individual_point_reward"`
+}
+
+type RankRewardSheet struct {
+	Id          int `json:"_id"`
+	SheetId     int `json:"sheet_id"`
+	RankFrom    int `json:"rank_from"`
+	RankTo      int `json:"rank_to"`
+	Cash        int `json:"cash"`
+	FriendPoint int `json:"friend_point"`
+	Coin        int `json:"coin"`
+	Iron        int `json:"iron"`
+	Ether       int `json:"ether"`
+	Exp         int `json:"exp"`
+	ItemId      int `json:"item_id"`
+	FragmentId  int `json:"fragment_id"`
+	CardId      int `json:"card_id"`
+	Num         int `json:"num"`
+}
+
 func (e *Event) Map(v *VcFile) *Map {
 	if e._map == nil && e.MapId > 0 {
 		e._map = MapScan(e.MapId, v.Maps)
@@ -94,6 +121,41 @@ func (e *Event) Archwitches(v *VcFile) []Archwitch {
 		e._archwitches = make([]Archwitch, 0)
 	}
 	return e._archwitches
+}
+
+func (e *Event) RankRewards(v *VcFile) *RankReward {
+	if e.KingSeriesId > 0 {
+		for k, val := range v.RankRewards {
+			if val.KingListId == e.KingSeriesId {
+				return &v.RankRewards[k]
+			}
+		}
+	}
+	return nil
+}
+
+func (r *RankReward) MidRewards(v *VcFile) []RankRewardSheet {
+	set := make([]RankRewardSheet, 0)
+	if r.MidSheetId > 0 {
+		for _, val := range v.RankRewardSheets {
+			if val.SheetId == r.MidSheetId {
+				set = append(set, val)
+			}
+		}
+	}
+	return set
+}
+
+func (r *RankReward) FinalRewards(v *VcFile) []RankRewardSheet {
+	set := make([]RankRewardSheet, 0)
+	if r.SheetId > 0 {
+		for _, val := range v.RankRewardSheets {
+			if val.SheetId == r.SheetId {
+				set = append(set, val)
+			}
+		}
+	}
+	return set
 }
 
 func MaxEventId(events []Event) (max int) {

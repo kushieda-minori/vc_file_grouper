@@ -17,6 +17,7 @@ type Map struct {
 	KingSeriesId        int       `json:"king_series_id"`
 	KingId              int       `json:"king_id"`
 	ElementalhallId     int       `json:"elementalhall_id"`
+	ElementalhallStart  Timestamp `json:"elementalhall_start_datetime"`
 	Flags               int       `json:"flags"`
 	ForBeginner         int       `json:"for_beginner"`
 	NaviId              int       `json:"navi_id"`

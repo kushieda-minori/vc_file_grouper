@@ -14,7 +14,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</head><body>\n")
 	io.WriteString(w, "<div>\n")
 	io.WriteString(w, "<table><thead><tr>\n")
-	io.WriteString(w, "<th>_id</th><th>Item Name</th><th>Description</th><th>End Date</th><th>Max Own</th><th>Limited Item</th><th>Is Deleted</th>\n")
+	io.WriteString(w, "<th>_id</th><th>Item Name</th><th>Image</th><th>Description</th><th>Group</th><th>End Date</th><th>Max Own</th><th>Limited Item</th><th>Is Deleted</th>\n")
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
 	for _, e := range VcData.Items {
@@ -23,6 +23,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 			"<td>%s<br />%s</td>"+
 			"<td><a href=\"/images/item/shop/%[5]d?filename=%[4]s\"><img src=\"/images/item/shop/%[5]d\"/></a></td>"+
 			"<td><p>Description: %s</p><p>Shop Description: %s</p><p>Sub Item Description: %s</p><p>Use: %s</p></td>"+
+			"<td>%d</td>"+
 			"<td>%s</td>"+
 			"<td>%d</td>"+
 			"<td>%d</td>"+
@@ -37,6 +38,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 			e.DescriptionInShop,
 			e.DescriptionSub,
 			e.MsgUse,
+			e.GroupId,
 			e.EndDatetime.Format(time.RFC3339),
 			e.MaxCount,
 			e.LimitedItemFlg,
