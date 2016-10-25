@@ -131,7 +131,7 @@ var EventType = map[int]string{
 	8:  "Background Present",
 	9:  "BINGO",
 	10: "Alliance Battle",
-	11: "Special Campain",
+	11: "Special Campaign",
 	12: "Alliance Duel",
 	13: "Alliance Ultimate Battle",
 	14: "Beginners Campaign",
