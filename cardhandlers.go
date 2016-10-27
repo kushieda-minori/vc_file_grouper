@@ -134,6 +134,11 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "{{Card\n|element = %s\n", card.Element())
 	if firstEvo.Id > 0 {
+		skillEvoMod := ""
+		if firstEvo.Rarity()[0:1] == "G" {
+			skillEvoMod = "g"
+		}
+
 		fmt.Fprintf(w, "|rarity = %s\n", fixRarity(firstEvo.Rarity()))
 
 		if !skipFirstEvo {
@@ -152,11 +157,14 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			if lastEvo.Id > 0 {
 				lastEvoSkill2 := lastEvo.Skill2(VcData)
 				if lastEvoSkill2.Id != skill2.Id {
-					lastEvoSkill2Max = "\n|skill 2 lv10 = " +
-						html.EscapeString(strings.Replace(lastEvoSkill2.SkillMax(), "\n", "<br />", -1))
+					lastEvoSkill2Max = fmt.Sprintf("\n|skill %s2 lv10 = %s",
+						skillEvoMod,
+						html.EscapeString(strings.Replace(lastEvoSkill2.SkillMax(), "\n", "<br />", -1)),
+					)
 				}
 			}
-			fmt.Fprintf(w, "|skill 2 = %s\n|skill 2 lv1 = %s%s\n|procs 2 = %d\n%s",
+			fmt.Fprintf(w, "|skill %[1]s2 = %[2]s\n|skill %[1]s2 lv1 = %[3]s%[4]s\n|procs %[1]s2 = %[5]d\n%[6]s",
+				skillEvoMod,
 				html.EscapeString(skill2.Name),
 				html.EscapeString(strings.Replace(skill2.SkillMin(), "\n", "<br />", -1)),
 				lastEvoSkill2Max,
@@ -168,14 +176,16 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			if (skill2.PublicEndDatetime.After(time.Time{})) {
 				fmt.Fprintf(w, "|skill 2 end = %v\n", skill2.PublicEndDatetime)
 			}
+
 		} else if lastEvo.Id > 0 {
 			skill2 = lastEvo.Skill2(VcData)
 			if skill2 != nil {
 				fmt.Fprintf(w, "|skill 2 = %s\n|skill 2 lv10 = %s\n|procs 2 = %d\n%s",
+
 					html.EscapeString(skill2.Name),
 					html.EscapeString(strings.Replace(skill2.SkillMin(), "\n", "<br />", -1)),
 					skill2.MaxCount,
-					randomSkillEffects(skill2, "2"),
+					randomSkillEffects(skill2, ""),
 				)
 
 				// Check if the second skill expires
@@ -183,6 +193,18 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 					fmt.Fprintf(w, "|skill 2 end = %v\n", skill2.PublicEndDatetime)
 				}
 			}
+		}
+
+		thor1 := firstEvo.ThorSkill1(VcData)
+		if skillEvoMod == "" && thor1 != nil {
+			fmt.Fprintf(w, "|skill %[1]st = %[2]s\n|skill %[1]st lv1 = %[3]s%[4]s\n|procs %[1]st = %[5]d\n%[6]s",
+				skillEvoMod,
+				html.EscapeString(thor1.Name),
+				html.EscapeString(strings.Replace(thor1.FireMin(), "\n", "<br />", -1)),
+				"",
+				thor1.MaxCount,
+				randomSkillEffects(thor1, skillEvoMod+"t"),
+			)
 		}
 	} else {
 		io.WriteString(w, "|rarity = \n|skill = \n|skill lv1 = \n|skill lv10 = \n|procs = \n")
@@ -240,6 +262,17 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		thor1 := evo.ThorSkill1(VcData)
+		if thor1 != nil {
+			fmt.Fprintf(w, "|skill %[1]st = %[2]s\n|skill %[1]st lv1 = %[3]s%[4]s\n|procs %[1]st = %[5]d\n%[6]s",
+				"g",
+				html.EscapeString(thor1.Name),
+				html.EscapeString(strings.Replace(thor1.FireMin(), "\n", "<br />", -1)),
+				"",
+				thor1.MaxCount,
+				randomSkillEffects(thor1, "gt"),
+			)
+		}
 	}
 
 	//traverse evolutions in order
@@ -405,6 +438,9 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 		if len(qs) < 1 {
 			return
 		}
+		if isThor := qs.Get("isThor"); isThor != "" {
+			match = match && card.ThorSkillId1 > 0
+		}
 		if name := qs.Get("name"); name != "" {
 			match = match && strings.Contains(strings.ToLower(card.Name), strings.ToLower(name))
 		}
@@ -443,6 +479,7 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 <label for="f_name">Name:</label><input id="f_name" name="name" value="%s" />
 <label for="f_skillname">Skill Name:</label><input id="f_skillname" name="skillname" value="%s" />
 <label for="f_skilldesc">Skill Description:</label><input id="f_skilldesc" name="skilldesc" value="%s" />
+<label for="f_skillisthor">Has Thor Skill:</label><input id="f_skillisthor" name="isThor" type="checkbox" value="checked" %s />
 <button type="submit">Submit</button>
 </form>
 <div>
@@ -489,6 +526,7 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 		qs.Get("name"),
 		qs.Get("skillname"),
 		qs.Get("skilldesc"),
+		qs.Get("isThor"),
 	)
 	for i := len(VcData.Cards) - 1; i >= 0; i-- {
 		card := VcData.Cards[i]
