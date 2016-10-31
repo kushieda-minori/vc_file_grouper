@@ -30,7 +30,7 @@ func deckBonusHandler(w http.ResponseWriter, r *http.Request) {
 </tr></thead>
 <tbody>`)
 
-	sort.Sort(vc.DeckBonusByCountAndName(VcData.DeckBonuses))
+	//sort.Sort(vc.DeckBonusByCountAndName(VcData.DeckBonuses))
 
 	for _, d := range VcData.DeckBonuses {
 		fmt.Fprintf(w, `<tr>

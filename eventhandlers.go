@@ -173,17 +173,25 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 		eventMap := event.Map(VcData)
 		var eHallStart string
-		if eventMap.ElementalhallStart.IsZero() || event.EndDatetime.Before(eventMap.ElementalhallStart.Time) {
+		if eventMap == nil || eventMap.ElementalhallStart.IsZero() || event.EndDatetime.Before(eventMap.ElementalhallStart.Time) {
 			eHallStart = ""
 		} else {
 			eHallStart = eventMap.ElementalhallStart.Format(wikiFmt)
 		}
 
-		var midrewards string
-		var finalrewards string
-
-		midrewards = genWikiRewards(event.RankRewards(VcData).MidRewards(VcData), "Mid Rankings")
-		finalrewards = genWikiRewards(event.RankRewards(VcData).FinalRewards(VcData), "Final Rankings")
+		midrewards := ""
+		finalrewards := ""
+		rr := event.RankRewards(VcData)
+		if rr != nil {
+			mid := rr.MidRewards(VcData)
+			if mid != nil {
+				midCaption := fmt.Sprintf("Mid Rankings<br /><small> cutoff: %s JST</small>",
+					rr.MidBonusDistributionDate.Format(wikiFmt),
+				)
+				midrewards = genWikiRewards(mid, midCaption)
+			}
+			finalrewards = genWikiRewards(rr.FinalRewards(VcData), "Final Rankings")
+		}
 
 		fmt.Fprintf(w, evntTemplate1,
 			event.StartDatetime.Format(wikiFmt), // start

@@ -67,13 +67,13 @@ type EventCard struct {
 }
 
 type RankReward struct {
-	Id                       int `json:"_id"`
-	KingListId               int `json:"king_list_id"` // same as King Series
-	SheetId                  int `json:"sheet_id"`     // maps to the reward sheet below
-	GroupId                  int `json:"group_id"`
-	MidSheetId               int `json:"mid_sheet_id"`
-	MidBonusDistributionDate int `json:"mid_bonus_distribution_date"`
-	IndividualPointReward    int `json:"individual_point_reward"`
+	Id                       int       `json:"_id"`
+	KingListId               int       `json:"king_list_id"` // same as King Series
+	SheetId                  int       `json:"sheet_id"`     // maps to the reward sheet below
+	GroupId                  int       `json:"group_id"`
+	MidSheetId               int       `json:"mid_sheet_id"`
+	MidBonusDistributionDate Timestamp `json:"mid_bonus_distribution_date"`
+	IndividualPointReward    int       `json:"individual_point_reward"`
 }
 
 type RankRewardSheet struct {
