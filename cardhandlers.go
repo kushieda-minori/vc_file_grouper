@@ -45,7 +45,7 @@ func cardLevelHandler(w http.ResponseWriter, r *http.Request) {
 				nxt,
 				lvl.Exp,
 			)
-			if (i+1)%25 == 0 {
+			if (i+1)%25 == 0 && i+1 < l {
 				io.WriteString(w, "\n|}\n\n")
 				io.WriteString(w, header)
 			}
