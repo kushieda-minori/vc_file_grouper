@@ -74,12 +74,14 @@ type VcFile struct {
 	Version              int                   `json:"version"`
 	Cards                []Card                `json:"cards"`
 	Skills               []Skill               `json:"skills"`
+	SkillLevels          []SkillLevel          `json:"skill_level"`
 	Amalgamations        []Amalgamation        `json:"fusion_list"`
 	Awakenings           []CardAwaken          `json:"card_awaken"`
 	CardCharacter        []CardCharacter       `json:"card_character"`
 	FollowerKinds        []FollowerKind        `json:"follower_kinds"`
 	Levels               []Level               `json:"levels"`
 	CardLevels           []CardLevel           `json:"cardlevel"`
+	CardLevelsLR         []CardLevel           `json:"cardlevel_lr"`
 	DeckBonuses          []DeckBonus           `json:"deck_bonus"`
 	DeckBonusConditions  []DeckBonusCond       `json:"deck_bonus_cond"`
 	Archwitches          []Archwitch           `json:"kings"`

@@ -31,7 +31,8 @@ type Card struct {
 	MaxDefense        int    `json:"max_defense"`         // max DEF if evolved minimally
 	SkillId1          int    `json:"skill_id_1"`          // First Skill
 	SkillId2          int    `json:"skill_id_2"`          // second Skill
-	SpecialSkillId1   int    `json:"special_skill_id_1"`  // Awakened Burst type (GSR or GUR)
+	SkillId3          int    `json:"skill_id_3"`          // third Skill (LR)
+	SpecialSkillId1   int    `json:"special_skill_id_1"`  // Awakened Burst type (GSR,GUR,GLR)
 	ThorSkillId1      int    `json:"thor_skill_id_1"`     // no one knows
 	MedalRate         int    `json:"medal_rate"`          // amount of medals can be traded for
 	Price             int    `json:"price"`               // amount of gold can be traded for
@@ -44,6 +45,7 @@ type Card struct {
 	//Skill Links
 	skill1        *Skill `json:"-"`
 	skill2        *Skill `json:"-"`
+	skill3        *Skill `json:"-"`
 	specialSkill1 *Skill `json:"-"`
 	thorSkill1    *Skill `json:"-"`
 }
@@ -248,6 +250,13 @@ func (c *Card) Skill2(v *VcFile) *Skill {
 	return c.skill2
 }
 
+func (c *Card) Skill3(v *VcFile) *Skill {
+	if c.skill3 == nil && c.SkillId3 > 0 {
+		c.skill3 = SkillScan(c.SkillId3, v.Skills)
+	}
+	return c.skill3
+}
+
 func (c *Card) SpecialSkill1(v *VcFile) *Skill {
 	if c.specialSkill1 == nil && c.SpecialSkillId1 > 0 {
 		c.specialSkill1 = SkillScan(c.SpecialSkillId1, v.Skills)
@@ -358,6 +367,14 @@ func (c *Card) SkillTargetLogic(v *VcFile) string {
 
 func (c *Card) Skill2Name(v *VcFile) string {
 	s := c.Skill2(v)
+	if s == nil {
+		return ""
+	}
+	return s.Name
+}
+
+func (c *Card) Skill3Name(v *VcFile) string {
+	s := c.Skill3(v)
 	if s == nil {
 		return ""
 	}
@@ -480,4 +497,4 @@ func (s ByMaterialCount) Less(i, j int) bool {
 }
 
 var Elements = [5]string{"Light", "Passion", "Cool", "Dark", "Special"}
-var Rarity = [11]string{"N", "R", "SR", "HN", "HR", "HSR", "X", "UR", "HUR", "GSR", "GUR"}
+var Rarity = [14]string{"N", "R", "SR", "HN", "HR", "HSR", "X", "UR", "HUR", "GSR", "GUR", "LR", "HLR", "GLR"}

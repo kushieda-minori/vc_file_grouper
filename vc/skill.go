@@ -44,9 +44,17 @@ type Skill struct {
 	AnimationId             int             `json:"animation_id"`
 	ThorHammerAnimationType json.RawMessage `json:"thorhammer_animation_type"`
 
-	Name        string `json:"name"`        //skill name from strings file
-	Description string `json:"description"` // description from strings file
-	Fire        string `json:"fire"`        // fire text from strings file
+	Name         string       `json:"name"`        //skill name from strings file
+	Description  string       `json:"description"` // description from strings file
+	Fire         string       `json:"fire"`        // fire text from strings file
+	_skillLevels []SkillLevel `json:"-"`
+}
+
+type SkillLevel struct {
+	Id        int `json:"_id"`        // skill id
+	LevelType int `json:"level_type"` // level type for skill upgrade costs
+	Level     int `json:"level"`      // level
+	Medal     int `json:"medal"`      // medals to upgrade to the next level
 }
 
 func (s *Skill) Effect() string {
@@ -71,6 +79,18 @@ func (s *Skill) FireMin() string {
 
 func (s *Skill) FireMax() string {
 	return formatSkill(s.Fire, s.EffectMaxValue, -1)
+}
+
+func (s *Skill) Levels(v *VcFile) []SkillLevel {
+	if s._skillLevels == nil {
+		s._skillLevels = make([]SkillLevel, 0)
+		for _, sl := range v.SkillLevels {
+			if sl.LevelType == s.LevelType {
+				s._skillLevels = append(s._skillLevels, sl)
+			}
+		}
+	}
+	return s._skillLevels
 }
 
 func (s *Skill) TargetScope() string {

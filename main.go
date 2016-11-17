@@ -59,6 +59,7 @@ func main() {
 	http.HandleFunc("/cards/table/", cardTableHandler)
 	http.HandleFunc("/cards/csv/", cardCsvHandler)
 	http.HandleFunc("/cards/detail/", cardDetailHandler)
+	http.HandleFunc("/cards/levels/", cardLevelHandler)
 	http.HandleFunc("/archwitches/", archwitchHandler)
 	// http.HandleFunc("/character/", characterTableHandler)
 	// http.HandleFunc("/character/csv/", characterCsvHandler)

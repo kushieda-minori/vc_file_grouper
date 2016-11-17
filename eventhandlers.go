@@ -100,10 +100,10 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 %s%s||Amalgamation Material
 ||Amalgamation
 ||Elemental Hall
-||Event 10/15x damage<br/>60/120%% Points+
-||Event 10/15x damage<br/>60/120%% Points+
-||Event 10/15x damage<br/>30/50%% Points+
-||Event 10/15x damage<br/>30/50%% Points+
+||Event 10/15x damage<br />60/120%% Points+
+||Event 10/15x damage<br />60/120%% Points+
+||Event 10/15x damage<br />30/50%% Points+
+||Event 10/15x damage<br />30/50%% Points+
 }}
 
 %s
@@ -185,7 +185,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		if rr != nil {
 			mid := rr.MidRewards(VcData)
 			if mid != nil {
-				midCaption := fmt.Sprintf("Mid Rankings<br /><small> cutoff: %s JST</small>",
+				midCaption := fmt.Sprintf("Mid Rankings<br /><small> Cutoff@ %s (JST)</small>",
 					rr.MidBonusDistributionDate.Format(wikiFmt),
 				)
 				midrewards = genWikiRewards(mid, midCaption)
@@ -264,7 +264,7 @@ func genWikiRewards(rewards []vc.RankRewardSheet, caption string) string {
 func getWikiReward(reward vc.RankRewardSheet, newline bool) string {
 	rlist := "%s x%d"
 	if newline {
-		rlist = "<br/>" + rlist
+		rlist = "<br />" + rlist
 	}
 
 	var r string

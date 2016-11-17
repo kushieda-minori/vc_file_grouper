@@ -26,6 +26,42 @@ func cardHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</body></html>")
 }
 
+func cardLevelHandler(w http.ResponseWriter, r *http.Request) {
+	header := `{| class="article-table" style="float:left"
+!Lvl!!To Next Lvl!!Total Needed`
+
+	genLevels := func(levels []vc.CardLevel) {
+		io.WriteString(w, header)
+		l := len(levels)
+		for i, lvl := range levels {
+			nxt := 0
+			if i+1 < l {
+				nxt = levels[i+1].Exp - lvl.Exp
+			}
+			fmt.Fprintf(w, `
+|-
+|%d||%d||%d`,
+				lvl.Id,
+				nxt,
+				lvl.Exp,
+			)
+			if (i+1)%25 == 0 {
+				io.WriteString(w, "\n|}\n\n")
+				io.WriteString(w, header)
+			}
+		}
+	}
+
+	io.WriteString(w, "<html><head><title>Card Levels</title></head><body>\n")
+	io.WriteString(w, "\nN-GUR<br/><textarea rows=\"25\" cols=\"80\">")
+	genLevels(VcData.CardLevels)
+	io.WriteString(w, "\n|}\n</textarea>")
+	io.WriteString(w, "\n<br />LR-GLR<br/><textarea rows=\"25\" cols=\"80\">")
+	genLevels(VcData.CardLevelsLR)
+	io.WriteString(w, "\n|}\n</textarea>")
+	io.WriteString(w, "</body></html>")
+}
+
 func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	var pathLen int
@@ -142,137 +178,39 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "|rarity = %s\n", fixRarity(firstEvo.Rarity()))
 
 		if !skipFirstEvo {
-			fmt.Fprintf(w, "|skill = %s\n|skill lv1 = %s\n|skill lv10 = %s\n|procs = %s\n%s",
-				html.EscapeString(firstEvo.Skill1Name(VcData)),
-				html.EscapeString(strings.Replace(firstEvo.SkillMin(VcData), "\n", "<br />", -1)),
-				html.EscapeString(strings.Replace(firstEvo.SkillMax(VcData), "\n", "<br />", -1)),
-				firstEvo.SkillProcs(VcData),
-				randomSkillEffects(firstEvo.Skill1(VcData), ""),
-			)
+			io.WriteString(w, printWikiSkill(firstEvo.Skill1(VcData), nil, ""))
 		}
 
 		skill2 := firstEvo.Skill2(VcData)
 		if skill2 != nil {
-			lastEvoSkill2Max := ""
-			if lastEvo.Id > 0 {
-				lastEvoSkill2 := lastEvo.Skill2(VcData)
-				if lastEvoSkill2.Id != skill2.Id {
-					lastEvoSkill2Max = fmt.Sprintf("\n|skill %s2 lv10 = %s",
-						skillEvoMod,
-						html.EscapeString(strings.Replace(lastEvoSkill2.SkillMax(), "\n", "<br />", -1)),
-					)
-				}
-			}
-			fmt.Fprintf(w, "|skill %[1]s2 = %[2]s\n|skill %[1]s2 lv1 = %[3]s%[4]s\n|procs %[1]s2 = %[5]d\n%[6]s",
-				skillEvoMod,
-				html.EscapeString(skill2.Name),
-				html.EscapeString(strings.Replace(skill2.SkillMin(), "\n", "<br />", -1)),
-				lastEvoSkill2Max,
-				skill2.MaxCount,
-				randomSkillEffects(skill2, "2"),
-			)
-
-			// Check if the second skill expires
-			if (skill2.PublicEndDatetime.After(time.Time{})) {
-				fmt.Fprintf(w, "|skill 2 end = %v\n", skill2.PublicEndDatetime)
-			}
+			io.WriteString(w, printWikiSkill(skill2, lastEvo.Skill2(VcData), skillEvoMod+"2"))
+			// print skill 3 if it exists
+			io.WriteString(w, printWikiSkill(firstEvo.Skill3(VcData), nil, skillEvoMod+"3"))
 
 		} else if lastEvo.Id > 0 {
-			skill2 = lastEvo.Skill2(VcData)
-			if skill2 != nil {
-				fmt.Fprintf(w, "|skill 2 = %s\n|skill 2 lv10 = %s\n|procs 2 = %d\n%s",
-
-					html.EscapeString(skill2.Name),
-					html.EscapeString(strings.Replace(skill2.SkillMin(), "\n", "<br />", -1)),
-					skill2.MaxCount,
-					randomSkillEffects(skill2, ""),
-				)
-
-				// Check if the second skill expires
-				if (skill2.PublicEndDatetime.After(time.Time{})) {
-					fmt.Fprintf(w, "|skill 2 end = %v\n", skill2.PublicEndDatetime)
-				}
-			}
+			io.WriteString(w, printWikiSkill(lastEvo.Skill2(VcData), nil, skillEvoMod+"2"))
+			// print skill 3 if it exists
+			io.WriteString(w, printWikiSkill(lastEvo.Skill3(VcData), nil, skillEvoMod+"3"))
 		}
 
-		thor1 := firstEvo.ThorSkill1(VcData)
-		if skillEvoMod == "" && thor1 != nil {
-			fmt.Fprintf(w, "|skill %[1]st = %[2]s\n|skill %[1]st lv1 = %[3]s%[4]s\n|procs %[1]st = %[5]d\n%[6]s",
-				skillEvoMod,
-				html.EscapeString(thor1.Name),
-				html.EscapeString(strings.Replace(thor1.FireMin(), "\n", "<br />", -1)),
-				"",
-				thor1.MaxCount,
-				randomSkillEffects(thor1, skillEvoMod+"t"),
-			)
-		}
+		io.WriteString(w, printWikiSkill(lastEvo.ThorSkill1(VcData), nil, skillEvoMod+"t"))
 	} else {
 		io.WriteString(w, "|rarity = \n|skill = \n|skill lv1 = \n|skill lv10 = \n|procs = \n")
 	}
 	if evo, ok := evolutions["A"]; ok {
 		aSkillName := evo.Skill1Name(VcData)
 		if aSkillName != firstEvo.Skill1Name(VcData) {
-			fmt.Fprintf(w, "|skill a = %s\n", html.EscapeString(aSkillName))
-			fmt.Fprintf(w, "|skill a lv1 = %s\n|skill a lv10 = %s\n|procs a = %s\n%s",
-				html.EscapeString(strings.Replace(evo.SkillMin(VcData), "\n", "<br />", -1)),
-				html.EscapeString(strings.Replace(evo.SkillMax(VcData), "\n", "<br />", -1)),
-				evo.SkillProcs(VcData),
-				randomSkillEffects(evo.Skill1(VcData), "a"),
-			)
+			io.WriteString(w, printWikiSkill(evo.Skill1(VcData), nil, "a"))
 		}
-		if gaevo, ok := evolutions["GA"]; ok {
-			gSkillName := strings.Replace(gaevo.Skill1Name(VcData), "☆", "", 1)
-			if gSkillName != aSkillName {
-				fmt.Fprintf(w, "|skill ga = %s\n", html.EscapeString(gSkillName))
-			}
-			fmt.Fprintf(w, "|skill ga lv1 = %s\n|skill ga lv10 = %s\n|procs ga = %s\n%s",
-				html.EscapeString(strings.Replace(gaevo.SkillMin(VcData), "\n", "<br />", -1)),
-				html.EscapeString(strings.Replace(gaevo.SkillMax(VcData), "\n", "<br />", -1)),
-				gaevo.SkillProcs(VcData),
-				randomSkillEffects(gaevo.Skill1(VcData), "ga"),
-			)
+		if _, ok := evolutions["GA"]; ok {
+			io.WriteString(w, printWikiSkill(evo.Skill1(VcData), nil, "ga"))
 		}
 	}
 	if evo, ok := evolutions["G"]; ok {
-		gSkillName := strings.Replace(evo.Skill1Name(VcData), "☆", "", 1)
-		if gSkillName != firstEvo.Skill1Name(VcData) {
-			fmt.Fprintf(w, "|skill g = %s\n", html.EscapeString(gSkillName))
-		}
-		fmt.Fprintf(w, "|skill g lv1 = %s\n|skill g lv10 = %s\n|procs g = %s\n%s",
-			html.EscapeString(strings.Replace(evo.SkillMin(VcData), "\n", "<br />", -1)),
-			html.EscapeString(strings.Replace(evo.SkillMax(VcData), "\n", "<br />", -1)),
-			evo.SkillProcs(VcData),
-			randomSkillEffects(evo.Skill1(VcData), "g"),
-		)
-		skill2 := evo.Skill2(VcData)
-		if skill2 != nil {
-			fs2 := firstEvo.Skill2(VcData)
-			if fs2 == nil || fs2.Id != skill2.Id {
-				fmt.Fprintf(w, "|skill g2 = %s\n", html.EscapeString(skill2.Name))
-				fmt.Fprintf(w, "|skill g2 lv1 = %s\n|procs g2 = %d\n%s",
-					html.EscapeString(strings.Replace(skill2.SkillMin(), "\n", "<br />", -1)),
-					skill2.MaxCount,
-					randomSkillEffects(skill2, "g2"),
-				)
-
-				// Check if the second skill expires
-				if (skill2.PublicEndDatetime.After(time.Time{})) {
-					fmt.Fprintf(w, "|skill g2 end = %v\n", skill2.PublicEndDatetime)
-				}
-			}
-		}
-
-		thor1 := evo.ThorSkill1(VcData)
-		if thor1 != nil {
-			fmt.Fprintf(w, "|skill %[1]st = %[2]s\n|skill %[1]st lv1 = %[3]s%[4]s\n|procs %[1]st = %[5]d\n%[6]s",
-				"g",
-				html.EscapeString(thor1.Name),
-				html.EscapeString(strings.Replace(thor1.FireMin(), "\n", "<br />", -1)),
-				"",
-				thor1.MaxCount,
-				randomSkillEffects(thor1, "gt"),
-			)
-		}
+		io.WriteString(w, printWikiSkill(evo.Skill1(VcData), nil, "g"))
+		io.WriteString(w, printWikiSkill(evo.Skill2(VcData), nil, "g2"))
+		io.WriteString(w, printWikiSkill(evo.Skill3(VcData), nil, "g3"))
+		io.WriteString(w, printWikiSkill(evo.ThorSkill1(VcData), nil, "gt"))
 	}
 
 	//traverse evolutions in order
@@ -411,7 +349,7 @@ func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 	cw := csv.NewWriter(w)
 	cw.Write([]string{"Id", "Card #", "Name", "Evo Rank", "TransCardId", "Rarity", "Element", "Deck Cost", "Base ATK",
 		"Base DEF", "Base Sol", "Max ATK", "Max DEF", "Max Sold", "Skill 1 Name", "Skill Min",
-		"Skill Max", "Skill Procs", "Target Scope", "Target Logic", "Skill 2", "Thor Skill 1", "Skill Special", "Description", "Friendship",
+		"Skill Max", "Skill Procs", "Target Scope", "Target Logic", "Skill 2", "Skill 3", "Thor Skill 1", "Skill Special", "Description", "Friendship",
 		"Login", "Meet", "Battle Start", "Battle End", "Friendship Max", "Friendship Event", "Is Closed"})
 	for _, card := range VcData.Cards {
 		err := cw.Write([]string{strconv.Itoa(card.Id), fmt.Sprintf("cd_%05d", card.CardNo), card.Name, strconv.Itoa(card.EvolutionRank),
@@ -419,7 +357,7 @@ func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 			strconv.Itoa(card.DefaultDefense), strconv.Itoa(card.DefaultFollower), strconv.Itoa(card.MaxOffense),
 			strconv.Itoa(card.MaxDefense), strconv.Itoa(card.MaxFollower), card.Skill1Name(VcData),
 			card.SkillMin(VcData), card.SkillMax(VcData), card.SkillProcs(VcData), card.SkillTarget(VcData),
-			card.SkillTargetLogic(VcData), card.Skill2Name(VcData), card.ThorSkill1Name(VcData), card.SpecialSkill1Name(VcData),
+			card.SkillTargetLogic(VcData), card.Skill2Name(VcData), card.Skill3Name(VcData), card.ThorSkill1Name(VcData), card.SpecialSkill1Name(VcData),
 			card.Description(VcData), card.Friendship(VcData), card.Login(VcData), card.Meet(VcData),
 			card.BattleStart(VcData), card.BattleEnd(VcData), card.FriendshipMax(VcData), card.FriendshipEvent(VcData),
 			strconv.Itoa(card.IsClosed),
@@ -510,6 +448,7 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 <th>Target Scope</th>
 <th>Target Logic</th>
 <th>Skill 2</th>
+<th>Skill 3</th>
 <th>Thor Skill</th>
 <th>Skill Special</th>
 <th>Description</th>
@@ -574,6 +513,7 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 			"<td>%s</td>"+
 			"<td>%s</td>"+
 			"<td>%s</td>"+
+			"<td>%s</td>"+
 			"<td>%s</td></tr>\n",
 			card.Id,
 			card.CardNo,
@@ -601,6 +541,7 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 			card.SkillTarget(VcData),
 			card.SkillTargetLogic(VcData),
 			card.Skill2Name(VcData),
+			card.Skill3Name(VcData),
 			card.ThorSkill1Name(VcData),
 			card.SpecialSkill1Name(VcData),
 			card.Description(VcData),
@@ -636,21 +577,60 @@ func maxStatFollower(evo vc.Card, numOfEvos int) string {
 	return "?"
 }
 
-func randomSkillEffects(bs *vc.Skill, evoMod string) (ret string) {
+func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 	ret = ""
+	if s == nil {
+		return
+	}
+
 	if evoMod != "" {
 		evoMod += " "
 	}
-	if bs != nil && bs.EffectId == 36 {
+
+	lv10 := ""
+
+	if ls == nil || ls.Id == s.Id {
+		// 1st skills only have lvl10, skill 2, 3, and thor do not.
+		if len(s.Levels(VcData)) == 10 {
+			lv10 = fmt.Sprintf("\n|skill %slv10 = %s",
+				evoMod,
+				html.EscapeString(strings.Replace(s.SkillMax(), "\n", "<br />", -1)),
+			)
+		}
+	} else {
+		// handles Great DMG skills where the last evo is the max skill
+		lv10 = fmt.Sprintf("\n|skill %slv10 = %s",
+			evoMod,
+			html.EscapeString(strings.Replace(ls.SkillMax(), "\n", "<br />", -1)),
+		)
+	}
+
+	ret = fmt.Sprintf(`|skill %[1]s= %[2]s
+|skill %[1]slv1 = %[3]s%[4]s
+|procs %[1]s= %[5]d
+`,
+		evoMod,
+		html.EscapeString(s.Name),
+		html.EscapeString(strings.Replace(s.SkillMin(), "\n", "<br />", -1)),
+		lv10,
+		s.MaxCount,
+	)
+
+	if s != nil && s.EffectId == 36 {
 		// Random Skill
-		for k, v := range []int{bs.EffectParam, bs.EffectParam2, bs.EffectParam3, bs.EffectParam4, bs.EffectParam5} {
+		for k, v := range []int{s.EffectParam, s.EffectParam2, s.EffectParam3, s.EffectParam4, s.EffectParam5} {
 			rs := vc.SkillScan(v, VcData.Skills)
 			if rs != nil {
 				ret += fmt.Sprintf("|random %s%d = %s \n", evoMod, k+1, rs.FireMin())
 			}
 		}
 	}
-	return ret
+
+	// Check if the second skill expires
+	if (s.PublicEndDatetime.After(time.Time{})) {
+		ret += fmt.Sprintf("|skill %send = %v\n", evoMod, s.PublicEndDatetime)
+	}
+	return
 }
 
 func getEvolutions(card *vc.Card) map[string]vc.Card {
