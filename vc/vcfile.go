@@ -82,6 +82,7 @@ type VcFile struct {
 	Levels               []Level               `json:"levels"`
 	CardLevels           []CardLevel           `json:"cardlevel"`
 	CardLevelsLR         []CardLevel           `json:"cardlevel_lr"`
+	LRResources          []LRResource          `json:"card_compose_resource"`
 	DeckBonuses          []DeckBonus           `json:"deck_bonus"`
 	DeckBonusConditions  []DeckBonusCond       `json:"deck_bonus_cond"`
 	Archwitches          []Archwitch           `json:"kings"`
@@ -95,6 +96,12 @@ type VcFile struct {
 	Maps                 []Map                 `json:"map"`
 	Areas                []Area                `json:"area"`
 	Items                []Item                `json:"items"`
+	Structures           []Structure           `json:"structures"`
+	StructureLevels      []StructureLevel      `json:"structure_level"`
+	StructureNumCosts    []StructureCost       `json:"structure_num_cost"`
+	ResourceLevels       []ResourceLevel       `json:"resource"`
+	BankLevels           []BankLevel           `json:"bank_level"`
+	CastleLevels         []CastleLevel         `json:"castle_level"`
 	ThorEvents           []ThorEvent           `json:"mst_thorhammer"`
 	ThorKings            []ThorKing            `json:"mst_thorhammer_king"`
 	ThorKingCosts        []ThorKingCost        `json:"mst_thorhammer_king_cost"`
@@ -470,6 +477,37 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		}
 	}
 
+	buildname, err := readStringFile(root + "/string/MsgBuildingName_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	builddesc, err := readStringFile(root + "/string/MsgBuildingDesc_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+
+	for key, _ := range v.Structures {
+		if key < len(buildname) {
+			v.Structures[key].Name = filter(buildname[key])
+		}
+		if key < len(builddesc) {
+			v.Structures[key].Description = filter(builddesc[key])
+		}
+	}
+
+	thorTitle, err := readStringFile(root + "/string/MsgThorhammerTitle_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	for key, _ := range v.ThorEvents {
+		if key < len(thorTitle) {
+			v.ThorEvents[key].Title = filter(thorTitle[key])
+		}
+	}
+
 	return data, nil
 }
 
@@ -545,7 +583,15 @@ func filter(s string) string {
 	}
 	//ret = strings.Replace(ret, "\n", "<br />", -1)
 
-	ret = strings.Replace(ret, "<img=5>", "[[File:Gemstone.png]]", -1)
+	ret = strings.Replace(ret, "<img=1>Gold", "{{Icon|gold}}", -1)
+	ret = strings.Replace(ret, "<img=4>Iron", "{{Icon|iron}}", -1)
+	ret = strings.Replace(ret, "<img=3>Ether", "{{Icon|ether}}", -1)
+	ret = strings.Replace(ret, "<img=56>Gem", "{{Icon|gem}}", -1)
+	ret = strings.Replace(ret, "<img=1>", "{{Icon|gold}}", -1)
+	ret = strings.Replace(ret, "<img=4>", "{{Icon|iron}}", -1)
+	ret = strings.Replace(ret, "<img=3>", "{{Icon|ether}}", -1)
+	ret = strings.Replace(ret, "<img=56>", "{{Icon|gem}}", -1)
+	ret = strings.Replace(ret, "<img=5>", "{{Icon|jewel}}", -1)
 
 	return ret
 }

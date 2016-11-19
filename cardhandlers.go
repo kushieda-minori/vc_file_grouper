@@ -29,6 +29,8 @@ func cardHandler(w http.ResponseWriter, r *http.Request) {
 func cardLevelHandler(w http.ResponseWriter, r *http.Request) {
 	header := `{| class="article-table" style="float:left"
 !Lvl!!To Next Lvl!!Total Needed`
+	header2 := `{| class="article-table" style="float:left"
+!Lvl!!Gems Needed`
 
 	genLevels := func(levels []vc.CardLevel) {
 		io.WriteString(w, header)
@@ -50,15 +52,34 @@ func cardLevelHandler(w http.ResponseWriter, r *http.Request) {
 				io.WriteString(w, header)
 			}
 		}
+		io.WriteString(w, "\n|}\n")
 	}
 
 	io.WriteString(w, "<html><head><title>Card Levels</title></head><body>\n")
 	io.WriteString(w, "\nN-GUR<br/><textarea rows=\"25\" cols=\"80\">")
 	genLevels(VcData.CardLevels)
-	io.WriteString(w, "\n|}\n</textarea>")
+	io.WriteString(w, "</textarea>")
 	io.WriteString(w, "\n<br />LR-GLR<br/><textarea rows=\"25\" cols=\"80\">")
 	genLevels(VcData.CardLevelsLR)
+	io.WriteString(w, "</textarea>")
+	io.WriteString(w, "\n<br />LR Resources<br/><textarea rows=\"25\" cols=\"80\">")
+
+	io.WriteString(w, header2)
+	l := len(VcData.LRResources)
+	for i, lvl := range VcData.LRResources {
+		fmt.Fprintf(w, `
+|-
+|%d||%d{{Icon|gem}}`,
+			lvl.Id,
+			lvl.Elixir,
+		)
+		if (i+1)%25 == 0 && i+1 < l {
+			io.WriteString(w, "\n|}\n\n")
+			io.WriteString(w, header2)
+		}
+	}
 	io.WriteString(w, "\n|}\n</textarea>")
+
 	io.WriteString(w, "</body></html>")
 }
 

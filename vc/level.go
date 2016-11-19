@@ -11,3 +11,8 @@ type Level struct {
 	NpcCost   int `json:"npc_cost"`   // vitality
 	KingCost  int `json:"king_cost"`  // battle points
 }
+
+type LRResource struct {
+	Id     int `json:"_id"`
+	Elixir int `json:"elixir"`
+}

@@ -25,7 +25,14 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
 	for _, e := range VcData.Events {
-		fmt.Fprintf(w, "<tr><td><a href=\"/events/detail/%[1]d\">%[1]d</a></td><td><a href=\"/events/detail/%[1]d\">%[2]s</a></td><td>%d</td><td>%s</td><td>%s</td><td>%d</td></tr>",
+		fmt.Fprintf(w, `<tr>
+	<td><a href="/events/detail/%[1]d">%[1]d</a></td>
+	<td><a href="/events/detail/%[1]d">%[2]s</a></td>
+	<td>%d</td>
+	<td>%s</td>
+	<td>%s</td>
+	<td>%d</td>
+</tr>`,
 			e.Id,
 			e.Name,
 			e.EventTypeId,

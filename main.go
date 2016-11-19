@@ -79,6 +79,9 @@ func main() {
 
 	http.HandleFunc("/maps/", mapHandler)
 
+	http.HandleFunc("/garden/structures/", structureListHandler)
+	http.HandleFunc("/garden/structures/detail/", structureDetailHandler)
+
 	http.HandleFunc("/awakenings/", awakeningsTableHandler)
 	http.HandleFunc("/awakenings/csv/", awakeningsCsvHandler)
 
@@ -126,12 +129,14 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 <a href="/data">Set Data Location</a><br />
 <br />
 <a href="/cards/table">Card List as a Table</a><br />
-<a href="/deckbonus">Deck Bonuses</a><br />
 <a href="/events">Event List</a><br />
-<a href="/maps">Map List</a><br />
-<a href="/archwitches">Archwitch List</a><br />
 <a href="/thor">Thor Event List</a><br />
 <a href="/items">Item List</a><br />
+<a href="/deckbonus">Deck Bonuses</a><br />
+<a href="/maps">Map List</a><br />
+<a href="/archwitches">Archwitch List</a><br />
+<a href="/cards/levels">Card Levels</a><br />
+<a href="/garden/structures">Garden Structures</a><br />
 <br />
 Images:<br />
 <a href="/images/battle/bg/">Battle Backgrounds</a><br />

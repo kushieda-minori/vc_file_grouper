@@ -13,6 +13,7 @@ type ThorEvent struct {
 	RankingRewardDestributionStartDatetime Timestamp  `json:"ranking_reward_destribution_start_datetime"`
 	PointRewardGroupId                     int        `json:"jump_button"`
 	_archwitches                           []ThorKing `json:"-"`
+	Title                                  string     `json:""` // MsgThorhammerTitle_en.strb
 }
 
 // mst_thorhammer_king
