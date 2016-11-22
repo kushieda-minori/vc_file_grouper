@@ -15,7 +15,7 @@ import (
 )
 
 func imageCardSDHandler(w http.ResponseWriter, r *http.Request) {
-	//vcfilepath+"/card/md"
+	//vcfilepath+"/card/sd"
 	serveCardImage(vcfilepath+"/card/sd/", "/images/cardSD/", w, r)
 }
 
@@ -41,7 +41,9 @@ func imageHandlerFor(urlPath string, imageDir string) func(http.ResponseWriter, 
 	}
 }
 
-func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root string) {
+type fileFilterFunc func(os.FileInfo) bool
+
+func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root string, filters ...fileFilterFunc) {
 	imgname := r.URL.Path[len("/images"+urlPath):]
 	queryValues := r.URL.Query()
 
@@ -91,6 +93,13 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 			if info.IsDir() {
 				return nil
 			}
+			if filters != nil {
+				for _, filter := range filters {
+					if !filter(info) {
+						return nil
+					}
+				}
+			}
 			f, err := os.Open(path)
 			if err != nil {
 				return err
@@ -117,9 +126,26 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 	http.Error(w, "Invalid Image location "+imgname, http.StatusNotFound)
 }
 
+func checkImageName(info os.FileInfo) bool {
+	imageName := info.Name()
+	for _, card := range VcData.Cards {
+		if card.Image() == imageName {
+			return false
+		}
+	}
+	return true
+}
+
 func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r *http.Request) {
 	imgname := r.URL.Path[len(urlprefix):]
+	qs := r.URL.Query()
 	if imgname == "" || imgname == "/" || strings.HasPrefix(imgname, "../") {
+		if len(qs) > 0 {
+			if unused := qs.Get("unused"); unused != "" {
+				servImageDir(w, r, strings.TrimPrefix(urlprefix, "/images"), strings.TrimPrefix(imagePath, vcfilepath), checkImageName)
+				return
+			}
+		}
 		// trying to read the entire directory or break out of the dir with a ../
 		http.Error(w, "Invalid Image location", http.StatusForbidden)
 		return
@@ -173,7 +199,7 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 			fileName = fileName + "_" + strconv.Itoa(card.EvolutionRank) + ext
 		}
 	} else {
-		os.Stderr.WriteString("Card info not found for image " + cardId + "\n")
+		//os.Stderr.WriteString("Card info not found for image " + cardId + "\n")
 		if decodeOnFly {
 			fileName = imgname + ext
 		} else {

@@ -139,6 +139,7 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 <a href="/garden/structures">Garden Structures</a><br />
 <br />
 Images:<br />
+<a href="/images/card/?unused=1">Unused Card Images</a><br />
 <a href="/images/battle/bg/">Battle Backgrounds</a><br />
 <a href="/images/battle/map/">Battle Maps</a><br />
 <a href="/images/event/">Event</a><br />

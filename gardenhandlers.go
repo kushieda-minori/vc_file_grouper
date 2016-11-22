@@ -111,7 +111,7 @@ func structureDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if structure.IsResource() {
 		printResource(w, structure)
 	} else if structure.IsBank() {
-		printResourceStorage(w, structure)
+		printBank(w, structure)
 	} else {
 		io.WriteString(w, "Not ready yet.")
 	}
@@ -202,7 +202,7 @@ Max quantity: %d
 	io.WriteString(w, "\n|}\n</textarea>")
 }
 
-func printResourceStorage(w http.ResponseWriter, structure *vc.Structure) {
+func printBank(w http.ResponseWriter, structure *vc.Structure) {
 	lvlHeader := `{| class="mw-collapsible mw-collapsed article-table" style="min-width:677px"
 |-
 !Lvl
