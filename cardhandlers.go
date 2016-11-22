@@ -637,7 +637,7 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 		s.MaxCount,
 	)
 
-	if s != nil && s.EffectId == 36 {
+	if s.EffectId == 36 {
 		// Random Skill
 		for k, v := range []int{s.EffectParam, s.EffectParam2, s.EffectParam3, s.EffectParam4, s.EffectParam5} {
 			rs := vc.SkillScan(v, VcData.Skills)
