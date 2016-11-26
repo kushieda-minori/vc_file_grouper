@@ -189,6 +189,9 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 	}
 	if card != nil {
 		fileName = card.Name
+		if fileName == "" {
+			fileName = card.Character(VcData).FirstEvoCard(VcData).Image()
+		}
 		if strings.HasPrefix(card.Rarity(), "G") {
 			fileName = fileName + "_G" + ext
 		} else if card.EvolutionRank == 0 {

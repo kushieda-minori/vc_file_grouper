@@ -113,6 +113,7 @@ type CardCharacter struct {
 	BattleEnd       string `json:"battleEnd"`
 	FriendshipMax   string `json:"friendshipMax"`
 	FriendshipEvent string `json:"friendshipEvent"`
+	_cards          []Card `json:"-"`
 }
 
 // Follower kinds for soldier replenishment on cards
@@ -155,6 +156,29 @@ func (c *Card) Character(v *VcFile) *CardCharacter {
 		c.character = &v.CardCharacter[c.CardCharaId-1]
 	}
 	return c.character
+}
+
+func (c *CardCharacter) Cards(v *VcFile) []Card {
+	if c._cards == nil || len(c._cards) == 0 {
+		c._cards = make([]Card, 0)
+		for _, val := range v.Cards {
+			//return the first one we find.
+			if val.CardCharaId == c.Id {
+				c._cards = append(c._cards, val)
+			}
+		}
+	}
+	return c._cards
+}
+
+func (c *CardCharacter) FirstEvoCard(v *VcFile) (card *Card) {
+	card = nil
+	for i, cd := range c.Cards(v) {
+		if card == nil || cd.EvolutionRank <= card.EvolutionRank {
+			card = &(c._cards[i])
+		}
+	}
+	return
 }
 
 func (c *Card) Archwitch(v *VcFile) *Archwitch {

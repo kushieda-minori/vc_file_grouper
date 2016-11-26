@@ -180,7 +180,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	cardName := card.Name
 	if len(cardName) == 0 {
-		cardName = card.Image()
+		cardName = firstEvo.Image()
 	}
 
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", cardName)
