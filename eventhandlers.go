@@ -95,47 +95,6 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		nextEventName = strings.Replace(nextEvent.Name, "【New Event】", "", -1)
 	}
 
-	evntTemplate1 := `{{Event
-|start jst = %s
-|end jst = %s
-|elementalHallOpen=%s
-|elementHallRotate=%s
-|image = Banner {{PAGENAME}}.png
-|story = yes
-|%s|Ranking Reward
-|%s|Legendary Archwitch
-%s%s||Amalgamation Material
-||Amalgamation
-||Elemental Hall
-||Event 10/15x damage<br />60/120%% Points+
-||Event 10/15x damage<br />60/120%% Points+
-||Event 10/15x damage<br />30/50%% Points+
-||Event 10/15x damage<br />30/50%% Points+
-}}
-
-%s
-
-==Rewards==
-%s
-{{clr}}
-
-==Ranking Trend==
-{| class="article-table" style="text-align:right" border="1"
-|-
-!Date (JST)
-!Rank 1
-!Rank 50
-!Rank 100
-!Rank 300
-!Rank 500
-!Rank 1000
-!Rank 2000%s
-|}
-
-%s
-
-{{NavEvent|%s|%s}}`
-
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", event.Name)
 	if event.BannerId > 0 {
 		fmt.Fprintf(w, `<img src="/images/event/largeimage/%d/event_image_en" alt="Banner"/><br />`, event.BannerId)
@@ -157,11 +116,9 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "<a href=\"/maps/%d\">Map Information</a>\n<br />", event.MapId)
 	}
 	io.WriteString(w, "<textarea style=\"width:800px;height:760px\">")
-	if event.EventTypeId == 1 {
-		rtrend := ""
-		for i := event.StartDatetime.Add(24 * time.Hour); event.EndDatetime.After(i.Add(-24 * time.Hour)); i = i.Add(24 * time.Hour) {
-			rtrend += fmt.Sprintf("\n|-\n|%s\n|\n|\n|\n|\n|\n|\n|", i.Format("January _2"))
-		}
+	switch event.EventTypeId {
+	case 1: // archwitch event
+		rtrend := genWikiRankTrend(event)
 
 		var legendary string
 		var faws string
@@ -188,6 +145,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 		midrewards := ""
 		finalrewards := ""
+		rankReward := ""
 		rr := event.RankRewards(VcData)
 		if rr != nil {
 			mid := rr.MidRewards(VcData)
@@ -197,15 +155,23 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				)
 				midrewards = genWikiRewards(mid, midCaption)
 			}
-			finalrewards = genWikiRewards(rr.FinalRewards(VcData), "Final Rankings")
+			finalRewardList := rr.FinalRewards(VcData)
+			finalrewards = genWikiRewards(finalRewardList, "Final Rankings")
+			for _, fr := range finalRewardList {
+				if fr.CardId > 0 {
+					rrCard := vc.CardScan(fr.CardId, VcData.Cards)
+					rankReward = rrCard.Name
+					break
+				}
+			}
 		}
 
-		fmt.Fprintf(w, evntTemplate1,
+		fmt.Fprintf(w, getEventTemplate(event.EventTypeId),
 			event.StartDatetime.Format(wikiFmt), // start
 			event.EndDatetime.Format(wikiFmt),   // end
 			eHallStart,                          // E-Hall opening
 			"1",                                 // E-Hall rotation
-			"",                                  // rank reward
+			rankReward,                          // rank reward
 			legendary,                           // legendary archwitch
 			faws,                                // Fantasy Archwitch
 			aws,                                 // Regular Archwitch
@@ -216,7 +182,18 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			prevEventName, //Previous event name
 			nextEventName, // next event name
 		)
-	} else {
+	case 16: // alliance bingo battle
+		fallthrough
+	case 11: // special campaign (Abyssal AW and others)
+		// may just do the THOR event seprately and leave this as just news
+		fallthrough
+	case 13: //Alliance Ultimate Battle
+		fallthrough
+	case 12: // Alliance Duel
+		fallthrough
+	case 10: //Alliance Battle
+		fallthrough
+	default:
 		io.WriteString(w, html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)))
 	}
 	io.WriteString(w, "</textarea></div>")
@@ -308,6 +285,56 @@ func getWikiReward(reward vc.RankRewardSheet, newline bool) string {
 	}
 
 	return fmt.Sprintf(rlist, r, reward.Num)
+}
+
+func getEventTemplate(eventType int) string {
+	switch eventType {
+	case 1:
+		return `{{Event
+|start jst = %s
+|end jst = %s
+|elementalHallOpen=%s
+|elementHallRotate=%s
+|image = Banner {{PAGENAME}}.png
+|story = yes
+|%s|Ranking Reward
+|%s|Legendary Archwitch
+%s%s||Amalgamation Material
+||Amalgamation
+||Elemental Hall
+||Event 10/15x damage<br />60/120%% Points+
+||Event 10/15x damage<br />60/120%% Points+
+||Event 10/15x damage<br />30/50%% Points+
+||Event 10/15x damage<br />30/50%% Points+
+}}
+
+%s
+
+==Rewards==
+%s
+{{clr}}
+
+==Ranking Trend==
+%s
+
+
+%s
+
+{{NavEvent|%s|%s}}`
+	default:
+		return ""
+	}
+}
+
+func genWikiRankTrend(event *vc.Event) (rtrend string) {
+	rtrend = `{| class="article-table" style="text-align:right" border="1"
+|-
+!Date (JST) !! Rank 1 !! Rank 50 !! Rank 100 !! Rank 300 !! Rank 500 !! Rank 1000 !! Rank 2000`
+	for i := event.StartDatetime.Add(24 * time.Hour); event.EndDatetime.After(i.Add(-24 * time.Hour)); i = i.Add(24 * time.Hour) {
+		rtrend += fmt.Sprintf("\n|-\n|%s\n|\n|\n|\n|\n|\n|\n|", i.Format("January _2"))
+	}
+	rtrend += "\n|}"
+	return
 }
 
 func cleanTicketName(name string) string {
