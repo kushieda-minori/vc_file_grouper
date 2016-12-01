@@ -5,6 +5,7 @@ import (
 	"html"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -97,13 +98,13 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", event.Name)
 	if event.BannerId > 0 {
-		fmt.Fprintf(w, `<img src="/images/event/largeimage/%d/event_image_en" alt="Banner"/><br />`, event.BannerId)
+		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Banner"/></a><br />`, event.BannerId, url.QueryEscape(event.Name))
 	}
 	if event.TexIdImage > 0 {
-		fmt.Fprintf(w, `<img src="/images/event/largeimage/%d/event_image_en" alt="Texture Image" /><br />`, event.TexIdImage)
+		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Texture Image" /></a>br />`, event.TexIdImage, url.QueryEscape(event.Name))
 	}
 	if event.TexIdImage2 > 0 {
-		fmt.Fprintf(w, `<img src="/images/event/largeimage/%d/event_image_en" alt="Texture Image 2" /><br />`, event.TexIdImage2)
+		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Texture Image 2" /></a><br />`, event.TexIdImage2, url.QueryEscape(event.Name))
 	}
 	if prevEventName != "" {
 		fmt.Fprintf(w, "<div style=\"float:left\"><a href=\"%d\">%s</a>\n</div>", prevEvent.Id, prevEventName)
