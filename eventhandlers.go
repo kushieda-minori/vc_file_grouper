@@ -298,6 +298,7 @@ func getWikiReward(reward vc.RankRewardSheet, newline bool) string {
 			// sword, shoe, key, rod, potion
 			r = fmt.Sprintf("{{Valkyrie|%s}}", cleanItemName(item.NameEng))
 		} else if item.GroupId == 18 {
+			// exchange items
 			r = fmt.Sprintf("[[File:%[1]s.png|28px|link=Items#%[1]s]] [[Items#%[1]s|%[1]s]]", item.NameEng)
 		} else {
 			r = fmt.Sprintf("__UNKNOWN_GROUP:_%d_%s__", item.GroupId, item.NameEng)
