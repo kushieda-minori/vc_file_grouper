@@ -181,8 +181,14 @@ func (s *Structure) CastleBonuses(v *VcFile) []CastleLevel {
 }
 
 func (s *Structure) MaxQty(v *VcFile) int {
-	clb := s.CastleBonuses(v)
-	return clb[len(clb)-1].Max
+	maxCLB := 0
+	clbs := s.CastleBonuses(v)
+	for i, clb := range clbs {
+		if clb.Level > clbs[maxCLB].Level {
+			maxCLB = i
+		}
+	}
+	return clbs[maxCLB].Max
 }
 
 func (l *StructureLevel) cacheResource(v *VcFile) {
@@ -211,7 +217,7 @@ func (sr *ResourceLevel) Rate() int {
 }
 
 func (sr *ResourceLevel) FillTime() time.Duration {
-	return time.Duration(sr.Income/sr.Rate()) * time.Minute
+	return time.Duration(float64(sr.Income)/float64(sr.Rate())*60.0) * time.Second
 }
 
 func StructureScan(id int, v *VcFile) *Structure {
