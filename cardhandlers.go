@@ -584,6 +584,14 @@ func maxStatAtk(evo vc.Card, numOfEvos int) string {
 		return strconv.Itoa(evo.MaxOffense)
 	}
 	return "?"
+	// ret = strconv.Itoa(evo.BestEvoMaxAttack(VcData))
+	// if evo.EvolutionRank > 2 {
+	// 	ret = "{{ToolTip|" + ret + "|Perfect Evolution}}"
+	// }
+	// if evo.IsAmalgamation(evo.Amalgamations(VcData)) {
+	// 	ret += " / {{ToolTip|?|Perfect Amalgamation}}"
+	// }
+	// return
 }
 func maxStatDef(evo vc.Card, numOfEvos int) string {
 	if evo.EvolutionRank == 0 {
@@ -626,13 +634,20 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 		)
 	}
 
+	skillLvl1 := ""
+	if strings.HasSuffix(evoMod, "t ") {
+		skillLvl1 = s.FireMax() + " / 100% chance"
+	} else {
+		skillLvl1 = s.SkillMin()
+	}
+
 	ret = fmt.Sprintf(`|skill %[1]s= %[2]s
 |skill %[1]slv1 = %[3]s%[4]s
 |procs %[1]s= %[5]d
 `,
 		evoMod,
 		html.EscapeString(s.Name),
-		html.EscapeString(strings.Replace(s.SkillMin(), "\n", "<br />", -1)),
+		html.EscapeString(strings.Replace(skillLvl1, "\n", "<br />", -1)),
 		lv10,
 		s.MaxCount,
 	)

@@ -2,6 +2,7 @@ package vc
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -48,6 +49,9 @@ type Card struct {
 	skill3        *Skill `json:"-"`
 	specialSkill1 *Skill `json:"-"`
 	thorSkill1    *Skill `json:"-"`
+	// possible card evolutions
+	prevEvo *Card `json:"-"`
+	nextEvo *Card `json:"-"`
 }
 
 // List of possible Fusions (Amalgamations) from master file field "fusion_list"
@@ -158,26 +162,81 @@ func (c *Card) Character(v *VcFile) *CardCharacter {
 	return c.character
 }
 
-func (c *CardCharacter) Cards(v *VcFile) []Card {
-	if c._cards == nil || len(c._cards) == 0 {
-		c._cards = make([]Card, 0)
-		for _, val := range v.Cards {
-			//return the first one we find.
-			if val.CardCharaId == c.Id {
-				c._cards = append(c._cards, val)
+func (c *Card) NextEvo(v *VcFile) *Card {
+	if c.nextEvo == nil {
+		if c.CardCharaId <= 0 || c.EvolutionCardId <= 0 || c.Rarity()[0] == 'H' {
+			return nil
+		}
+
+		var tmp *Card
+		for i, cd := range c.Character(v).Cards(v) {
+			if cd.Id == c.EvolutionCardId {
+				tmp = &(c.Character(v)._cards[i])
 			}
 		}
+
+		// Terra -> Rhea evos to a different card
+		if tmp == nil || tmp.CardCharaId != c.CardCharaId {
+			return nil
+		}
+		c.nextEvo = tmp
+		tmp.prevEvo = c
 	}
-	return c._cards
+	return c.nextEvo
 }
 
-func (c *CardCharacter) FirstEvoCard(v *VcFile) (card *Card) {
-	card = nil
-	for i, cd := range c.Cards(v) {
-		if card == nil || cd.EvolutionRank <= card.EvolutionRank {
-			card = &(c._cards[i])
+func (c *Card) PrevEvo(v *VcFile) *Card {
+	if c.prevEvo == nil {
+		// no charcter ID or already lowest evo rank
+		if c.CardCharaId <= 0 || c.EvolutionRank < 0 {
+			return nil
 		}
+
+		var tmp *Card
+		for i, cd := range c.Character(v).Cards(v) {
+			if c.Id == cd.EvolutionCardId {
+				tmp = &(c.Character(v)._cards[i])
+			}
+		}
+
+		// Terra -> Rhea evos to a different card
+		if tmp == nil || tmp.CardCharaId != c.CardCharaId {
+			return nil
+		}
+		c.prevEvo = tmp
+		tmp.nextEvo = c
 	}
+	return c.prevEvo
+}
+
+/*
+calculates the stanrd evolution stat but at max level
+*/
+func (c *Card) BestEvoMaxAttack(v *VcFile) (ret int) {
+	materialCard := c.PrevEvo(v)
+	if materialCard == nil {
+		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.Id))
+		return c.MaxOffense
+	}
+	lvlRatio := float64(c.MaxOffense) / float64(c.DefaultOffense)
+	base := c.BestEvoBaseAttack(v)
+	ret = int(float64(base) * lvlRatio)
+	os.Stderr.WriteString(fmt.Sprintf("lvl ratio: %v\nbase: %v\nmax: %v\n", lvlRatio, base, ret))
+	return
+}
+
+/*
+calculates the base stat if a max evolution is performed (16 cards for H rarity)
+*/
+func (c *Card) BestEvoBaseAttack(v *VcFile) (ret int) {
+	materialCard := c.PrevEvo(v)
+	if materialCard == nil {
+		return c.DefaultOffense
+	}
+	statBonus := float64(0.15) // 5% evo, 5% max level, 5% Evo arcana
+	base := materialCard.BestEvoBaseAttack(v)
+	ret = (int(float64(base)*statBonus) * 2) + c.DefaultOffense
+	os.Stderr.WriteString(fmt.Sprintf("statBonus: %v\nbase: %v\nmax: %v\n", statBonus, base, ret))
 	return
 }
 
@@ -293,6 +352,29 @@ func (c *Card) ThorSkill1(v *VcFile) *Skill {
 		c.thorSkill1 = SkillScan(c.ThorSkillId1, v.Skills)
 	}
 	return c.thorSkill1
+}
+
+func (c *CardCharacter) Cards(v *VcFile) []Card {
+	if c._cards == nil || len(c._cards) == 0 {
+		c._cards = make([]Card, 0)
+		for _, val := range v.Cards {
+			//return the first one we find.
+			if val.CardCharaId == c.Id {
+				c._cards = append(c._cards, val)
+			}
+		}
+	}
+	return c._cards
+}
+
+func (c *CardCharacter) FirstEvoCard(v *VcFile) (card *Card) {
+	card = nil
+	for i, cd := range c.Cards(v) {
+		if card == nil || cd.EvolutionRank <= card.EvolutionRank {
+			card = &(c._cards[i])
+		}
+	}
+	return
 }
 
 func CardScan(cardId int, cards []Card) *Card {
