@@ -25,7 +25,8 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<th>_id</th><th>Event Name</th><th>Event Type</th><th>Start Date</th><th>End Date</th><th>King Series</th>\n")
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
-	for _, e := range VcData.Events {
+	for i := len(VcData.Events) - 1; i >= 0; i-- {
+		e := VcData.Events[i]
 		fmt.Fprintf(w, `<tr>
 	<td><a href="/events/detail/%[1]d">%[1]d</a></td>
 	<td><a href="/events/detail/%[1]d">%[2]s</a></td>
@@ -151,7 +152,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		if rr != nil {
 			mid := rr.MidRewards(VcData)
 			if mid != nil {
-				midCaption := fmt.Sprintf("Mid Rankings<br /><small> Cutoff@ %s (JST)</small>",
+				midCaption := fmt.Sprintf("Mid Rankings<br /><small>Cutoff@ %s (JST)</small>",
 					rr.MidBonusDistributionDate.Format(wikiFmt),
 				)
 				midrewards = genWikiRewards(mid, midCaption)
@@ -184,7 +185,27 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			nextEventName, // next event name
 		)
 	case 16: // alliance bingo battle
-		fallthrough
+		// rewards
+		rr := event.RankRewards(VcData)
+		finalRewardList := rr.FinalRewards(VcData)
+		finalrewards := genWikiRewards(finalRewardList, "Ranking")
+
+		// description
+		io.WriteString(w, html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)))
+		// ring exchange
+		io.WriteString(w, "==Ring Exchange==\n\n")
+		// rank rewards
+		io.WriteString(w, "==Rewards==\n\n")
+		io.WriteString(w, finalrewards)
+		// point rewards
+		// abb local times
+		fmt.Fprintf(w, `==Local ABB Times==
+{{AUBLocalTime|start jst = %s|consecutive=1}}
+`,
+			event.StartDatetime.Format(wikiFmt),
+		)
+		// navigation
+		fmt.Fprintf(w, "{{NavEvent|%s|%s}}", prevEventName, nextEventName)
 	case 11: // special campaign (Abyssal AW and others)
 		// may just do the THOR event seprately and leave this as just news
 		fallthrough
@@ -276,8 +297,24 @@ func getWikiReward(reward vc.RankRewardSheet, newline bool) string {
 			// sword, shoe, key, rod, potion
 			r = fmt.Sprintf("{{Valkyrie|%s}}", cleanItemName(item.NameEng))
 		} else if item.GroupId == 18 {
-			// exchange items
-			r = fmt.Sprintf("[[File:%[1]s.png|28px|link=Items#%[1]s]] [[Items#%[1]s|%[1]s]]", item.NameEng)
+			switch item.Id {
+			case 29:
+				r = "{{MaidenTicket}}"
+			case 138:
+				r = "{{AWCore}}"
+			default:
+				// exchange items
+				r = fmt.Sprintf("[[File:%[1]s.png|28px|link=Items#%[1]s]] [[Items#%[1]s|%[1]s]]", item.NameEng)
+			}
+		} else if item.GroupId == 38 {
+			// Custom Skill Recipies
+			r = fmt.Sprintf("{{Skill Recipe|%s}}", cleanCustomSkillRecipe(item.NameEng))
+		} else if item.GroupId == 39 {
+			// Custom Skill items
+			r = fmt.Sprintf("[[File:%[1]s.png|28px|link=Custom Skills#Skill_Materials]] [[Custom Skills#Skill_Materials|%[2]s]]",
+				vc.CleanCustomSkillNoImage(item.NameEng),
+				vc.CleanCustomSkillNoImage(item.NameEng),
+			)
 		} else {
 			r = fmt.Sprintf("__UNKNOWN_GROUP:_%d_%s__", item.GroupId, item.NameEng)
 		}
@@ -336,6 +373,45 @@ func genWikiRankTrend(event *vc.Event) (rtrend string) {
 	}
 	rtrend += "\n|}"
 	return
+}
+
+func cleanCustomSkillRecipe(name string) string {
+	ret := ""
+	lower := strings.ToLower(vc.CleanCustomSkillNoImage(name))
+	if strings.Contains(lower, "all enemies") {
+		ret += "aoe "
+	}
+	if strings.Contains(lower, "stop") {
+		ret += "+ts "
+	}
+	if strings.Contains(lower, "fixed") {
+		ret += "fixed "
+	}
+	if strings.Contains(lower, "proportional") {
+		ret += "proportional "
+	}
+	if strings.Contains(lower, "passion") {
+		ret += "passion "
+	}
+	if strings.Contains(lower, "cool") {
+		ret += "cool "
+	}
+	if strings.Contains(lower, "light") {
+		ret += "light "
+	}
+	if strings.Contains(lower, "dark") {
+		ret += "dark "
+	}
+	if strings.Contains(lower, "1") {
+		ret += "1"
+	}
+	if strings.Contains(lower, "2") {
+		ret += "2"
+	}
+	if strings.Contains(lower, "3") {
+		ret += "3"
+	}
+	return ret
 }
 
 func cleanTicketName(name string) string {

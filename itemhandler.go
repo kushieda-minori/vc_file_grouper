@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
 func itemHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,9 +31,9 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 			"<td>%d</td>"+
 			"</tr>",
 			e.Id,
-			e.Name,
-			e.NameEng,
-			url.QueryEscape(e.NameEng),
+			vc.CleanCustomSkillImage(e.Name),
+			vc.CleanCustomSkillImage(e.NameEng),
+			url.QueryEscape(vc.CleanCustomSkillNoImage(e.NameEng)),
 			e.ItemNo,
 			e.Description,
 			e.DescriptionInShop,

@@ -1,6 +1,8 @@
 package vc
 
-import ()
+import (
+	"strings"
+)
 
 //"items" is the list of Archwitches
 type Item struct {
@@ -44,4 +46,22 @@ func ItemScan(id int, items []Item) *Item {
 		}
 	}
 	return nil
+}
+
+func CleanCustomSkillNoImage(name string) string {
+	ret := name
+	ret = strings.Replace(ret, "<img=24>", "PASSION", -1)
+	ret = strings.Replace(ret, "<img=25>", "COOL", -1)
+	ret = strings.Replace(ret, "<img=26>", "DARK", -1)
+	ret = strings.Replace(ret, "<img=27>", "LIGHT", -1)
+	return ret
+}
+
+func CleanCustomSkillImage(name string) string {
+	ret := name
+	ret = strings.Replace(ret, "<img=24>", "{{Passion}}", -1)
+	ret = strings.Replace(ret, "<img=25>", "{{Cool}}", -1)
+	ret = strings.Replace(ret, "<img=26>", "{{Dark}}", -1)
+	ret = strings.Replace(ret, "<img=27>", "{{Light}}", -1)
+	return ret
 }
