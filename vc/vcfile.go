@@ -108,7 +108,7 @@ type VcFile struct {
 	ThorRankRewards      []ThorReward          `json:"mst_thorhammer_ranking_reward"`
 	ThorPointRewards     []ThorReward          `json:"mst_thorhammer_point_reward"`
 	GuildBattles         []GuildBattle         `json:"mst_guildbattle_schedule"`
-	GuildBingoBattles    []BuildBingoBattle    `json:"mst_guildbingo"`
+	GuildBingoBattles    []GuildBingoBattle    `json:"mst_guildbingo"`
 	GuildAUBWinRewards   []GuildAUBWinReward   `json:"mst_guildbattle_win_reward"`
 }
 

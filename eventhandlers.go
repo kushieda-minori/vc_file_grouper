@@ -186,9 +186,9 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		)
 	case 16: // alliance bingo battle
 		// rewards
-		rr := event.RankRewards(VcData)
-		finalRewardList := rr.FinalRewards(VcData)
-		finalrewards := genWikiRewards(finalRewardList, "Ranking")
+		//rr := event.RankRewards(VcData)
+		//finalRewardList := rr.FinalRewards(VcData)
+		//finalrewards := genWikiRewards(finalRewardList, "Ranking")
 
 		// description
 		io.WriteString(w, html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)))
@@ -196,7 +196,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "==Ring Exchange==\n\n")
 		// rank rewards
 		io.WriteString(w, "==Rewards==\n\n")
-		io.WriteString(w, finalrewards)
+		//io.WriteString(w, finalrewards)
 		// point rewards
 		// abb local times
 		fmt.Fprintf(w, `==Local ABB Times==
