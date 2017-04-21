@@ -155,10 +155,10 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				midCaption := fmt.Sprintf("Mid Rankings<br /><small>Cutoff@ %s (JST)</small>",
 					rr.MidBonusDistributionDate.Format(wikiFmt),
 				)
-				midrewards = genWikiRewards(mid, midCaption)
+				midrewards = genWikiAWRewards(mid, midCaption)
 			}
 			finalRewardList := rr.FinalRewards(VcData)
-			finalrewards = genWikiRewards(finalRewardList, "Final Rankings")
+			finalrewards = genWikiAWRewards(finalRewardList, "Final Rankings")
 			for _, fr := range finalRewardList {
 				if fr.CardId > 0 {
 					rrCard := vc.CardScan(fr.CardId, VcData.Cards)
@@ -188,24 +188,25 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		// rewards
 		//rr := event.RankRewards(VcData)
 		//finalRewardList := rr.FinalRewards(VcData)
-		//finalrewards := genWikiRewards(finalRewardList, "Ranking")
+		//finalrewards := genWikiAWRewards(finalRewardList, "Ranking")
 
-		// description
-		io.WriteString(w, html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)))
-		// ring exchange
-		io.WriteString(w, "==Ring Exchange==\n\n")
-		// rank rewards
-		io.WriteString(w, "==Rewards==\n\n")
-		//io.WriteString(w, finalrewards)
-		// point rewards
-		// abb local times
-		fmt.Fprintf(w, `==Local ABB Times==
-{{AUBLocalTime|start jst = %s|consecutive=1}}
-`,
+		fmt.Fprintf(w, getEventTemplate(event.EventTypeId),
 			event.StartDatetime.Format(wikiFmt),
+			event.EndDatetime.Format(wikiFmt),
+			"",    // RR 1
+			"",    // RR 2
+			"",    // Individual Card 1
+			"",    // Individual Card 2
+			"",    // Booster 1
+			"",    // Booster 2
+			"#th", // Guild Battle Number spelled out
+			"",    // Overlap AW Event
+			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
+			"", // Ring Exchange
+			"", // Rewards (combined)
+			prevEventName,
+			nextEventName,
 		)
-		// navigation
-		fmt.Fprintf(w, "{{NavEvent|%s|%s}}", prevEventName, nextEventName)
 	case 11: // special campaign (Abyssal AW and others)
 		// may just do the THOR event seprately and leave this as just news
 		fallthrough
@@ -224,7 +225,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func genWikiRewards(rewards []vc.RankRewardSheet, caption string) string {
+func genWikiAWRewards(rewards []vc.RankRewardSheet, caption string) string {
 	ret := `
 {| border="1" cellpadding="1" cellspacing="1" class="mw-collapsible mw-collapsed article-table" style="float:left"
 |-
@@ -249,7 +250,7 @@ func genWikiRewards(rewards []vc.RankRewardSheet, caption string) string {
 				ret += fmt.Sprintf(rrange, prevRangeStart, prevRangeEnd, rewardList)
 				rewardList = ""
 			}
-			rewardList += getWikiReward(reward, rewardList != "")
+			rewardList += getWikiAWRewards(reward, rewardList != "")
 			ret += fmt.Sprintf(rrange, reward.RankFrom, reward.RankTo, rewardList)
 		} else {
 			if reward.RankFrom != prevRangeStart || reward.RankTo != prevRangeEnd {
@@ -260,14 +261,14 @@ func genWikiRewards(rewards []vc.RankRewardSheet, caption string) string {
 				rewardList = ""
 			}
 			newline := rewardList != ""
-			rewardList += getWikiReward(reward, newline)
+			rewardList += getWikiAWRewards(reward, newline)
 		}
 	}
 
 	return ret + "|}\n"
 }
 
-func getWikiReward(reward vc.RankRewardSheet, newline bool) string {
+func getWikiAWRewards(reward vc.RankRewardSheet, newline bool) string {
 	rlist := "%s x%d"
 	if newline {
 		rlist = "<br />" + rlist
@@ -359,6 +360,38 @@ func getEventTemplate(eventType int) string {
 %s
 
 {{NavEvent|%s|%s}}`
+	case 16:
+		return `{{event
+|image=Banner_{{PAGENAME}}.png
+|start jst=%s
+|end jst=%s
+| %s |Rank Reward
+| %s |Rank Reward
+| %s |Individual Point Reward<br />Ring Exchange
+| %s |Individual Point Reward<br />Ring Exchange
+| Mirror Maiden (UR) |Ring Exchange
+| Mirror Maiden (SR) |Ring Exchange
+| Mirror Maiden (R) |Ring Exchange
+| Slime Queen |Ring Exchange
+| Mirror Maiden Shard | Ring Exchange
+| %s |Alliance Battle Point Booster<br>+60%%/150%%
+| %s |Alliance Battle Point Booster<br>+20%%/50%%
+}}
+:''The %s [[Alliance Bingo Battle]] was held during the [[%s]] event.''
+
+%s
+
+==Ring Exchange==
+%s
+
+==Rewards==
+%s
+
+==Local ABB Times==
+{{AUBLocalTime|start jst = %[1]s|consecutive=1}}
+
+{{NavEvent|%[14]s|%s}}
+`
 	default:
 		return ""
 	}
