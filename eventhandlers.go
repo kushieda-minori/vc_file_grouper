@@ -199,7 +199,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"",    // Individual Card 2
 			"",    // Booster 1
 			"",    // Booster 2
-			"#th", // Guild Battle Number spelled out
+			"#th", // Guild Battle Number spelled out (first, second, third, etc)
 			"",    // Overlap AW Event
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 			"", // Ring Exchange

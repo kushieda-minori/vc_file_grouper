@@ -303,11 +303,12 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 	}
 
 	for key, _ := range v.Events {
-		if key < len(evntNames) {
-			v.Events[key].Name = filter(evntNames[v.Events[key].Id-1])
+		evntId := v.Events[key].Id - 1
+		if evntId < len(evntNames) {
+			v.Events[key].Name = filter(evntNames[evntId])
 		}
-		if key < len(evntDescrs) {
-			v.Events[key].Description = filter(filterColors(evntDescrs[v.Events[key].Id-1]))
+		if evntId < len(evntDescrs) {
+			v.Events[key].Description = filter(filterColors(evntDescrs[evntId]))
 		}
 	}
 

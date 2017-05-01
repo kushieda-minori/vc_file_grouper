@@ -492,7 +492,11 @@ func (c *Card) SpecialSkill1Name(v *VcFile) string {
 	if s == nil {
 		return ""
 	}
-	return s.Name
+	if s.Name != "" {
+		return s.Name
+	}
+	i := strconv.Itoa(s.Id)
+	return i
 }
 
 func (c *Card) ThorSkill1Name(v *VcFile) string {
