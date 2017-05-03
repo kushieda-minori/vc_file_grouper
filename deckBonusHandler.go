@@ -81,7 +81,7 @@ func deckBonusWikiHandler(w http.ResponseWriter, r *http.Request) {
 
 	sort.Sort(vc.DeckBonusByCountAndName(VcData.DeckBonuses))
 
-	reg := regexp.MustCompile(`\[(.+)\]\n(.*)`)
+	reg := regexp.MustCompile(`\[|【(.+)\]|】\n?(.*)`)
 
 	oldReq := -1
 
