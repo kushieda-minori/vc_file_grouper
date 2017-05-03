@@ -6,6 +6,7 @@ import (
 	//"sort"
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -23,10 +24,20 @@ var vcfilepath string
 
 // Main function that starts the program
 func main() {
-	if len(os.Args) == 1 {
+
+	cmdLang := flag.String("lang", "en", "The language pack to use. 'en' for English, 'zhs' for Chinese. ")
+	flag.Parse()
+
+	if cmdLang == nil {
+		vc.LangPack = "en"
+	} else {
+		vc.LangPack = *cmdLang
+	}
+
+	if len(flag.Args()) == 0 {
 		vcfilepath = "."
 	} else {
-		vcfilepath = os.Args[1]
+		vcfilepath = flag.Args()[0]
 	}
 
 	if _, err := os.Stat(vcfilepath); os.IsNotExist(err) {

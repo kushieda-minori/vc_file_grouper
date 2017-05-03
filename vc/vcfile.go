@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+var LangPack string
+
 type Timestamp struct {
 	time.Time
 }
@@ -515,7 +517,8 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 	return data, nil
 }
 
-func readStringFile(filename string) ([]string, error) {
+func readStringFile(fname string) ([]string, error) {
+	filename := strings.Replace(fname, "_en.strb", "_"+LangPack+".strb", 1)
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		debug.PrintStack()
 		return nil, errors.New("no such file or directory: " + filename)
