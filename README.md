@@ -1,12 +1,14 @@
 # vc_file_grouper
 application that tries to group together game data files from [Valkyrie Crusade](http://mynet.co.jp/service/valkyrie.html) mobile app game
 
-#Running
+# Running
+
 Compile from source or use an executable from the [latest release](https://github.com/kushieda-minori/vc_file_grouper/releases/latest). Use the 64bit version only if you have a 64bit operating system.
 
 Run from the command line:
 
-##Windows
+## Windows
+
 * Open a command prompt (```cmd.exe``` or powershell)
 * Change to the directory where the executable is: ```cd "c:\Users\MyUserName\Downloads"```
 * Run the executable for your system
@@ -15,14 +17,15 @@ Run from the command line:
 * If you want to specify the location of your data files you can run it like this:<br />
  ```vc_file_grouper_Win64.exe "c:\Users\MyUserName\Downloads\My VC Data"```
 
-##OSX
+## OSX
+
 * Open a terminal (Applications -> Utilities -> Terminal, or I prefer [iTerm2](https://www.iterm2.com/)
 * Change to the directory where the executable is: ```cd "~/Downloads"```
 * Run the executable for your system: ```vc_file_grouper_OSX```
 * If you want to specify the location of your data files you can run it like this:<br />
  ```vc_file_grouper_OSX "~/Downloads/My VC Data"```
 
-##Unix
+## Unix
 I shouldn't have to tell you. It's basically the same as OSX anyway.
 
 #Using the program
