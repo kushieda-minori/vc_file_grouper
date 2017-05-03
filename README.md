@@ -7,6 +7,8 @@ Compile from source or use an executable from the [latest release](https://githu
 
 Run from the command line:
 
+The program defaults to using the English language packs. To use a different language pack, use the `-lang` flag and use the language part of the string file, i.e `MsgSkillName_zhs.strb` use `zhs` for `MsgSkillName_en.strb` us `en` for `MsgSkillName_SOME_VALUE.strb` use `SOME_VALUE`
+
 ## Windows
 
 * Open a command prompt (```cmd.exe``` or powershell)
@@ -15,7 +17,7 @@ Run from the command line:
  * For Windows XP and 32bit Windows 7 run: ```vc_file_grouper_Win32.exe```
  * For Windows 8+ run: ```vc_file_grouper_Win64.exe```
 * If you want to specify the location of your data files you can run it like this:<br />
- ```vc_file_grouper_Win64.exe "c:\Users\MyUserName\Downloads\My VC Data"```
+ ```vc_file_grouper_Win64.exe -lang en "c:\Users\MyUserName\Downloads\My VC Data"```
 
 ## OSX
 
@@ -23,7 +25,7 @@ Run from the command line:
 * Change to the directory where the executable is: ```cd "~/Downloads"```
 * Run the executable for your system: ```vc_file_grouper_OSX```
 * If you want to specify the location of your data files you can run it like this:<br />
- ```vc_file_grouper_OSX "~/Downloads/My VC Data"```
+ ```vc_file_grouper_OSX -lang en "~/Downloads/My VC Data"```
 
 ## Unix
 I shouldn't have to tell you. It's basically the same as OSX anyway.
