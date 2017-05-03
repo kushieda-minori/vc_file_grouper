@@ -28,7 +28,7 @@ Run from the command line:
 ## Unix
 I shouldn't have to tell you. It's basically the same as OSX anyway.
 
-#Using the program
+# Using the program
 The program starts a web-service. You should see a URL print in your terminal/command promt that looks like http://localhost:8585/ . Open this URL up in your favorite broswer (IE, Firefox, Chrome, etc). Once the application opens in your browser, you are set to go.
 
 If you didn't specify a datafile location on the command line, or wish to change it, you can do so from within the web-application.
