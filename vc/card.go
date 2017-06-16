@@ -157,7 +157,12 @@ func (c *Card) Element() string {
 
 func (c *Card) Character(v *VcFile) *CardCharacter {
 	if c.character == nil && c.CardCharaId > 0 {
-		c.character = &v.CardCharacter[c.CardCharaId-1]
+		for k, val := range v.CardCharacter {
+			if val.Id == c.CardCharaId {
+				c.character = &v.CardCharacter[k]
+				break
+			}
+		}
 	}
 	return c.character
 }
