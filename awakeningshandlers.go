@@ -12,12 +12,12 @@ import (
 
 func awakeningsTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>All Awakenings</title></head><body>\n")
-	io.WriteString(w, "<table><thead><tr><th>From Card</th><th>To Card</th><th>Chance</th><th>Orb</th><th>Large</th><th>Medium</th><th>Small</th></tr></thead><tbody>\n")
+	io.WriteString(w, "<table><thead><tr><th>From Card</th><th>To Card</th><th>Chance</th><th>Crystals</th><th>Orb</th><th>Large</th><th>Medium</th><th>Small</th></tr></thead><tbody>\n")
 	for _, value := range VcData.Awakenings {
 		baseCard := vc.CardScan(value.BaseCardId, VcData.Cards)
 		resultCard := vc.CardScan(value.ResultCardId, VcData.Cards)
 		fmt.Fprintf(w,
-			"<tr><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td>%d%%</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>",
+			"<tr><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td>%d%%</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>",
 			baseCard.Image(),
 			baseCard.Id,
 			baseCard.Name,
@@ -25,6 +25,7 @@ func awakeningsTableHandler(w http.ResponseWriter, r *http.Request) {
 			resultCard.Id,
 			resultCard.Name,
 			value.Percent,
+			value.Material5Count,
 			value.Material1Count,
 			value.Material2Count,
 			value.Material3Count,
@@ -54,6 +55,8 @@ func awakeningsCsvHandler(w http.ResponseWriter, r *http.Request) {
 		"Material3Count",
 		"Material4Item ",
 		"Material4Count",
+		"Material5Item ",
+		"Material5Count",
 		"Order",
 		"IsClosed",
 	})
@@ -73,6 +76,8 @@ func awakeningsCsvHandler(w http.ResponseWriter, r *http.Request) {
 			strconv.Itoa(value.Material3Count),
 			strconv.Itoa(value.Material4Item),
 			strconv.Itoa(value.Material4Count),
+			strconv.Itoa(value.Material5Item),
+			strconv.Itoa(value.Material5Count),
 			strconv.Itoa(value.Order),
 			strconv.Itoa(value.IsClosed),
 		})

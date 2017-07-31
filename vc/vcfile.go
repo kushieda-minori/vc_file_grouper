@@ -112,6 +112,9 @@ type VcFile struct {
 	GuildBattles         []GuildBattle         `json:"mst_guildbattle_schedule"`
 	GuildBingoBattles    []GuildBingoBattle    `json:"mst_guildbingo"`
 	GuildAUBWinRewards   []GuildAUBWinReward   `json:"mst_guildbattle_win_reward"`
+	Tower                []Tower               `json:"mst_tower"`
+	TowerReward          []RankRewardSheet     `json:"mst_tower_ranking_reward"`
+	TowerArrivalReward   []RankRewardSheet     `json:"mst_tower_arrival_point_reward"`
 }
 
 // This reads the main data file and all associated files for strings

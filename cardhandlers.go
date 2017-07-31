@@ -270,8 +270,9 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if awakenInfo != nil {
-		fmt.Fprintf(w, "|awaken chance = %d\n|awaken orb = %d\n|awaken l = %d\n|awaken m = %d\n|awaken s = %d\n",
+		fmt.Fprintf(w, "|awaken chance = %d\n|awaken crystal = %d\n|awaken orb = %d\n|awaken l = %d\n|awaken m = %d\n|awaken s = %d\n",
 			awakenInfo.Percent,
+			awakenInfo.Material5Count,
 			awakenInfo.Material1Count,
 			awakenInfo.Material2Count,
 			awakenInfo.Material3Count,

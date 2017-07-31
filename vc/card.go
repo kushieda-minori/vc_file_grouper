@@ -89,6 +89,8 @@ type CardAwaken struct {
 	Material3Count int `json:"material_3_count"`
 	Material4Item  int `json:"material_4_item"`
 	Material4Count int `json:"material_4_count"`
+	Material5Item  int `json:"material_5_item"`
+	Material5Count int `json:"material_5_count"`
 	// ? Order in the "Awoken Card List maybe?"
 	Order int `json:"order"`
 	// still available?

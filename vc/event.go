@@ -86,6 +86,7 @@ type RankRewardSheet struct {
 	Coin        int `json:"coin"`
 	Iron        int `json:"iron"`
 	Ether       int `json:"ether"`
+	Elixir      int `json:"elixir"`
 	Exp         int `json:"exp"`
 	ItemId      int `json:"item_id"`
 	FragmentId  int `json:"fragment_id"`
