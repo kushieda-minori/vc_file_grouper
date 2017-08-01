@@ -156,7 +156,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 			"Character Names", len(v.Cards), len(names))
 	}
 	for key, _ := range v.Cards {
-		v.Cards[key].Name = strings.Replace(strings.Title(strings.ToLower(names[key])), "'S", "'s", -1)
+		v.Cards[key].Name = cleanCardName(names[key])
 	}
 	names = nil
 
@@ -567,6 +567,14 @@ func readStringFile(fname string) ([]string, error) {
 		ret = append(ret, filter(string(line[:len(line)-1])))
 	}
 	return ret, nil
+}
+
+func cleanCardName(name string) string {
+	ret := strings.Replace(strings.Title(strings.ToLower(name)), "'S", "'s", -1)
+	ret = strings.Replace(ret, "(Sr)", "(SR)", -1)
+	ret = strings.Replace(ret, "(Ur)", "(UR)", -1)
+	ret = strings.Replace(ret, "(Lr)", "(LR)", -1)
+	return ret
 }
 
 //User this to do common string replacements in the VC data files

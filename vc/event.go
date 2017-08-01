@@ -47,6 +47,7 @@ type Event struct {
 	TargetMarkets         json.RawMessage `json:"target_markets"`
 	CollaboId             int             `json:"collabo_id"`
 	MaintenanceTarget     int             `json:"maintenance_target"`
+	TowerEventId          int             `json:"tower_event_id"`
 	Name                  string          `json:"name"`        // MsgEventName_en.strb
 	Description           string          `json:"description"` // MsgEventDesc_en.strb
 	_map                  *Map            `json:"-"`
@@ -92,6 +93,7 @@ type RankRewardSheet struct {
 	FragmentId  int `json:"fragment_id"`
 	CardId      int `json:"card_id"`
 	Num         int `json:"num"`
+	Point       int `john:"point"`
 }
 
 func (e *Event) Map(v *VcFile) *Map {
@@ -99,6 +101,14 @@ func (e *Event) Map(v *VcFile) *Map {
 		e._map = MapScan(e.MapId, v.Maps)
 	}
 	return e._map
+}
+
+func (e *Event) Tower(v *VcFile) *Tower {
+	if e.TowerEventId <= 0 {
+		return nil
+	}
+
+	return TowerScan(e.TowerEventId, v)
 }
 
 func (e *Event) Archwitches(v *VcFile) []Archwitch {

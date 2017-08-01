@@ -207,6 +207,20 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			prevEventName,
 			nextEventName,
 		)
+	case 18: // Tower Event
+		tower := event.Tower(VcData)
+		fmt.Fprintf(w,
+			getEventTemplate(event.EventTypeId),
+			event.StartDatetime.Format(wikiFmt),
+			event.EndDatetime.Format(wikiFmt),
+			tower.ElementId,
+			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
+			genWikiAWRewards(tower.ArrivalRewards(VcData), "Floor Arrival Rewards"), // RR 1
+			genWikiAWRewards(tower.RankRewards(VcData), "Rank Rewards"),             // RR 2
+			genWikiRankTrend(event),
+			prevEventName,
+			nextEventName,
+		)
 	case 11: // special campaign (Abyssal AW and others)
 		// may just do the THOR event seprately and leave this as just news
 		fallthrough
@@ -238,26 +252,39 @@ func genWikiAWRewards(rewards []vc.RankRewardSheet, caption string) string {
 |style="text-align:right"|%d~%d
 |%s
 `
+	prange := `|-
+|style="text-align:right"|%d F
+|%s
+`
 
-	prevRangeStart, prevRangeEnd := 0, 0
+	prevRangeStart, prevRangeEnd, prevPoint := 0, 0, 0
 	rewardList := ""
 	count := len(rewards) - 1
 	for k, reward := range rewards {
 		if k >= count {
 			// get the last reward
-			if reward.RankFrom != prevRangeStart || reward.RankTo != prevRangeEnd {
+			if reward.Point <= 0 && (reward.RankFrom != prevRangeStart || reward.RankTo != prevRangeEnd) {
 				// if the last reward range is a single item, write out the previous range
 				ret += fmt.Sprintf(rrange, prevRangeStart, prevRangeEnd, rewardList)
 				rewardList = ""
+			} else if reward.Point != prevPoint {
+				ret += fmt.Sprintf(prange, prevPoint, rewardList)
+				rewardList = ""
 			}
 			rewardList += getWikiAWRewards(reward, rewardList != "")
-			ret += fmt.Sprintf(rrange, reward.RankFrom, reward.RankTo, rewardList)
+			if reward.Point > 0 {
+				ret += fmt.Sprintf(prange, reward.Point, rewardList)
+			} else {
+				ret += fmt.Sprintf(rrange, reward.RankFrom, reward.RankTo, rewardList)
+			}
 		} else {
-			if reward.RankFrom != prevRangeStart || reward.RankTo != prevRangeEnd {
+			if reward.RankFrom != prevRangeStart || reward.RankTo != prevRangeEnd || reward.Point != prevPoint {
 				if prevRangeStart > 0 {
 					ret += fmt.Sprintf(rrange, prevRangeStart, prevRangeEnd, rewardList)
+				} else if reward.Point > 0 && reward.Point != prevPoint {
+					ret += fmt.Sprintf(prange, prevPoint, rewardList)
 				}
-				prevRangeStart, prevRangeEnd = reward.RankFrom, reward.RankTo
+				prevRangeStart, prevRangeEnd, prevPoint = reward.RankFrom, reward.RankTo, reward.Point
 				rewardList = ""
 			}
 			newline := rewardList != ""
@@ -290,14 +317,14 @@ func getWikiAWRewards(reward vc.RankRewardSheet, newline bool) string {
 			// tickets
 			r = fmt.Sprintf("{{Ticket|%s}}", cleanTicketName(item.NameEng))
 		} else if item.GroupId == 30 ||
-			(item.GroupId >= 10 &&
+			(item.GroupId >= 9 &&
 				item.GroupId <= 16) {
 			// Arcana
 			r = fmt.Sprintf("{{Arcana|%s}}", cleanArcanaName(item.NameEng))
 		} else if (item.GroupId >= 5 && item.GroupId <= 7) || item.GroupId == 31 || item.GroupId == 22 {
 			// sword, shoe, key, rod, potion
 			r = fmt.Sprintf("{{Valkyrie|%s}}", cleanItemName(item.NameEng))
-		} else if item.GroupId == 18 {
+		} else if item.GroupId == 18 || item.GroupId == 19 || item.GroupId == 43 || item.GroupId == 47 {
 			switch item.Id {
 			case 29:
 				r = "{{MaidenTicket}}"
@@ -307,6 +334,29 @@ func getWikiAWRewards(reward vc.RankRewardSheet, newline bool) string {
 				// exchange items
 				r = fmt.Sprintf("[[File:%[1]s.png|28px|link=Items#%[1]s]] [[Items#%[1]s|%[1]s]]", item.NameEng)
 			}
+		} else if item.GroupId == 29 {
+			itemName := ""
+			if strings.Contains(item.Name, "LIGHT") {
+				itemName = "Light"
+			} else if strings.Contains(item.Name, "PASSION") {
+				itemName = "Passion"
+			} else if strings.Contains(item.Name, "COOL") {
+				itemName = "Cool"
+			} else if strings.Contains(item.Name, "DARK") {
+				itemName = "Dark"
+			}
+			if strings.Contains(item.NameEng, "Crystal") {
+				itemName += "C"
+			} else if strings.Contains(item.NameEng, "Orb") {
+				itemName += "O"
+			} else if strings.Contains(item.NameEng, "(L)") {
+				itemName += "L"
+			} else if strings.Contains(item.NameEng, "(M)") {
+				itemName += "M"
+			} else if strings.Contains(item.NameEng, "(S)") {
+				itemName += "S"
+			}
+			r = fmt.Sprintf("{{Stone|%s}}", itemName)
 		} else if item.GroupId == 38 {
 			// Custom Skill Recipies
 			r = fmt.Sprintf("{{Skill Recipe|%s}}", cleanCustomSkillRecipe(item.NameEng))
@@ -319,6 +369,8 @@ func getWikiAWRewards(reward vc.RankRewardSheet, newline bool) string {
 		} else {
 			r = fmt.Sprintf("__UNKNOWN_GROUP:_%d_%s__", item.GroupId, item.NameEng)
 		}
+	} else if reward.Cash > 0 {
+		r = "{{icon|jewel}}"
 	} else {
 		r = "Unknown Reward Type"
 	}
@@ -392,6 +444,24 @@ func getEventTemplate(eventType int) string {
 
 {{NavEvent|%[14]s|%s}}
 `
+	case 18:
+		return `{{Event
+|start jst = %s
+|end jst = %s
+|elementHallRotate=%s
+|image = Banner {{PAGENAME}}.png
+}}
+
+%s
+
+==Rewards==
+%s%s
+{{clr}}
+
+==Ranking Trend==
+%s
+
+{{NavEvent|%s|%s}}`
 	default:
 		return ""
 	}
@@ -412,16 +482,25 @@ func cleanCustomSkillRecipe(name string) string {
 	ret := ""
 	lower := strings.ToLower(vc.CleanCustomSkillNoImage(name))
 	if strings.Contains(lower, "all enemies") {
-		ret += "aoe "
+		ret += "aoe"
 	}
 	if strings.Contains(lower, "stop") {
 		ret += "+ts "
+	} else if ret != "" {
+		ret += " "
 	}
 	if strings.Contains(lower, "fixed") {
 		ret += "fixed "
 	}
 	if strings.Contains(lower, "proportional") {
 		ret += "proportional "
+	}
+	if strings.Contains(lower, "awoken burst") {
+		ret += "awoken burst "
+	} else if strings.Contains(lower, "recover") {
+		ret += "recover "
+	} else if strings.Contains(lower, "own atk up") {
+		ret += "own atk up "
 	}
 	if strings.Contains(lower, "passion") {
 		ret += "passion "
@@ -469,10 +548,13 @@ func cleanItemName(name string) string {
 
 func cleanArcanaName(name string) string {
 	ret := strings.ToLower(name)
+	ret = strings.Replace(ret, "arcana's", "", -1)
 	ret = strings.Replace(ret, "arcana", "", -1)
 	ret = strings.Replace(ret, "%", "", -1)
 	ret = strings.Replace(ret, "+", "", -1)
 	ret = strings.Replace(ret, " ", "", -1)
+	ret = strings.Replace(ret, "forced", "", 1)
+	ret = strings.Replace(ret, "strongdef", "def", 1)
 	ret = strings.TrimSpace(ret)
 	return ret
 }
