@@ -270,14 +270,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if awakenInfo != nil {
-		fmt.Fprintf(w, "|awaken chance = %d\n|awaken crystal = %d\n|awaken orb = %d\n|awaken l = %d\n|awaken m = %d\n|awaken s = %d\n",
-			awakenInfo.Percent,
-			awakenInfo.Material5Count,
-			awakenInfo.Material1Count,
-			awakenInfo.Material2Count,
-			awakenInfo.Material3Count,
-			awakenInfo.Material4Count,
-		)
+		printAwakenMaterials(w, awakenInfo)
 	}
 
 	var aw *vc.Archwitch
@@ -605,6 +598,40 @@ func maxStatFollower(evo vc.Card, numOfEvos int) string {
 		return strconv.Itoa(evo.MaxFollower)
 	}
 	return "?"
+}
+
+func printAwakenMaterials(w http.ResponseWriter, awakenInfo *vc.CardAwaken) {
+	if awakenInfo == nil {
+		return
+	}
+
+	fmt.Fprintf(w, "|awaken chance = %d\n", awakenInfo.Percent)
+
+	printAwakenMaterial(w, awakenInfo.Item(1, VcData), awakenInfo.Material1Count)
+	printAwakenMaterial(w, awakenInfo.Item(2, VcData), awakenInfo.Material2Count)
+	printAwakenMaterial(w, awakenInfo.Item(3, VcData), awakenInfo.Material3Count)
+	printAwakenMaterial(w, awakenInfo.Item(4, VcData), awakenInfo.Material4Count)
+	printAwakenMaterial(w, awakenInfo.Item(5, VcData), awakenInfo.Material5Count)
+
+}
+
+func printAwakenMaterial(w http.ResponseWriter, item *vc.Item, count int) {
+	if item == nil {
+		return
+	}
+	if strings.Contains(item.NameEng, "Crystal") {
+		fmt.Fprintf(w, "|awaken crystal = %d\n", count)
+	} else if strings.Contains(item.NameEng, "Orb") {
+		fmt.Fprintf(w, "|awaken orb = %d\n", count)
+	} else if strings.Contains(item.NameEng, "(L)") {
+		fmt.Fprintf(w, "|awaken l = %d\n", count)
+	} else if strings.Contains(item.NameEng, "(M)") {
+		fmt.Fprintf(w, "|awaken m = %d\n", count)
+	} else if strings.Contains(item.NameEng, "(S)") {
+		fmt.Fprintf(w, "|awaken s = %d\n", count)
+	} else {
+		fmt.Fprintf(w, "*******Unknown item: %s\n", item.NameEng)
+	}
 }
 
 func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {

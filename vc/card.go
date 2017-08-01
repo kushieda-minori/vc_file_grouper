@@ -97,6 +97,40 @@ type CardAwaken struct {
 	IsClosed int `json:"is_closed"`
 }
 
+func (ca *CardAwaken) Item(i int, data *VcFile) *Item {
+	if i < 1 || i > 5 {
+		return nil
+	}
+	switch i {
+	case 1:
+		if ca.Material1Item <= 0 {
+			return nil
+		}
+		return ItemScan(ca.Material1Item, data.Items)
+	case 2:
+		if ca.Material2Item <= 0 {
+			return nil
+		}
+		return ItemScan(ca.Material2Item, data.Items)
+	case 3:
+		if ca.Material3Item <= 0 {
+			return nil
+		}
+		return ItemScan(ca.Material3Item, data.Items)
+	case 4:
+		if ca.Material4Item <= 0 {
+			return nil
+		}
+		return ItemScan(ca.Material4Item, data.Items)
+	case 5:
+		if ca.Material5Item <= 0 {
+			return nil
+		}
+		return ItemScan(ca.Material5Item, data.Items)
+	}
+	return nil
+}
+
 // Card Character info from master_data field "card_character"
 // These match up with all the MsgChara*_en.strb files
 type CardCharacter struct {
