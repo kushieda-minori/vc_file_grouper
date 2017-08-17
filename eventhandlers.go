@@ -166,7 +166,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		fmt.Fprintf(w, getEventTemplate(event.EventTypeId),event.EventTypeId
+		fmt.Fprintf(w, getEventTemplate(event.EventTypeId), event.EventTypeId,
 			event.StartDatetime.Format(wikiFmt), // start
 			event.EndDatetime.Format(wikiFmt),   // end
 			eHallStart,                          // E-Hall opening
@@ -177,7 +177,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			aws,                                 // Regular Archwitch
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 			(midrewards + finalrewards), //rewards
-			genWikiRankTrend(event),        // Rank trend
+			genWikiRankTrend(event),     // Rank trend
 			"",            // sub event (Alliance Battle)
 			prevEventName, //Previous event name
 			nextEventName, // next event name
@@ -188,7 +188,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		//finalRewardList := rr.FinalRewards(VcData)
 		//finalrewards := genWikiAWRewards(finalRewardList, "Ranking")
 
-		fmt.Fprintf(w, getEventTemplate(event.EventTypeId),event.EventTypeId
+		fmt.Fprintf(w, getEventTemplate(event.EventTypeId), event.EventTypeId,
 			event.StartDatetime.Format(wikiFmt),
 			event.EndDatetime.Format(wikiFmt),
 			"",    // RR 1
@@ -208,7 +208,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 	case 18: // Tower Event
 		tower := event.Tower(VcData)
 		fmt.Fprintf(w,
-			getEventTemplate(event.EventTypeId),event.EventTypeId
+			getEventTemplate(event.EventTypeId), event.EventTypeId,
 			event.StartDatetime.Format(wikiFmt),
 			event.EndDatetime.Format(wikiFmt),
 			tower.ElementId,
@@ -228,7 +228,14 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 	case 10: //Alliance Battle
 		fallthrough
 	default:
-		fmt.Fprintf((w,getEventTemplate(event.EventTypeId),event.EventTypeId, html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)))
+		fmt.Fprintf(w,
+			getEventTemplate(event.EventTypeId), event.EventTypeId,
+			event.StartDatetime.Format(wikiFmt), // start
+			event.EndDatetime.Format(wikiFmt),   // end
+			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
+			prevEventName,
+			nextEventName,
+		)
 	}
 	io.WriteString(w, "</textarea></div>")
 
@@ -377,8 +384,8 @@ func getWikiAWRewards(reward vc.RankRewardSheet, newline bool) string {
 
 func getEventTemplate(eventType int) string {
 	switch eventType {
-	case 1:  // AW Events
-		return `{{Event
+	case 1: // AW Events
+		return `{{Event|eventType = %d
 |start jst = %s
 |end jst = %s
 |elementalHallOpen=%s
@@ -408,9 +415,10 @@ func getEventTemplate(eventType int) string {
 
 %s
 
-{{NavEvent|%s|%s}}`
+{{NavEvent|%s|%s}}
+`
 	case 16: // ABB Events
-		return `{{event
+		return `{{event|eventType = %d
 |image=Banner_{{PAGENAME}}.png
 |start jst=%s
 |end jst=%s
@@ -442,7 +450,7 @@ func getEventTemplate(eventType int) string {
 {{NavEvent|%[14]s|%s}}
 `
 	case 18: // Tower Events
-		return `{{Event
+		return `{{Event|eventType = %d
 |start jst = %s
 |end jst = %s
 |elementHallRotate=%s
@@ -455,9 +463,21 @@ func getEventTemplate(eventType int) string {
 %s%s
 {{clr}}
 
-{{NavEvent|%s|%s}}`
+{{NavEvent|%s|%s}}
+`
 	default: // Default event handler
-		return ""
+		return `{{Event|eventType = %d
+|start jst = %s
+|end jst = %s
+|image = Banner {{PAGENAME}}.png
+}}
+
+%s
+
+{{clr}}
+
+{{NavEvent|%s|%s}}
+`
 	}
 }
 

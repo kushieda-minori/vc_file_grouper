@@ -506,17 +506,18 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		}
 	}
 
-	thorTitle, err := readStringFile(root + "/string/MsgThorhammerTitle_en.strb")
-	if err != nil {
-		debug.PrintStack()
-		return nil, err
-	}
-	for key, _ := range v.ThorEvents {
-		if key < len(thorTitle) {
-			v.ThorEvents[key].Title = filter(thorTitle[key])
+	if v.ThorEvents != nil {
+		thorTitle, err := readStringFile(root + "/string/MsgThorhammerTitle_en.strb")
+		if err != nil {
+			debug.PrintStack()
+			return nil, err
+		}
+		for key, _ := range v.ThorEvents {
+			if key < len(thorTitle) {
+				v.ThorEvents[key].Title = filter(thorTitle[key])
+			}
 		}
 	}
-
 	return data, nil
 }
 
