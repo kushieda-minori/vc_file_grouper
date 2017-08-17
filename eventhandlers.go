@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -16,7 +17,28 @@ const (
 	wikiFmt = "15:04 January 2 2006"
 )
 
+func isInt(s string) bool {
+	for _, c := range s {
+		if !unicode.IsDigit(c) {
+			return false
+		}
+	}
+	return true
+}
+
 func eventHandler(w http.ResponseWriter, r *http.Request) {
+	qs := r.URL.Query()
+	filter := func(event *vc.Event) (match bool) {
+		match = true
+		if len(qs) < 1 {
+			return
+		}
+		if eventType := qs.Get("eventType"); isInt(eventType) {
+			eventTypeId, _ := strconv.Atoi(eventType)
+			match = match && event.EventTypeId == eventTypeId
+		}
+		return
+	}
 	io.WriteString(w, "<html><head><title>All Events</title>\n")
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
 	io.WriteString(w, "</head><body>\n")
@@ -27,6 +49,9 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<tbody>\n")
 	for i := len(VcData.Events) - 1; i >= 0; i-- {
 		e := VcData.Events[i]
+		if !filter(&e) {
+			continue
+		}
 		fmt.Fprintf(w, `<tr>
 	<td><a href="/events/detail/%[1]d">%[1]d</a></td>
 	<td><a href="/events/detail/%[1]d">%[2]s</a></td>
