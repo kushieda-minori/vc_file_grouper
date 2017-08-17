@@ -178,7 +178,8 @@ func mapTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
 
-	for _, m := range VcData.Maps {
+	for i := len(VcData.Maps) - 1; i >= 0; i-- {
+		m := VcData.Maps[i]
 		fmt.Fprintf(w, "<tr><td><a href=\"/maps/%[1]d\">%[1]d</a></td><td><a href=\"/maps/%[1]d\">%[2]s</a></td><td>%[3]s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td>",
 			m.Id,
 			m.Name,

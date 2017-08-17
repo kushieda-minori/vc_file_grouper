@@ -510,7 +510,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		thorTitle, err := readStringFile(root + "/string/MsgThorhammerTitle_en.strb")
 		if err != nil {
 			debug.PrintStack()
-			return nil, err
+			return data, err
 		}
 		for key, _ := range v.ThorEvents {
 			if key < len(thorTitle) {

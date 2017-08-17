@@ -11,7 +11,8 @@ import (
 func archwitchHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>All Archwitches</title></head><body>\n")
 	io.WriteString(w, "<table><thead><tr><th>Series ID</th><th>Reward Card Name</th><th>Event Start</th><th>Event End</th><th>Recieve Limit</th><th>Is Beginner</th></tr></thead><tbody>\n")
-	for _, series := range VcData.ArchwitchSeries {
+	for i := len(VcData.ArchwitchSeries) - 1; i >= 0; i-- {
+		series := VcData.ArchwitchSeries[i]
 		rewardCard := vc.CardScan(series.RewardCardId, VcData.Cards)
 		fmt.Fprintf(w,
 			"<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>",

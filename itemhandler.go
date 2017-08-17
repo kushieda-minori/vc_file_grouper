@@ -18,7 +18,8 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<th>_id</th><th>Item Name</th><th>Image</th><th>Description</th><th>Group</th><th>End Date</th><th>Max Own</th><th>Limited Item</th><th>Is Deleted</th>\n")
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
-	for _, e := range VcData.Items {
+	for i := len(VcData.Items) - 1; i >= 0; i-- {
+		e := VcData.Items[i]
 		fmt.Fprintf(w, "<tr>"+
 			"<td>%d</td>"+
 			"<td>%s<br />%s</td>"+

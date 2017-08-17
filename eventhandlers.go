@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -18,12 +17,8 @@ const (
 )
 
 func isInt(s string) bool {
-	for _, c := range s {
-		if !unicode.IsDigit(c) {
-			return false
-		}
-	}
-	return true
+	_, err := strconv.Atoi(s)
+	return err == nil
 }
 
 func eventHandler(w http.ResponseWriter, r *http.Request) {
