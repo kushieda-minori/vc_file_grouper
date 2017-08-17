@@ -39,7 +39,7 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</head><body>\n")
 	io.WriteString(w, "<div>\n")
 	io.WriteString(w, "<table><thead><tr>\n")
-	io.WriteString(w, "<th>_id</th><th>Event Name</th><th>Event Type</th><th>Start Date</th><th>End Date</th><th>King Series</th>\n")
+	io.WriteString(w, "<th>_id</th><th>Event Name</th><th>Event Type</th><th>Start Date</th><th>End Date</th><th>King Series</th><th>Guild Battle</th><th>Tower Event</th>\n")
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
 	for i := len(VcData.Events) - 1; i >= 0; i-- {
@@ -54,6 +54,8 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 	<td>%s</td>
 	<td>%s</td>
 	<td>%d</td>
+	<td>%d</td>
+	<td>%d</td>
 </tr>`,
 			e.Id,
 			e.Name,
@@ -61,6 +63,8 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 			e.StartDatetime.Format(time.RFC3339),
 			e.EndDatetime.Format(time.RFC3339),
 			e.KingSeriesId,
+			e.GuildBattleId,
+			e.TowerEventId,
 		)
 	}
 	io.WriteString(w, "</tbody></table></div></body></html>")
@@ -465,9 +469,9 @@ func getEventTemplate(eventType int) string {
 %s
 
 ==Local ABB Times==
-{{AUBLocalTime|start jst = %[1]s|consecutive=1}}
+{{AUBLocalTime|start jst = %[2]s|consecutive=1}}
 
-{{NavEvent|%[14]s|%s}}
+{{NavEvent|%[15]s|%s}}
 `
 	case 18: // Tower Events
 		return `{{Event|eventType = %d

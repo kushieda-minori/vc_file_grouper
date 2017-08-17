@@ -111,6 +111,15 @@ func (e *Event) Tower(v *VcFile) *Tower {
 	return TowerScan(e.TowerEventId, v)
 }
 
+func (e *Event) Thor(v *VcFile) *ThorEvent {
+	for k, te := range v.ThorEvents {
+		if te.PublicStartDatetime == e.StartDatetime && te.PublicEndDatetime == e.EndDatetime {
+			return &(v.ThorEvents[k])
+		}
+	}
+	return nil
+}
+
 func (e *Event) Archwitches(v *VcFile) []Archwitch {
 	if e.KingSeriesId > 0 {
 		if e._archwitches == nil {
