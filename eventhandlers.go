@@ -120,8 +120,6 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<textarea style=\"width:800px;height:760px\">")
 	switch event.EventTypeId {
 	case 1: // archwitch event
-		rtrend := genWikiRankTrend(event)
-
 		var legendary string
 		var faws string
 		var aws string
@@ -168,7 +166,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		fmt.Fprintf(w, getEventTemplate(event.EventTypeId),
+		fmt.Fprintf(w, getEventTemplate(event.EventTypeId),event.EventTypeId
 			event.StartDatetime.Format(wikiFmt), // start
 			event.EndDatetime.Format(wikiFmt),   // end
 			eHallStart,                          // E-Hall opening
@@ -179,7 +177,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			aws,                                 // Regular Archwitch
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 			(midrewards + finalrewards), //rewards
-			rtrend,        // Rank trend
+			genWikiRankTrend(event),        // Rank trend
 			"",            // sub event (Alliance Battle)
 			prevEventName, //Previous event name
 			nextEventName, // next event name
@@ -190,7 +188,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		//finalRewardList := rr.FinalRewards(VcData)
 		//finalrewards := genWikiAWRewards(finalRewardList, "Ranking")
 
-		fmt.Fprintf(w, getEventTemplate(event.EventTypeId),
+		fmt.Fprintf(w, getEventTemplate(event.EventTypeId),event.EventTypeId
 			event.StartDatetime.Format(wikiFmt),
 			event.EndDatetime.Format(wikiFmt),
 			"",    // RR 1
@@ -210,14 +208,13 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 	case 18: // Tower Event
 		tower := event.Tower(VcData)
 		fmt.Fprintf(w,
-			getEventTemplate(event.EventTypeId),
+			getEventTemplate(event.EventTypeId),event.EventTypeId
 			event.StartDatetime.Format(wikiFmt),
 			event.EndDatetime.Format(wikiFmt),
 			tower.ElementId,
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 			genWikiAWRewards(tower.ArrivalRewards(VcData), "Floor Arrival Rewards"), // RR 1
 			genWikiAWRewards(tower.RankRewards(VcData), "Rank Rewards"),             // RR 2
-			genWikiRankTrend(event),
 			prevEventName,
 			nextEventName,
 		)
@@ -231,7 +228,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 	case 10: //Alliance Battle
 		fallthrough
 	default:
-		io.WriteString(w, html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)))
+		fmt.Fprintf((w,getEventTemplate(event.EventTypeId),event.EventTypeId, html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)))
 	}
 	io.WriteString(w, "</textarea></div>")
 
@@ -380,7 +377,7 @@ func getWikiAWRewards(reward vc.RankRewardSheet, newline bool) string {
 
 func getEventTemplate(eventType int) string {
 	switch eventType {
-	case 1:
+	case 1:  // AW Events
 		return `{{Event
 |start jst = %s
 |end jst = %s
@@ -412,7 +409,7 @@ func getEventTemplate(eventType int) string {
 %s
 
 {{NavEvent|%s|%s}}`
-	case 16:
+	case 16: // ABB Events
 		return `{{event
 |image=Banner_{{PAGENAME}}.png
 |start jst=%s
@@ -444,7 +441,7 @@ func getEventTemplate(eventType int) string {
 
 {{NavEvent|%[14]s|%s}}
 `
-	case 18:
+	case 18: // Tower Events
 		return `{{Event
 |start jst = %s
 |end jst = %s
@@ -458,11 +455,8 @@ func getEventTemplate(eventType int) string {
 %s%s
 {{clr}}
 
-==Ranking Trend==
-%s
-
 {{NavEvent|%s|%s}}`
-	default:
+	default: // Default event handler
 		return ""
 	}
 }
