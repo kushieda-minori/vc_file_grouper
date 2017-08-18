@@ -224,7 +224,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"#th", // Guild Battle Number spelled out (first, second, third, etc)
 			"",    // Overlap AW Event
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
-			"", // Ring Exchange
+			genWikiExchange(event.GuildBattle(VcData).BingoBattle(VcData).ExchangeRewards(VcData)), // Ring Exchange
 			"", // Rewards (combined)
 			prevEventName,
 			nextEventName,
@@ -341,61 +341,8 @@ func getWikiAWRewards(reward vc.RankRewardSheet, newline bool) string {
 		item := vc.ItemScan(reward.ItemId, VcData.Items)
 		if item == nil {
 			r = fmt.Sprintf("__UNKNOWN_ITEM_ID:%d__", reward.ItemId)
-		} else if item.GroupId == 17 {
-			// tickets
-			r = fmt.Sprintf("{{Ticket|%s}}", cleanTicketName(item.NameEng))
-		} else if item.GroupId == 30 ||
-			(item.GroupId >= 9 &&
-				item.GroupId <= 16) {
-			// Arcana
-			r = fmt.Sprintf("{{Arcana|%s}}", cleanArcanaName(item.NameEng))
-		} else if (item.GroupId >= 5 && item.GroupId <= 7) || item.GroupId == 31 || item.GroupId == 22 {
-			// sword, shoe, key, rod, potion
-			r = fmt.Sprintf("{{Valkyrie|%s}}", cleanItemName(item.NameEng))
-		} else if item.GroupId == 18 || item.GroupId == 19 || item.GroupId == 43 || item.GroupId == 47 {
-			switch item.Id {
-			case 29:
-				r = "{{MaidenTicket}}"
-			case 138:
-				r = "{{AWCore}}"
-			default:
-				// exchange items
-				r = fmt.Sprintf("[[File:%[1]s.png|28px|link=Items#%[1]s]] [[Items#%[1]s|%[1]s]]", item.NameEng)
-			}
-		} else if item.GroupId == 29 {
-			itemName := ""
-			if strings.Contains(item.Name, "LIGHT") {
-				itemName = "Light"
-			} else if strings.Contains(item.Name, "PASSION") {
-				itemName = "Passion"
-			} else if strings.Contains(item.Name, "COOL") {
-				itemName = "Cool"
-			} else if strings.Contains(item.Name, "DARK") {
-				itemName = "Dark"
-			}
-			if strings.Contains(item.NameEng, "Crystal") {
-				itemName += "C"
-			} else if strings.Contains(item.NameEng, "Orb") {
-				itemName += "O"
-			} else if strings.Contains(item.NameEng, "(L)") {
-				itemName += "L"
-			} else if strings.Contains(item.NameEng, "(M)") {
-				itemName += "M"
-			} else if strings.Contains(item.NameEng, "(S)") {
-				itemName += "S"
-			}
-			r = fmt.Sprintf("{{Stone|%s}}", itemName)
-		} else if item.GroupId == 38 {
-			// Custom Skill Recipies
-			r = fmt.Sprintf("{{Skill Recipe|%s}}", cleanCustomSkillRecipe(item.NameEng))
-		} else if item.GroupId == 39 {
-			// Custom Skill items
-			r = fmt.Sprintf("[[File:%[1]s.png|28px|link=Custom Skills#Skill_Materials]] [[Custom Skills#Skill_Materials|%[2]s]]",
-				vc.CleanCustomSkillNoImage(item.NameEng),
-				vc.CleanCustomSkillNoImage(item.NameEng),
-			)
 		} else {
-			r = fmt.Sprintf("__UNKNOWN_GROUP:_%d_%s__", item.GroupId, item.NameEng)
+			r = getWikiItem(item)
 		}
 	} else if reward.Cash > 0 {
 		r = "{{icon|jewel}}"
@@ -404,6 +351,66 @@ func getWikiAWRewards(reward vc.RankRewardSheet, newline bool) string {
 	}
 
 	return fmt.Sprintf(rlist, r, reward.Num)
+}
+
+func getWikiItem(item *vc.Item) (r string) {
+	if item.GroupId == 17 {
+		// tickets
+		r = fmt.Sprintf("{{Ticket|%s}}", cleanTicketName(item.NameEng))
+	} else if item.GroupId == 30 ||
+		(item.GroupId >= 9 &&
+			item.GroupId <= 16) {
+		// Arcana
+		r = fmt.Sprintf("{{Arcana|%s}}", cleanArcanaName(item.NameEng))
+	} else if (item.GroupId >= 5 && item.GroupId <= 7) || item.GroupId == 31 || item.GroupId == 22 {
+		// sword, shoe, key, rod, potion
+		r = fmt.Sprintf("{{Valkyrie|%s}}", cleanItemName(item.NameEng))
+	} else if item.GroupId == 18 || item.GroupId == 19 || item.GroupId == 43 || item.GroupId == 47 {
+		switch item.Id {
+		case 29:
+			r = "{{MaidenTicket}}"
+		case 138:
+			r = "{{AWCore}}"
+		default:
+			// exchange items
+			r = fmt.Sprintf("[[File:%[1]s.png|28px|link=Items#%[1]s]] [[Items#%[1]s|%[1]s]]", item.NameEng)
+		}
+	} else if item.GroupId == 29 {
+		itemName := ""
+		if strings.Contains(item.Name, "LIGHT") {
+			itemName = "Light"
+		} else if strings.Contains(item.Name, "PASSION") {
+			itemName = "Passion"
+		} else if strings.Contains(item.Name, "COOL") {
+			itemName = "Cool"
+		} else if strings.Contains(item.Name, "DARK") {
+			itemName = "Dark"
+		}
+		if strings.Contains(item.NameEng, "Crystal") {
+			itemName += "C"
+		} else if strings.Contains(item.NameEng, "Orb") {
+			itemName += "O"
+		} else if strings.Contains(item.NameEng, "(L)") {
+			itemName += "L"
+		} else if strings.Contains(item.NameEng, "(M)") {
+			itemName += "M"
+		} else if strings.Contains(item.NameEng, "(S)") {
+			itemName += "S"
+		}
+		r = fmt.Sprintf("{{Stone|%s}}", itemName)
+	} else if item.GroupId == 38 {
+		// Custom Skill Recipies
+		r = fmt.Sprintf("{{Skill Recipe|%s}}", cleanCustomSkillRecipe(item.NameEng))
+	} else if item.GroupId == 39 {
+		// Custom Skill items
+		r = fmt.Sprintf("[[File:%[1]s.png|28px|link=Custom Skills#Skill_Materials]] [[Custom Skills#Skill_Materials|%[2]s]]",
+			vc.CleanCustomSkillNoImage(item.NameEng),
+			vc.CleanCustomSkillNoImage(item.NameEng),
+		)
+	} else {
+		r = fmt.Sprintf("__UNKNOWN_GROUP:_%d_%s__", item.GroupId, item.NameEng)
+	}
+	return
 }
 
 func getEventTemplate(eventType int) string {
@@ -463,6 +470,8 @@ func getEventTemplate(eventType int) string {
 %s
 
 ==Ring Exchange==
+To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and use them.
+
 %s
 
 ==Rewards==
@@ -513,6 +522,44 @@ func genWikiRankTrend(event *vc.Event) (rtrend string) {
 		rtrend += fmt.Sprintf("\n|-\n|%s\n|\n|\n|\n|\n|\n|\n|", i.Format("January _2"))
 	}
 	rtrend += "\n|}"
+	return
+}
+
+func genWikiExchange(exchanges []vc.GuildBingoExchangeReward) (ret string) {
+	ret = `{| class="article-table mw-collapsible mw-collapsed" border="1" cellpadding="1" cellspacing="1" style="width:400px;"
+|-
+! scope="col" |Prize
+! scope="col" |Cost
+`
+	for i := 0; i < len(exchanges); i++ {
+		exchange := exchanges[i]
+		switch exchange.RewardType {
+		case 1: // card
+			card := vc.CardScan(exchange.RewardId, VcData.Cards)
+			ret += fmt.Sprintf("\n|-\n| {{Card Icon|%s}} || x%d",
+				card.Name,
+				exchange.RequireNum,
+			)
+		case 2: //item
+			item := vc.ItemScan(exchange.RewardId, VcData.Items)
+			if item == nil {
+				ret += fmt.Sprintf("__UNKNOWN_ITEM_ID:%d__", exchange.RewardId)
+			} else {
+				ret += fmt.Sprintf("\n|-\n| %s || x%d",
+					getWikiItem(item),
+					exchange.RequireNum,
+				)
+			}
+		default: //unknown!
+			ret += fmt.Sprintf("\n|-\n|Unknown reward type %d for reward id %d || x%d",
+				exchange.RewardType,
+				exchange.RewardId,
+				exchange.RequireNum,
+			)
+		}
+
+	}
+	ret += "\n|}"
 	return
 }
 
