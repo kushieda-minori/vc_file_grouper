@@ -1,6 +1,8 @@
 package vc
 
-import ()
+import (
+	"sort"
+)
 
 // mst_tower
 type Tower struct {
@@ -41,12 +43,12 @@ func (t *Tower) ArrivalRewards(v *VcFile) []RankRewardSheet {
 	return set
 }
 
-func TowerScan(towerId int, v *VcFile) *Tower {
-	if towerId > 0 {
-		for k, val := range v.Tower {
-			if val.Id == towerId {
-				return &(v.Tower[k])
-			}
+func TowerScan(id int, v *VcFile) *Tower {
+	if id > 0 {
+		l := len(v.Tower)
+		i := sort.Search(l, func(i int) bool { return v.Tower[i].Id >= id })
+		if i >= 0 && i < l && v.Tower[i].Id == id {
+			return &(v.Tower[i])
 		}
 	}
 	return nil

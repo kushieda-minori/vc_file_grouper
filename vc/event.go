@@ -2,6 +2,7 @@ package vc
 
 import (
 	"encoding/json"
+	"sort"
 )
 
 type Event struct {
@@ -111,6 +112,14 @@ func (e *Event) Tower(v *VcFile) *Tower {
 	return TowerScan(e.TowerEventId, v)
 }
 
+func (e *Event) GuildBattle(v *VcFile) *GuildBattle {
+	if e.GuildBattleId <= 0 {
+		return nil
+	}
+
+	return GuildBattleScan(e.GuildBattleId, v.GuildBattles)
+}
+
 func (e *Event) Thor(v *VcFile) *ThorEvent {
 	for k, te := range v.ThorEvents {
 		if te.PublicStartDatetime == e.StartDatetime && te.PublicEndDatetime == e.EndDatetime {
@@ -188,15 +197,12 @@ func MaxEventId(events []Event) (max int) {
 	return
 }
 
-func EventScan(eventId int, events []Event) *Event {
-	if eventId > 0 {
-		if eventId < len(events) && events[eventId-1].Id == eventId {
-			return &events[eventId-1]
-		}
-		for k, val := range events {
-			if val.Id == eventId {
-				return &events[k]
-			}
+func EventScan(id int, events []Event) *Event {
+	if id > 0 {
+		l := len(events)
+		i := sort.Search(l, func(i int) bool { return events[i].Id >= id })
+		if i >= 0 && i < l && events[i].Id == id {
+			return &(events[i])
 		}
 	}
 	return nil

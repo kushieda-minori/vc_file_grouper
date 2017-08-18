@@ -1,5 +1,9 @@
 package vc
 
+import (
+	"sort"
+)
+
 //"mst_guildbattle_schedule"
 type GuildBattle struct {
 	Id                 int       `json:"_id"`
@@ -84,4 +88,16 @@ type GuildBattleRewardRef struct {
 	MidIndividualRankingSheetId int `json:"mid_individual_ranking_sheet_id"`
 	GuildWinSheetId             int `json:"guild_win_sheet_id"`
 	MidBonusDistributionDate    int `json:"mid_bonus_distribution_date"`
+}
+
+func GuildBattleScan(id int, battles []GuildBattle) *GuildBattle {
+	if id <= 0 {
+		return nil
+	}
+	l := len(battles)
+	i := sort.Search(l, func(i int) bool { return battles[i].Id >= id })
+	if i >= 0 && i < l && battles[i].Id == id {
+		return &(battles[i])
+	}
+	return nil
 }

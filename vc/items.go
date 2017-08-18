@@ -1,6 +1,7 @@
 package vc
 
 import (
+	"sort"
 	"strings"
 )
 
@@ -36,13 +37,10 @@ type Item struct {
 
 func ItemScan(id int, items []Item) *Item {
 	if id > 0 {
-		if id < len(items) && items[id-1].Id == id {
-			return &items[id-1]
-		}
-		for k, val := range items {
-			if val.Id == id {
-				return &items[k]
-			}
+		l := len(items)
+		i := sort.Search(l, func(i int) bool { return items[i].Id >= id })
+		if i >= 0 && i < l && items[i].Id == id {
+			return &(items[i])
 		}
 	}
 	return nil

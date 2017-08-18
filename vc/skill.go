@@ -2,6 +2,7 @@ package vc
 
 import (
 	"encoding/json"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -110,15 +111,11 @@ func (s *Skill) TargetLogic() string {
 }
 
 func SkillScan(id int, skills []Skill) *Skill {
-	if id <= 0 {
-		return nil
-	}
-	if id < len(skills) && id == skills[id-1].Id {
-		return &(skills[id-1])
-	}
-	for k, v := range skills {
-		if id == v.Id {
-			return &(skills[k])
+	if id > 0 {
+		l := len(skills)
+		i := sort.Search(l, func(i int) bool { return skills[i].Id >= id })
+		if i >= 0 && i < l && skills[i].Id == id {
+			return &(skills[i])
 		}
 	}
 	return nil

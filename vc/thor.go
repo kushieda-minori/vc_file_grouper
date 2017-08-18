@@ -1,6 +1,8 @@
 package vc
 
-import ()
+import (
+	"sort"
+)
 
 // mst_thorhammer
 type ThorEvent struct {
@@ -85,15 +87,12 @@ func MaxThorEventId(events []ThorEvent) (max int) {
 	return
 }
 
-func ThorEventScan(eventId int, events []ThorEvent) *ThorEvent {
-	if eventId > 0 {
-		if eventId < len(events) && events[eventId-1].Id == eventId {
-			return &events[eventId-1]
-		}
-		for k, val := range events {
-			if val.Id == eventId {
-				return &events[k]
-			}
+func ThorEventScan(id int, events []ThorEvent) *ThorEvent {
+	if id > 0 {
+		l := len(events)
+		i := sort.Search(l, func(i int) bool { return events[i].Id >= id })
+		if i >= 0 && i < l && events[i].Id == id {
+			return &(events[i])
 		}
 	}
 	return nil

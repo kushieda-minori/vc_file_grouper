@@ -3,6 +3,7 @@ package vc
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -418,16 +419,14 @@ func (c *CardCharacter) FirstEvoCard(v *VcFile) (card *Card) {
 	return
 }
 
-func CardScan(cardId int, cards []Card) *Card {
-	if cardId > 0 {
-		if cardId < len(cards) && cards[cardId-1].Id == cardId {
-			return &cards[cardId-1]
-		}
-		for k, val := range cards {
-			if val.Id == cardId {
-				return &cards[k]
-			}
-		}
+func CardScan(id int, cards []Card) *Card {
+	if id <= 0 {
+		return nil
+	}
+	l := len(cards)
+	i := sort.Search(l, func(i int) bool { return cards[i].Id >= id })
+	if i >= 0 && i < l && cards[i].Id == id {
+		return &(cards[i])
 	}
 	return nil
 }
