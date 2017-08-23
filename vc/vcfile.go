@@ -11,6 +11,7 @@ import (
 	"os"
 	"regexp"
 	"runtime/debug"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -34,6 +35,56 @@ func (t *Timestamp) MarshalJSON() ([]byte, error) {
 }
 
 var location = time.FixedZone("JST", 32400) //time.LoadLocation("Asia/Tokyo")
+
+// old cards that are not available anymore
+var oldCards = []int{
+	61, 62, // bandit
+	55, 56, // beastmaster
+	102,      // cutthroat
+	323, 324, // cyborg
+	121, 122, // dancer
+	38, 39, // dark knight
+	123, 124, // detective
+	163, 164, // doll master
+	41, 42, // dragon knight
+	43,       // dragon slayer
+	225, 226, // dragonewt
+	119, 120, // druid
+	174, 175, // empress
+	157, 158, // farmer
+	201, 202, // fox spirit
+	229, 230, // gnome
+	242, 243, // harpy
+	86, 87, // hunter
+	63,            // idol
+	1, 2, 3, 4, 5, // knight
+	90, 91, // kung-fu master
+	195, 196, // lycaon
+	88, 89, // martial artist
+	321, 322, // mechanic
+	348, 349, // mythic knight
+	265, 266, // oni
+	40,     // paladin
+	94, 95, // rune knight
+	73, 74, // sage
+	84, 85, // strategist
+	100, 101, // swordsman
+	183, 184, // sylph
+	304, 305, // trickster
+	133, 134, // vampire hunter
+}
+
+// new cards that are named the same as an old card that is still active
+var newCards = []int{
+	4721, 4722, 4734, // Spinner
+	4752, 4753, 4785, // Sparky
+	4711, 4712, // Diana
+}
+
+func init() {
+	sort.Ints(oldCards)
+	sort.Ints(newCards)
+}
 
 func (t *Timestamp) UnmarshalJSON(b []byte) error {
 	ts, err := strconv.Atoi(string(b))
@@ -72,50 +123,53 @@ type VcFile struct {
 		StartDateTime Timestamp `json:"start_datetime"`
 		EndDateTime   Timestamp `json:"end_datetime"`
 	} `json:"defs_tune"`
-	ShortcutUrl               string                     `json:"shortcut_url"`
-	Version                   int                        `json:"version"`
-	Cards                     []Card                     `json:"cards"`
-	Skills                    []Skill                    `json:"skills"`
-	SkillLevels               []SkillLevel               `json:"skill_level"`
-	Amalgamations             []Amalgamation             `json:"fusion_list"`
-	Awakenings                []CardAwaken               `json:"card_awaken"`
-	CardCharacter             []CardCharacter            `json:"card_character"`
-	FollowerKinds             []FollowerKind             `json:"follower_kinds"`
-	Levels                    []Level                    `json:"levels"`
-	CardLevels                []CardLevel                `json:"cardlevel"`
-	CardLevelsLR              []CardLevel                `json:"cardlevel_lr"`
-	LRResources               []LRResource               `json:"card_compose_resource"`
-	DeckBonuses               []DeckBonus                `json:"deck_bonus"`
-	DeckBonusConditions       []DeckBonusCond            `json:"deck_bonus_cond"`
-	Archwitches               []Archwitch                `json:"kings"`
-	ArchwitchSeries           []ArchwitchSeries          `json:"king_series"`
-	ArchwitchFriendships      []ArchwitchFriendship      `json:"king_friendship"`
-	Events                    []Event                    `json:"mst_event"`
-	EventBooks                []EventBook                `json:"mst_event_book"`
-	EventCards                []EventCard                `json:"mst_event_card"`
-	RankRewards               []RankReward               `json:"ranking_bonus"`
-	RankRewardSheets          []RankRewardSheet          `json:"ranking_bonussheet"`
-	Maps                      []Map                      `json:"map"`
-	Areas                     []Area                     `json:"area"`
-	Items                     []Item                     `json:"items"`
-	Structures                []Structure                `json:"structures"`
-	StructureLevels           []StructureLevel           `json:"structure_level"`
-	StructureNumCosts         []StructureCost            `json:"structure_num_cost"`
-	ResourceLevels            []ResourceLevel            `json:"resource"`
-	BankLevels                []BankLevel                `json:"bank_level"`
-	CastleLevels              []CastleLevel              `json:"castle_level"`
-	ThorEvents                []ThorEvent                `json:"mst_thorhammer"`
-	ThorKings                 []ThorKing                 `json:"mst_thorhammer_king"`
-	ThorKingCosts             []ThorKingCost             `json:"mst_thorhammer_king_cost"`
-	ThorRankRewards           []ThorReward               `json:"mst_thorhammer_ranking_reward"`
-	ThorPointRewards          []ThorReward               `json:"mst_thorhammer_point_reward"`
-	GuildBattles              []GuildBattle              `json:"mst_guildbattle_schedule"`
-	GuildBingoBattles         []GuildBingoBattle         `json:"mst_guildbingo"`
-	GuildBingoExchangeRewards []GuildBingoExchangeReward `json:"mst_guildbingo_exchange_reward"`
-	GuildAUBWinRewards        []GuildAUBWinReward        `json:"mst_guildbattle_win_reward"`
-	Tower                     []Tower                    `json:"mst_tower"`
-	TowerReward               []RankRewardSheet          `json:"mst_tower_ranking_reward"`
-	TowerArrivalReward        []RankRewardSheet          `json:"mst_tower_arrival_point_reward"`
+	ShortcutUrl                 string                     `json:"shortcut_url"`
+	Version                     int                        `json:"version"`
+	Cards                       []Card                     `json:"cards"`
+	Skills                      []Skill                    `json:"skills"`
+	SkillLevels                 []SkillLevel               `json:"skill_level"`
+	Amalgamations               []Amalgamation             `json:"fusion_list"`
+	Awakenings                  []CardAwaken               `json:"card_awaken"`
+	CardCharacter               []CardCharacter            `json:"card_character"`
+	FollowerKinds               []FollowerKind             `json:"follower_kinds"`
+	Levels                      []Level                    `json:"levels"`
+	CardLevels                  []CardLevel                `json:"cardlevel"`
+	CardLevelsLR                []CardLevel                `json:"cardlevel_lr"`
+	LRResources                 []LRResource               `json:"card_compose_resource"`
+	DeckBonuses                 []DeckBonus                `json:"deck_bonus"`
+	DeckBonusConditions         []DeckBonusCond            `json:"deck_bonus_cond"`
+	Archwitches                 []Archwitch                `json:"kings"`
+	ArchwitchSeries             []ArchwitchSeries          `json:"king_series"`
+	ArchwitchFriendships        []ArchwitchFriendship      `json:"king_friendship"`
+	Events                      []Event                    `json:"mst_event"`
+	EventBooks                  []EventBook                `json:"mst_event_book"`
+	EventCards                  []EventCard                `json:"mst_event_card"`
+	RankRewards                 []RankReward               `json:"ranking_bonus"`
+	RankRewardSheets            []RankRewardSheet          `json:"ranking_bonussheet"`
+	Maps                        []Map                      `json:"map"`
+	Areas                       []Area                     `json:"area"`
+	Items                       []Item                     `json:"items"`
+	Structures                  []Structure                `json:"structures"`
+	StructureLevels             []StructureLevel           `json:"structure_level"`
+	StructureNumCosts           []StructureCost            `json:"structure_num_cost"`
+	ResourceLevels              []ResourceLevel            `json:"resource"`
+	BankLevels                  []BankLevel                `json:"bank_level"`
+	CastleLevels                []CastleLevel              `json:"castle_level"`
+	ThorEvents                  []ThorEvent                `json:"mst_thorhammer"`
+	ThorKings                   []ThorKing                 `json:"mst_thorhammer_king"`
+	ThorKingCosts               []ThorKingCost             `json:"mst_thorhammer_king_cost"`
+	ThorRankRewards             []ThorReward               `json:"mst_thorhammer_ranking_reward"`
+	ThorPointRewards            []ThorReward               `json:"mst_thorhammer_point_reward"`
+	GuildBattles                []GuildBattle              `json:"mst_guildbattle_schedule"`
+	GuildBingoBattles           []GuildBingoBattle         `json:"mst_guildbingo"`
+	GuildBingoExchangeRewards   []GuildBingoExchangeReward `json:"mst_guildbingo_exchange_reward"`
+	GuildBattleRewardRefs       []GuildBattleRewardRef     `json:"mst_guildbattle_point_reward"`
+	GuildBattleIndividualPoints []RankRewardSheet          `json:"mst_guildbattle_point_rewardsheet"`
+	GuildBattleRankingRewards   []RankRewardSheet          `json:"mst_guildbattle_individual_ranking_reward"`
+	GuildAUBWinRewards          []GuildAUBWinReward        `json:"mst_guildbattle_win_reward"`
+	Tower                       []Tower                    `json:"mst_tower"`
+	TowerReward                 []RankRewardSheet          `json:"mst_tower_ranking_reward"`
+	TowerArrivalReward          []RankRewardSheet          `json:"mst_tower_arrival_point_reward"`
 }
 
 // This reads the main data file and all associated files for strings
@@ -157,7 +211,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 			"Character Names", len(v.Cards), len(names))
 	}
 	for key, _ := range v.Cards {
-		v.Cards[key].Name = cleanCardName(names[key])
+		v.Cards[key].Name = cleanCardName(names[key], &(v.Cards[key]))
 	}
 	names = nil
 
@@ -571,11 +625,22 @@ func readStringFile(fname string) ([]string, error) {
 	return ret, nil
 }
 
-func cleanCardName(name string) string {
+func cleanCardName(name string, card *Card) string {
 	ret := strings.Replace(strings.Title(strings.ToLower(name)), "'S", "'s", -1)
 	ret = strings.Replace(ret, "(Sr)", "(SR)", -1)
 	ret = strings.Replace(ret, "(Ur)", "(UR)", -1)
 	ret = strings.Replace(ret, "(Lr)", "(LR)", -1)
+	// old cards
+	oldIdx := sort.SearchInts(oldCards, card.Id)
+	if oldIdx >= 0 && oldIdx < len(oldCards) && oldCards[oldIdx] == card.Id {
+		ret += " (Old)"
+	} else {
+		// new cards that are named the same as an old card that is still active
+		newIdx := sort.SearchInts(newCards, card.Id)
+		if newIdx >= 0 && newIdx < len(newCards) && newCards[newIdx] == card.Id {
+			ret += " (New)"
+		}
+	}
 	return ret
 }
 

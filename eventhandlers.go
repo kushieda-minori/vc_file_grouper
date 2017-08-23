@@ -177,10 +177,10 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				midCaption := fmt.Sprintf("Mid Rankings<br /><small>Cutoff@ %s (JST)</small>",
 					rr.MidBonusDistributionDate.Format(wikiFmt),
 				)
-				midrewards = genWikiAWRewards(mid, midCaption)
+				midrewards = genWikiAWRewards(mid, midCaption, "Rank")
 			}
 			finalRewardList := rr.FinalRewards(VcData)
-			finalrewards = genWikiAWRewards(finalRewardList, "Final Rankings")
+			finalrewards = genWikiAWRewards(finalRewardList, "Final Rankings", "Rank")
 			for _, fr := range finalRewardList {
 				if fr.CardId > 0 {
 					rrCard := vc.CardScan(fr.CardId, VcData.Cards)
@@ -211,10 +211,33 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		//rr := event.RankRewards(VcData)
 		//finalRewardList := rr.FinalRewards(VcData)
 		//finalrewards := genWikiAWRewards(finalRewardList, "Ranking")
+		gb := event.GuildBattle(VcData)
+		bb := gb.BingoBattle(VcData)
+
+		aws := bb.Archwitches(VcData)
+		aw := ""
+		//os.Stderr.WriteString(fmt.Sprintf("found %d archwitches on guild battle %d king series id %d\n", len(aws), bb.Id, bb.KingSeriesId))
+		if len(aws) > 0 {
+			king := aws[0]
+			kingCard := vc.CardScan(king.CardMasterId, VcData.Cards)
+			aw = kingCard.Name
+			if len(aws) > 1 {
+				// append extra AW cards
+				for i := 1; i < len(aws); i++ {
+					king = aws[i]
+					kingCard = vc.CardScan(king.CardMasterId, VcData.Cards)
+					aw += " |Archwitch Panel Encounter\n| " + kingCard.Name
+				}
+			}
+		}
+
+		rankRewards := genWikiAWRewards(gb.RankRewards(VcData), "Ranking", "Rank") +
+			genWikiAWRewards(gb.IndividualRewards(VcData), "Point Reward", "Points")
 
 		fmt.Fprintf(w, getEventTemplate(event.EventTypeId), event.EventTypeId,
 			event.StartDatetime.Format(wikiFmt),
 			event.EndDatetime.Format(wikiFmt),
+			aw,    // AW Panel Encounter
 			"",    // RR 1
 			"",    // RR 2
 			"",    // Individual Card 1
@@ -224,8 +247,8 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"#th", // Guild Battle Number spelled out (first, second, third, etc)
 			"",    // Overlap AW Event
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
-			genWikiExchange(event.GuildBattle(VcData).BingoBattle(VcData).ExchangeRewards(VcData)), // Ring Exchange
-			"", // Rewards (combined)
+			genWikiExchange(bb.ExchangeRewards(VcData)), // Ring Exchange
+			rankRewards,                                 // Rewards (combined)
 			prevEventName,
 			nextEventName,
 		)
@@ -237,8 +260,8 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			event.EndDatetime.Format(wikiFmt),
 			tower.ElementId,
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
-			genWikiAWRewards(tower.ArrivalRewards(VcData), "Floor Arrival Rewards"), // RR 1
-			genWikiAWRewards(tower.RankRewards(VcData), "Rank Rewards"),             // RR 2
+			genWikiAWRewards(tower.ArrivalRewards(VcData), "Floor Arrival Rewards", "Floor"), // RR 1
+			genWikiAWRewards(tower.RankRewards(VcData), "Rank Rewards", "Rank"),              // RR 2
 			prevEventName,
 			nextEventName,
 		)
@@ -267,13 +290,13 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func genWikiAWRewards(rewards []vc.RankRewardSheet, caption string) string {
+func genWikiAWRewards(rewards []vc.RankRewardSheet, caption string, rankTitle string) string {
 	ret := `
 {| border="1" cellpadding="1" cellspacing="1" class="mw-collapsible mw-collapsed article-table" style="float:left"
 |-
 ! colspan="2"|` + caption + `
 |-
-! style="text-align:right"|Rank
+! style="text-align:right"|` + rankTitle + `
 ! Reward
 `
 	rrange := `|-
@@ -281,7 +304,7 @@ func genWikiAWRewards(rewards []vc.RankRewardSheet, caption string) string {
 |%s
 `
 	prange := `|-
-|style="text-align:right"|%d F
+|style="text-align:right"|%d
 |%s
 `
 
@@ -293,11 +316,15 @@ func genWikiAWRewards(rewards []vc.RankRewardSheet, caption string) string {
 			// get the last reward
 			if reward.Point <= 0 && (reward.RankFrom != prevRangeStart || reward.RankTo != prevRangeEnd) {
 				// if the last reward range is a single item, write out the previous range
-				ret += fmt.Sprintf(rrange, prevRangeStart, prevRangeEnd, rewardList)
-				rewardList = ""
+				if rewardList != "" {
+					ret += fmt.Sprintf(rrange, prevRangeStart, prevRangeEnd, rewardList)
+					rewardList = ""
+				}
 			} else if reward.Point != prevPoint {
-				ret += fmt.Sprintf(prange, prevPoint, rewardList)
-				rewardList = ""
+				if rewardList != "" {
+					ret += fmt.Sprintf(prange, prevPoint, rewardList)
+					rewardList = ""
+				}
 			}
 			rewardList += getWikiAWRewards(reward, rewardList != "")
 			if reward.Point > 0 {
@@ -308,9 +335,14 @@ func genWikiAWRewards(rewards []vc.RankRewardSheet, caption string) string {
 		} else {
 			if reward.RankFrom != prevRangeStart || reward.RankTo != prevRangeEnd || reward.Point != prevPoint {
 				if prevRangeStart > 0 {
-					ret += fmt.Sprintf(rrange, prevRangeStart, prevRangeEnd, rewardList)
+					if rewardList != "" {
+
+						ret += fmt.Sprintf(rrange, prevRangeStart, prevRangeEnd, rewardList)
+					}
 				} else if reward.Point > 0 && reward.Point != prevPoint {
-					ret += fmt.Sprintf(prange, prevPoint, rewardList)
+					if rewardList != "" {
+						ret += fmt.Sprintf(prange, prevPoint, rewardList)
+					}
 				}
 				prevRangeStart, prevRangeEnd, prevPoint = reward.RankFrom, reward.RankTo, reward.Point
 				rewardList = ""
@@ -398,6 +430,9 @@ func getWikiItem(item *vc.Item) (r string) {
 			itemName += "S"
 		}
 		r = fmt.Sprintf("{{Stone|%s}}", itemName)
+	} else if item.GroupId == 32 {
+		// ABB Ring
+		r = fmt.Sprintf("{{Icon|%s}}", item.NameEng)
 	} else if item.GroupId == 38 {
 		// Custom Skill Recipies
 		r = fmt.Sprintf("{{Skill Recipe|%s}}", cleanCustomSkillRecipe(item.NameEng))
@@ -453,10 +488,12 @@ func getEventTemplate(eventType int) string {
 |image=Banner_{{PAGENAME}}.png
 |start jst=%s
 |end jst=%s
+| %s |Archwitch Panel Encounter
 | %s |Rank Reward
 | %s |Rank Reward
 | %s |Individual Point Reward<br />Ring Exchange
 | %s |Individual Point Reward<br />Ring Exchange
+| Mirror Maiden (LR) |Ring Exchange
 | Mirror Maiden (UR) |Ring Exchange
 | Mirror Maiden (SR) |Ring Exchange
 | Mirror Maiden (R) |Ring Exchange
@@ -477,10 +514,11 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 ==Rewards==
 %s
 
+{{clr}}
 ==Local ABB Times==
 {{AUBLocalTime|start jst = %[2]s|consecutive=1}}
 
-{{NavEvent|%[15]s|%s}}
+{{NavEvent|%[16]s|%s}}
 `
 	case 18: // Tower Events
 		return `{{Event|eventType = %d
