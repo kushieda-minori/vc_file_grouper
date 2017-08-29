@@ -263,10 +263,10 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	sort.Strings(evokeys)
 	lenEvoKeys := len(evokeys)
 	for i, k := range evokeys {
-		evo := evolutions[k]
 		if i == 0 && skipFirstEvo {
 			continue
 		}
+		evo := evolutions[k]
 		// check if we should force non-H status
 		r := evo.Rarity()[0]
 		if lenEvoKeys == 1 && evo.EvolutionRank == 1 && r != 'H' && r != 'G' {
@@ -346,7 +346,10 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</textarea></div>")
 	// show images here
 	io.WriteString(w, "<div style=\"float:left\">")
-	for _, k := range evokeys {
+	for i, k := range evokeys {
+		if i == 0 && skipFirstEvo {
+			continue
+		}
 		evo := evolutions[k]
 		// check if we should force non-H status
 		r := evo.Rarity()[0]
@@ -361,7 +364,10 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 	io.WriteString(w, "<div style=\"clear: both\">")
-	for _, k := range evokeys {
+	for i, k := range evokeys {
+		if i == 0 && skipFirstEvo {
+			continue
+		}
 		evo := evolutions[k]
 		// check if we should force non-H status
 		r := evo.Rarity()[0]
