@@ -190,6 +190,9 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "{{Unreleased}}")
 	}
 	fmt.Fprintf(w, "{{Card\n|element = %s\n", card.Element())
+
+	skillMap := make(map[string]string)
+
 	if firstEvo.Id > 0 {
 		skillEvoMod := ""
 		if firstEvo.Rarity()[0:1] == "G" {
@@ -199,39 +202,57 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "|rarity = %s\n", fixRarity(firstEvo.Rarity()))
 
 		if !skipFirstEvo {
-			io.WriteString(w, printWikiSkill(firstEvo.Skill1(VcData), nil, ""))
+			skillMap[skillEvoMod] = printWikiSkill(firstEvo.Skill1(VcData), nil, skillEvoMod)
 		}
 
 		skill2 := firstEvo.Skill2(VcData)
 		if skill2 != nil {
-			io.WriteString(w, printWikiSkill(skill2, lastEvo.Skill2(VcData), skillEvoMod+"2"))
+			skillMap[skillEvoMod+"2"] = printWikiSkill(skill2, lastEvo.Skill2(VcData), skillEvoMod+"2")
 			// print skill 3 if it exists
-			io.WriteString(w, printWikiSkill(firstEvo.Skill3(VcData), nil, skillEvoMod+"3"))
-
+			skillMap[skillEvoMod+"3"] = printWikiSkill(firstEvo.Skill3(VcData), nil, skillEvoMod+"3")
 		} else if lastEvo.Id > 0 {
-			io.WriteString(w, printWikiSkill(lastEvo.Skill2(VcData), nil, skillEvoMod+"2"))
+			skillMap[skillEvoMod+"2"] = printWikiSkill(lastEvo.Skill2(VcData), nil, skillEvoMod+"2")
 			// print skill 3 if it exists
-			io.WriteString(w, printWikiSkill(lastEvo.Skill3(VcData), nil, skillEvoMod+"3"))
+			skillMap[skillEvoMod+"3"] = printWikiSkill(lastEvo.Skill3(VcData), nil, skillEvoMod+"3")
 		}
-
-		io.WriteString(w, printWikiSkill(lastEvo.ThorSkill1(VcData), nil, skillEvoMod+"t"))
+		skillMap[skillEvoMod+"t"] = printWikiSkill(lastEvo.ThorSkill1(VcData), nil, skillEvoMod+"t")
 	} else {
+		// no skills...
 		io.WriteString(w, "|rarity = \n|skill = \n|skill lv1 = \n|skill lv10 = \n|procs = \n")
 	}
 	if evo, ok := evolutions["A"]; ok {
 		aSkillName := evo.Skill1Name(VcData)
 		if aSkillName != firstEvo.Skill1Name(VcData) {
-			io.WriteString(w, printWikiSkill(evo.Skill1(VcData), nil, "a"))
+			skillMap["a"] = printWikiSkill(evo.Skill1(VcData), nil, "a")
 		}
 		if _, ok := evolutions["GA"]; ok {
-			io.WriteString(w, printWikiSkill(evo.Skill1(VcData), nil, "ga"))
+			skillMap["ga"] = printWikiSkill(evo.Skill1(VcData), nil, "ga")
 		}
 	}
 	if evo, ok := evolutions["G"]; ok {
-		io.WriteString(w, printWikiSkill(evo.Skill1(VcData), nil, "g"))
-		io.WriteString(w, printWikiSkill(evo.Skill2(VcData), nil, "g2"))
-		io.WriteString(w, printWikiSkill(evo.Skill3(VcData), nil, "g3"))
-		io.WriteString(w, printWikiSkill(evo.ThorSkill1(VcData), nil, "gt"))
+		skillMap["g"] = printWikiSkill(evo.Skill1(VcData), nil, "g")
+		skillMap["g2"] = printWikiSkill(evo.Skill2(VcData), nil, "g2")
+		skillMap["g3"] = printWikiSkill(evo.Skill3(VcData), nil, "g3")
+		skillMap["gt"] = printWikiSkill(evo.ThorSkill1(VcData), nil, "gt")
+	}
+	// order that we want to print the skills
+	skillEvos := []string{
+		"",
+		"2",
+		"3",
+		"a",
+		"t",
+		"g",
+		"g2",
+		"g3",
+		"ga",
+		"gt",
+	}
+	// actually print the skills now...
+	for _, skillEvo := range skillEvos {
+		if val, ok := skillMap[skillEvo]; ok && val != "" {
+			io.WriteString(w, val)
+		}
 	}
 
 	//traverse evolutions in order
@@ -240,10 +261,16 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		evokeys = append(evokeys, k)
 	}
 	sort.Strings(evokeys)
+	lenEvoKeys := len(evokeys)
 	for i, k := range evokeys {
 		evo := evolutions[k]
 		if i == 0 && skipFirstEvo {
 			continue
+		}
+		// check if we should force non-H status
+		r := evo.Rarity()[0]
+		if lenEvoKeys == 1 && evo.EvolutionRank == 1 && r != 'H' && r != 'G' {
+			k = "0"
 		}
 		fmt.Fprintf(w, "|cost %[1]s = %[2]d\n|atk %[1]s = %[3]d / %s\n|def %[1]s = %[5]d / %s\n|soldiers %[1]s = %[7]d / %s\n",
 			strings.ToLower(k),
@@ -321,6 +348,11 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<div style=\"float:left\">")
 	for _, k := range evokeys {
 		evo := evolutions[k]
+		// check if we should force non-H status
+		r := evo.Rarity()[0]
+		if lenEvoKeys == 1 && evo.EvolutionRank == 1 && r != 'H' && r != 'G' {
+			k = "0"
+		}
 		fmt.Fprintf(w,
 			`<div style="float: left; margin: 3px"><a href="/images/cardthumb/%s"><img src="/images/cardthumb/%[1]s"/></a><br />%s : %s☆</div>`,
 			evo.Image(),
@@ -331,6 +363,11 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<div style=\"clear: both\">")
 	for _, k := range evokeys {
 		evo := evolutions[k]
+		// check if we should force non-H status
+		r := evo.Rarity()[0]
+		if lenEvoKeys == 1 && evo.EvolutionRank == 1 && r != 'H' && r != 'G' {
+			k = "0"
+		}
 
 		if _, err := os.Stat(vcfilepath + "/card/hd/" + evo.Image()); err == nil {
 			fmt.Fprintf(w,
@@ -574,7 +611,7 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func maxStatAtk(evo vc.Card, numOfEvos int) string {
-	if evo.EvolutionRank == 0 {
+	if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
 		return strconv.Itoa(evo.MaxOffense)
 	}
 	return "?"
@@ -588,13 +625,13 @@ func maxStatAtk(evo vc.Card, numOfEvos int) string {
 	// return
 }
 func maxStatDef(evo vc.Card, numOfEvos int) string {
-	if evo.EvolutionRank == 0 {
+	if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
 		return strconv.Itoa(evo.MaxDefense)
 	}
 	return "?"
 }
 func maxStatFollower(evo vc.Card, numOfEvos int) string {
-	if evo.EvolutionRank == 0 {
+	if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
 		return strconv.Itoa(evo.MaxFollower)
 	}
 	return "?"
@@ -645,20 +682,23 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 	}
 
 	lv10 := ""
+	skillLvl10 := ""
 
 	if ls == nil || ls.Id == s.Id {
 		// 1st skills only have lvl10, skill 2, 3, and thor do not.
 		if len(s.Levels(VcData)) == 10 {
+			skillLvl10 = html.EscapeString(strings.Replace(s.SkillMax(), "\n", "<br />", -1))
 			lv10 = fmt.Sprintf("\n|skill %slv10 = %s",
 				evoMod,
-				html.EscapeString(strings.Replace(s.SkillMax(), "\n", "<br />", -1)),
+				skillLvl10,
 			)
 		}
 	} else {
 		// handles Great DMG skills where the last evo is the max skill
+		skillLvl10 = html.EscapeString(strings.Replace(ls.SkillMax(), "\n", "<br />", -1))
 		lv10 = fmt.Sprintf("\n|skill %slv10 = %s",
 			evoMod,
-			html.EscapeString(strings.Replace(ls.SkillMax(), "\n", "<br />", -1)),
+			skillLvl10,
 		)
 	}
 
@@ -668,6 +708,11 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 	} else {
 		skillLvl1 = s.SkillMin()
 	}
+	skillLvl1 = html.EscapeString(strings.Replace(skillLvl1, "\n", "<br />", -1))
+
+	if skillLvl1 == skillLvl10 {
+		lv10 = ""
+	}
 
 	ret = fmt.Sprintf(`|skill %[1]s= %[2]s
 |skill %[1]slv1 = %[3]s%[4]s
@@ -675,7 +720,7 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 `,
 		evoMod,
 		html.EscapeString(s.Name),
-		html.EscapeString(strings.Replace(skillLvl1, "\n", "<br />", -1)),
+		skillLvl1,
 		lv10,
 		s.MaxCount,
 	)
@@ -773,12 +818,14 @@ func getEvolutions(card *vc.Card) map[string]vc.Card {
 	nextId := card.EvolutionCardId
 	lastEvo := card
 	for nextId > 1 {
-		nextCard := vc.CardScan(nextId, VcData.Cards)
+		nextCard := lastEvo.NextEvo(VcData)
 		// verify that we haven't switched characters like Terra -> Rhea
 		if card.CardCharaId == nextCard.CardCharaId {
 			nextEvo := strconv.Itoa(nextCard.EvolutionRank)
 			ret[nextEvo] = *nextCard
 			lastEvo = nextCard
+		} else {
+			break
 		}
 		nextId = nextCard.EvolutionCardId
 	}

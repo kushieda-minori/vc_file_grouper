@@ -214,22 +214,22 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		gb := event.GuildBattle(VcData)
 		bb := gb.BingoBattle(VcData)
 
-		aws := bb.Archwitches(VcData)
-		aw := ""
+		// aws := bb.Archwitches(VcData)
+		// aw := ""
 		//os.Stderr.WriteString(fmt.Sprintf("found %d archwitches on guild battle %d king series id %d\n", len(aws), bb.Id, bb.KingSeriesId))
-		if len(aws) > 0 {
-			king := aws[0]
-			kingCard := vc.CardScan(king.CardMasterId, VcData.Cards)
-			aw = kingCard.Name
-			if len(aws) > 1 {
-				// append extra AW cards
-				for i := 1; i < len(aws); i++ {
-					king = aws[i]
-					kingCard = vc.CardScan(king.CardMasterId, VcData.Cards)
-					aw += " |Archwitch Panel Encounter\n| " + kingCard.Name
-				}
-			}
-		}
+		// if len(aws) > 0 {
+		// 	king := aws[0]
+		// 	kingCard := vc.CardScan(king.CardMasterId, VcData.Cards)
+		// 	aw = kingCard.Name
+		// 	if len(aws) > 1 {
+		// 		// append extra AW cards
+		// 		for i := 1; i < len(aws); i++ {
+		// 			king = aws[i]
+		// 			kingCard = vc.CardScan(king.CardMasterId, VcData.Cards)
+		// 			aw += " |Archwitch Panel Encounter\n| " + kingCard.Name
+		// 		}
+		// 	}
+		// }
 
 		rankRewards := genWikiAWRewards(gb.RankRewards(VcData), "Ranking", "Rank") +
 			genWikiAWRewards(gb.IndividualRewards(VcData), "Point Reward", "Points")
@@ -237,7 +237,6 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, getEventTemplate(event.EventTypeId), event.EventTypeId,
 			event.StartDatetime.Format(wikiFmt),
 			event.EndDatetime.Format(wikiFmt),
-			aw,    // AW Panel Encounter
 			"",    // RR 1
 			"",    // RR 2
 			"",    // Individual Card 1
@@ -488,7 +487,6 @@ func getEventTemplate(eventType int) string {
 |image=Banner_{{PAGENAME}}.png
 |start jst=%s
 |end jst=%s
-| %s |Archwitch Panel Encounter
 | %s |Rank Reward
 | %s |Rank Reward
 | %s |Individual Point Reward<br />Ring Exchange
@@ -518,7 +516,7 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 ==Local ABB Times==
 {{AUBLocalTime|start jst = %[2]s|consecutive=1}}
 
-{{NavEvent|%[16]s|%s}}
+{{NavEvent|%[15]s|%s}}
 `
 	case 18: // Tower Events
 		return `{{Event|eventType = %d
