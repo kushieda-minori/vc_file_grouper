@@ -255,11 +255,24 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		)
 	case 18: // Tower Event
 		tower := event.Tower(VcData)
+
+		var towerElement string
+		switch tower.ElementId {
+		case 1:
+			towerElement = "Passion"
+		case 2:
+			towerElement = "Cool"
+		case 3:
+			towerElement = "Light"
+		default:
+			towerElement = "Dark"
+		}
+
 		fmt.Fprintf(w,
 			getEventTemplate(event.EventTypeId), event.EventTypeId,
 			event.StartDatetime.Format(wikiFmt),
 			event.EndDatetime.Format(wikiFmt),
-			tower.ElementId,
+			towerElement,
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 			genWikiAWRewards(tower.ArrivalRewards(VcData), "Floor Arrival Rewards", "Floor"), // RR 1
 			genWikiAWRewards(tower.RankRewards(VcData), "Rank Rewards", "Rank"),              // RR 2
@@ -524,7 +537,7 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 		return `{{Event|eventType = %d
 |start jst = %s
 |end jst = %s
-|elementHallRotate=%s
+|towerElement=%s
 |image = Banner {{PAGENAME}}.png
 }}
 
