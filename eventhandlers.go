@@ -168,14 +168,16 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		midrewards := ""
+		midRewardTime := time.Time{}
 		finalrewards := ""
 		rankReward := ""
 		rr := event.RankRewards(VcData)
 		if rr != nil {
 			mid := rr.MidRewards(VcData)
 			if mid != nil {
+				midRewardTime = rr.MidBonusDistributionDate.Time
 				midCaption := fmt.Sprintf("Mid Rankings<br /><small>Cutoff@ %s (JST)</small>",
-					rr.MidBonusDistributionDate.Format(wikiFmt),
+					midRewardTime.Format(wikiFmt),
 				)
 				midrewards = genWikiAWRewards(mid, midCaption, "Rank")
 			}
@@ -200,8 +202,8 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			faws,                                // Fantasy Archwitch
 			aws,                                 // Regular Archwitch
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
-			(midrewards + finalrewards), //rewards
-			genWikiRankTrend(event),     // Rank trend
+			(midrewards + finalrewards),                      //rewards
+			genWikiRankTrend(event, eventMap, midRewardTime), // Rank trend
 			"",            // sub event (Alliance Battle)
 			prevEventName, //Previous event name
 			nextEventName, // next event name
@@ -550,12 +552,26 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 	}
 }
 
-func genWikiRankTrend(event *vc.Event) (rtrend string) {
-	rtrend = `{| class="article-table" style="text-align:right" border="1"
+func genWikiRankTrend(event *vc.Event, eventMap *vc.Map, midRewardTime time.Time) (rtrend string) {
+	rtrend = `{| class="article-table rank-trend" border="1"
 |-
 !Date (JST) !! Rank 1 !! Rank 50 !! Rank 100 !! Rank 300 !! Rank 500 !! Rank 1000 !! Rank 2000`
 	for i := event.StartDatetime.Add(24 * time.Hour); event.EndDatetime.After(i.Add(-24 * time.Hour)); i = i.Add(24 * time.Hour) {
-		rtrend += fmt.Sprintf("\n|-\n|%s\n|\n|\n|\n|\n|\n|\n|", i.Format("January _2"))
+		ehElement := ""
+		if eventMap != nil && !eventMap.ElementalhallStart.IsZero() && !i.Before(eventMap.ElementalhallStart.Time) {
+			ehElement = fmt.Sprintf("{{ {{subst:#invoke:ElementalHall|elementForDate|%s|1 }} }}", i.Format("January _2, 2006"))
+		}
+		pre := ""
+		post := ""
+		if !midRewardTime.IsZero() {
+			midRewardDate := midRewardTime.Truncate(time.Duration(24) * time.Hour).Unix()
+			iDate := i.Truncate(time.Duration(24) * time.Hour).Unix()
+			if iDate == midRewardDate {
+				pre = "{{tooltip|"
+				post = "|Mid Ranking}}"
+			}
+		}
+		rtrend += fmt.Sprintf("\n|-\n|%s%s%s%s\n|\n|\n|\n|\n|\n|\n|", ehElement, pre, i.Format("January _2"), post)
 	}
 	rtrend += "\n|}"
 	return
