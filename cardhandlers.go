@@ -269,7 +269,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		evo := evolutions[k]
 		// check if we should force non-H status
 		r := evo.Rarity()[0]
-		if lenEvoKeys == 1 && evo.EvolutionRank == 1 && r != 'H' && r != 'G' {
+		if lenEvoKeys == 1 && (evo.EvolutionRank == 1 || evo.EvolutionRank < 0) && r != 'H' && r != 'G' {
 			k = "0"
 		}
 		fmt.Fprintf(w, "|cost %[1]s = %[2]d\n|atk %[1]s = %[3]d / %s\n|def %[1]s = %[5]d / %s\n|soldiers %[1]s = %[7]d / %s\n",
@@ -353,7 +353,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		evo := evolutions[k]
 		// check if we should force non-H status
 		r := evo.Rarity()[0]
-		if lenEvoKeys == 1 && evo.EvolutionRank == 1 && r != 'H' && r != 'G' {
+		if lenEvoKeys == 1 && (evo.EvolutionRank == 1 || evo.EvolutionRank < 0) && r != 'H' && r != 'G' {
 			k = "0"
 		}
 		fmt.Fprintf(w,
@@ -371,7 +371,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		evo := evolutions[k]
 		// check if we should force non-H status
 		r := evo.Rarity()[0]
-		if lenEvoKeys == 1 && evo.EvolutionRank == 1 && r != 'H' && r != 'G' {
+		if lenEvoKeys == 1 && (evo.EvolutionRank == 1 || evo.EvolutionRank < 0) && r != 'H' && r != 'G' {
 			k = "0"
 		}
 
