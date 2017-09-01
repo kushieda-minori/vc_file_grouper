@@ -398,10 +398,10 @@ func getWikiItem(item *vc.Item) (r string) {
 			item.GroupId <= 16) {
 		// Arcana
 		r = fmt.Sprintf("{{Arcana|%s}}", cleanArcanaName(item.NameEng))
-	} else if (item.GroupId >= 5 && item.GroupId <= 7) || item.GroupId == 31 || item.GroupId == 22 {
+	} else if (item.GroupId >= 5 && item.GroupId <= 7) || item.GroupId == 31 || item.GroupId == 22 || item.GroupId == 47 {
 		// sword, shoe, key, rod, potion
 		r = fmt.Sprintf("{{Valkyrie|%s}}", cleanItemName(item.NameEng))
-	} else if item.GroupId == 18 || item.GroupId == 19 || item.GroupId == 43 || item.GroupId == 47 {
+	} else if item.GroupId == 18 || item.GroupId == 19 || item.GroupId == 43 {
 		switch item.Id {
 		case 29:
 			r = "{{MaidenTicket}}"
