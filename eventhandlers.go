@@ -467,10 +467,10 @@ func getEventTemplate(eventType int) string {
 %s%s||Amalgamation Material
 ||Amalgamation
 ||Elemental Hall
-||Event 10/15x damage<br />60/120%% Points+
-||Event 10/15x damage<br />60/120%% Points+
-||Event 10/15x damage<br />30/50%% Points+
-||Event 10/15x damage<br />30/50%% Points+
+||Event 10/15x damage<br />100/200%% Points+
+||Event 10/15x damage<br />100/200%% Points+
+||Event 10/15x damage<br />50/100%% Points+
+||Event 10/15x damage<br />50/100%% Points+
 }}
 
 %s
@@ -562,7 +562,7 @@ func genWikiRankTrend(event *vc.Event, eventMap *vc.Map, midRewardTime time.Time
 	for i := event.StartDatetime.Add(24 * time.Hour); event.EndDatetime.After(i.Add(-24 * time.Hour)); i = i.Add(24 * time.Hour) {
 		ehElement := ""
 		if eventMap != nil && !eventMap.ElementalhallStart.IsZero() && !i.Before(eventMap.ElementalhallStart.Time) {
-			ehElement = fmt.Sprintf("{{ {{subst:#invoke:ElementalHall|elementForDate|%s|1 }} }}", i.Format("January _2, 2006"))
+			ehElement = fmt.Sprintf("{{ {{subst:#invoke:ElementalHall|elementForDate|%s|1 }} }} ", i.Format("January _2, 2006"))
 		}
 		pre := ""
 		post := ""
@@ -574,7 +574,7 @@ func genWikiRankTrend(event *vc.Event, eventMap *vc.Map, midRewardTime time.Time
 				post = "|Mid Ranking}}"
 			}
 		}
-		rtrend += fmt.Sprintf("\n|-\n|%s%s%s%s\n|\n|\n|\n|\n|\n|\n|", ehElement, pre, i.Format("January _2"), post)
+		rtrend += fmt.Sprintf("\n|-\n|%s%s%s%s\n|\n|\n|\n|\n|\n|\n|", ehElement, pre, i.Format("Jan _2"), post)
 	}
 	rtrend += "\n|}"
 	return
