@@ -368,7 +368,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 			v.Events[key].Name = filter(evntNames[evntId])
 		}
 		if evntId < len(evntDescrs) {
-			v.Events[key].Description = filter(filterColors(evntDescrs[evntId]))
+			v.Events[key].Description = filterElementImages(filter(filterColors(evntDescrs[evntId])))
 		}
 	}
 
@@ -644,7 +644,7 @@ func cleanCardName(name string, card *Card) string {
 	return ret
 }
 
-//User this to do common string replacements in the VC data files
+//Use this to do common string replacements in the VC data files
 func filter(s string) string {
 	if s == "null" {
 		return ""
@@ -681,15 +681,21 @@ func filter(s string) string {
 	return ret
 }
 
-var regexpSlash = regexp.MustCompile("\\s*[/]\\s*")
-
-func filterSkill(s string) string {
+func filterElementImages(s string) string {
 	ret := strings.TrimSpace(s)
 	//element icons
 	ret = strings.Replace(ret, "<img=24>", "{{Passion}}", -1)
 	ret = strings.Replace(ret, "<img=25>", "{{Cool}}", -1)
 	ret = strings.Replace(ret, "<img=26>", "{{Dark}}", -1)
 	ret = strings.Replace(ret, "<img=27>", "{{Light}}", -1)
+	return ret
+}
+
+var regexpSlash = regexp.MustCompile("\\s*[/]\\s*")
+
+func filterSkill(s string) string {
+	ret := filterElementImages(s)
+
 	//atk def icons
 	ret = strings.Replace(ret, "<img=48>", "{{Atk}}", -1)
 	ret = strings.Replace(ret, "<img=51>", "{{Atkdef}}", -1)
