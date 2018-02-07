@@ -37,7 +37,7 @@ func (t *Timestamp) MarshalJSON() ([]byte, error) {
 var location = time.FixedZone("JST", 32400) //time.LoadLocation("Asia/Tokyo")
 
 // old cards that are not available anymore
-var oldCards = []int{
+var retiredCards = []int{
 	61, 62, // bandit
 	55, 56, // beastmaster
 	102,      // cutthroat
@@ -82,7 +82,7 @@ var newCards = []int{
 }
 
 func init() {
-	sort.Ints(oldCards)
+	sort.Ints(retiredCards)
 	sort.Ints(newCards)
 }
 
@@ -205,7 +205,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		return nil, err
 	}
 	if len(v.Cards) > len(names) {
-		fmt.Fprintln(os.Stdout, "names: %v", names)
+		fmt.Fprintf(os.Stdout, "names: %v\n", names)
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character Names", len(v.Cards), len(names))
@@ -631,8 +631,8 @@ func cleanCardName(name string, card *Card) string {
 	ret = strings.Replace(ret, "(Ur)", "(UR)", -1)
 	ret = strings.Replace(ret, "(Lr)", "(LR)", -1)
 	// old cards
-	oldIdx := sort.SearchInts(oldCards, card.Id)
-	if oldIdx >= 0 && oldIdx < len(oldCards) && oldCards[oldIdx] == card.Id {
+	oldIdx := sort.SearchInts(retiredCards, card.Id)
+	if oldIdx >= 0 && oldIdx < len(retiredCards) && retiredCards[oldIdx] == card.Id {
 		ret += " (Old)"
 	} else {
 		// new cards that are named the same as an old card that is still active

@@ -28,11 +28,11 @@ type Item struct {
 	IsDelete          int       `json:"is_delete"`
 	DailyMaxBuyCount  int       `json:"daily_max_buy_count"`
 	ArcanaType        int       `json:"arcana_type"`
-	Description       string    `json:-` // MsgShopItemDesc_en.strb
-	DescriptionInShop string    `json:-` // MsgShopItemDescInShop_en.strb
-	DescriptionSub    string    `json:-` // MsgShopItemDescSub_en.strb
-	NameEng           string    `json:-` // MsgShopItemName_en.strb
-	MsgUse            string    `json:-` // MsgShopItemUseResult_en.strb
+	Description       string    `json:"-"` // MsgShopItemDesc_en.strb
+	DescriptionInShop string    `json:"-"` // MsgShopItemDescInShop_en.strb
+	DescriptionSub    string    `json:"-"` // MsgShopItemDescSub_en.strb
+	NameEng           string    `json:"-"` // MsgShopItemName_en.strb
+	MsgUse            string    `json:"-"` // MsgShopItemUseResult_en.strb
 }
 
 func ItemScan(id int, items []Item) *Item {

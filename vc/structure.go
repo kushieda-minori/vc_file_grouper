@@ -36,31 +36,31 @@ type GardenDebris struct { // garden_debris
 // "structures" gives information about availability of for buildinds.
 // The names of the structions in this list match those in the MsgBuildingName_en.strb file
 type Structure struct { // structures
-	Id              int              `json:"_id"`
-	StructureTypeId int              `json:"structure_type_id"`
-	MaxLv           int              `json:"max_lv"`
-	UnlockCastleId  int              `json:"unlock_castle_id"`
-	UnlockCastleLv  int              `json:"unlock_castle_lv"`
-	UnlockAreaId    int              `json:"unlock_area_id"`
-	BaseNum         int              `json:"base_num"`
-	SizeX           int              `json:"size_x"`
-	SizeY           int              `json:"size_y"`
-	Order           int              `json:"order"`
-	EventId         int              `json:"event_id"`
-	Visitable       int              `json:"visitable"`
-	Step            int              `json:"step"`
-	Passable        int              `json:"passable"`
-	Connectable     int              `json:"connectable"`
-	Enable          int              `json:"enable"`
-	Stockable       int              `json:"stockable"`
-	Flag            int              `json:"flag"`
-	GardenFlag      int              `json:"garden_flag"`
-	ShopGroupDecoId int              `json:"shop_group_deco_id"`
-	Name            string           `json:"-"` // MsgBuildingName_en.strb
-	Description     string           `json:"-"` // MsgBuildingDesc_en.strb
-	_levels         []StructureLevel `json:"-"`
-	_numCosts       []StructureCost  `json:"-"`
-	_castleBonus    []CastleLevel    `json:"-"`
+	Id              int    `json:"_id"`
+	StructureTypeId int    `json:"structure_type_id"`
+	MaxLv           int    `json:"max_lv"`
+	UnlockCastleId  int    `json:"unlock_castle_id"`
+	UnlockCastleLv  int    `json:"unlock_castle_lv"`
+	UnlockAreaId    int    `json:"unlock_area_id"`
+	BaseNum         int    `json:"base_num"`
+	SizeX           int    `json:"size_x"`
+	SizeY           int    `json:"size_y"`
+	Order           int    `json:"order"`
+	EventId         int    `json:"event_id"`
+	Visitable       int    `json:"visitable"`
+	Step            int    `json:"step"`
+	Passable        int    `json:"passable"`
+	Connectable     int    `json:"connectable"`
+	Enable          int    `json:"enable"`
+	Stockable       int    `json:"stockable"`
+	Flag            int    `json:"flag"`
+	GardenFlag      int    `json:"garden_flag"`
+	ShopGroupDecoId int    `json:"shop_group_deco_id"`
+	Name            string `json:"-"` // MsgBuildingName_en.strb
+	Description     string `json:"-"` // MsgBuildingDesc_en.strb
+	_levels         []StructureLevel
+	_numCosts       []StructureCost
+	_castleBonus    []CastleLevel
 }
 
 // "event_structures" lists any structures available in the current event

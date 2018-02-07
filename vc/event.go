@@ -51,8 +51,8 @@ type Event struct {
 	TowerEventId          int             `json:"tower_event_id"`
 	Name                  string          `json:"name"`        // MsgEventName_en.strb
 	Description           string          `json:"description"` // MsgEventDesc_en.strb
-	_map                  *Map            `json:"-"`
-	_archwitches          []Archwitch     `json:"-"`
+	_map                  *Map            
+	_archwitches          []Archwitch     
 }
 
 type EventBook struct {

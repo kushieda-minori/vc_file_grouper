@@ -42,17 +42,17 @@ type Card struct {
 	Name              string `json:"name"`                // name from the strings file
 
 	//Character Link
-	character *CardCharacter `json:"-"`
-	archwitch *Archwitch     `json:"-"`
+	character *CardCharacter 
+	archwitch *Archwitch     
 	//Skill Links
-	skill1        *Skill `json:"-"`
-	skill2        *Skill `json:"-"`
-	skill3        *Skill `json:"-"`
-	specialSkill1 *Skill `json:"-"`
-	thorSkill1    *Skill `json:"-"`
+	skill1        *Skill 
+	skill2        *Skill 
+	skill3        *Skill 
+	specialSkill1 *Skill 
+	thorSkill1    *Skill 
 	// possible card evolutions
-	prevEvo *Card `json:"-"`
-	nextEvo *Card `json:"-"`
+	prevEvo *Card 
+	nextEvo *Card 
 }
 
 // List of possible Fusions (Amalgamations) from master file field "fusion_list"
@@ -154,7 +154,7 @@ type CardCharacter struct {
 	BattleEnd       string `json:"battleEnd"`
 	FriendshipMax   string `json:"friendshipMax"`
 	FriendshipEvent string `json:"friendshipEvent"`
-	_cards          []Card `json:"-"`
+	_cards          []Card 
 }
 
 // Follower kinds for soldier replenishment on cards

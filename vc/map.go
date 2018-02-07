@@ -1,7 +1,5 @@
 package vc
 
-import ()
-
 type Map struct {
 	Id                  int       `json:"_id"`
 	NameJp              string    `json:"name"`
@@ -24,7 +22,7 @@ type Map struct {
 	ExchangeItemId      int       `json:"exchange_item_id"`
 	Name                string    `json:"name_tl"`   // MsgNPCMapName_en.strb
 	StartMsg            string    `json:"start_msg"` // MsgNPCMapStart_en.strb
-	areas               []Area    `json:"-"`
+	areas               []Area
 }
 
 func (m *Map) Areas(v *VcFile) []Area {
@@ -43,13 +41,13 @@ type Area struct {
 	Id        int    `json:"_id"`
 	MapId     int    `json:"map_id"`
 	AreaNo    int    `json:"area_no"`
-	Name      string `json:""` // MsgNPCAreaName_en.strb
-	LongName  string `json:""` // MsgNPCAreaLongName_en.strb
-	Start     string `json:""` // MsgNPCAreaStart_en.strb
-	End       string `json:""` // MsgNPCAreaEnd_en.strb
-	Story     string `json:""` // MsgNPCAreaStory_en.strb
-	BossStart string `json:""` // MsgNPCBossStart_en.strb
-	BossEnd   string `json:""` // MsgNPCBossEnd_en.strb
+	Name      string `json:"-"` // MsgNPCAreaName_en.strb
+	LongName  string `json:"-"` // MsgNPCAreaLongName_en.strb
+	Start     string `json:"-"` // MsgNPCAreaStart_en.strb
+	End       string `json:"-"` // MsgNPCAreaEnd_en.strb
+	Story     string `json:"-"` // MsgNPCAreaStory_en.strb
+	BossStart string `json:"-"` // MsgNPCBossStart_en.strb
+	BossEnd   string `json:"-"` // MsgNPCBossEnd_en.strb
 }
 
 func MapScan(mapId int, maps []Map) *Map {

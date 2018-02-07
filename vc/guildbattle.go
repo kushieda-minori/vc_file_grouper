@@ -20,8 +20,8 @@ type GuildBattle struct {
 	AreaAttribute3     int               `json:"area_attribute_3"`
 	AreaAttribute4     int               `json:"area_attribute_4"`
 	BannerId           int               `json:"banner_id"`
-	individualRewards  []RankRewardSheet `json:"-"`
-	rankRewards        []RankRewardSheet `json:"-"`
+	individualRewards  []RankRewardSheet 
+	rankRewards        []RankRewardSheet 
 }
 
 // "mst_guildbingo"
@@ -47,7 +47,7 @@ type GuildBingoBattle struct {
 	KingCellRewardGroupId         int         `json:"king_cell_reward_group_id"`
 	KingSeriesId                  int         `json:"king_series_id"`
 	CampaignId                    int         `json:"campaign_id"`
-	archwitches                   []Archwitch `json:"-"`
+	archwitches                   []Archwitch 
 }
 
 // ABB item exhange

@@ -21,7 +21,7 @@ type Archwitch struct {
 	ChainRatio2   int                   `json:"chain_ratio_2"`
 	ServantId1    int                   `json:"servant_id_1"`
 	ServantId2    int                   `json:"servant_id_2"`
-	likeability   []ArchwitchFriendship `json:-`
+	likeability   []ArchwitchFriendship 
 }
 
 //"king_series" is the list of AW events and the RR prizes
@@ -33,8 +33,8 @@ type ArchwitchSeries struct {
 	PublicEndDatetime    Timestamp   `json:"public_end_datetime"`
 	ReceiveLimitDatetime Timestamp   `json:"receive_limit_datetime"`
 	IsBeginnerKing       int         `json:"is_beginner_king"`
-	Description          string      `json:-`
-	archwitches          []Archwitch `json:-`
+	Description          string      `json:"-"`
+	archwitches          []Archwitch 
 }
 
 //"king_friendship" is the chance of friendship increasing on an AW

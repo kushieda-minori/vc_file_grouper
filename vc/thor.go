@@ -6,16 +6,16 @@ import (
 
 // mst_thorhammer
 type ThorEvent struct {
-	Id                                     int        `json:"_id"`
-	PublicStartDatetime                    Timestamp  `json:"public_start_datetime"`
-	PublicEndDatetime                      Timestamp  `json:"public_end_datetime"`
-	RankingStartDatetime                   Timestamp  `json:"ranking_start_datetime"`
-	RankingEndDatetime                     Timestamp  `json:"ranking_end_datetime"`
-	RankingRewardGroupId                   int        `json:"ranking_reward_group_id"`
-	RankingRewardDestributionStartDatetime Timestamp  `json:"ranking_reward_destribution_start_datetime"`
-	PointRewardGroupId                     int        `json:"jump_button"`
-	_archwitches                           []ThorKing `json:"-"`
-	Title                                  string     `json:""` // MsgThorhammerTitle_en.strb
+	Id                                     int       `json:"_id"`
+	PublicStartDatetime                    Timestamp `json:"public_start_datetime"`
+	PublicEndDatetime                      Timestamp `json:"public_end_datetime"`
+	RankingStartDatetime                   Timestamp `json:"ranking_start_datetime"`
+	RankingEndDatetime                     Timestamp `json:"ranking_end_datetime"`
+	RankingRewardGroupId                   int       `json:"ranking_reward_group_id"`
+	RankingRewardDestributionStartDatetime Timestamp `json:"ranking_reward_destribution_start_datetime"`
+	PointRewardGroupId                     int       `json:"jump_button"`
+	Title                                  string    `json:""` // MsgThorhammerTitle_en.strb
+	_archwitches                           []ThorKing
 }
 
 // mst_thorhammer_king

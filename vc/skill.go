@@ -45,10 +45,10 @@ type Skill struct {
 	AnimationId             int             `json:"animation_id"`
 	ThorHammerAnimationType json.RawMessage `json:"thorhammer_animation_type"`
 
-	Name         string       `json:"name"`        //skill name from strings file
-	Description  string       `json:"description"` // description from strings file
-	Fire         string       `json:"fire"`        // fire text from strings file
-	_skillLevels []SkillLevel `json:"-"`
+	Name         string `json:"name"`        //skill name from strings file
+	Description  string `json:"description"` // description from strings file
+	Fire         string `json:"fire"`        // fire text from strings file
+	_skillLevels []SkillLevel
 }
 
 type SkillLevel struct {
