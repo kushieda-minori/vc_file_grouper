@@ -279,6 +279,22 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			evo.DefaultDefense, maxStatDef(evo, len(evolutions)),
 			evo.DefaultFollower, maxStatFollower(evo, len(evolutions)))
 	}
+
+	for i, k := range evokeys {
+		if i == 0 && skipFirstEvo {
+			continue
+		}
+		evo := evolutions[k]
+
+		if evo.MedalRate > 0 {
+			fmt.Fprintf(w, "|medals %[1]s = %[2]d\n", strings.ToLower(k), evo.MedalRate)
+		}
+
+		if evo.Price > 0 {
+			fmt.Fprintf(w, "|gold %[1]s = %[2]d\n", strings.ToLower(k), evo.Price)
+		}
+	}
+
 	fmt.Fprintf(w, "|description = %s\n|friendship = %s\n",
 		html.EscapeString(card.Description(VcData)), html.EscapeString(strings.Replace(card.Friendship(VcData), "\n", "<br />", -1)))
 	login := card.Login(VcData)
