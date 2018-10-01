@@ -192,6 +192,8 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		var ranks = []int{1, 100, 200, 300, 500, 1000, 2000}
+
 		fmt.Fprintf(w, getEventTemplate(event.EventTypeId), event.EventTypeId,
 			event.StartDatetime.Format(wikiFmt), // start
 			event.EndDatetime.Format(wikiFmt),   // end
@@ -202,8 +204,8 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			faws,                                // Fantasy Archwitch
 			aws,                                 // Regular Archwitch
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
-			(midrewards + finalrewards),                      //rewards
-			genWikiRankTrend(event, eventMap, midRewardTime), // Rank trend
+			(midrewards + finalrewards),                             //rewards
+			genWikiRankTrend(event, eventMap, midRewardTime, ranks), // Rank trend
 			"",            // sub event (Alliance Battle)
 			prevEventName, //Previous event name
 			nextEventName, // next event name
@@ -255,20 +257,24 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		)
 	case 18: // Tower Event
 		tower := event.Tower(VcData)
+		if tower == nil {
+			fmt.Fprintf(w, "Unable to find tower event")
+		} else {
+			element := tower.ElementId - 1
+			towerShield := vc.Elements[element]
 
-		towerShield := vc.Elements[tower.ElementId-1]
-
-		fmt.Fprintf(w,
-			getEventTemplate(event.EventTypeId), event.EventTypeId,
-			event.StartDatetime.Format(wikiFmt),
-			event.EndDatetime.Format(wikiFmt),
-			towerShield,
-			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
-			genWikiAWRewards(tower.ArrivalRewards(VcData), "Floor Arrival Rewards", "Floor"), // RR 1
-			genWikiAWRewards(tower.RankRewards(VcData), "Rank Rewards", "Rank"),              // RR 2
-			prevEventName,
-			nextEventName,
-		)
+			fmt.Fprintf(w,
+				getEventTemplate(event.EventTypeId), event.EventTypeId,
+				event.StartDatetime.Format(wikiFmt),
+				event.EndDatetime.Format(wikiFmt),
+				towerShield,
+				html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
+				genWikiAWRewards(tower.ArrivalRewards(VcData), "Floor Arrival Rewards", "Floor"), // RR 1
+				genWikiAWRewards(tower.RankRewards(VcData), "Rank Rewards", "Rank"),              // RR 2
+				prevEventName,
+				nextEventName,
+			)
+		}
 	case 11: // special campaign (Abyssal AW and others)
 		// may just do the THOR event seprately and leave this as just news
 		fallthrough
@@ -555,10 +561,14 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 	}
 }
 
-func genWikiRankTrend(event *vc.Event, eventMap *vc.Map, midRewardTime time.Time) (rtrend string) {
+func genWikiRankTrend(event *vc.Event, eventMap *vc.Map, midRewardTime time.Time, ranks []int) (rtrend string) {
 	rtrend = `{| class="article-table rank-trend" border="1"
 |-
-!Date (JST) !! Rank 1 !! Rank 50 !! Rank 100 !! Rank 300 !! Rank 500 !! Rank 1000 !! Rank 2000`
+!Date (JST)`
+	for _, rank := range ranks {
+		// headers
+		rtrend += fmt.Sprintf(" !! Rank %d", rank)
+	}
 	for i := event.StartDatetime.Add(24 * time.Hour); event.EndDatetime.After(i.Add(-24 * time.Hour)); i = i.Add(24 * time.Hour) {
 		ehElement := ""
 		if eventMap != nil && !eventMap.ElementalhallStart.IsZero() && !i.Before(eventMap.ElementalhallStart.Time) {
@@ -574,7 +584,10 @@ func genWikiRankTrend(event *vc.Event, eventMap *vc.Map, midRewardTime time.Time
 				post = "|Mid Ranking}}"
 			}
 		}
-		rtrend += fmt.Sprintf("\n|-\n|%s%s%s%s\n|\n|\n|\n|\n|\n|\n|", ehElement, pre, i.Format("Jan _2"), post)
+		rtrend += fmt.Sprintf("\n|-\n|%s%s%s%s", ehElement, pre, i.Format("Jan _2"), post)
+		for r := 0; r < len(ranks); r++ {
+			rtrend += "\n|"
+		}
 	}
 	rtrend += "\n|}"
 	return
