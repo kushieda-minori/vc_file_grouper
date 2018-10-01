@@ -97,7 +97,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	for i := event.Id - 1; i > 0; i-- {
 		tmp := vc.EventScan(i, VcData.Events)
-		if tmp != nil && tmp.EventTypeId == event.EventTypeId {
+		if tmp != nil && tmp.EventTypeId == event.EventTypeId && !strings.Contains(tmp.Name, "Rune Boss") && !strings.Contains(tmp.Name, " 2x ") {
 			prevEvent = tmp
 			break
 		}
@@ -110,7 +110,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	for i := event.Id + 1; i <= vc.MaxEventId(VcData.Events); i++ {
 		tmp := vc.EventScan(i, VcData.Events)
-		if tmp != nil && tmp.EventTypeId == event.EventTypeId {
+		if tmp != nil && tmp.EventTypeId == event.EventTypeId && !strings.Contains(tmp.Name, "Rune Boss") && !strings.Contains(tmp.Name, " 2x ") {
 			nextEvent = tmp
 			break
 		}
