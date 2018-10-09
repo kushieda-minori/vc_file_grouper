@@ -72,7 +72,8 @@ func main() {
 	http.HandleFunc("/cards/detail/", cardDetailHandler)
 	http.HandleFunc("/cards/levels/", cardLevelHandler)
 	http.HandleFunc("/archwitches/", archwitchHandler)
-	// http.HandleFunc("/character/", characterTableHandler)
+	http.HandleFunc("/characters/", characterTableHandler)
+	http.HandleFunc("/characters/detail/", characterDetailHandler)
 	// http.HandleFunc("/character/csv/", characterCsvHandler)
 
 	http.HandleFunc("/items/", itemHandler)
@@ -139,6 +140,7 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 <p>Version: %d,&nbsp;&nbsp;&nbsp;&nbsp;Timestamp: %d,&nbsp;&nbsp;&nbsp;&nbsp;JST: %s</p>
 <a href="/data">Set Data Location</a><br />
 <br />
+<a href="/characters">Character List as a Table</a><br />
 <a href="/cards/table">Card List as a Table</a><br />
 <a href="/events">Event List</a><br />
 <a href="/thor">Thor Event List</a><br />

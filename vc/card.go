@@ -42,17 +42,17 @@ type Card struct {
 	Name              string `json:"name"`                // name from the strings file
 
 	//Character Link
-	character *CardCharacter 
-	archwitch *Archwitch     
+	character *CardCharacter
+	archwitch *Archwitch
 	//Skill Links
-	skill1        *Skill 
-	skill2        *Skill 
-	skill3        *Skill 
-	specialSkill1 *Skill 
-	thorSkill1    *Skill 
+	skill1        *Skill
+	skill2        *Skill
+	skill3        *Skill
+	specialSkill1 *Skill
+	thorSkill1    *Skill
 	// possible card evolutions
-	prevEvo *Card 
-	nextEvo *Card 
+	prevEvo *Card
+	nextEvo *Card
 }
 
 // List of possible Fusions (Amalgamations) from master file field "fusion_list"
@@ -154,7 +154,7 @@ type CardCharacter struct {
 	BattleEnd       string `json:"battleEnd"`
 	FriendshipMax   string `json:"friendshipMax"`
 	FriendshipEvent string `json:"friendshipEvent"`
-	_cards          []Card 
+	_cards          []Card
 }
 
 // Follower kinds for soldier replenishment on cards
@@ -190,9 +190,9 @@ func (c *Card) Element() string {
 
 func (c *Card) Character(v *VcFile) *CardCharacter {
 	if c.character == nil && c.CardCharaId > 0 {
-		for k, val := range v.CardCharacter {
+		for k, val := range v.CardCharacters {
 			if val.Id == c.CardCharaId {
-				c.character = &v.CardCharacter[k]
+				c.character = &v.CardCharacters[k]
 				break
 			}
 		}
@@ -433,6 +433,18 @@ func CardScanCharacter(charId int, cards []Card) *Card {
 			//return the first one we find.
 			if val.CardCharaId == charId {
 				return &cards[k]
+			}
+		}
+	}
+	return nil
+}
+
+func CardCharacterScan(charId int, chars []CardCharacter) *CardCharacter {
+	if charId > 0 {
+		for k, val := range chars {
+			//return the first one we find.
+			if val.Id == charId {
+				return &chars[k]
 			}
 		}
 	}

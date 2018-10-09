@@ -842,7 +842,7 @@ func getEvolutions(card *vc.Card) map[string]vc.Card {
 	for nextId > 1 {
 		nextCard := lastEvo.NextEvo(VcData)
 		// verify that we haven't switched characters like Terra -> Rhea
-		if card.CardCharaId == nextCard.CardCharaId {
+		if nextCard != nil && card.CardCharaId == nextCard.CardCharaId {
 			nextEvo := strconv.Itoa(nextCard.EvolutionRank)
 			ret[nextEvo] = *nextCard
 			lastEvo = nextCard
