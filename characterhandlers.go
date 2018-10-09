@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"zetsuboushita.net/vc_file_grouper/vc"
@@ -85,8 +86,36 @@ func characterTableHandler(w http.ResponseWriter, r *http.Request) {
 		qs.Get("skilldesc"),
 		qs.Get("isThor"),
 	)
-	for i := len(VcData.CardCharacters) - 1; i >= 0; i-- {
-		character := VcData.CardCharacters[i]
+
+	// sort the characters by most recent card
+	// copy the character data so we don't modify the inline global
+	chars := make([]vc.CardCharacter, len(VcData.CardCharacters))
+	copy(chars, VcData.CardCharacters)
+
+	sort.Slice(chars, func(i, j int) bool {
+		first := chars[i]
+		second := chars[j]
+
+		firstCards := vc.CardList(first.Cards(VcData))
+		secondCards := vc.CardList(second.Cards(VcData))
+
+		maxFirst := firstCards.Latest()
+		maxSecond := secondCards.Latest()
+
+		if maxFirst == nil && maxSecond == nil {
+			return first.Id > second.Id
+		}
+		if maxFirst == nil {
+			return false
+		}
+		if maxSecond == nil {
+			return true
+		}
+
+		return maxFirst.Id > maxSecond.Id
+	})
+
+	for _, character := range chars {
 		if !filter(&character) {
 			continue
 		}

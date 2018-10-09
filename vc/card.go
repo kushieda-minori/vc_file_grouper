@@ -654,5 +654,27 @@ func (s ByMaterialCount) Less(i, j int) bool {
 	return s[i].MaterialCount() < s[j].MaterialCount()
 }
 
+type CardList []Card
+
+func (d CardList) Earliest() *Card {
+	var min *Card = nil
+	for _, card := range d {
+		if min == nil || min.Id > card.Id {
+			min = &card
+		}
+	}
+	return min
+}
+
+func (d CardList) Latest() *Card {
+	var max *Card = nil
+	for _, card := range d {
+		if max == nil || max.Id < card.Id {
+			max = &card
+		}
+	}
+	return max
+}
+
 var Elements = [5]string{"Light", "Passion", "Cool", "Dark", "Special"}
 var Rarity = [14]string{"N", "R", "SR", "HN", "HR", "HSR", "X", "UR", "HUR", "GSR", "GUR", "LR", "HLR", "GLR"}
