@@ -125,7 +125,11 @@ func characterTableHandler(w http.ResponseWriter, r *http.Request) {
 		cardName := "N/A"
 
 		if card != nil {
-			cardName = card.Name
+			if card.Name == nil || card.Name == "" {
+				cardName = card.Image()
+			} else {
+				cardName = card.Name
+			}
 		}
 
 		cardNos := ""
@@ -194,6 +198,19 @@ func characterDetailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// sort by Evolution Rank
+	sort.Slice(cards, func(i, j) bool {
+		c1 := cards[i]
+		c2 := cards[j]
+		if c1.EvolutionRank == c2.EvolutionRank {
+			return c1.CardNo < c2.CardNo
+		}
+		if c1.EvolutionRank < c2.EvolutionRank {
+			return true
+		}
+		return false
+	})
+
 	fmt.Fprintf(w, `<html><head><title>All Cards</title>
 <style>table, th, td {border: 1px solid black;};</style>
 </head>
@@ -204,6 +221,7 @@ func characterDetailHandler(w http.ResponseWriter, r *http.Request) {
 <th>card_no</th>
 <th>name</th>
 <th>evolution_rank</th>
+<th>max_evolution_rank</th>
 <th>Next Evo</th>
 <th>Rarity</th>
 <th>Element</th>
@@ -253,6 +271,7 @@ func characterDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"<td><a href=\"/cards/detail/%[1]d\">%[3]s</a></td>"+
 			"<td>%d</td>"+
 			"<td>%d</td>"+
+			"<td>%d</td>"+
 			"<td>%s</td>"+
 			"<td>%s</td>"+
 			"<td>%d</td>"+
@@ -289,6 +308,7 @@ func characterDetailHandler(w http.ResponseWriter, r *http.Request) {
 			card.CardNo,
 			card.Name,
 			card.EvolutionRank,
+			card.LastEvolutionRank,
 			card.EvolutionCardId,
 			card.Rarity(),
 			card.Element(),
