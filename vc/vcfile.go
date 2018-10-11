@@ -130,7 +130,7 @@ type VcFile struct {
 	SkillLevels                 []SkillLevel               `json:"skill_level"`
 	Amalgamations               []Amalgamation             `json:"fusion_list"`
 	Awakenings                  []CardAwaken               `json:"card_awaken"`
-	CardCharacter               []CardCharacter            `json:"card_character"`
+	CardCharacters              []CardCharacter            `json:"card_character"`
 	FollowerKinds               []FollowerKind             `json:"follower_kinds"`
 	Levels                      []Level                    `json:"levels"`
 	CardLevels                  []CardLevel                `json:"cardlevel"`
@@ -220,10 +220,10 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) > len(description) {
+	if len(v.CardCharacters) > len(description) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character descriptions", len(v.CardCharacter), len(description))
+			"Character descriptions", len(v.CardCharacters), len(description))
 	}
 
 	friendship, err := readStringFile(root + "/string/MsgCharaFriendship_en.strb")
@@ -231,10 +231,10 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) > len(friendship) {
+	if len(v.CardCharacters) > len(friendship) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character friendship", len(v.CardCharacter), len(friendship))
+			"Character friendship", len(v.CardCharacters), len(friendship))
 	}
 
 	login, err := readStringFile(root + "/string/MsgCharaWelcome_en.strb")
@@ -248,10 +248,10 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) > len(meet) {
+	if len(v.CardCharacters) > len(meet) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character meet", len(v.CardCharacter), len(meet))
+			"Character meet", len(v.CardCharacters), len(meet))
 	}
 
 	battle_start, err := readStringFile(root + "/string/MsgCharaBtlStart_en.strb")
@@ -259,10 +259,10 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) > len(battle_start) {
+	if len(v.CardCharacters) > len(battle_start) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character battle_start", len(v.CardCharacter), len(battle_start))
+			"Character battle_start", len(v.CardCharacters), len(battle_start))
 	}
 
 	battle_end, err := readStringFile(root + "/string/MsgCharaBtlEnd_en.strb")
@@ -270,10 +270,10 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) > len(battle_end) {
+	if len(v.CardCharacters) > len(battle_end) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character battle_end", len(v.CardCharacter), len(battle_end))
+			"Character battle_end", len(v.CardCharacters), len(battle_end))
 	}
 
 	friendship_max, err := readStringFile(root + "/string/MsgCharaFriendshipMax_en.strb")
@@ -281,10 +281,10 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) > len(friendship_max) {
+	if len(v.CardCharacters) > len(friendship_max) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character friendship_max", len(v.CardCharacter), len(friendship_max))
+			"Character friendship_max", len(v.CardCharacters), len(friendship_max))
 	}
 
 	friendship_event, err := readStringFile(root + "/string/MsgCharaBonds_en.strb")
@@ -292,23 +292,23 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacter) > len(friendship_event) {
+	if len(v.CardCharacters) > len(friendship_event) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character friendship_event", len(v.CardCharacter), len(friendship_event))
+			"Character friendship_event", len(v.CardCharacters), len(friendship_event))
 	}
 
-	for key, _ := range v.CardCharacter {
-		v.CardCharacter[key].Description = strings.Replace(description[key], "\n", " ", -1)
-		v.CardCharacter[key].Friendship = friendship[key]
+	for key, _ := range v.CardCharacters {
+		v.CardCharacters[key].Description = strings.Replace(description[key], "\n", " ", -1)
+		v.CardCharacters[key].Friendship = friendship[key]
 		if key < len(login) {
-			v.CardCharacter[key].Login = login[key]
+			v.CardCharacters[key].Login = login[key]
 		}
-		v.CardCharacter[key].Meet = meet[key]
-		v.CardCharacter[key].BattleStart = battle_start[key]
-		v.CardCharacter[key].BattleEnd = battle_end[key]
-		v.CardCharacter[key].FriendshipMax = friendship_max[key]
-		v.CardCharacter[key].FriendshipEvent = friendship_event[key]
+		v.CardCharacters[key].Meet = meet[key]
+		v.CardCharacters[key].BattleStart = battle_start[key]
+		v.CardCharacters[key].BattleEnd = battle_end[key]
+		v.CardCharacters[key].FriendshipMax = friendship_max[key]
+		v.CardCharacters[key].FriendshipEvent = friendship_event[key]
 	}
 	description = nil
 	friendship = nil

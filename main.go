@@ -72,7 +72,8 @@ func main() {
 	http.HandleFunc("/cards/detail/", cardDetailHandler)
 	http.HandleFunc("/cards/levels/", cardLevelHandler)
 	http.HandleFunc("/archwitches/", archwitchHandler)
-	// http.HandleFunc("/character/", characterTableHandler)
+	http.HandleFunc("/characters/", characterTableHandler)
+	http.HandleFunc("/characters/detail/", characterDetailHandler)
 	// http.HandleFunc("/character/csv/", characterCsvHandler)
 
 	http.HandleFunc("/items/", itemHandler)
@@ -148,6 +149,7 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 <a href="/archwitches">Archwitch List</a><br />
 <a href="/cards/levels">Card Levels</a><br />
 <a href="/garden/structures">Garden Structures</a><br />
+<a href="/characters">Character List as a Table</a><br />
 <br />
 Images:<br />
 <a href="/images/card/?unused=1">Unused Card Images</a><br />

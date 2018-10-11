@@ -42,17 +42,17 @@ type Card struct {
 	Name              string `json:"name"`                // name from the strings file
 
 	//Character Link
-	character *CardCharacter 
-	archwitch *Archwitch     
+	character *CardCharacter
+	archwitch *Archwitch
 	//Skill Links
-	skill1        *Skill 
-	skill2        *Skill 
-	skill3        *Skill 
-	specialSkill1 *Skill 
-	thorSkill1    *Skill 
+	skill1        *Skill
+	skill2        *Skill
+	skill3        *Skill
+	specialSkill1 *Skill
+	thorSkill1    *Skill
 	// possible card evolutions
-	prevEvo *Card 
-	nextEvo *Card 
+	prevEvo *Card
+	nextEvo *Card
 }
 
 // List of possible Fusions (Amalgamations) from master file field "fusion_list"
@@ -154,7 +154,7 @@ type CardCharacter struct {
 	BattleEnd       string `json:"battleEnd"`
 	FriendshipMax   string `json:"friendshipMax"`
 	FriendshipEvent string `json:"friendshipEvent"`
-	_cards          []Card 
+	_cards          []Card
 }
 
 // Follower kinds for soldier replenishment on cards
@@ -190,9 +190,9 @@ func (c *Card) Element() string {
 
 func (c *Card) Character(v *VcFile) *CardCharacter {
 	if c.character == nil && c.CardCharaId > 0 {
-		for k, val := range v.CardCharacter {
+		for k, val := range v.CardCharacters {
 			if val.Id == c.CardCharaId {
-				c.character = &v.CardCharacter[k]
+				c.character = &v.CardCharacters[k]
 				break
 			}
 		}
@@ -439,6 +439,18 @@ func CardScanCharacter(charId int, cards []Card) *Card {
 	return nil
 }
 
+func CardCharacterScan(charId int, chars []CardCharacter) *CardCharacter {
+	if charId > 0 {
+		for k, val := range chars {
+			//return the first one we find.
+			if val.Id == charId {
+				return &chars[k]
+			}
+		}
+	}
+	return nil
+}
+
 func CardScanImage(cardId string, cards []Card) *Card {
 	if cardId != "" {
 		i, err := strconv.Atoi(cardId)
@@ -640,6 +652,28 @@ func (s ByMaterialCount) Swap(i, j int) {
 }
 func (s ByMaterialCount) Less(i, j int) bool {
 	return s[i].MaterialCount() < s[j].MaterialCount()
+}
+
+type CardList []Card
+
+func (d CardList) Earliest() *Card {
+	var min *Card = nil
+	for _, card := range d {
+		if min == nil || min.Id > card.Id {
+			min = &card
+		}
+	}
+	return min
+}
+
+func (d CardList) Latest() *Card {
+	var max *Card = nil
+	for _, card := range d {
+		if max == nil || max.Id < card.Id {
+			max = &card
+		}
+	}
+	return max
 }
 
 var Elements = [5]string{"Light", "Passion", "Cool", "Dark", "Special"}
