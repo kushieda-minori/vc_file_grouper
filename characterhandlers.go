@@ -125,7 +125,7 @@ func characterTableHandler(w http.ResponseWriter, r *http.Request) {
 		cardName := "N/A"
 
 		if card != nil {
-			if card.Name == nil || card.Name == "" {
+			if card.Name == "" {
 				cardName = card.Image()
 			} else {
 				cardName = card.Name
@@ -199,7 +199,7 @@ func characterDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// sort by Evolution Rank
-	sort.Slice(cards, func(i, j) bool {
+	sort.Slice(cards, func(i, j int) bool {
 		c1 := cards[i]
 		c2 := cards[j]
 		if c1.EvolutionRank == c2.EvolutionRank {

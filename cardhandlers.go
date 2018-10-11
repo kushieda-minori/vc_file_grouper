@@ -159,7 +159,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			if materialFuseId > 0 {
 				fuseCard := vc.CardScan(materialFuseId, VcData.Cards)
 				if fuseCard.Name == card.Name {
-					evolutions["A"] = *fuseCard
+					evolutions["A"] = fuseCard
 					if !strings.Contains(avail, "[[Amalgamation]]") {
 						avail += " [[Amalgamation]]"
 					}
@@ -632,7 +632,7 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</tbody></table></div></body></html>")
 }
 
-func maxStatAtk(evo vc.Card, numOfEvos int) string {
+func maxStatAtk(evo *vc.Card, numOfEvos int) string {
 	if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
 		return strconv.Itoa(evo.MaxOffense)
 	}
@@ -646,13 +646,13 @@ func maxStatAtk(evo vc.Card, numOfEvos int) string {
 	// }
 	// return
 }
-func maxStatDef(evo vc.Card, numOfEvos int) string {
+func maxStatDef(evo *vc.Card, numOfEvos int) string {
 	if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
 		return strconv.Itoa(evo.MaxDefense)
 	}
 	return "?"
 }
-func maxStatFollower(evo vc.Card, numOfEvos int) string {
+func maxStatFollower(evo *vc.Card, numOfEvos int) string {
 	if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
 		return strconv.Itoa(evo.MaxFollower)
 	}
@@ -764,126 +764,168 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 	return
 }
 
-func getEvolutions(card *vc.Card) map[string]vc.Card {
-	ret := make(map[string]vc.Card)
+func getEvolutions(card *vc.Card) map[string]*vc.Card {
+	ret := make(map[string]*vc.Card)
 
 	// handle cards like Chimrey and Time Traveler (enemy)
 	if card.CardCharaId < 1 {
-		ret["0"] = *card
-		ret["F"] = *card
-		ret["H"] = *card
+		os.Stdout.WriteString(fmt.Sprintf("No character info Card: %d, Name: %s, Evo: %d\n", card.Id, card.Name, card.EvolutionRank))
+		ret["0"] = card
 		return ret
 	}
 
-	getAmalBaseCard := func(card *vc.Card) map[string]vc.Card {
+	c := card
+	// check if this is an awoken card
+	if c.Rarity()[0] == 'G' {
+		tmp := c.AwakensFrom(VcData)
+		if tmp == nil {
+			ch := c.Character(VcData)
+			if ch != nil && ch.Cards(VcData)[0].Name == c.Name {
+				c = &(ch.Cards(VcData)[0])
+			}
+			// the name changed, so we'll keep this card
+		} else {
+			c = tmp
+		}
+	}
+
+	// get earliest evo
+	for tmp := c.PrevEvo(VcData); tmp != nil; tmp = tmp.PrevEvo(VcData) {
+		c = tmp
+		os.Stdout.WriteString(fmt.Sprintf("Looking for earliest Evo for Card: %d, Name: %s, Evo: %d\n", c.Id, c.Name, c.EvolutionRank))
+	}
+
+	// check for a base amalgamation with the same name
+	// if there is one, use that for the base card
+	var getAmalBaseCard func(card *vc.Card) *vc.Card
+	getAmalBaseCard = func(card *vc.Card) *vc.Card {
 		if card.IsAmalgamation(VcData.Amalgamations) {
-			// check for a base amalgamation with the same name
-			// if there is one, use that for the base card
+			os.Stdout.WriteString(fmt.Sprintf("Checking Amalgamation for Card: %d, Name: %s, Evo: %d\n", card.Id, card.Name, card.EvolutionRank))
 			for _, amal := range card.Amalgamations(VcData) {
 				if card.Id == amal.FusionCardId {
 					// material 1
 					ac := vc.CardScan(amal.Material1, VcData.Cards)
 					if ac.Id != card.Id && ac.Name == card.Name {
-						return getEvolutions(ac)
+						if ac.IsAmalgamation(VcData.Amalgamations) {
+							return getAmalBaseCard(ac)
+						} else {
+							return ac
+						}
 					}
 					// material 2
 					ac = vc.CardScan(amal.Material2, VcData.Cards)
 					if ac.Id != card.Id && ac.Name == card.Name {
-						return getEvolutions(ac)
+						if ac.IsAmalgamation(VcData.Amalgamations) {
+							return getAmalBaseCard(ac)
+						} else {
+							return ac
+						}
 					}
 					// material 3
 					ac = vc.CardScan(amal.Material3, VcData.Cards)
 					if ac != nil && ac.Id != card.Id && ac.Name == card.Name {
-						return getEvolutions(ac)
+						if ac.IsAmalgamation(VcData.Amalgamations) {
+							return getAmalBaseCard(ac)
+						} else {
+							return ac
+						}
 					}
 					// material 4
 					ac = vc.CardScan(amal.Material4, VcData.Cards)
 					if ac != nil && ac.Id != card.Id && ac.Name == card.Name {
-						return getEvolutions(ac)
+						if ac.IsAmalgamation(VcData.Amalgamations) {
+							return getAmalBaseCard(ac)
+						} else {
+							return ac
+						}
 					}
 				}
 			}
 		}
-		return nil
+		return card
 	}
 
-	// find the lowest evolution and work from there.
-	if card.Rarity()[0] == 'G' {
-		bc := card.AwakensFrom(VcData)
-		if bc != nil {
-			// look for self amalgamation (like sulis)
-			amalBaseCard := getAmalBaseCard(bc)
-			if amalBaseCard != nil {
-				return amalBaseCard
-			}
-			return getEvolutions(bc)
-		}
-	} else if card.EvolutionRank != 0 {
-		// check for a previous evolution
-		for _, c := range VcData.Cards {
-			if c.EvolutionCardId == card.Id {
-				return getEvolutions(&c)
-			}
-		}
-	} else {
-		// check for self amalgamation (like sulis)
-		amalBaseCard := getAmalBaseCard(card)
-		if amalBaseCard != nil {
-			return amalBaseCard
-		}
-	}
+	// at this point we should have the first card in the evolution path
+	c = getAmalBaseCard(c)
+	os.Stdout.WriteString(fmt.Sprintf("Base Card: %d, Name: %s, Evo: %d\n", c.Id, c.Name, c.EvolutionRank))
 
-	// get the actual evolution list
+	// populate the actual evos.
 
-	ret[strconv.Itoa(card.EvolutionRank)] = *card
-	ret["F"] = *card
-	nextId := card.EvolutionCardId
-	lastEvo := card
-	for nextId > 1 {
-		nextCard := lastEvo.NextEvo(VcData)
-		// verify that we haven't switched characters like Terra -> Rhea
-		if nextCard != nil && card.CardCharaId == nextCard.CardCharaId {
-			nextEvo := strconv.Itoa(nextCard.EvolutionRank)
-			ret[nextEvo] = *nextCard
-			lastEvo = nextCard
-		} else {
-			break
-		}
-		nextId = nextCard.EvolutionCardId
-	}
-	ret["H"] = *lastEvo
-
-	// check if the card has a known awakening:
-	cardg := lastEvo.AwakensTo(VcData)
-	// this doesn't mean that the card has an awakening, it just makes it easier to find
-	if cardg != nil {
-		ret["G"] = *cardg
-	} else {
-		// look for the awakening the hard way now, based on the character id
-		gs := 0
-		for _, val := range VcData.Cards {
-			if card.CardCharaId == val.CardCharaId && val.Rarity()[0] == 'G' {
-				if gs == 0 {
-					ret["G"] = val
-				} else {
-					ret["G"+strconv.Itoa(gs)] = val
+	checkEndCards := func(c *vc.Card) (awakening, amalCard, amalAwakening *vc.Card) {
+		awakening = c.AwakensTo(VcData)
+		// check for Amalgamation
+		if c.HasAmalgamation(VcData.Amalgamations) {
+			amals := c.Amalgamations(VcData)
+			for _, amal := range amals {
+				amalCard = vc.CardScan(amal.FusionCardId, VcData.Cards)
+				if amalCard != nil {
+					if amalCard.Name == c.Name {
+						// check for amal awakening
+						amalAwakening = amalCard.AwakensTo(VcData)
+					}
+					return // awakening, amalCard, amalAwakening
 				}
-				gs++
 			}
+		}
+		return // awakening, amalCard, amalAwakening
+	}
+
+	for nextEvo := c; nextEvo != nil; nextEvo = nextEvo.NextEvo(VcData) {
+		os.Stdout.WriteString(fmt.Sprintf("Next Evo is Card: %d, Name: %s, Evo: %d\n", nextEvo.Id, nextEvo.Name, nextEvo.EvolutionRank))
+		if nextEvo.EvolutionRank <= 0 {
+			ret["0"] = nextEvo
+			if nextEvo.LastEvolutionRank < 0 {
+				// check for awakening
+				awakening, amalCard, amalAwakening := checkEndCards(nextEvo)
+				if awakening != nil {
+					ret["G"] = awakening
+				}
+				if amalCard != nil {
+					ret["A"] = amalCard
+				}
+				if amalAwakening != nil {
+					ret["GA"] = amalAwakening
+				}
+			}
+		} else if nextEvo.Rarity()[0] == 'G' {
+			// for some reason we hit a G during Evo traversal. Probably a G originating
+			// from amalgamation
+			ret["G"] = nextEvo
+		} else if nextEvo.EvolutionRank == c.LastEvolutionRank || nextEvo.Rarity()[0] == 'H' || nextEvo.LastEvolutionRank < 0 {
+			ret["H"] = nextEvo
+			// check for awakening
+			awakening, amalCard, amalAwakening := checkEndCards(nextEvo)
+			if awakening != nil {
+				ret["G"] = awakening
+			}
+			if amalCard != nil {
+				ret["A"] = amalCard
+			}
+			if amalAwakening != nil {
+				ret["GA"] = amalAwakening
+			}
+		} else {
+			// not the last evo. These never awaken or have amalgamations
+			ret[strconv.Itoa(nextEvo.EvolutionRank)] = nextEvo
 		}
 	}
 
+	os.Stdout.WriteString("Found Evos: ")
+	for key, card := range ret {
+		os.Stdout.WriteString(fmt.Sprintf("(%s: %d) ", key, card.Id))
+	}
+	os.Stdout.WriteString("\n")
 	return ret
 }
 
-func getAmalgamations(evolutions map[string]vc.Card) []vc.Amalgamation {
+func getAmalgamations(evolutions map[string]*vc.Card) []vc.Amalgamation {
 	amalgamations := make([]vc.Amalgamation, 0)
 	seen := map[vc.Amalgamation]bool{}
 	for idx, evo := range evolutions {
 		if idx == "H" || idx == "F" {
 			continue
 		}
-		//os.Stdout.WriteString(fmt.Sprintf("Card: %d, Name: %s, Evo: %s", evo.Id, evo.Name, idx))
+		os.Stdout.WriteString(fmt.Sprintf("Card: %d, Name: %s, Evo: %s\n", evo.Id, evo.Name, idx))
 		as := evo.Amalgamations(VcData)
 		if len(as) > 0 {
 			for _, a := range as {
