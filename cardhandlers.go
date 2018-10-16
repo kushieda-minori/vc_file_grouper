@@ -596,30 +596,51 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func maxStatAtk(evo *vc.Card, numOfEvos int) string {
-	if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
-		return strconv.Itoa(evo.MaxOffense)
+	maxStat := evo.EvoStandardMaxAttack(VcData)
+	if maxStat <= 0 {
+		if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
+			return strconv.Itoa(evo.MaxOffense)
+		}
+		return "?"
 	}
-	return "?"
-	// ret = strconv.Itoa(evo.BestEvoMaxAttack(VcData))
-	// if evo.EvolutionRank > 2 {
-	// 	ret = "{{ToolTip|" + ret + "|Perfect Evolution}}"
-	// }
-	// if evo.IsAmalgamation(evo.Amalgamations(VcData)) {
-	// 	ret += " / {{ToolTip|?|Perfect Amalgamation}}"
-	// }
-	// return
+	ret := strconv.Itoa(maxStat)
+	if evo.EvolutionRank > 2 && !strings.HasSuffix(evo.Rarity(), "LR") {
+		//TODO : If 4* card, calculate 16 card evo stats
+		ret += " / {{ToolTip|?|Perfect Evolution}}"
+	}
+	return ret
 }
+
 func maxStatDef(evo *vc.Card, numOfEvos int) string {
-	if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
-		return strconv.Itoa(evo.MaxDefense)
+	maxStat := evo.EvoStandardMaxDefense(VcData)
+	if maxStat <= 0 {
+		if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
+			return strconv.Itoa(evo.MaxDefense)
+		}
+		return "?"
 	}
-	return "?"
+	ret := strconv.Itoa(maxStat)
+	if evo.EvolutionRank > 2 && !strings.HasSuffix(evo.Rarity(), "LR") {
+		//TODO : If 4* card, calculate 16 card evo stats
+		ret += " / {{ToolTip|?|Perfect Evolution}}"
+	}
+	return ret
 }
+
 func maxStatFollower(evo *vc.Card, numOfEvos int) string {
-	if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
-		return strconv.Itoa(evo.MaxFollower)
+	maxStat := evo.EvoStandardMaxSoldier(VcData)
+	if maxStat <= 0 {
+		if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
+			return strconv.Itoa(evo.MaxFollower)
+		}
+		return "?"
 	}
-	return "?"
+	ret := strconv.Itoa(maxStat)
+	if evo.EvolutionRank > 2 && !strings.HasSuffix(evo.Rarity(), "LR") {
+		//TODO : If 4* card, calculate 16 card evo stats
+		ret += " / {{ToolTip|?|Perfect Evolution}}"
+	}
+	return ret
 }
 
 func printAwakenMaterials(w http.ResponseWriter, awakenInfo *vc.CardAwaken) {

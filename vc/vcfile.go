@@ -132,6 +132,8 @@ type VcFile struct {
 	Awakenings                  []CardAwaken               `json:"card_awaken"`
 	CardCharacters              []CardCharacter            `json:"card_character"`
 	FollowerKinds               []FollowerKind             `json:"follower_kinds"`
+	CardRarities                []CardRarity               `json:"card_rares"`
+	CardSpecialComposes         []CardSpecialCompose       `json:"card_special_compose"`
 	Levels                      []Level                    `json:"levels"`
 	CardLevels                  []CardLevel                `json:"cardlevel"`
 	CardLevelsLR                []CardLevel                `json:"cardlevel_lr"`
