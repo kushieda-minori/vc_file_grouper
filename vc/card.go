@@ -257,34 +257,30 @@ func (c *Card) PrevEvo(v *VcFile) *Card {
 	return c.prevEvo
 }
 
-func (c *Card) calculateEvoStat(material1Stat, material2Stat, resultDefault, resultMax int) (ret int) {
-	var evoRate float64
+func (c *Card) calculateEvoStat(material1Stat, material2Stat, resultMax int) (ret int) {
 	if strings.HasSuffix(c.Rarity(), "UR") || strings.HasSuffix(c.Rarity(), "LR") {
 		// LR and UR evo rate. basically no evo bonus applied to the result card.
-		evoRate = 1.0
+		ret = resultMax
+		// N - HSR get a bonus applied to the result. figure that out below
 	} else if c.EvolutionRank == c.LastEvolutionRank {
 		// 4* evo
 		if c.CardCharaId == 250 || c.CardCharaId == 315 {
 			// queen of ice, strategist
-			evoRate = 1.209
+			ret = (int(1.209 * float64(resultMax)))
 		} else {
 			// all other N-SR
-			evoRate = 1.1
+			ret = (int(1.1 * float64(resultMax)))
 		}
+	} else if c.CardCharaId == 250 || c.CardCharaId == 315 { //1*-3* evos
+		// queen of ice, strategist
+		ret = (int(1.155 * float64(resultMax)))
 	} else {
-		//1*-3* evos
-		if c.CardCharaId == 250 || c.CardCharaId == 315 {
-			// queen of ice, strategist
-			evoRate = 1.155
-		} else {
-			// all other N-SR
-			evoRate = 1.05
-		}
+		// all other N-SR
+		ret = (int(1.05 * float64(resultMax)))
 	}
 
-	ret = (int(0.15 * float64(material1Stat))) +
-		(int(0.15 * float64(material2Stat))) +
-		(int(evoRate * float64(resultMax)))
+	ret += (int(0.15 * float64(material1Stat))) +
+		(int(0.15 * float64(material2Stat)))
 
 	return
 }
@@ -351,7 +347,7 @@ func (c *Card) EvoStandardMaxAttack(v *VcFile) (ret int) {
 		firstEvo := c.GetEvolutions(v)["0"]
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-		ret = c.calculateEvoStat(materialStat, firstEvo.MaxOffense, c.DefaultOffense, c.MaxOffense)
+		ret = c.calculateEvoStat(materialStat, firstEvo.MaxOffense, c.MaxOffense)
 	}
 	if ret > rarity.LimtOffense {
 		return rarity.LimtOffense
@@ -409,7 +405,7 @@ func (c *Card) EvoStandardMaxDefense(v *VcFile) (ret int) {
 		firstEvo := c.GetEvolutions(v)["0"]
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-		ret = c.calculateEvoStat(materialStat, firstEvo.MaxDefense, c.DefaultDefense, c.MaxDefense)
+		ret = c.calculateEvoStat(materialStat, firstEvo.MaxDefense, c.MaxDefense)
 	}
 	if ret > rarity.LimtDefense {
 		return rarity.LimtDefense
@@ -466,7 +462,7 @@ func (c *Card) EvoStandardMaxSoldier(v *VcFile) (ret int) {
 		firstEvo := c.GetEvolutions(v)["0"]
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-		ret = c.calculateEvoStat(materialStat, firstEvo.MaxFollower, c.DefaultFollower, c.MaxFollower)
+		ret = c.calculateEvoStat(materialStat, firstEvo.MaxFollower, c.MaxFollower)
 	}
 	if ret > rarity.LimtMaxFollower {
 		return rarity.LimtMaxFollower
@@ -521,7 +517,7 @@ func (c *Card) EvoPerfectMaxAttack(v *VcFile) (ret int) {
 		materialStat := materialCard.EvoPerfectMaxAttack(v)
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-		ret = c.calculateEvoStat(materialStat, materialStat, c.DefaultOffense, c.MaxOffense)
+		ret = c.calculateEvoStat(materialStat, materialStat, c.MaxOffense)
 		if ret > rarity.LimtOffense {
 			return rarity.LimtOffense
 		}
@@ -577,7 +573,7 @@ func (c *Card) EvoPerfectMaxDefense(v *VcFile) (ret int) {
 		materialStat := materialCard.EvoPerfectMaxDefense(v)
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-		ret = c.calculateEvoStat(materialStat, materialStat, c.DefaultOffense, c.MaxOffense)
+		ret = c.calculateEvoStat(materialStat, materialStat, c.MaxOffense)
 		if ret > rarity.LimtOffense {
 			return rarity.LimtOffense
 		}
@@ -632,7 +628,7 @@ func (c *Card) EvoPerfectMaxSoldier(v *VcFile) (ret int) {
 		materialStat := materialCard.EvoPerfectMaxSoldier(v)
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-		ret = c.calculateEvoStat(materialStat, materialStat, c.DefaultOffense, c.MaxOffense)
+		ret = c.calculateEvoStat(materialStat, materialStat, c.MaxOffense)
 		if ret > rarity.LimtOffense {
 			return rarity.LimtOffense
 		}
