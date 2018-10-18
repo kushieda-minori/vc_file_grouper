@@ -232,12 +232,13 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 				k = "1"
 			}
 		}
+		maxAtk, maxDef, maxSol := maxStats(evo, len(evolutions))
 		fmt.Fprintf(w, "|cost %[1]s = %[2]d\n|atk %[1]s = %[3]d / %s\n|def %[1]s = %[5]d / %s\n|soldiers %[1]s = %[7]d / %s\n",
 			strings.ToLower(k),
 			evo.DeckCost,
-			evo.DefaultOffense, maxStatAtk(evo, len(evolutions)),
-			evo.DefaultDefense, maxStatDef(evo, len(evolutions)),
-			evo.DefaultFollower, maxStatFollower(evo, len(evolutions)))
+			evo.DefaultOffense, maxAtk,
+			evo.DefaultDefense, maxDef,
+			evo.DefaultFollower, maxSol)
 	}
 
 	for _, k := range evokeys {
@@ -413,6 +414,17 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 		if len(qs) < 1 {
 			return
 		}
+		if rarity := qs.Get("rarity"); rarity != "" {
+			match = match && (card.Rarity() == rarity ||
+				card.Rarity() == ("H"+rarity) ||
+				card.Rarity() == ("G"+rarity))
+		}
+		if evos := qs.Get("evos"); evos != "" {
+			evon, err := strconv.Atoi(evos)
+			if err == nil && (evon == 1 || evon == 4) {
+				match = match && (card.LastEvolutionRank == evon)
+			}
+		}
 		if isThor := qs.Get("isThor"); isThor != "" {
 			match = match && card.ThorSkillId1 > 0
 		}
@@ -452,6 +464,20 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 <body>
 <form method="GET">
 <label for="f_name">Name:</label><input id="f_name" name="name" value="%s" />
+<label for="f_rarity">Rarity:</label><select id="f_rarity" name="rarity" value="%s">
+<option value=""></option>
+<option value="X">X</option>
+<option value="N">N</option>
+<option value="R">R</option>
+<option value="SR">SR</option>
+<option value="UR">UR</option>
+<option value="LR">LR</option>
+</select>
+<label for="f_evos">Evo:</label><select id="f_evos" name="evos" value="%s">
+<option value=""></option>
+<option value="1">1★</option>
+<option value="4">4★</option>
+</select>
 <label for="f_skillname">Skill Name:</label><input id="f_skillname" name="skillname" value="%s" />
 <label for="f_skilldesc">Skill Description:</label><input id="f_skilldesc" name="skilldesc" value="%s" />
 <label for="f_skillisthor">Has Thor Skill:</label><input id="f_skillisthor" name="isThor" type="checkbox" value="checked" %s />
@@ -500,6 +526,8 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 <tbody>
 `,
 		qs.Get("name"),
+		qs.Get("rarity"),
+		qs.Get("evos"),
 		qs.Get("skillname"),
 		qs.Get("skilldesc"),
 		qs.Get("isThor"),
@@ -595,52 +623,45 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</tbody></table></div></body></html>")
 }
 
-func maxStatAtk(evo *vc.Card, numOfEvos int) string {
-	maxStat := evo.EvoStandardMaxAttack(VcData)
-	if maxStat <= 0 {
+func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
+	atkStat, defStat, solStat := evo.EvoStandard(VcData)
+	if atkStat <= 0 {
 		if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
-			return strconv.Itoa(evo.MaxOffense)
+			return strconv.Itoa(evo.MaxOffense), strconv.Itoa(evo.MaxDefense), strconv.Itoa(evo.MaxFollower)
 		}
-		return "?"
+		return "?", "?", "?"
 	}
-	ret := strconv.Itoa(maxStat)
-	if evo.EvolutionRank > 2 && !strings.HasSuffix(evo.Rarity(), "LR") {
-		//TODO : If 4* card, calculate 16 card evo stats
-		ret += " / {{ToolTip|?|Perfect Evolution}}"
-	}
-	return ret
-}
-
-func maxStatDef(evo *vc.Card, numOfEvos int) string {
-	maxStat := evo.EvoStandardMaxDefense(VcData)
-	if maxStat <= 0 {
-		if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
-			return strconv.Itoa(evo.MaxDefense)
+	atk = strconv.Itoa(atkStat)
+	def = strconv.Itoa(defStat)
+	sol = strconv.Itoa(solStat)
+	if evo.EvolutionRank >= 2 && !strings.HasSuffix(evo.Rarity(), "LR") {
+		// TODO need more logic here to check if it's an Amalg vs evo only.
+		// may need different options depending on the type of card.
+		if evo.EvolutionRank == 4 {
+			//If 4* card, calculate 16 card evo stats
+			atkStat, defStat, solStat = evo.Evo6Card(VcData)
+			atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 6)
+			def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 6)
+			sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 6)
 		}
-		return "?"
-	}
-	ret := strconv.Itoa(maxStat)
-	if evo.EvolutionRank > 2 && !strings.HasSuffix(evo.Rarity(), "LR") {
-		//TODO : If 4* card, calculate 16 card evo stats
-		ret += " / {{ToolTip|?|Perfect Evolution}}"
-	}
-	return ret
-}
-
-func maxStatFollower(evo *vc.Card, numOfEvos int) string {
-	maxStat := evo.EvoStandardMaxSoldier(VcData)
-	if maxStat <= 0 {
-		if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
-			return strconv.Itoa(evo.MaxFollower)
+		//If 4* card, calculate 16 card evo stats
+		atkStat, defStat, solStat = evo.EvoPerfect(VcData)
+		var cards int
+		switch evo.EvolutionRank {
+		case 1:
+			cards = 2
+		case 2:
+			cards = 4
+		case 3:
+			cards = 8
+		case 4:
+			cards = 16
 		}
-		return "?"
+		atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, cards)
+		def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, cards)
+		sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, cards)
 	}
-	ret := strconv.Itoa(maxStat)
-	if evo.EvolutionRank > 2 && !strings.HasSuffix(evo.Rarity(), "LR") {
-		//TODO : If 4* card, calculate 16 card evo stats
-		ret += " / {{ToolTip|?|Perfect Evolution}}"
-	}
-	return ret
+	return
 }
 
 func printAwakenMaterials(w http.ResponseWriter, awakenInfo *vc.CardAwaken) {
