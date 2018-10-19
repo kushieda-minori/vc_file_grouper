@@ -1,5 +1,12 @@
 #!/bin/bash
-
+# searches through the battle maps stored on Cloudfront.
+# $1 is the end date and is required.
+# $2 is the start date and is optional. If not provided, it starts 2 days before the end date.
+# start and end date formats are YYYYMMDD
+# this tool stops at the first map it finds, searching from the end date towards the start date.
+# On Linux/OSX this shouhld run from the command line fine.
+# On Windows, you will need either the "Linux Sub System" installed
+# with Bash support, or the Git-Bash tool.
 END=${1}
 ENDD=$(date -d@$END || date -r$END)
 
