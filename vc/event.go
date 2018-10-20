@@ -5,36 +5,37 @@ import (
 	"sort"
 )
 
+// Event information
 type Event struct {
-	Id                    int             `json:"_id"`
-	EventTypeId           int             `json:"event_type_id"`
-	BannerId              int             `json:"banner_id"`
+	ID                    int             `json:"_id"`
+	EventTypeID           int             `json:"event_type_id"`
+	BannerID              int             `json:"banner_id"`
 	ProgressDisp          int             `json:"progress_disp"`
-	CardId                int             `json:"card_id"`
-	ItemrId               int             `json:"itemr_id"`
+	CardID                int             `json:"card_id"`
+	ItemrID               int             `json:"itemr_id"`
 	JumpBanner            int             `json:"jump_banner"`
 	JumpButton            int             `json:"jump_button"`
 	JumpBannerOther       int             `json:"jump_banner_other"`
 	SortOrder             int             `json:"sort_order"`
-	TexIdCell             int             `json:"tex_id_cell"`
-	TexIdImage            int             `json:"tex_id_image"`
-	TexIdImage2           int             `json:"tex_id_image2"`
-	MapId                 int             `json:"map_id"`
-	KingSeriesId          int             `json:"king_series_id"`
-	GuildBattleId         int             `json:"guild_battle_id"`
-	KingId1               int             `json:"king_id1"`
-	KingId2               int             `json:"king_id2"`
-	KingId3               int             `json:"king_id3"`
-	CardId1               int             `json:"card_id1"`
-	CardId2               int             `json:"card_id2"`
-	CardId3               int             `json:"card_id3"`
-	CardId4               int             `json:"card_id4"`
-	CardId5               int             `json:"card_id5"`
-	CardId6               int             `json:"card_id6"`
-	CardId7               int             `json:"card_id7"`
-	CardId8               int             `json:"card_id8"`
-	CardId9               int             `json:"card_id9"`
-	CardId10              int             `json:"card_id10"`
+	TexIDCell             int             `json:"tex_id_cell"`
+	TexIDImage            int             `json:"tex_id_image"`
+	TexIDImage2           int             `json:"tex_id_image2"`
+	MapID                 int             `json:"map_id"`
+	KingSeriesID          int             `json:"king_series_id"`
+	GuildBattleID         int             `json:"guild_battle_id"`
+	KingID1               int             `json:"king_id1"`
+	KingID2               int             `json:"king_id2"`
+	KingID3               int             `json:"king_id3"`
+	CardID1               int             `json:"card_id1"`
+	CardID2               int             `json:"card_id2"`
+	CardID3               int             `json:"card_id3"`
+	CardID4               int             `json:"card_id4"`
+	CardID5               int             `json:"card_id5"`
+	CardID6               int             `json:"card_id6"`
+	CardID7               int             `json:"card_id7"`
+	CardID8               int             `json:"card_id8"`
+	CardID9               int             `json:"card_id9"`
+	CardID10              int             `json:"card_id10"`
 	Keyword1              string          `json:"keyword1"`
 	Keyword2              string          `json:"keyword2"`
 	Keyword3              string          `json:"keyword3"`
@@ -46,41 +47,45 @@ type Event struct {
 	TickerFlg             int             `json:"ticker_flg"`
 	TargetLanguages       string          `json:"target_languages"`
 	TargetMarkets         json.RawMessage `json:"target_markets"`
-	CollaboId             int             `json:"collabo_id"`
+	CollaboID             int             `json:"collabo_id"`
 	MaintenanceTarget     int             `json:"maintenance_target"`
-	TowerEventId          int             `json:"tower_event_id"`
+	TowerEventID          int             `json:"tower_event_id"`
 	Name                  string          `json:"name"`        // MsgEventName_en.strb
 	Description           string          `json:"description"` // MsgEventDesc_en.strb
-	_map                  *Map            
-	_archwitches          []Archwitch     
+	_map                  *Map
+	_archwitches          []Archwitch
 }
 
+// EventBook event book
 type EventBook struct {
-	Id      int `json:"_id"`
-	EventId int `json:"event_id"`
+	ID      int `json:"_id"`
+	EventID int `json:"event_id"`
 }
 
+// EventCard event card
 type EventCard struct {
-	Id          int    `json:"_id"`
-	EventBookId int    `json:"event_book_id"`
-	CardId      int    `json:"card_id"`
-	KindId      int    `json:"kind_id"`
+	ID          int    `json:"_id"`
+	EventBookID int    `json:"event_book_id"`
+	CardID      int    `json:"card_id"`
+	KindID      int    `json:"kind_id"`
 	KindName    string `json:"kind_name"` // MsgEventCardKindName_en.strb
 }
 
+// RankReward rank rewards for an event
 type RankReward struct {
-	Id                       int       `json:"_id"`
-	KingListId               int       `json:"king_list_id"` // same as King Series
-	SheetId                  int       `json:"sheet_id"`     // maps to the reward sheet below
-	GroupId                  int       `json:"group_id"`
-	MidSheetId               int       `json:"mid_sheet_id"`
+	ID                       int       `json:"_id"`
+	KingListID               int       `json:"king_list_id"` // same as King Series
+	SheetID                  int       `json:"sheet_id"`     // maps to the reward sheet below
+	GroupID                  int       `json:"group_id"`
+	MidSheetID               int       `json:"mid_sheet_id"`
 	MidBonusDistributionDate Timestamp `json:"mid_bonus_distribution_date"`
 	IndividualPointReward    int       `json:"individual_point_reward"`
 }
 
+// RankRewardSheet details of the rank reward
 type RankRewardSheet struct {
-	Id          int `json:"_id"`
-	SheetId     int `json:"sheet_id"`
+	ID          int `json:"_id"`
+	SheetID     int `json:"sheet_id"`
 	RankFrom    int `json:"rank_from"`
 	RankTo      int `json:"rank_to"`
 	Cash        int `json:"cash"`
@@ -90,37 +95,41 @@ type RankRewardSheet struct {
 	Ether       int `json:"ether"`
 	Elixir      int `json:"elixir"`
 	Exp         int `json:"exp"`
-	ItemId      int `json:"item_id"`
-	FragmentId  int `json:"fragment_id"`
-	CardId      int `json:"card_id"`
+	ItemID      int `json:"item_id"`
+	FragmentID  int `json:"fragment_id"`
+	CardID      int `json:"card_id"`
 	Num         int `json:"num"`
 	Point       int `john:"point"`
 }
 
-func (e *Event) Map(v *VcFile) *Map {
-	if e._map == nil && e.MapId > 0 {
-		e._map = MapScan(e.MapId, v.Maps)
+// Map for an event if one exists (usually just AW events)
+func (e *Event) Map(v *VFile) *Map {
+	if e._map == nil && e.MapID > 0 {
+		e._map = MapScan(e.MapID, v.Maps)
 	}
 	return e._map
 }
 
-func (e *Event) Tower(v *VcFile) *Tower {
-	if e.TowerEventId <= 0 {
+// Tower information for the event if it's a tower event
+func (e *Event) Tower(v *VFile) *Tower {
+	if e.TowerEventID <= 0 {
 		return nil
 	}
 
-	return TowerScan(e.TowerEventId, v)
+	return TowerScan(e.TowerEventID, v)
 }
 
-func (e *Event) GuildBattle(v *VcFile) *GuildBattle {
-	if e.GuildBattleId <= 0 {
+// GuildBattle information if it's an Alliance Battle
+func (e *Event) GuildBattle(v *VFile) *GuildBattle {
+	if e.GuildBattleID <= 0 {
 		return nil
 	}
 
-	return GuildBattleScan(e.GuildBattleId, v.GuildBattles)
+	return GuildBattleScan(e.GuildBattleID, v.GuildBattles)
 }
 
-func (e *Event) Thor(v *VcFile) *ThorEvent {
+// Thor information for Thor events
+func (e *Event) Thor(v *VFile) *ThorEvent {
 	for k, te := range v.ThorEvents {
 		if te.PublicStartDatetime == e.StartDatetime && te.PublicEndDatetime == e.EndDatetime {
 			return &(v.ThorEvents[k])
@@ -129,15 +138,16 @@ func (e *Event) Thor(v *VcFile) *ThorEvent {
 	return nil
 }
 
-func (e *Event) Archwitches(v *VcFile) []Archwitch {
-	if e.KingSeriesId > 0 {
+// Archwitches for this event.
+func (e *Event) Archwitches(v *VFile) []Archwitch {
+	if e.KingSeriesID > 0 {
 		if e._archwitches == nil {
 
 			// picks only unique Cards for the event
 			set := make(map[int]Archwitch)
 			for _, a := range v.Archwitches {
-				if e.KingSeriesId == a.KingSeriesId {
-					set[a.CardMasterId] = a
+				if e.KingSeriesID == a.KingSeriesID {
+					set[a.CardMasterID] = a
 				}
 			}
 
@@ -152,10 +162,11 @@ func (e *Event) Archwitches(v *VcFile) []Archwitch {
 	return e._archwitches
 }
 
-func (e *Event) RankRewards(v *VcFile) *RankReward {
-	if e.KingSeriesId > 0 {
+// RankRewards for this event
+func (e *Event) RankRewards(v *VFile) *RankReward {
+	if e.KingSeriesID > 0 {
 		for k, val := range v.RankRewards {
-			if val.KingListId == e.KingSeriesId {
+			if val.KingListID == e.KingSeriesID {
 				return &v.RankRewards[k]
 			}
 		}
@@ -163,11 +174,12 @@ func (e *Event) RankRewards(v *VcFile) *RankReward {
 	return nil
 }
 
-func (r *RankReward) MidRewards(v *VcFile) []RankRewardSheet {
+// MidRewards for this event
+func (r *RankReward) MidRewards(v *VFile) []RankRewardSheet {
 	set := make([]RankRewardSheet, 0)
-	if r.MidSheetId > 0 {
+	if r.MidSheetID > 0 {
 		for _, val := range v.RankRewardSheets {
-			if val.SheetId == r.MidSheetId {
+			if val.SheetID == r.MidSheetID {
 				set = append(set, val)
 			}
 		}
@@ -175,11 +187,12 @@ func (r *RankReward) MidRewards(v *VcFile) []RankRewardSheet {
 	return set
 }
 
-func (r *RankReward) FinalRewards(v *VcFile) []RankRewardSheet {
+// FinalRewards for this event
+func (r *RankReward) FinalRewards(v *VFile) []RankRewardSheet {
 	set := make([]RankRewardSheet, 0)
-	if r.SheetId > 0 {
+	if r.SheetID > 0 {
 		for _, val := range v.RankRewardSheets {
-			if val.SheetId == r.SheetId {
+			if val.SheetID == r.SheetID {
 				set = append(set, val)
 			}
 		}
@@ -187,27 +200,30 @@ func (r *RankReward) FinalRewards(v *VcFile) []RankRewardSheet {
 	return set
 }
 
-func MaxEventId(events []Event) (max int) {
+// MaxEventID for the events in the list
+func MaxEventID(events []Event) (max int) {
 	max = 0
 	for _, val := range events {
-		if val.Id > max {
-			max = val.Id
+		if val.ID > max {
+			max = val.ID
 		}
 	}
 	return
 }
 
+// EventScan searches for an event by ID
 func EventScan(id int, events []Event) *Event {
 	if id > 0 {
 		l := len(events)
-		i := sort.Search(l, func(i int) bool { return events[i].Id >= id })
-		if i >= 0 && i < l && events[i].Id == id {
+		i := sort.Search(l, func(i int) bool { return events[i].ID >= id })
+		if i >= 0 && i < l && events[i].ID == id {
 			return &(events[i])
 		}
 	}
 	return nil
 }
 
+// EventType information
 var EventType = map[int]string{
 	1:  "Archwitch",
 	2:  "?",

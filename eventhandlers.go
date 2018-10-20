@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -29,8 +30,8 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if eventType := qs.Get("eventType"); isInt(eventType) {
-			eventTypeId, _ := strconv.Atoi(eventType)
-			match = match && event.EventTypeId == eventTypeId
+			eventTypeID, _ := strconv.Atoi(eventType)
+			match = match && event.EventTypeID == eventTypeID
 		}
 		return
 	}
@@ -57,14 +58,14 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 	<td>%d</td>
 	<td>%d</td>
 </tr>`,
-			e.Id,
+			e.ID,
 			e.Name,
-			e.EventTypeId,
+			e.EventTypeID,
 			e.StartDatetime.Format(time.RFC3339),
 			e.EndDatetime.Format(time.RFC3339),
-			e.KingSeriesId,
-			e.GuildBattleId,
-			e.TowerEventId,
+			e.KingSeriesID,
+			e.GuildBattleID,
+			e.TowerEventID,
 		)
 	}
 	io.WriteString(w, "</tbody></table></div></body></html>")
@@ -85,19 +86,19 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid event id ", http.StatusNotFound)
 		return
 	}
-	eventId, err := strconv.Atoi(pathParts[2])
-	if err != nil || eventId < 1 {
+	eventID, err := strconv.Atoi(pathParts[2])
+	if err != nil || eventID < 1 {
 		http.Error(w, "Invalid event id "+pathParts[2], http.StatusNotFound)
 		return
 	}
 
-	event := vc.EventScan(eventId, VcData.Events)
+	event := vc.EventScan(eventID, VcData.Events)
 
 	var prevEvent, nextEvent *vc.Event = nil, nil
 
-	for i := event.Id - 1; i > 0; i-- {
+	for i := event.ID - 1; i > 0; i-- {
 		tmp := vc.EventScan(i, VcData.Events)
-		if tmp != nil && tmp.EventTypeId == event.EventTypeId && !strings.Contains(tmp.Name, "Rune Boss") && !strings.Contains(tmp.Name, " 2x ") {
+		if tmp != nil && tmp.EventTypeID == event.EventTypeID && !strings.Contains(tmp.Name, "Rune Boss") && !strings.Contains(tmp.Name, " 2x ") {
 			prevEvent = tmp
 			break
 		}
@@ -108,9 +109,9 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		prevEventName = strings.Replace(prevEvent.Name, "【New Event】", "", -1)
 	}
 
-	for i := event.Id + 1; i <= vc.MaxEventId(VcData.Events); i++ {
+	for i := event.ID + 1; i <= vc.MaxEventID(VcData.Events); i++ {
 		tmp := vc.EventScan(i, VcData.Events)
-		if tmp != nil && tmp.EventTypeId == event.EventTypeId && !strings.Contains(tmp.Name, "Rune Boss") && !strings.Contains(tmp.Name, " 2x ") {
+		if tmp != nil && tmp.EventTypeID == event.EventTypeID && !strings.Contains(tmp.Name, "Rune Boss") && !strings.Contains(tmp.Name, " 2x ") {
 			nextEvent = tmp
 			break
 		}
@@ -122,34 +123,34 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", event.Name)
-	if event.BannerId > 0 {
-		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Banner"/></a><br />`, event.BannerId, url.QueryEscape(event.Name))
+	if event.BannerID > 0 {
+		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Banner"/></a><br />`, event.BannerID, url.QueryEscape(event.Name))
 	}
-	if event.TexIdImage > 0 {
-		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Texture Image" /></a>br />`, event.TexIdImage, url.QueryEscape(event.Name))
+	if event.TexIDImage > 0 {
+		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Texture Image" /></a>br />`, event.TexIDImage, url.QueryEscape(event.Name))
 	}
-	if event.TexIdImage2 > 0 {
-		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Texture Image 2" /></a><br />`, event.TexIdImage2, url.QueryEscape(event.Name))
+	if event.TexIDImage2 > 0 {
+		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Texture Image 2" /></a><br />`, event.TexIDImage2, url.QueryEscape(event.Name))
 	}
 	if prevEventName != "" {
-		fmt.Fprintf(w, "<div style=\"float:left\"><a href=\"%d\">%s</a>\n</div>", prevEvent.Id, prevEventName)
+		fmt.Fprintf(w, "<div style=\"float:left\"><a href=\"%d\">%s</a>\n</div>", prevEvent.ID, prevEventName)
 	}
 	if nextEventName != "" {
-		fmt.Fprintf(w, "<div style=\"float:right\"><a href=\"%d\">%s</a>\n</div>", nextEvent.Id, nextEventName)
+		fmt.Fprintf(w, "<div style=\"float:right\"><a href=\"%d\">%s</a>\n</div>", nextEvent.ID, nextEventName)
 	}
 	fmt.Fprintf(w, "<div style=\"clear:both;float:left\">Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", strings.Replace(event.Name, "【New Event】", "", -1))
-	if event.MapId > 0 {
-		fmt.Fprintf(w, "<a href=\"/maps/%d\">Map Information</a>\n<br />", event.MapId)
+	if event.MapID > 0 {
+		fmt.Fprintf(w, "<a href=\"/maps/%d\">Map Information</a>\n<br />", event.MapID)
 	}
 	io.WriteString(w, "<textarea style=\"width:800px;height:760px\">")
-	switch event.EventTypeId {
+	switch event.EventTypeID {
 	case 1: // archwitch event
 		var legendary string
 		var faws string
 		var aws string
 
 		for _, aw := range event.Archwitches(VcData) {
-			cardMaster := vc.CardScan(aw.CardMasterId, VcData.Cards)
+			cardMaster := vc.CardScan(aw.CardMasterID, VcData.Cards)
 			if aw.IsLAW() {
 				legendary = cardMaster.Name
 			} else if aw.IsFAW() {
@@ -184,8 +185,8 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			finalRewardList := rr.FinalRewards(VcData)
 			finalrewards = genWikiAWRewards(finalRewardList, "Final Rankings", "Rank")
 			for _, fr := range finalRewardList {
-				if fr.CardId > 0 {
-					rrCard := vc.CardScan(fr.CardId, VcData.Cards)
+				if fr.CardID > 0 {
+					rrCard := vc.CardScan(fr.CardID, VcData.Cards)
 					rankReward = rrCard.Name
 					break
 				}
@@ -194,7 +195,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 		var ranks = []int{1, 100, 200, 300, 500, 1000, 2000}
 
-		fmt.Fprintf(w, getEventTemplate(event.EventTypeId), event.EventTypeId,
+		fmt.Fprintf(w, getEventTemplate(event.EventTypeID), event.EventTypeID,
 			event.StartDatetime.Format(wikiFmt), // start
 			event.EndDatetime.Format(wikiFmt),   // end
 			eHallStart,                          // E-Hall opening
@@ -220,16 +221,16 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 		// aws := bb.Archwitches(VcData)
 		// aw := ""
-		//os.Stderr.WriteString(fmt.Sprintf("found %d archwitches on guild battle %d king series id %d\n", len(aws), bb.Id, bb.KingSeriesId))
+		//os.Stderr.WriteString(fmt.Sprintf("found %d archwitches on guild battle %d king series id %d\n", len(aws), bb.ID, bb.KingSeriesID))
 		// if len(aws) > 0 {
 		// 	king := aws[0]
-		// 	kingCard := vc.CardScan(king.CardMasterId, VcData.Cards)
+		// 	kingCard := vc.CardScan(king.CardMasterID, VcData.Cards)
 		// 	aw = kingCard.Name
 		// 	if len(aws) > 1 {
 		// 		// append extra AW cards
 		// 		for i := 1; i < len(aws); i++ {
 		// 			king = aws[i]
-		// 			kingCard = vc.CardScan(king.CardMasterId, VcData.Cards)
+		// 			kingCard = vc.CardScan(king.CardMasterID, VcData.Cards)
 		// 			aw += " |Archwitch Panel Encounter\n| " + kingCard.Name
 		// 		}
 		// 	}
@@ -238,7 +239,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		rankRewards := genWikiAWRewards(gb.RankRewards(VcData), "Ranking", "Rank") +
 			genWikiAWRewards(gb.IndividualRewards(VcData), "Point Reward", "Points")
 
-		fmt.Fprintf(w, getEventTemplate(event.EventTypeId), event.EventTypeId,
+		fmt.Fprintf(w, getEventTemplate(event.EventTypeID), event.EventTypeID,
 			event.StartDatetime.Format(wikiFmt),
 			event.EndDatetime.Format(wikiFmt),
 			"",    // RR 1
@@ -260,11 +261,11 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		if tower == nil {
 			fmt.Fprintf(w, "Unable to find tower event")
 		} else {
-			element := tower.ElementId - 1
+			element := tower.ElementID - 1
 			towerShield := vc.Elements[element]
 
 			fmt.Fprintf(w,
-				getEventTemplate(event.EventTypeId), event.EventTypeId,
+				getEventTemplate(event.EventTypeID), event.EventTypeID,
 				event.StartDatetime.Format(wikiFmt),
 				event.EndDatetime.Format(wikiFmt),
 				towerShield,
@@ -286,7 +287,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		fallthrough
 	default:
 		fmt.Fprintf(w,
-			getEventTemplate(event.EventTypeId), event.EventTypeId,
+			getEventTemplate(event.EventTypeID), event.EventTypeID,
 			event.StartDatetime.Format(wikiFmt), // start
 			event.EndDatetime.Format(wikiFmt),   // end
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
@@ -372,17 +373,17 @@ func getWikiAWRewards(reward vc.RankRewardSheet, newline bool) string {
 	}
 
 	var r string
-	if reward.CardId > 0 {
-		card := vc.CardScan(reward.CardId, VcData.Cards)
+	if reward.CardID > 0 {
+		card := vc.CardScan(reward.CardID, VcData.Cards)
 		if card == nil {
-			r = "{{Card Icon|Unknown Card Id}}"
+			r = "{{Card Icon|Unknown Card ID}}"
 		} else {
 			r = fmt.Sprintf("{{Card Icon|%s}}", card.Name)
 		}
-	} else if reward.ItemId > 0 {
-		item := vc.ItemScan(reward.ItemId, VcData.Items)
+	} else if reward.ItemID > 0 {
+		item := vc.ItemScan(reward.ItemID, VcData.Items)
 		if item == nil {
-			r = fmt.Sprintf("__UNKNOWN_ITEM_ID:%d__", reward.ItemId)
+			r = fmt.Sprintf("__UNKNOWN_ITEM_ID:%d__", reward.ItemID)
 		} else {
 			r = getWikiItem(item)
 		}
@@ -396,19 +397,19 @@ func getWikiAWRewards(reward vc.RankRewardSheet, newline bool) string {
 }
 
 func getWikiItem(item *vc.Item) (r string) {
-	if item.GroupId == 17 {
+	if item.GroupID == 17 {
 		// tickets
 		r = fmt.Sprintf("{{Ticket|%s}}", cleanTicketName(item.NameEng))
-	} else if item.GroupId == 30 ||
-		(item.GroupId >= 9 &&
-			item.GroupId <= 16) {
+	} else if item.GroupID == 30 ||
+		(item.GroupID >= 9 &&
+			item.GroupID <= 16) {
 		// Arcana
 		r = fmt.Sprintf("{{Arcana|%s}}", cleanArcanaName(item.NameEng))
-	} else if (item.GroupId >= 5 && item.GroupId <= 7) || item.GroupId == 31 || item.GroupId == 22 || item.GroupId == 47 {
+	} else if (item.GroupID >= 5 && item.GroupID <= 7) || item.GroupID == 31 || item.GroupID == 22 || item.GroupID == 47 {
 		// sword, shoe, key, rod, potion
 		r = fmt.Sprintf("{{Valkyrie|%s}}", cleanItemName(item.NameEng))
-	} else if item.GroupId == 18 || item.GroupId == 19 || item.GroupId == 43 {
-		switch item.Id {
+	} else if item.GroupID == 18 || item.GroupID == 19 || item.GroupID == 43 {
+		switch item.ID {
 		case 29:
 			r = "{{MaidenTicket}}"
 		case 138:
@@ -417,7 +418,7 @@ func getWikiItem(item *vc.Item) (r string) {
 			// exchange items
 			r = fmt.Sprintf("[[File:%[1]s.png|28px|link=Items#%[1]s]] [[Items#%[1]s|%[1]s]]", item.NameEng)
 		}
-	} else if item.GroupId == 29 {
+	} else if item.GroupID == 29 {
 		itemName := ""
 		if strings.Contains(item.Name, "LIGHT") {
 			itemName = "Light"
@@ -440,20 +441,20 @@ func getWikiItem(item *vc.Item) (r string) {
 			itemName += "S"
 		}
 		r = fmt.Sprintf("{{Stone|%s}}", itemName)
-	} else if item.GroupId == 32 {
+	} else if item.GroupID == 32 {
 		// ABB Ring
 		r = fmt.Sprintf("{{Icon|%s}}", item.NameEng)
-	} else if item.GroupId == 38 {
+	} else if item.GroupID == 38 {
 		// Custom Skill Recipies
 		r = fmt.Sprintf("{{Skill Recipe|%s}}", cleanCustomSkillRecipe(item.NameEng))
-	} else if item.GroupId == 39 {
+	} else if item.GroupID == 39 {
 		// Custom Skill items
 		r = fmt.Sprintf("[[File:%[1]s.png|28px|link=Custom Skills#Skill_Materials]] [[Custom Skills#Skill_Materials|%[2]s]]",
 			vc.CleanCustomSkillNoImage(item.NameEng),
 			vc.CleanCustomSkillNoImage(item.NameEng),
 		)
 	} else {
-		r = fmt.Sprintf("__UNKNOWN_GROUP:_%d_%s__", item.GroupId, item.NameEng)
+		r = fmt.Sprintf("__UNKNOWN_GROUP:_%d_%s__", item.GroupID, item.NameEng)
 	}
 	return
 }
@@ -603,15 +604,15 @@ func genWikiExchange(exchanges []vc.GuildBingoExchangeReward) (ret string) {
 		exchange := exchanges[i]
 		switch exchange.RewardType {
 		case 1: // card
-			card := vc.CardScan(exchange.RewardId, VcData.Cards)
+			card := vc.CardScan(exchange.RewardID, VcData.Cards)
 			ret += fmt.Sprintf("\n|-\n| {{Card Icon|%s}} || x%d",
 				card.Name,
 				exchange.RequireNum,
 			)
 		case 2: //item
-			item := vc.ItemScan(exchange.RewardId, VcData.Items)
+			item := vc.ItemScan(exchange.RewardID, VcData.Items)
 			if item == nil {
-				ret += fmt.Sprintf("__UNKNOWN_ITEM_ID:%d__", exchange.RewardId)
+				ret += fmt.Sprintf("__UNKNOWN_ITEM_ID:%d__", exchange.RewardID)
 			} else {
 				ret += fmt.Sprintf("\n|-\n| %s || x%d",
 					getWikiItem(item),
@@ -621,7 +622,7 @@ func genWikiExchange(exchanges []vc.GuildBingoExchangeReward) (ret string) {
 		default: //unknown!
 			ret += fmt.Sprintf("\n|-\n|Unknown reward type %d for reward id %d || x%d",
 				exchange.RewardType,
-				exchange.RewardId,
+				exchange.RewardID,
 				exchange.RequireNum,
 			)
 		}

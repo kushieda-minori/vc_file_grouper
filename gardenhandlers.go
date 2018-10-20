@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -24,7 +25,7 @@ func structureListHandler(w http.ResponseWriter, r *http.Request) {
 <th>Event</th>
 <th>Base Own</th>
 <th>Stockable</th>
-<th>Shop Group Deco Id</th>
+<th>Shop Group Deco ID</th>
 <th>Enabled</th>
 `)
 	io.WriteString(w, "</tr></thead>\n")
@@ -42,15 +43,15 @@ func structureListHandler(w http.ResponseWriter, r *http.Request) {
 	<td>%d</td>
 	<td>%d</td>
 </tr>`,
-			s.Id,
+			s.ID,
 			s.Name,
 			s.Description,
 			s.MaxLv,
-			s.StructureTypeId,
-			s.EventId,
+			s.StructureTypeID,
+			s.EventID,
 			s.BaseNum,
 			s.Stockable,
-			s.ShopGroupDecoId,
+			s.ShopGroupDecoID,
 			s.Enable,
 		)
 	}
@@ -72,20 +73,20 @@ func structureDetailHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid structure id ", http.StatusNotFound)
 		return
 	}
-	structureId, err := strconv.Atoi(pathParts[3])
-	if err != nil || structureId < 1 {
+	structureID, err := strconv.Atoi(pathParts[3])
+	if err != nil || structureID < 1 {
 		http.Error(w, "Invalid structure id "+pathParts[3], http.StatusNotFound)
 		return
 	}
 
-	structure := vc.StructureScan(structureId, VcData)
+	structure := vc.StructureScan(structureID, VcData)
 	if structure == nil {
 		http.Error(w, "Structure not found with id "+pathParts[3], http.StatusNotFound)
 		return
 	}
 
 	fmt.Fprintf(w, "<html><head><title>Structure %d: %s</title></head><body>\n",
-		structure.Id,
+		structure.ID,
 		structure.Name,
 	)
 	pc := structure.PurchaseCosts(VcData)
@@ -150,17 +151,17 @@ Max quantity: %d
 	)
 	castleReq := ""
 	if structure.UnlockCastleLv > 0 {
-		if structure.UnlockCastleId == 7 { // main castle
+		if structure.UnlockCastleID == 7 { // main castle
 			castleReq = fmt.Sprintf("<br />Castle lvl %d", structure.UnlockCastleLv)
-		} else if structure.UnlockCastleId == 66 { // ward
+		} else if structure.UnlockCastleID == 66 { // ward
 			castleReq = fmt.Sprintf("<br />Ward lvl %d", structure.UnlockCastleLv)
 		} else {
 			castleReq = ""
 		}
 	}
 	areaReq := ""
-	if structure.UnlockAreaId > 0 {
-		areaReq = fmt.Sprintf("<br />Clear Area %s", VcData.Areas[structure.UnlockAreaId].Name)
+	if structure.UnlockAreaID > 0 {
+		areaReq = fmt.Sprintf("<br />Clear Area %s", VcData.Areas[structure.UnlockAreaID].Name)
 	}
 	io.WriteString(w, lvlHeader)
 	levels := structure.Levels(VcData)
@@ -231,17 +232,17 @@ Max quantity: %d
 	)
 	castleReq := ""
 	if structure.UnlockCastleLv > 0 {
-		if structure.UnlockCastleId == 7 { // main castle
+		if structure.UnlockCastleID == 7 { // main castle
 			castleReq = fmt.Sprintf("<br />Castle lvl %d", structure.UnlockCastleLv)
-		} else if structure.UnlockCastleId == 66 { // ward
+		} else if structure.UnlockCastleID == 66 { // ward
 			castleReq = fmt.Sprintf("<br />Ward lvl %d", structure.UnlockCastleLv)
 		} else {
 			castleReq = ""
 		}
 	}
 	areaReq := ""
-	if structure.UnlockAreaId > 0 {
-		areaReq = fmt.Sprintf("<br />Clear Area %s", VcData.Areas[structure.UnlockAreaId].Name)
+	if structure.UnlockAreaID > 0 {
+		areaReq = fmt.Sprintf("<br />Clear Area %s", VcData.Areas[structure.UnlockAreaID].Name)
 	}
 	io.WriteString(w, lvlHeader)
 	levels := structure.Levels(VcData)

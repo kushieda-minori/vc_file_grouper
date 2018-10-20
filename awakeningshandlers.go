@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -14,15 +15,15 @@ func awakeningsTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>All Awakenings</title></head><body>\n")
 	io.WriteString(w, "<table><thead><tr><th>From Card</th><th>To Card</th><th>Chance</th><th>Crystals</th><th>Orb</th><th>Large</th><th>Medium</th><th>Small</th></tr></thead><tbody>\n")
 	for _, value := range VcData.Awakenings {
-		baseCard := vc.CardScan(value.BaseCardId, VcData.Cards)
-		resultCard := vc.CardScan(value.ResultCardId, VcData.Cards)
+		baseCard := vc.CardScan(value.BaseCardID, VcData.Cards)
+		resultCard := vc.CardScan(value.ResultCardID, VcData.Cards)
 		fmt.Fprintf(w,
 			"<tr><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td>%d%%</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>",
 			baseCard.Image(),
-			baseCard.Id,
+			baseCard.ID,
 			baseCard.Name,
 			resultCard.Image(),
-			resultCard.Id,
+			resultCard.ID,
 			resultCard.Name,
 			value.Percent,
 			value.Material5Count,
@@ -42,10 +43,10 @@ func awakeningsCsvHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/csv")
 	cw := csv.NewWriter(w)
 	cw.Write([]string{
-		"Id",
+		"ID",
 		"Name",
-		"BaseCardId",
-		"ResultCardId",
+		"BaseCardID",
+		"ResultCardID",
 		"Percent",
 		"Material1Item ",
 		"Material1Count",
@@ -61,12 +62,12 @@ func awakeningsCsvHandler(w http.ResponseWriter, r *http.Request) {
 		"IsClosed",
 	})
 	for _, value := range VcData.Awakenings {
-		baseCard := vc.CardScan(value.BaseCardId, VcData.Cards)
+		baseCard := vc.CardScan(value.BaseCardID, VcData.Cards)
 		cw.Write([]string{
-			strconv.Itoa(value.Id),
+			strconv.Itoa(value.ID),
 			baseCard.Name,
-			strconv.Itoa(value.BaseCardId),
-			strconv.Itoa(value.ResultCardId),
+			strconv.Itoa(value.BaseCardID),
+			strconv.Itoa(value.ResultCardID),
 			strconv.Itoa(value.Percent),
 			strconv.Itoa(value.Material1Item),
 			strconv.Itoa(value.Material1Count),

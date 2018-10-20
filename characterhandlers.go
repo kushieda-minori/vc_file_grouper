@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -22,7 +23,7 @@ func characterTableHandler(w http.ResponseWriter, r *http.Request) {
 			return false
 		}
 		if isThor := qs.Get("isThor"); isThor != "" {
-			match = match && card.ThorSkillId1 > 0
+			match = match && card.ThorSkillID1 > 0
 		}
 		if name := qs.Get("name"); name != "" {
 			match = match && strings.Contains(strings.ToLower(card.Name), strings.ToLower(name))
@@ -103,7 +104,7 @@ func characterTableHandler(w http.ResponseWriter, r *http.Request) {
 		maxSecond := secondCards.Latest()
 
 		if maxFirst == nil && maxSecond == nil {
-			return first.Id > second.Id
+			return first.ID > second.ID
 		}
 		if maxFirst == nil {
 			return false
@@ -112,7 +113,7 @@ func characterTableHandler(w http.ResponseWriter, r *http.Request) {
 			return true
 		}
 
-		return maxFirst.Id > maxSecond.Id
+		return maxFirst.ID > maxSecond.ID
 	})
 
 	for _, character := range chars {
@@ -151,7 +152,7 @@ func characterTableHandler(w http.ResponseWriter, r *http.Request) {
 			"<td>%s</td>"+
 			"<td>%s</td>"+
 			"<td>%s</td></tr>\n",
-			character.Id,
+			character.ID,
 			cardNos,
 			cardName,
 			character.Description,
@@ -183,13 +184,13 @@ func characterDetailHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid character id ", http.StatusNotFound)
 		return
 	}
-	cardId, err := strconv.Atoi(pathParts[2])
-	if err != nil || cardId < 1 || cardId > len(VcData.CardCharacters) {
+	cardID, err := strconv.Atoi(pathParts[2])
+	if err != nil || cardID < 1 || cardID > len(VcData.CardCharacters) {
 		http.Error(w, "Invalid character id "+pathParts[2], http.StatusNotFound)
 		return
 	}
 
-	character := vc.CardCharacterScan(cardId, VcData.CardCharacters)
+	character := vc.CardCharacterScan(cardID, VcData.CardCharacters)
 
 	cards := character.Cards(VcData)
 
@@ -304,15 +305,15 @@ func characterDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"<td>%s</td>"+
 			"<td>%s</td>"+
 			"<td>%s</td></tr>\n",
-			card.Id,
+			card.ID,
 			card.CardNo,
 			card.Name,
 			card.EvolutionRank,
 			card.LastEvolutionRank,
-			card.EvolutionCardId,
+			card.EvolutionCardID,
 			card.Rarity(),
 			card.Element(),
-			card.CardCharaId,
+			card.CardCharaID,
 			card.DeckCost,
 			card.DefaultOffense,
 			card.DefaultDefense,

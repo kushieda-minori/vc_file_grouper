@@ -17,12 +17,15 @@ import (
 	"time"
 )
 
+// LangPack language pack to use
 var LangPack string
 
+// Timestamp in the JSON file
 type Timestamp struct {
 	time.Time
 }
 
+// MarshalJSON converts a JSON timestamp to a GO time
 func (t *Timestamp) MarshalJSON() ([]byte, error) {
 	if t.Time.IsZero() {
 		return []byte("-1"), nil
@@ -86,6 +89,7 @@ func init() {
 	sort.Ints(newCards)
 }
 
+// UnmarshalJSON converts a GO time to a JSON timestamp
 func (t *Timestamp) UnmarshalJSON(b []byte) error {
 	ts, err := strconv.Atoi(string(b))
 	if err != nil {
@@ -105,25 +109,25 @@ func (t *Timestamp) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// Main Structure for the VC data file located in responce/maindata
-type VcFile struct {
+// VFile Main Structure for the VC data file located in responce/maindata
+type VFile struct {
 	Code   int `json:"code"`
 	Common struct {
 		UnixTime Timestamp `json:"unixtime"`
 	} `json:"common"`
 	Defs []struct {
-		Id    int `json:"_id"`
+		ID    int `json:"_id"`
 		Value int `json:"value"`
 	} `json:"defs"`
 	DefsTune []struct {
-		Id            int       `json:"_id"`
-		MstDefsId     int       `json:"mst_defs_id"`
+		ID            int       `json:"_id"`
+		MstDefsID     int       `json:"mst_defs_id"`
 		Value         int       `json:"value"`
 		PublicFlg     int       `json:"public_flg"`
 		StartDateTime Timestamp `json:"start_datetime"`
 		EndDateTime   Timestamp `json:"end_datetime"`
 	} `json:"defs_tune"`
-	ShortcutUrl                 string                     `json:"shortcut_url"`
+	ShortcutURL                 string                     `json:"shortcut_url"`
 	Version                     int                        `json:"version"`
 	Cards                       []Card                     `json:"cards"`
 	Skills                      []Skill                    `json:"skills"`
@@ -176,7 +180,7 @@ type VcFile struct {
 
 // This reads the main data file and all associated files for strings
 // the data is inserted directly into the struct.
-func (v *VcFile) Read(root string) ([]byte, error) {
+func (v *VFile) Read(root string) ([]byte, error) {
 	filename := root + "/response/master_all"
 
 	var data []byte
@@ -212,7 +216,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character Names", len(v.Cards), len(names))
 	}
-	for key, _ := range v.Cards {
+	for key := range v.Cards {
 		v.Cards[key].Name = cleanCardName(names[key], &(v.Cards[key]))
 	}
 	names = nil
@@ -256,70 +260,70 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 			"Character meet", len(v.CardCharacters), len(meet))
 	}
 
-	battle_start, err := readStringFile(root + "/string/MsgCharaBtlStart_en.strb")
+	battleStart, err := readStringFile(root + "/string/MsgCharaBtlStart_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacters) > len(battle_start) {
+	if len(v.CardCharacters) > len(battleStart) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character battle_start", len(v.CardCharacters), len(battle_start))
+			"Character battle_start", len(v.CardCharacters), len(battleStart))
 	}
 
-	battle_end, err := readStringFile(root + "/string/MsgCharaBtlEnd_en.strb")
+	battleEnd, err := readStringFile(root + "/string/MsgCharaBtlEnd_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacters) > len(battle_end) {
+	if len(v.CardCharacters) > len(battleEnd) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character battle_end", len(v.CardCharacters), len(battle_end))
+			"Character battle_end", len(v.CardCharacters), len(battleEnd))
 	}
 
-	friendship_max, err := readStringFile(root + "/string/MsgCharaFriendshipMax_en.strb")
+	friendshipMax, err := readStringFile(root + "/string/MsgCharaFriendshipMax_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacters) > len(friendship_max) {
+	if len(v.CardCharacters) > len(friendshipMax) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character friendship_max", len(v.CardCharacters), len(friendship_max))
+			"Character friendship_max", len(v.CardCharacters), len(friendshipMax))
 	}
 
-	friendship_event, err := readStringFile(root + "/string/MsgCharaBonds_en.strb")
+	friendshipEvent, err := readStringFile(root + "/string/MsgCharaBonds_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(v.CardCharacters) > len(friendship_event) {
+	if len(v.CardCharacters) > len(friendshipEvent) {
 		debug.PrintStack()
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character friendship_event", len(v.CardCharacters), len(friendship_event))
+			"Character friendship_event", len(v.CardCharacters), len(friendshipEvent))
 	}
 
-	for key, _ := range v.CardCharacters {
+	for key := range v.CardCharacters {
 		v.CardCharacters[key].Description = strings.Replace(description[key], "\n", " ", -1)
 		v.CardCharacters[key].Friendship = friendship[key]
 		if key < len(login) {
 			v.CardCharacters[key].Login = login[key]
 		}
 		v.CardCharacters[key].Meet = meet[key]
-		v.CardCharacters[key].BattleStart = battle_start[key]
-		v.CardCharacters[key].BattleEnd = battle_end[key]
-		v.CardCharacters[key].FriendshipMax = friendship_max[key]
-		v.CardCharacters[key].FriendshipEvent = friendship_event[key]
+		v.CardCharacters[key].BattleStart = battleStart[key]
+		v.CardCharacters[key].BattleEnd = battleEnd[key]
+		v.CardCharacters[key].FriendshipMax = friendshipMax[key]
+		v.CardCharacters[key].FriendshipEvent = friendshipEvent[key]
 	}
 	description = nil
 	friendship = nil
 	login = nil
 	meet = nil
-	battle_start = nil
-	battle_end = nil
-	friendship_max = nil
-	friendship_event = nil
+	battleStart = nil
+	battleEnd = nil
+	friendshipMax = nil
+	friendshipEvent = nil
 
 	//Read Skill strings
 	names, err = readStringFile(root + "/string/MsgSkillName_en.strb")
@@ -340,7 +344,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		return nil, err
 	}
 
-	for key, _ := range v.Skills {
+	for key := range v.Skills {
 		if key < len(names) {
 			v.Skills[key].Name = filterSkill(names[key])
 		}
@@ -364,13 +368,13 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		return nil, err
 	}
 
-	for key, _ := range v.Events {
-		evntId := v.Events[key].Id - 1
-		if evntId < len(evntNames) {
-			v.Events[key].Name = filter(evntNames[evntId])
+	for key := range v.Events {
+		evntID := v.Events[key].ID - 1
+		if evntID < len(evntNames) {
+			v.Events[key].Name = filter(evntNames[evntID])
 		}
-		if evntId < len(evntDescrs) {
-			v.Events[key].Description = filterElementImages(filter(filterColors(evntDescrs[evntId])))
+		if evntID < len(evntDescrs) {
+			v.Events[key].Description = filterElementImages(filter(filterColors(evntDescrs[evntID])))
 		}
 	}
 
@@ -387,7 +391,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		return nil, err
 	}
 
-	for key, _ := range v.Maps {
+	for key := range v.Maps {
 		if key < len(mapNames) {
 			v.Maps[key].Name = mapNames[key]
 		}
@@ -432,7 +436,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		return nil, err
 	}
 
-	for key, _ := range v.Areas {
+	for key := range v.Areas {
 		if key < len(bossStart) {
 			v.Areas[key].BossStart = filterColors(bossStart[key])
 		}
@@ -463,7 +467,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 	}
 
 	// Archwitch Likeability
-	for key, _ := range v.ArchwitchFriendships {
+	for key := range v.ArchwitchFriendships {
 		if key < len(awlikeability) {
 			v.ArchwitchFriendships[key].Likability = filter(awlikeability[key])
 		}
@@ -471,7 +475,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 
 	kingDescription, err := readStringFile(root + "/string/MsgKingTitle_en.strb")
 	// king series descriptions
-	for key, _ := range v.ArchwitchSeries {
+	for key := range v.ArchwitchSeries {
 		if key < len(kingDescription) {
 			v.ArchwitchSeries[key].Description = filter(kingDescription[key])
 		}
@@ -489,7 +493,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 	}
 
 	// Deck Bonuses
-	for key, _ := range v.DeckBonuses {
+	for key := range v.DeckBonuses {
 		if key < len(dbonusName) {
 			v.DeckBonuses[key].Name = filter(dbonusName[key])
 		}
@@ -525,7 +529,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		return nil, err
 	}
 
-	for key, _ := range v.Items {
+	for key := range v.Items {
 		if key < len(itemdsc) {
 			v.Items[key].Description = filter(itemdsc[key])
 		}
@@ -554,7 +558,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 		return nil, err
 	}
 
-	for key, _ := range v.Structures {
+	for key := range v.Structures {
 		if key < len(buildname) {
 			v.Structures[key].Name = filter(buildname[key])
 		}
@@ -569,7 +573,7 @@ func (v *VcFile) Read(root string) ([]byte, error) {
 			debug.PrintStack()
 			return data, err
 		}
-		for key, _ := range v.ThorEvents {
+		for key := range v.ThorEvents {
 			if key < len(thorTitle) {
 				v.ThorEvents[key].Title = filter(thorTitle[key])
 			}
@@ -633,13 +637,13 @@ func cleanCardName(name string, card *Card) string {
 	ret = strings.Replace(ret, "(Ur)", "(UR)", -1)
 	ret = strings.Replace(ret, "(Lr)", "(LR)", -1)
 	// old cards
-	oldIdx := sort.SearchInts(retiredCards, card.Id)
-	if oldIdx >= 0 && oldIdx < len(retiredCards) && retiredCards[oldIdx] == card.Id {
+	oldIDx := sort.SearchInts(retiredCards, card.ID)
+	if oldIDx >= 0 && oldIDx < len(retiredCards) && retiredCards[oldIDx] == card.ID {
 		ret += " (Old)"
 	} else {
 		// new cards that are named the same as an old card that is still active
-		newIdx := sort.SearchInts(newCards, card.Id)
-		if newIdx >= 0 && newIdx < len(newCards) && newCards[newIdx] == card.Id {
+		newIDx := sort.SearchInts(newCards, card.ID)
+		if newIDx >= 0 && newIDx < len(newCards) && newCards[newIDx] == card.ID {
 			ret += " (New)"
 		}
 	}

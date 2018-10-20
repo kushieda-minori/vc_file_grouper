@@ -1,46 +1,46 @@
 package vc
 
-import ()
-
-//"kings" is the list of Archwitches
+// Archwitch represents the "kings" istructure in the data file
 type Archwitch struct {
-	Id            int                   `json:"_id"`
-	KingSeriesId  int                   `json:"king_series_id"`
-	CardMasterId  int                   `json:"card_master_id"`
-	StatusGroupId int                   `json:"status_group_id"`
-	PublicFlg     int                   `json:"public_flg"`
-	RareFlg       int                   `json:"rare_flg"`
-	RareIntensity int                   `json:"rare_intensity"`
-	BattleTime    int                   `json:"battle_time"`
-	Exp           int                   `json:"exp"`
-	MaxFriendship int                   `json:"max_friendship"`
-	SkillId1      int                   `json:"skill_id_1"`
-	SkillId2      int                   `json:"skill_id_2"`
-	WeatherId     int                   `json:"weather_id"`
-	ModelName     string                `json:"model_name"`
-	ChainRatio2   int                   `json:"chain_ratio_2"`
-	ServantId1    int                   `json:"servant_id_1"`
-	ServantId2    int                   `json:"servant_id_2"`
-	likeability   []ArchwitchFriendship 
+	ID            int    `json:"_id"`
+	KingSeriesID  int    `json:"king_series_id"`
+	CardMasterID  int    `json:"card_master_id"`
+	StatusGroupID int    `json:"status_group_id"`
+	PublicFlg     int    `json:"public_flg"`
+	RareFlg       int    `json:"rare_flg"`
+	RareIntensity int    `json:"rare_intensity"`
+	BattleTime    int    `json:"battle_time"`
+	Exp           int    `json:"exp"`
+	MaxFriendship int    `json:"max_friendship"`
+	SkillID1      int    `json:"skill_id_1"`
+	SkillID2      int    `json:"skill_id_2"`
+	WeatherID     int    `json:"weather_id"`
+	ModelName     string `json:"model_name"`
+	ChainRatio2   int    `json:"chain_ratio_2"`
+	ServantID1    int    `json:"servant_id_1"`
+	ServantID2    int    `json:"servant_id_2"`
+	likeability   []ArchwitchFriendship
 }
 
-//"king_series" is the list of AW events and the RR prizes
-//Indicates what "event" the archwitch was a part of
+// ArchwitchSeries is "king_series" in the data file and is the
+// list of AW events and the RR prizes Indicates what "event"
+// the archwitch was a part of.
 type ArchwitchSeries struct {
-	Id                   int         `json:"_id"`
-	RewardCardId         int         `json:"reward_card_id"`
-	PublicStartDatetime  Timestamp   `json:"public_start_datetime"`
-	PublicEndDatetime    Timestamp   `json:"public_end_datetime"`
-	ReceiveLimitDatetime Timestamp   `json:"receive_limit_datetime"`
-	IsBeginnerKing       int         `json:"is_beginner_king"`
-	Description          string      `json:"-"`
-	archwitches          []Archwitch 
+	ID                   int       `json:"_id"`
+	RewardCardID         int       `json:"reward_card_id"`
+	PublicStartDatetime  Timestamp `json:"public_start_datetime"`
+	PublicEndDatetime    Timestamp `json:"public_end_datetime"`
+	ReceiveLimitDatetime Timestamp `json:"receive_limit_datetime"`
+	IsBeginnerKing       int       `json:"is_beginner_king"`
+	Description          string    `json:"-"`
+	archwitches          []Archwitch
 }
 
-//"king_friendship" is the chance of friendship increasing on an AW
+//ArchwitchFriendship is "king_friendship" in the data file.
+// It is the chance of friendship increasing on an AW.
 type ArchwitchFriendship struct {
-	Id         int    `json:"_id"`
-	KingId     int    `json:"king_id"`
+	ID         int    `json:"_id"`
+	KingID     int    `json:"king_id"`
 	Friendship int    `json:"friendship"`
 	UpRate     int    `json:"up_rate"`
 	Likability string `json:"-"` // MsgKingFriendshipDesc_en.strb
@@ -50,31 +50,32 @@ type ArchwitchFriendship struct {
 Limited items and enemies `lmtd`
 */
 type Limited struct {
-	Id               int       `json:"_id"`
-	LmtdTypeId       int       `json:"lmtd_type_id"`
-	DayTypeId        int       `json:"day_type_id"`
+	ID               int       `json:"_id"`
+	LmtdTypeID       int       `json:"lmtd_type_id"`
+	DayTypeID        int       `json:"day_type_id"`
 	StartDatetime    Timestamp `json:"start_datetime"`
 	EndDatetime      Timestamp `json:"end_datetime"`
-	GroupId          int       `json:"group_id"`
+	GroupID          int       `json:"group_id"`
 	Enable           int       `json:"enable"`
 	JumpBanner       int       `json:"jump_banner"`
-	MapId            int       `json:"map_id"`
-	QuestId          int       `json:"quest_id"`
+	MapID            int       `json:"map_id"`
+	QuestID          int       `json:"quest_id"`
 	JumpButton       int       `json:"jump_button"`
-	TexIdCell        int       `json:"tex_id_cell"`
-	TexIdImage       int       `json:"tex_id_image"`
-	TexIdImage2      int       `json:"tex_id_image2"`
+	TexIDCell        int       `json:"tex_id_cell"`
+	TexIDImage       int       `json:"tex_id_image"`
+	TexIDImage2      int       `json:"tex_id_image2"`
 	EnableDoButton   int       `json:"enable_do_button"`
 	EnableRewardDisp int       `json:"enable_reward_disp"`
-	RewardCardId     int       `json:"reward_card_id"`
-	RewardItemId     int       `json:"reward_item_id"`
+	RewardCardID     int       `json:"reward_card_id"`
+	RewardItemID     int       `json:"reward_item_id"`
 }
 
-func (a *Archwitch) Likeability(v *VcFile) []ArchwitchFriendship {
+// Likeability information for the AW
+func (a *Archwitch) Likeability(v *VFile) []ArchwitchFriendship {
 	if a.likeability == nil {
 		a.likeability = make([]ArchwitchFriendship, 0)
 		for _, af := range v.ArchwitchFriendships {
-			if a.Id == af.KingId {
+			if a.ID == af.KingID {
 				a.likeability = append(a.likeability, af)
 			}
 		}
@@ -82,23 +83,27 @@ func (a *Archwitch) Likeability(v *VcFile) []ArchwitchFriendship {
 	return a.likeability
 }
 
+// IsFAW returns true if this AW is a FAW
 func (a *Archwitch) IsFAW() bool {
-	return a.ServantId1 > 0 && a.StatusGroupId != 25
+	return a.ServantID1 > 0 && a.StatusGroupID != 25
 }
 
+// IsLAW returns true if this AW is a LAW
 func (a *Archwitch) IsLAW() bool {
-	return a.ServantId1 > 0 && a.StatusGroupId == 25
+	return a.ServantID1 > 0 && a.StatusGroupID == 25
 }
 
+// IsAW returns true if this AW is a normal AW (not a FAW or a LAW)
 func (a *Archwitch) IsAW() bool {
 	return !(a.IsFAW() || a.IsLAW())
 }
 
-func (as *ArchwitchSeries) Archwitches(v *VcFile) []Archwitch {
+// Archwitches in this AW Series
+func (as *ArchwitchSeries) Archwitches(v *VFile) []Archwitch {
 	if as.archwitches == nil {
 		as.archwitches = make([]Archwitch, 0)
 		for _, a := range v.Archwitches {
-			if as.Id == a.KingSeriesId {
+			if as.ID == a.KingSeriesID {
 				as.archwitches = append(as.archwitches, a)
 			}
 		}

@@ -1,9 +1,9 @@
 package vc
 
-//from the master_data file, this is the "levels" field
+// Level from the master_data file, this is the "levels" field
 // this matches to the Kingdom level in the game
 type Level struct {
-	Id        int `json:"_id"`        // level
+	ID        int `json:"_id"`        // level
 	Energy    int `json:"energy"`     // energy
 	Exp       int `json:"exp"`        //exp
 	FriendNum int `json:"friend_num"` //number of friends
@@ -12,7 +12,9 @@ type Level struct {
 	KingCost  int `json:"king_cost"`  // battle points
 }
 
+// LRResource the amount of "gems" needed to upgrade an LR
+// card level. The ID matches to the card level
 type LRResource struct {
-	Id     int `json:"_id"`
+	ID     int `json:"_id"`
 	Elixir int `json:"elixir"`
 }

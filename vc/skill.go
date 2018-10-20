@@ -7,21 +7,21 @@ import (
 	"strings"
 )
 
-// Skills info from master data field "skills" These match to the string in the files:
+// Skill info from master data field "skills" These match to the string in the files:
 // MsgSkillName_en.strb
 // MsgSkillDesc_en.strb - shown on the card
 // MsgSkillFire_en.strb - used during battle
 type Skill struct {
-	Id           int `json:"_id"`            // skill id
+	ID           int `json:"_id"`            // skill id
 	LevelType    int `json:"level_type"`     // level type for skill upgrade costs
 	Type         int `json:"_type"`          // skill type
-	TimingId     int `json:"timing_id"`      // id for timing
+	TimingID     int `json:"timing_id"`      // id for timing
 	MaxCount     int `json:"max_count"`      // max procs
-	CondSceneId  int `json:"cond_scene_id"`  // cond scene
-	CondSideId   int `json:"cond_side_id"`   // cond side
-	CondId       int `json:"cond_id"`        // cond
-	KingSeriesId int `json:"king_series_id"` // king series
-	KingId       int `json:"king_id"`        // king id
+	CondSceneID  int `json:"cond_scene_id"`  // cond scene
+	CondSideID   int `json:"cond_side_id"`   // cond side
+	CondID       int `json:"cond_id"`        // cond
+	KingSeriesID int `json:"king_series_id"` // king series
+	KingID       int `json:"king_id"`        // king id
 	CondParam    int `json:"cond_param"`     // cond param
 	DefaultRatio int `json:"default_ratio"`  // default proc rate
 	MaxRatio     int `json:"max_ratio"`      // max proc rate
@@ -29,7 +29,7 @@ type Skill struct {
 	PublicStartDatetime Timestamp `json:"public_start_datetime"`
 	PublicEndDatetime   Timestamp `json:"public_end_datetime"`
 	// effect info
-	EffectId           int `json:"effect_id"`
+	EffectID           int `json:"effect_id"`
 	EffectParam        int `json:"effect_param"`
 	EffectParam2       int `json:"effect_param_2"`
 	EffectParam3       int `json:"effect_param_3"`
@@ -38,11 +38,11 @@ type Skill struct {
 	EffectDefaultValue int `json:"effect_default_value"`
 	EffectMaxValue     int `json:"effect_max_value"`
 	// target info
-	TargetScopeId int `json:"target_scope_id"`
-	TargetLogicId int `json:"target_logic_id"`
+	TargetScopeID int `json:"target_scope_id"`
+	TargetLogicID int `json:"target_logic_id"`
 	TargetParam   int `json:"target_param"`
 	// animation info
-	AnimationId             int             `json:"animation_id"`
+	AnimationID             int             `json:"animation_id"`
 	ThorHammerAnimationType json.RawMessage `json:"thorhammer_animation_type"`
 
 	Name         string `json:"name"`        //skill name from strings file
@@ -51,38 +51,44 @@ type Skill struct {
 	_skillLevels []SkillLevel
 }
 
+// SkillLevel information
 type SkillLevel struct {
-	Id        int `json:"_id"`        // skill id
+	ID        int `json:"_id"`        // skill id
 	LevelType int `json:"level_type"` // level type for skill upgrade costs
 	Level     int `json:"level"`      // level
 	Medal     int `json:"medal"`      // medals to upgrade to the next level
 }
 
+// Effect of the skill (this is a visual effect, not the ability)
 func (s *Skill) Effect() string {
-	if val, ok := Effect[s.EffectId]; ok {
+	if val, ok := Effect[s.EffectID]; ok {
 		return val
-	} else {
-		return "New/Unknown"
 	}
+	return "New/Unknown"
 }
 
+// SkillMin minimum skill ability
 func (s *Skill) SkillMin() string {
 	return formatSkill(s.Description, s.EffectDefaultValue, s.DefaultRatio)
 }
 
+// SkillMax maximum skill ability
 func (s *Skill) SkillMax() string {
 	return formatSkill(s.Description, s.EffectMaxValue, s.MaxRatio)
 }
 
+// FireMin minimum skill ability fire information
 func (s *Skill) FireMin() string {
 	return formatSkill(s.Fire, s.EffectDefaultValue, -1)
 }
 
+// FireMax maximum skill ability fire information
 func (s *Skill) FireMax() string {
 	return formatSkill(s.Fire, s.EffectMaxValue, -1)
 }
 
-func (s *Skill) Levels(v *VcFile) []SkillLevel {
+// Levels level information for the skill
+func (s *Skill) Levels(v *VFile) []SkillLevel {
 	if s._skillLevels == nil {
 		s._skillLevels = make([]SkillLevel, 0)
 		for _, sl := range v.SkillLevels {
@@ -94,27 +100,28 @@ func (s *Skill) Levels(v *VcFile) []SkillLevel {
 	return s._skillLevels
 }
 
+// TargetScope scope of the target (enemy or allies)
 func (s *Skill) TargetScope() string {
-	if val, ok := TargetScope[s.TargetScopeId]; ok {
+	if val, ok := TargetScope[s.TargetScopeID]; ok {
 		return val
-	} else {
-		return ""
 	}
+	return ""
 }
 
+// TargetLogic what target to hit
 func (s *Skill) TargetLogic() string {
-	if val, ok := TargetLogic[s.TargetLogicId]; ok {
+	if val, ok := TargetLogic[s.TargetLogicID]; ok {
 		return val
-	} else {
-		return ""
 	}
+	return ""
 }
 
+// SkillScan searches for a skill by ID
 func SkillScan(id int, skills []Skill) *Skill {
 	if id > 0 {
 		l := len(skills)
-		i := sort.Search(l, func(i int) bool { return skills[i].Id >= id })
-		if i >= 0 && i < l && skills[i].Id == id {
+		i := sort.Search(l, func(i int) bool { return skills[i].ID >= id })
+		if i >= 0 && i < l && skills[i].ID == id {
 			return &(skills[i])
 		}
 	}
@@ -135,12 +142,14 @@ func formatSkill(descr string, effect, ratio int) (s string) {
 	return s
 }
 
+// TargetScope to hit whom
 var TargetScope = map[int]string{
 	-1: "",
 	1:  "Allies",
 	2:  "Enemies",
 }
 
+// TargetLogic Target Scope detail
 var TargetLogic = map[int]string{
 	1:  "Target Field",
 	2:  "Lowest HP",
@@ -157,6 +166,7 @@ var TargetLogic = map[int]string{
 	20: "Random Target (Salvo)",
 }
 
+// Effect of the skill
 var Effect = map[int]string{
 	1:  "Heal",
 	2:  "Deal Damage",

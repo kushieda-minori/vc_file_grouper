@@ -15,10 +15,12 @@ import (
 	"sort"
 	"strconv"
 	"time"
+
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-var VcData *vc.VcFile
+// VcData Main data file
+var VcData *vc.VFile
 var masterDataStr string
 var vcfilepath string
 
@@ -42,7 +44,7 @@ func main() {
 
 	if _, err := os.Stat(vcfilepath); os.IsNotExist(err) {
 		usage()
-		VcData = &vc.VcFile{}
+		VcData = &vc.VFile{}
 		//return
 	} else {
 		readMasterData(vcfilepath)
@@ -118,7 +120,7 @@ func usage() {
 }
 
 func readMasterData(files string) error {
-	data := vc.VcFile{}
+	data := vc.VFile{}
 	b, err := data.Read(files)
 	if err != nil {
 		if VcData == nil {
@@ -221,7 +223,7 @@ func rawDataKeysHandler(w http.ResponseWriter, r *http.Request) {
 
 	mk := make([]string, len(c))
 	i := 0
-	for s, _ := range c {
+	for s := range c {
 		mk[i] = s
 		i++
 	}

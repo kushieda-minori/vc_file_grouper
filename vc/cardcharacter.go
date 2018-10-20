@@ -1,10 +1,10 @@
 package vc
 
-// Card Character info from master_data field "card_character"
+// CardCharacter info from master_data field "card_character"
 // These match up with all the MsgChara*_en.strb files
 type CardCharacter struct {
-	// card  charcter Id, matches to Card -> card_chara_id
-	Id int `json:"_id"`
+	// card  charcter ID, matches to Card -> card_chara_id
+	ID int `json:"_id"`
 	// hidden param 1
 	HiddenParam1 int `json:"hidden_param_1"`
 	// `hidden param 2
@@ -25,12 +25,13 @@ type CardCharacter struct {
 	_cards          []Card
 }
 
-func (c *CardCharacter) Cards(v *VcFile) []Card {
+// Cards that are under this character
+func (c *CardCharacter) Cards(v *VFile) []Card {
 	if c._cards == nil || len(c._cards) == 0 {
 		c._cards = make([]Card, 0)
 		for _, val := range v.Cards {
 			//return the first one we find.
-			if val.CardCharaId == c.Id {
+			if val.CardCharaID == c.ID {
 				c._cards = append(c._cards, val)
 			}
 		}
@@ -38,7 +39,8 @@ func (c *CardCharacter) Cards(v *VcFile) []Card {
 	return c._cards
 }
 
-func (c *CardCharacter) FirstEvoCard(v *VcFile) (card *Card) {
+// FirstEvoCard first evolution of the cards under this character
+func (c *CardCharacter) FirstEvoCard(v *VFile) (card *Card) {
 	card = nil
 	for i, cd := range c.Cards(v) {
 		if card == nil || cd.EvolutionRank <= card.EvolutionRank {
@@ -48,11 +50,12 @@ func (c *CardCharacter) FirstEvoCard(v *VcFile) (card *Card) {
 	return
 }
 
-func CardCharacterScan(charId int, chars []CardCharacter) *CardCharacter {
-	if charId > 0 {
+// CardCharacterScan searches for a character by id
+func CardCharacterScan(charID int, chars []CardCharacter) *CardCharacter {
+	if charID > 0 {
 		for k, val := range chars {
 			//return the first one we find.
-			if val.Id == charId {
+			if val.ID == charID {
 				return &chars[k]
 			}
 		}

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -26,12 +27,12 @@ func thorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	thorId, err := strconv.Atoi(pathParts[1])
-	if err != nil || thorId < 1 || thorId > len(VcData.ThorEvents) {
+	thorID, err := strconv.Atoi(pathParts[1])
+	if err != nil || thorID < 1 || thorID > len(VcData.ThorEvents) {
 		http.Error(w, "Invalid Thor Event id "+pathParts[1], http.StatusNotFound)
 		return
 	}
-	t := vc.ThorEventScan(thorId, VcData.ThorEvents)
+	t := vc.ThorEventScan(thorID, VcData.ThorEvents)
 
 	if t == nil {
 		http.Error(w, "Invalid Thor Event id "+pathParts[1], http.StatusNotFound)
@@ -58,7 +59,7 @@ func thorTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</head><body>\n")
 	io.WriteString(w, "<div>\n")
 	io.WriteString(w, "<table><thead><tr>\n")
-	io.WriteString(w, "<th>Id</th>"+
+	io.WriteString(w, "<th>ID</th>"+
 		"<th>Start</th>"+
 		"<th>End</th>"+
 		"<th>Rank Start</th>"+
@@ -74,7 +75,7 @@ func thorTableHandler(w http.ResponseWriter, r *http.Request) {
 			"<td>%s</td>"+
 			"<td>%s</td>"+
 			"<td>%s</td>",
-			t.Id,
+			t.ID,
 			t.PublicStartDatetime.Format(time.RFC3339),
 			t.PublicEndDatetime.Format(time.RFC3339),
 			t.RankingStartDatetime.Format(time.RFC3339),

@@ -4,27 +4,27 @@ import (
 	"time"
 )
 
-// the "garden" field lists some details about the kindoms available to the players
+// Garden the "garden" field lists some details about the kindoms available to the players
 type Garden struct { // garden
-	Id           int `json:"_id"`
+	ID           int `json:"_id"`
 	BlockX       int `json:"block_x"`
 	BlockY       int `json:"block_y"`
 	UnlockBlockX int `json:"unlock_block_x"`
 	UnlockBlockY int `json:"unlock_block_y"`
-	BgId         int `json:"bg_id"`
+	BgID         int `json:"bg_id"`
 	Debris       int `json:"debris"`
-	CastleId     int `json:"castle_id"`
+	CastleID     int `json:"castle_id"`
 }
 
-//"garden_debris" lists information about clearing debris from your kingdom
+// GardenDebris "garden_debris" lists information about clearing debris from your kingdom
 type GardenDebris struct { // garden_debris
-	Id           int `json:"_id"`
-	GardenId     int `json:"garden_id"`
-	StructureId  int `json:"structure_id"`
+	ID           int `json:"_id"`
+	GardenID     int `json:"garden_id"`
+	StructureID  int `json:"structure_id"`
 	X            int `json:"x"`
 	Y            int `json:"y"`
 	LevelCap     int `json:"level_cap"`
-	UnlockAreaId int `json:"unlock_area_id"`
+	UnlockAreaID int `json:"unlock_area_id"`
 	Time         int `json:"time"`
 	Coin         int `json:"coin"`
 	Iron         int `json:"iron"`
@@ -33,20 +33,20 @@ type GardenDebris struct { // garden_debris
 	Exp          int `json:"exp"`
 }
 
-// "structures" gives information about availability of for buildinds.
+// Structure "structures" gives information about availability of for buildinds.
 // The names of the structions in this list match those in the MsgBuildingName_en.strb file
 type Structure struct { // structures
-	Id              int    `json:"_id"`
-	StructureTypeId int    `json:"structure_type_id"`
+	ID              int    `json:"_id"`
+	StructureTypeID int    `json:"structure_type_id"`
 	MaxLv           int    `json:"max_lv"`
-	UnlockCastleId  int    `json:"unlock_castle_id"`
+	UnlockCastleID  int    `json:"unlock_castle_id"`
 	UnlockCastleLv  int    `json:"unlock_castle_lv"`
-	UnlockAreaId    int    `json:"unlock_area_id"`
+	UnlockAreaID    int    `json:"unlock_area_id"`
 	BaseNum         int    `json:"base_num"`
 	SizeX           int    `json:"size_x"`
 	SizeY           int    `json:"size_y"`
 	Order           int    `json:"order"`
-	EventId         int    `json:"event_id"`
+	EventID         int    `json:"event_id"`
 	Visitable       int    `json:"visitable"`
 	Step            int    `json:"step"`
 	Passable        int    `json:"passable"`
@@ -55,7 +55,7 @@ type Structure struct { // structures
 	Stockable       int    `json:"stockable"`
 	Flag            int    `json:"flag"`
 	GardenFlag      int    `json:"garden_flag"`
-	ShopGroupDecoId int    `json:"shop_group_deco_id"`
+	ShopGroupDecoID int    `json:"shop_group_deco_id"`
 	Name            string `json:"-"` // MsgBuildingName_en.strb
 	Description     string `json:"-"` // MsgBuildingDesc_en.strb
 	_levels         []StructureLevel
@@ -65,14 +65,14 @@ type Structure struct { // structures
 
 // "event_structures" lists any structures available in the current event
 
-// structure_level lists the level for the available structures
+// StructureLevel structure_level lists the level for the available structures
 type StructureLevel struct { // structure_level
-	Id           int            `json:"_id"`
-	StructureId  int            `json:"structure_id"`
+	ID           int            `json:"_id"`
+	StructureID  int            `json:"structure_id"`
 	Level        int            `json:"level"`
-	TexId        int            `json:"tex_id"`
+	TexID        int            `json:"tex_id"`
 	LevelCap     int            `json:"level_cap"`
-	UnlockAreaId int            `json:"unlock_area_id"`
+	UnlockAreaID int            `json:"unlock_area_id"`
 	Time         int            `json:"time"`
 	BeginnerTime int            `json:"beginner_time"`
 	Coin         int            `json:"coin"`
@@ -86,10 +86,11 @@ type StructureLevel struct { // structure_level
 	Bank         *BankLevel     `json:"-"`
 }
 
+// StructureCost cost to build a structure
 type StructureCost struct { // structure_num_cost
-	Id          int `json:"_id"`
+	ID          int `json:"_id"`
 	Num         int `json:"num"`
-	StructureId int `json:"structure_id"`
+	StructureID int `json:"structure_id"`
 	Coin        int `json:"coin"`
 	Iron        int `json:"iron"`
 	Ether       int `json:"ether"`
@@ -97,42 +98,46 @@ type StructureCost struct { // structure_num_cost
 	Elixir      int `json:"elixir"`
 }
 
+// ResourceLevel amount of resources needed to level up a structure
 type ResourceLevel struct { // resource
-	Id           int `json:"_id"`
-	StructureId  int `json:"structure_id"`
+	ID           int `json:"_id"`
+	StructureID  int `json:"structure_id"`
 	Level        int `json:"level"`
 	IntervalTime int `json:"interval_time"`
-	JobTexId     int `json:"job_tex_id"`
-	FixTexId     int `json:"fix_tex_id"`
-	ResourceId   int `json:"resource_id"`
+	JobTexID     int `json:"job_tex_id"`
+	FixTexID     int `json:"fix_tex_id"`
+	ResourceID   int `json:"resource_id"`
 	Income       int `json:"income"`
 }
 
+// BankLevel the amount of resouces a bank can hold at a certain level
 type BankLevel struct { //bank_level
-	Id          int `json:"_id"`
-	StructureId int `json:"structure_id"`
+	ID          int `json:"_id"`
+	StructureID int `json:"structure_id"`
 	Level       int `json:"level"`
-	LowTexId    int `json:"low_tex_id"`
-	MidTexId    int `json:"mid_tex_id"`
-	HiTexId     int `json:"hi_tex_id"`
-	ResourceId  int `json:"resource_id"`
+	LowTexID    int `json:"low_tex_id"`
+	MidTexID    int `json:"mid_tex_id"`
+	HiTexID     int `json:"hi_tex_id"`
+	ResourceID  int `json:"resource_id"`
 	Value       int `json:"value"`
 }
 
+// CastleLevel Castle level information
 type CastleLevel struct { //castle_level
-	Id                int `json:"_id"`
-	CastleStructureId int `json:"castle_structure_id"`
+	ID                int `json:"_id"`
+	CastleStructureID int `json:"castle_structure_id"`
 	Level             int `json:"level"`
-	StructureId       int `json:"structure_id"`
+	StructureID       int `json:"structure_id"`
 	BaseAdd           int `json:"base_add"`
 	Max               int `json:"max"`
 }
 
-func (s *Structure) Levels(v *VcFile) []StructureLevel {
+// Levels of a structure
+func (s *Structure) Levels(v *VFile) []StructureLevel {
 	if s._levels == nil {
 		s._levels = make([]StructureLevel, 0)
 		for _, l := range v.StructureLevels {
-			if l.StructureId == s.Id {
+			if l.StructureID == s.ID {
 				l.cacheResource(v) // cache off the resource level for later
 				l.cacheBank(v)     // cache off the bank level for later
 				s._levels = append(s._levels, l)
@@ -142,11 +147,12 @@ func (s *Structure) Levels(v *VcFile) []StructureLevel {
 	return s._levels
 }
 
-func (s *Structure) PurchaseCosts(v *VcFile) []StructureCost {
+// PurchaseCosts costs of purchasing the structure
+func (s *Structure) PurchaseCosts(v *VFile) []StructureCost {
 	if s._numCosts == nil {
 		s._numCosts = make([]StructureCost, 0)
 		for _, p := range v.StructureNumCosts {
-			if p.StructureId == s.Id {
+			if p.StructureID == s.ID {
 				s._numCosts = append(s._numCosts, p)
 			}
 		}
@@ -154,25 +160,28 @@ func (s *Structure) PurchaseCosts(v *VcFile) []StructureCost {
 	return s._numCosts
 }
 
+// IsResource returns true if the building is a resource building
 func (s *Structure) IsResource() bool {
-	return s.StructureTypeId == 1 ||
-		s.StructureTypeId == 2 ||
-		s.StructureTypeId == 3 ||
-		s.StructureTypeId == 20
+	return s.StructureTypeID == 1 ||
+		s.StructureTypeID == 2 ||
+		s.StructureTypeID == 3 ||
+		s.StructureTypeID == 20
 }
 
+// IsBank returns true if the structure is a resource bank
 func (s *Structure) IsBank() bool {
-	return s.StructureTypeId == 4 ||
-		s.StructureTypeId == 5 ||
-		s.StructureTypeId == 6 ||
-		s.StructureTypeId == 21
+	return s.StructureTypeID == 4 ||
+		s.StructureTypeID == 5 ||
+		s.StructureTypeID == 6 ||
+		s.StructureTypeID == 21
 }
 
-func (s *Structure) CastleBonuses(v *VcFile) []CastleLevel {
+// CastleBonuses bonuses obtained by leveling up the castle
+func (s *Structure) CastleBonuses(v *VFile) []CastleLevel {
 	if s._castleBonus == nil {
 		s._castleBonus = make([]CastleLevel, 0)
 		for _, cl := range v.CastleLevels {
-			if cl.StructureId == s.Id {
+			if cl.StructureID == s.ID {
 				s._castleBonus = append(s._castleBonus, cl)
 			}
 		}
@@ -180,7 +189,8 @@ func (s *Structure) CastleBonuses(v *VcFile) []CastleLevel {
 	return s._castleBonus
 }
 
-func (s *Structure) MaxQty(v *VcFile) int {
+// MaxQty Number a player can own
+func (s *Structure) MaxQty(v *VFile) int {
 	maxCLB := 0
 	clbs := s.CastleBonuses(v)
 	for i, clb := range clbs {
@@ -191,20 +201,20 @@ func (s *Structure) MaxQty(v *VcFile) int {
 	return clbs[maxCLB].Max
 }
 
-func (l *StructureLevel) cacheResource(v *VcFile) {
+func (l *StructureLevel) cacheResource(v *VFile) {
 	if l.Resource == nil {
 		for i, sr := range v.ResourceLevels {
-			if sr.StructureId == l.StructureId && sr.Level == l.Level {
+			if sr.StructureID == l.StructureID && sr.Level == l.Level {
 				l.Resource = &v.ResourceLevels[i]
 				break
 			}
 		}
 	}
 }
-func (l *StructureLevel) cacheBank(v *VcFile) {
+func (l *StructureLevel) cacheBank(v *VFile) {
 	if l.Bank == nil {
 		for i, br := range v.BankLevels {
-			if br.StructureId == l.StructureId && br.Level == l.Level {
+			if br.StructureID == l.StructureID && br.Level == l.Level {
 				l.Bank = &v.BankLevels[i]
 				break
 			}
@@ -212,21 +222,24 @@ func (l *StructureLevel) cacheBank(v *VcFile) {
 	}
 }
 
+// Rate rate of resouce gained
 func (sr *ResourceLevel) Rate() int {
 	return sr.Income / sr.IntervalTime
 }
 
+// FillTime time until the resource is full and won't produce anymore
 func (sr *ResourceLevel) FillTime() time.Duration {
 	return time.Duration(float64(sr.Income)/float64(sr.Rate())*60.0) * time.Second
 }
 
-func StructureScan(id int, v *VcFile) *Structure {
+// StructureScan searches for a structure by ID
+func StructureScan(id int, v *VFile) *Structure {
 	if id > 0 {
-		if id < len(v.Structures) && v.Structures[id-1].Id == id {
+		if id < len(v.Structures) && v.Structures[id-1].ID == id {
 			return &v.Structures[id-1]
 		}
 		for k, val := range v.Structures {
-			if val.Id == id {
+			if val.ID == id {
 				return &v.Structures[k]
 			}
 		}

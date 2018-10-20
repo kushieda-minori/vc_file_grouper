@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"time"
+
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -13,10 +14,10 @@ func archwitchHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<table><thead><tr><th>Series ID</th><th>Reward Card Name</th><th>Event Start</th><th>Event End</th><th>Recieve Limit</th><th>Is Beginner</th></tr></thead><tbody>\n")
 	for i := len(VcData.ArchwitchSeries) - 1; i >= 0; i-- {
 		series := VcData.ArchwitchSeries[i]
-		rewardCard := vc.CardScan(series.RewardCardId, VcData.Cards)
+		rewardCard := vc.CardScan(series.RewardCardID, VcData.Cards)
 		fmt.Fprintf(w,
 			"<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>",
-			series.Id,
+			series.ID,
 			imageLink(rewardCard),
 			series.Description,
 			series.PublicStartDatetime.Format(time.RFC3339),
@@ -27,37 +28,37 @@ func archwitchHandler(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "\n<tr><td></td><td></td><td colspan=5><table border=1>")
 		io.WriteString(w, "<thead><tr><th>ID</th><th>Card Master / servants</th><th>Skill 1</th><th>Skill 2</th><th>Status Group</th><th>Public</th><th>Rarity</th><th>RareIntensity</th><th>Battle Time</th><th>Exp</th><th>Max Friendship</th><th>Weather</th><th>Model</th><th>Chain Ratio 2</th><th>Likability</th></tr></thead><tbody>")
 		for _, aw := range series.Archwitches(VcData) {
-			cardMaster := vc.CardScan(aw.CardMasterId, VcData.Cards)
-			skill1 := vc.SkillScan(aw.SkillId1, VcData.Skills)
-			skill2 := vc.SkillScan(aw.SkillId2, VcData.Skills)
-			//servant1 := vc.CardScanCharacter(aw.ServantId1, VcData.Cards)
-			//servant2 := vc.CardScanCharacter(aw.ServantId2, VcData.Cards)
+			cardMaster := vc.CardScan(aw.CardMasterID, VcData.Cards)
+			skill1 := vc.SkillScan(aw.SkillID1, VcData.Skills)
+			skill2 := vc.SkillScan(aw.SkillID2, VcData.Skills)
+			//servant1 := vc.CardScanCharacter(aw.ServantID1, VcData.Cards)
+			//servant2 := vc.CardScanCharacter(aw.ServantID2, VcData.Cards)
 			fmt.Fprintf(w,
 				"<tr><td>%d</td><td>%s",
-				aw.Id,
+				aw.ID,
 				imageLink(cardMaster),
 			)
-			if aw.ServantId1 > 0 {
+			if aw.ServantID1 > 0 {
 				fmt.Fprintf(w,
 					"<br />%s (%d)<br />%s (%d)",
 					imageLink(nil),
-					aw.ServantId1,
+					aw.ServantID1,
 					imageLink(nil),
-					aw.ServantId2,
+					aw.ServantID2,
 				)
 			}
 			io.WriteString(w, "</td>")
 			fmt.Fprintf(w, "<td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td><td>%d</td><td>%s</td>",
 				printSkill(skill1),
 				printSkill(skill2),
-				aw.StatusGroupId,
+				aw.StatusGroupID,
 				aw.PublicFlg,
 				aw.RareFlg,
 				aw.RareIntensity,
 				aw.BattleTime,
 				aw.Exp,
 				aw.MaxFriendship,
-				aw.WeatherId,
+				aw.WeatherID,
 				aw.ModelName,
 				aw.ChainRatio2,
 				printFriendship(&aw),
@@ -75,8 +76,8 @@ func imageLink(card *vc.Card) string {
 	}
 	return fmt.Sprintf("<img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">(%d) %s</a>",
 		card.Image(),
-		card.Id,
-		card.Id,
+		card.ID,
+		card.ID,
 		card.Name,
 	)
 }

@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-//"items" is the list of Archwitches
+// Item "items" is the list of Archwitches
 type Item struct {
-	Id                int       `json:"_id"`
-	GroupId           int       `json:"group_id"`
+	ID                int       `json:"_id"`
+	GroupID           int       `json:"group_id"`
 	Name              string    `json:"name"`
 	Ratio             int       `json:"ratio"`
 	Day               int       `json:"day"`
@@ -35,17 +35,19 @@ type Item struct {
 	MsgUse            string    `json:"-"` // MsgShopItemUseResult_en.strb
 }
 
+// ItemScan searches for an item by ID
 func ItemScan(id int, items []Item) *Item {
 	if id > 0 {
 		l := len(items)
-		i := sort.Search(l, func(i int) bool { return items[i].Id >= id })
-		if i >= 0 && i < l && items[i].Id == id {
+		i := sort.Search(l, func(i int) bool { return items[i].ID >= id })
+		if i >= 0 && i < l && items[i].ID == id {
 			return &(items[i])
 		}
 	}
 	return nil
 }
 
+// CleanCustomSkillNoImage cleans VC images and replaces with the element name
 func CleanCustomSkillNoImage(name string) string {
 	ret := name
 	ret = strings.Replace(ret, "<img=24>", "PASSION", -1)
@@ -55,6 +57,7 @@ func CleanCustomSkillNoImage(name string) string {
 	return ret
 }
 
+// CleanCustomSkillImage cleans the VC images and replaces with Wiki tempaltes
 func CleanCustomSkillImage(name string) string {
 	ret := name
 	ret = strings.Replace(ret, "<img=24>", "{{Passion}}", -1)

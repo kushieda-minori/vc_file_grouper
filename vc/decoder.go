@@ -1,6 +1,3 @@
-// Original Author: Kellindil Maendellyn
-// http://valkyriecrusade.wikia.com/wiki/Thread:119497#19
-// Converted to go from java
 package vc
 
 import (
@@ -11,7 +8,11 @@ import (
 	"os"
 )
 
-// File header : 16 bytes
+// Original Author: Kellindil Maendellyn
+// http://valkyriecrusade.wikia.com/wiki/Thread:119497#19
+// Converted to go from java
+
+// Decode File header : 16 bytes
 // 4 bytes for the signature (CODE)
 // 8 bytes of unknown data
 // 4 bytes for one of the encoding's keys (the second key is a magic number
@@ -51,7 +52,7 @@ func Decode(file string) ([]byte, error) {
 	return result, nil
 }
 
-//Decodes the file and saves the result in the same location as the coded file
+// DecodeAndSave Decodes the file and saves the result in the same location as the coded file
 func DecodeAndSave(file string) (string, []byte, error) {
 	data, err := Decode(file)
 	if err != nil {

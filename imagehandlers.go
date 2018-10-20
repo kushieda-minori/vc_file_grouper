@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -153,7 +154,7 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 
 	fullpath := imagePath + imgname
 
-	var cardId, fileName string
+	var cardID, fileName string
 	decodeOnFly := false
 	if strings.HasSuffix(strings.ToLower(imgname), ".png") {
 		if _, err := os.Stat(fullpath); os.IsNotExist(err) {
@@ -166,7 +167,7 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 			fullpath = fullpath[:len(fullpath)-4]
 			decodeOnFly = true
 		}
-		cardId = imgname[3 : len(imgname)-4]
+		cardID = imgname[3 : len(imgname)-4]
 	} else {
 		if _, err := os.Stat(fullpath + ".png"); os.IsNotExist(err) {
 			// png file is not cached
@@ -179,10 +180,10 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 		} else {
 			fullpath = fullpath + ".png"
 		}
-		cardId = imgname[3:]
+		cardID = imgname[3:]
 	}
 
-	card := vc.CardScanImage(cardId, VcData.Cards)
+	card := vc.CardScanImage(cardID, VcData.Cards)
 	ext := ".png"
 	if strings.Contains(fullpath, "/thumb/") {
 		ext = "_icon.png"
@@ -196,13 +197,13 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 			fileName = fileName + "_G" + ext
 		} else if card.EvolutionRank == 0 {
 			fileName = fileName + ext
-		} else if card.EvolutionRank == card.LastEvolutionRank || card.EvolutionCardId <= 0 {
+		} else if card.EvolutionRank == card.LastEvolutionRank || card.EvolutionCardID <= 0 {
 			fileName = fileName + "_H" + ext
 		} else {
 			fileName = fileName + "_" + strconv.Itoa(card.EvolutionRank) + ext
 		}
 	} else {
-		//os.Stderr.WriteString("Card info not found for image " + cardId + "\n")
+		//os.Stderr.WriteString("Card info not found for image " + cardID + "\n")
 		if decodeOnFly {
 			fileName = imgname + ext
 		} else {

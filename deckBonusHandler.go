@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -45,7 +46,7 @@ func deckBonusHandler(w http.ResponseWriter, r *http.Request) {
   <td>%d</td>
   <td>%s</td>
 </tr>`,
-			d.Id,
+			d.ID,
 			d.Name,
 			d.Description,
 			d.AtkDefFlg,

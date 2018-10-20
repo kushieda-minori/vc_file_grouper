@@ -6,11 +6,11 @@ import (
 	"strings"
 )
 
-// Unit Bonuses from master file field "deck_bonus"
+// DeckBonus Unit Bonuses from master file field "deck_bonus"
 // these match with the strings in MsgDeckBonusName_en.strb
 // and MsgDeckBonusDesc_en.strb
 type DeckBonus struct {
-	Id          int    `json:"_id"`         // bonus id
+	ID          int    `json:"_id"`         // bonus id
 	AtkDefFlg   int    `json:"atk_def_flg"` // Affects ATK or DEF
 	ValueType   int    `json:"value_type"`  // ?
 	Value       int    `json:"value"`       // amount of the modifier
@@ -22,33 +22,34 @@ type DeckBonus struct {
 	Description string `json:"description"`
 }
 
-func (d *DeckBonus) Conditions(v *VcFile) DeckBonusCondArray {
+// Conditions that trigger the bonus
+func (d *DeckBonus) Conditions(v *VFile) DeckBonusCondArray {
 	ret := make([]DeckBonusCond, 0)
 	for _, val := range v.DeckBonusConditions {
-		if val.DeckBonusId == d.Id {
+		if val.DeckBonusID == d.ID {
 			switch d.CondType {
 			case 2:
-				c := CardScanCharacter(val.RefId, v.Cards)
+				c := CardScanCharacter(val.RefID, v.Cards)
 				if c == nil || c.Name == "" {
 					continue
 				} else {
 					val.RefName = c.Name
 				}
 			case 3:
-				switch val.RefId {
+				switch val.RefID {
+				case 1:
+					val.RefName = "Light"
 				case 2:
 					val.RefName = "Passion"
 				case 3:
 					val.RefName = "Cool"
-				case 1:
-					val.RefName = "Light"
 				case 4:
 					val.RefName = "Dark"
 				default:
-					val.RefName = fmt.Sprintf("Unknown Element (%d)", val.RefId)
+					val.RefName = fmt.Sprintf("Unknown Element (%d)", val.RefID)
 				}
 			case 8:
-				switch val.RefId {
+				switch val.RefID {
 				case 1:
 					val.RefName = "N"
 				case 2:
@@ -70,11 +71,10 @@ func (d *DeckBonus) Conditions(v *VcFile) DeckBonusCondArray {
 				case 11:
 					val.RefName = "GUR"
 				default:
-					val.RefName = fmt.Sprintf("Unknown Rarity (%d)", val.RefId)
+					val.RefName = fmt.Sprintf("Unknown Rarity (%d)", val.RefID)
 				}
 			default:
-				val.RefName = fmt.Sprintf("Unknown Type (%d)", val.CondTypeId)
-
+				val.RefName = fmt.Sprintf("Unknown Type (%d)", val.CondTypeID)
 			}
 			ret = append(ret, val)
 		}
@@ -82,22 +82,24 @@ func (d *DeckBonus) Conditions(v *VcFile) DeckBonusCondArray {
 	return ret
 }
 
-// Deck Bonus Conditions from masfter file field "deck_bonus_cond"
+// DeckBonusCond Deck Bonus Conditions from masfter file field "deck_bonus_cond"
 type DeckBonusCond struct {
-	Id          int `json:"_id"`           // deck condition id
-	DeckBonusId int `json:"deck_bonus_id"` // deck bonus id
+	ID          int `json:"_id"`           // deck condition id
+	DeckBonusID int `json:"deck_bonus_id"` // deck bonus id
 	Group       int `json:"group"`         // group
-	CondTypeId  int `json:"cond_type_id"`  // type id
+	CondTypeID  int `json:"cond_type_id"`  // type id
 	/* reference to the card character id, (type 2)
 	* the element, (type 3)
 	* or the rarity (type 8)
 	* Elements: 2=Passion, 3=Cool, 1=Light, 4=Dark
 	* Rarity: 4=H/HN, 5=R/HR, 6=SR/HSR, 9=UR/HUR, 11=GSR/GUR
 	 */
-	RefId   int    `json:"ref_id"`
+	RefID   int    `json:"ref_id"`
 	RefName string `json:"-"` //lookup of card name
 }
 
+// DeckBonusByCountAndName sort interface to sort by number of items
+// under the deck bonus and by name
 type DeckBonusByCountAndName []DeckBonus
 
 func (d DeckBonusByCountAndName) Len() int {
@@ -137,6 +139,7 @@ func (d *DeckBonusCond) String() string {
 	return d.RefName
 }
 
+// DeckBonusCondArray helper to work on arrays of deck bonus conditions
 type DeckBonusCondArray []DeckBonusCond
 
 func (da DeckBonusCondArray) String() string {
@@ -147,7 +150,7 @@ func (da DeckBonusCondArray) String() string {
 	for i, d := range da {
 		strs[i] = d.String()
 	}
-	if da[0].CondTypeId == 2 {
+	if da[0].CondTypeID == 2 {
 		sort.Strings(strs)
 	}
 	return "[ " + strings.Join(strs, ", ") + " ]"

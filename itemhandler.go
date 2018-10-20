@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -31,7 +32,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 			"<td>%d</td>"+
 			"<td>%d</td>"+
 			"</tr>",
-			e.Id,
+			e.ID,
 			vc.CleanCustomSkillImage(e.Name),
 			vc.CleanCustomSkillImage(e.NameEng),
 			url.QueryEscape(vc.CleanCustomSkillNoImage(e.NameEng)),
@@ -40,7 +41,7 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 			e.DescriptionInShop,
 			e.DescriptionSub,
 			e.MsgUse,
-			e.GroupId,
+			e.GroupID,
 			e.EndDatetime.Format(time.RFC3339),
 			e.MaxCount,
 			e.LimitedItemFlg,
