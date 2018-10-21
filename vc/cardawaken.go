@@ -23,7 +23,7 @@ type CardAwaken struct {
 	Material5Count int `json:"material_5_count"`
 	// Order in the "Awoken Card List maybe?"
 	Order int `json:"order"`
-	// IsClosed true if unreleased. false hides it from the "Awoken Card List" in the upgrade screen
+	// IsClosed true if unreleased (hides it from the "Awoken Card List" in the upgrade screen)
 	IsClosed int `json:"is_closed"`
 }
 
