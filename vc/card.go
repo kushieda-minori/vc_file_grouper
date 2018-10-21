@@ -56,84 +56,6 @@ type Card struct {
 	_allEvos map[string]*Card
 }
 
-// Amalgamation List of possible Fusions (Amalgamations) from master file field "fusion_list"
-type Amalgamation struct {
-	// internal id
-	ID int `json:"_id"`
-	// card 1
-	Material1 int `json:"material_1"`
-	// card 2
-	Material2 int `json:"material_2"`
-	// card 3
-	Material3 int `json:"material_3"`
-	// card 4
-	Material4 int `json:"material_4"`
-	// resulting card
-	FusionCardID int `json:"fusion_card_id"`
-}
-
-// CardAwaken list of possible card awakeneings and their cost from master file field "card_awaken"
-type CardAwaken struct {
-	// awakening id
-	ID int `json:"_id"`
-	// case card
-	BaseCardID int `json:"base_card_id"`
-	// result card
-	ResultCardID int `json:"result_card_id"`
-	// chance of success
-	Percent int `json:"percent"`
-	// material information
-	Material1Item  int `json:"material_1_item"`
-	Material1Count int `json:"material_1_count"`
-	Material2Item  int `json:"material_2_item"`
-	Material2Count int `json:"material_2_count"`
-	Material3Item  int `json:"material_3_item"`
-	Material3Count int `json:"material_3_count"`
-	Material4Item  int `json:"material_4_item"`
-	Material4Count int `json:"material_4_count"`
-	Material5Item  int `json:"material_5_item"`
-	Material5Count int `json:"material_5_count"`
-	// ? Order in the "Awoken Card List maybe?"
-	Order int `json:"order"`
-	// still available?
-	IsClosed int `json:"is_closed"`
-}
-
-// Item needed to awaken the source card
-func (ca *CardAwaken) Item(i int, data *VFile) *Item {
-	if i < 1 || i > 5 {
-		return nil
-	}
-	switch i {
-	case 1:
-		if ca.Material1Item <= 0 {
-			return nil
-		}
-		return ItemScan(ca.Material1Item, data.Items)
-	case 2:
-		if ca.Material2Item <= 0 {
-			return nil
-		}
-		return ItemScan(ca.Material2Item, data.Items)
-	case 3:
-		if ca.Material3Item <= 0 {
-			return nil
-		}
-		return ItemScan(ca.Material3Item, data.Items)
-	case 4:
-		if ca.Material4Item <= 0 {
-			return nil
-		}
-		return ItemScan(ca.Material4Item, data.Items)
-	case 5:
-		if ca.Material5Item <= 0 {
-			return nil
-		}
-		return ItemScan(ca.Material5Item, data.Items)
-	}
-	return nil
-}
-
 // FollowerKind for soldier replenishment on cards
 //these come from master file field "follower_kinds"
 type FollowerKind struct {
@@ -942,46 +864,6 @@ func (c *Card) FriendshipEvent(v *VFile) string {
 	return ch.FriendshipEvent
 }
 
-// MaterialCount number of materials used in an amalgamation
-func (a *Amalgamation) MaterialCount() int {
-	if a.Material4 > 0 {
-		return 4
-	}
-	if a.Material3 > 0 {
-		return 3
-	}
-	return 2
-}
-
-// Materials material used in the amalgamation
-func (a *Amalgamation) Materials(v *VFile) []*Card {
-	ret := make([]*Card, 0)
-	ret = append(ret, CardScan(a.Material1, v.Cards))
-	ret = append(ret, CardScan(a.Material2, v.Cards))
-	if a.Material3 > 0 {
-		ret = append(ret, CardScan(a.Material3, v.Cards))
-	}
-	if a.Material4 > 0 {
-		ret = append(ret, CardScan(a.Material4, v.Cards))
-	}
-	ret = append(ret, CardScan(a.FusionCardID, v.Cards))
-	return ret
-}
-
-// ByMaterialCount sorting interface for sorting amalgamations
-// by the number of materials
-type ByMaterialCount []Amalgamation
-
-func (s ByMaterialCount) Len() int {
-	return len(s)
-}
-func (s ByMaterialCount) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-func (s ByMaterialCount) Less(i, j int) bool {
-	return s[i].MaterialCount() < s[j].MaterialCount()
-}
-
 // CardList helper interface for looking at lists of cards
 type CardList []Card
 
@@ -1005,6 +887,71 @@ func (d CardList) Latest() *Card {
 		}
 	}
 	return max
+}
+
+func getAmalBaseCard(card *Card, v *VFile) *Card {
+	if card.IsAmalgamation(v.Amalgamations) {
+		os.Stdout.WriteString(fmt.Sprintf("Checking Amalgamation base for Card: %d, Name: %s, Evo: %d\n", card.ID, card.Name, card.EvolutionRank))
+		for _, amal := range card.Amalgamations(v) {
+			if card.ID == amal.FusionCardID {
+				// material 1
+				ac := CardScan(amal.Material1, v.Cards)
+				if ac.ID != card.ID && ac.Name == card.Name {
+					if ac.IsAmalgamation(v.Amalgamations) {
+						return getAmalBaseCard(ac, v)
+					}
+					return ac
+				}
+				// material 2
+				ac = CardScan(amal.Material2, v.Cards)
+				if ac.ID != card.ID && ac.Name == card.Name {
+					if ac.IsAmalgamation(v.Amalgamations) {
+						return getAmalBaseCard(ac, v)
+					}
+					return ac
+				}
+				// material 3
+				ac = CardScan(amal.Material3, v.Cards)
+				if ac != nil && ac.ID != card.ID && ac.Name == card.Name {
+					if ac.IsAmalgamation(v.Amalgamations) {
+						return getAmalBaseCard(ac, v)
+					}
+					return ac
+				}
+				// material 4
+				ac = CardScan(amal.Material4, v.Cards)
+				if ac != nil && ac.ID != card.ID && ac.Name == card.Name {
+					if ac.IsAmalgamation(v.Amalgamations) {
+						return getAmalBaseCard(ac, v)
+					}
+					return ac
+				}
+			}
+		}
+	}
+	return card
+}
+
+func checkEndCards(c *Card, v *VFile) (awakening, amalCard, amalAwakening *Card) {
+	awakening = c.AwakensTo(v)
+	// check for Amalgamation
+	if c.HasAmalgamation(v.Amalgamations) {
+		amals := c.Amalgamations(v)
+		for _, amal := range amals {
+			// get the result card
+			tamalCard := CardScan(amal.FusionCardID, v.Cards)
+			if tamalCard != nil && tamalCard.ID != c.ID {
+				os.Stdout.WriteString(fmt.Sprintf("Found amalgamation: %d, Name: '%s', Evo: %d\n", tamalCard.ID, tamalCard.Name, tamalCard.EvolutionRank))
+				if tamalCard.Name == c.Name {
+					amalCard = tamalCard
+					// check for amal awakening
+					amalAwakening = amalCard.AwakensTo(v)
+					return // awakening, amalCard, amalAwakening
+				}
+			}
+		}
+	}
+	return // awakening, amalCard, amalAwakening
 }
 
 // GetEvolutions gets the evolutions for a card including Awakening and same character(by name) amalgamations
@@ -1041,54 +988,8 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 			os.Stdout.WriteString(fmt.Sprintf("Looking for earliest Evo for Card: %d, Name: %s, Evo: %d\n", c2.ID, c2.Name, c2.EvolutionRank))
 		}
 
-		// check for a base amalgamation with the same name
-		// if there is one, use that for the base card
-		var getAmalBaseCard func(card *Card) *Card
-		getAmalBaseCard = func(card *Card) *Card {
-			if card.IsAmalgamation(v.Amalgamations) {
-				os.Stdout.WriteString(fmt.Sprintf("Checking Amalgamation base for Card: %d, Name: %s, Evo: %d\n", card.ID, card.Name, card.EvolutionRank))
-				for _, amal := range card.Amalgamations(v) {
-					if card.ID == amal.FusionCardID {
-						// material 1
-						ac := CardScan(amal.Material1, v.Cards)
-						if ac.ID != card.ID && ac.Name == card.Name {
-							if ac.IsAmalgamation(v.Amalgamations) {
-								return getAmalBaseCard(ac)
-							}
-							return ac
-						}
-						// material 2
-						ac = CardScan(amal.Material2, v.Cards)
-						if ac.ID != card.ID && ac.Name == card.Name {
-							if ac.IsAmalgamation(v.Amalgamations) {
-								return getAmalBaseCard(ac)
-							}
-							return ac
-						}
-						// material 3
-						ac = CardScan(amal.Material3, v.Cards)
-						if ac != nil && ac.ID != card.ID && ac.Name == card.Name {
-							if ac.IsAmalgamation(v.Amalgamations) {
-								return getAmalBaseCard(ac)
-							}
-							return ac
-						}
-						// material 4
-						ac = CardScan(amal.Material4, v.Cards)
-						if ac != nil && ac.ID != card.ID && ac.Name == card.Name {
-							if ac.IsAmalgamation(v.Amalgamations) {
-								return getAmalBaseCard(ac)
-							}
-							return ac
-						}
-					}
-				}
-			}
-			return card
-		}
-
 		// at this point we should have the first card in the evolution path
-		c2 = getAmalBaseCard(c2)
+		c2 = getAmalBaseCard(c2, v)
 
 		// get earliest evo (again...)
 		for tmp := c2.PrevEvo(v); tmp != nil; tmp = tmp.PrevEvo(v) {
@@ -1100,28 +1001,6 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 
 		// populate the actual evos.
 
-		checkEndCards := func(c *Card) (awakening, amalCard, amalAwakening *Card) {
-			awakening = c.AwakensTo(v)
-			// check for Amalgamation
-			if c.HasAmalgamation(v.Amalgamations) {
-				amals := c.Amalgamations(v)
-				for _, amal := range amals {
-					// get the result card
-					tamalCard := CardScan(amal.FusionCardID, v.Cards)
-					if tamalCard != nil && tamalCard.ID != c.ID {
-						os.Stdout.WriteString(fmt.Sprintf("Found amalgamation: %d, Name: '%s', Evo: %d\n", tamalCard.ID, tamalCard.Name, tamalCard.EvolutionRank))
-						if tamalCard.Name == c.Name {
-							amalCard = tamalCard
-							// check for amal awakening
-							amalAwakening = amalCard.AwakensTo(v)
-							return // awakening, amalCard, amalAwakening
-						}
-					}
-				}
-			}
-			return // awakening, amalCard, amalAwakening
-		}
-
 		for nextEvo := c2; nextEvo != nil; nextEvo = nextEvo.NextEvo(v) {
 			os.Stdout.WriteString(fmt.Sprintf("Next Evo is Card: %d, Name: '%s', Evo: %d\n", nextEvo.ID, nextEvo.Name, nextEvo.EvolutionRank))
 			if nextEvo.EvolutionRank <= 0 {
@@ -1132,7 +1011,7 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 				ret[evoRank] = nextEvo
 				if nextEvo.LastEvolutionRank < 0 {
 					// check for awakening
-					awakening, amalCard, amalAwakening := checkEndCards(nextEvo)
+					awakening, amalCard, amalAwakening := checkEndCards(nextEvo, v)
 					if awakening != nil {
 						ret["G"] = awakening
 					}
@@ -1150,7 +1029,7 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 			} else if nextEvo.EvolutionRank == c2.LastEvolutionRank || nextEvo.Rarity()[0] == 'H' || nextEvo.LastEvolutionRank < 0 {
 				ret["H"] = nextEvo
 				// check for awakening
-				awakening, amalCard, amalAwakening := checkEndCards(nextEvo)
+				awakening, amalCard, amalAwakening := checkEndCards(nextEvo, v)
 				if awakening != nil {
 					ret["G"] = awakening
 				}
