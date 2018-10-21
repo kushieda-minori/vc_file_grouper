@@ -1,2 +1,5 @@
 vc_file_grouper*
 .idea
+launch.json
+.vscode
+debug
