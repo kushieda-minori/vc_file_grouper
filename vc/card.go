@@ -245,9 +245,18 @@ func calculateLrAmalStat(sourceMatStat, lrMatStat, resultMax int) (ret int) {
 }
 
 // calculateAwakeningStat calculated the stats after awakening
-func (c *Card) calculateAwakeningStat(materialStatAtLvl1, resultStat int) (ret int) {
-	// ret = int(float64(materialStatAtLvl1)*0.20124178) + resultStat
-	return -1
+func (c *Card) calculateAwakeningStat(mat *Card, materialAtkAtLvl1, materialDefAtLvl1, materialSolAtLvl1 int, atLevel1 bool) (atk, def, soldier int) {
+	// Awakening calculation thanks to Elle (https://docs.google.com/spreadsheets/d/1CT41xSuHyibfDSHQOyON4DkCPRlwW2WCy_ag6Pb76z4/edit?usp=sharing)
+	if atLevel1 {
+		atk = c.DefaultOffense + (materialAtkAtLvl1 - mat.DefaultOffense)
+		def = c.DefaultDefense + (materialDefAtLvl1 - mat.DefaultDefense)
+		soldier = c.DefaultFollower + (materialSolAtLvl1 - mat.DefaultFollower)
+	} else {
+		atk = c.MaxOffense + (materialAtkAtLvl1 - mat.DefaultOffense)
+		def = c.MaxDefense + (materialDefAtLvl1 - mat.DefaultDefense)
+		soldier = c.MaxFollower + (materialSolAtLvl1 - mat.DefaultFollower)
+	}
+	return
 }
 
 // AmalgamationStandard calculated the stats if the materials have been evo'd using
@@ -522,9 +531,7 @@ func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
 			if mat != nil {
 				// if this is an awakwening, calculate the max...
 				matAtk, matDef, matSoldier := mat.EvoStandardLvl1(v)
-				atk = c.calculateAwakeningStat(matAtk, c.MaxOffense)
-				def = c.calculateAwakeningStat(matDef, c.MaxDefense)
-				soldier = c.calculateAwakeningStat(matSoldier, c.MaxFollower)
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 				os.Stdout.WriteString(fmt.Sprintf("Awakening standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
@@ -591,9 +598,7 @@ func (c *Card) EvoStandardLvl1(v *VFile) (atk, def, soldier int) {
 			if mat != nil {
 				// if this is an awakwening, calculate the max...
 				matAtk, matDef, matSoldier := mat.EvoStandardLvl1(v)
-				atk = c.calculateAwakeningStat(matAtk, c.DefaultOffense)
-				def = c.calculateAwakeningStat(matDef, c.DefaultDefense)
-				soldier = c.calculateAwakeningStat(matSoldier, c.DefaultFollower)
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
 				os.Stdout.WriteString(fmt.Sprintf("Awakening standard card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
@@ -660,9 +665,7 @@ func (c *Card) Evo6Card(v *VFile) (atk, def, soldier int) {
 			if mat != nil {
 				// if this is an awakwening, calculate the max...
 				matAtk, matDef, matSoldier := mat.Evo6CardLvl1(v)
-				atk = c.calculateAwakeningStat(matAtk, c.MaxOffense)
-				def = c.calculateAwakeningStat(matDef, c.MaxDefense)
-				soldier = c.calculateAwakeningStat(matSoldier, c.MaxFollower)
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 				os.Stdout.WriteString(fmt.Sprintf("Awakening 6 card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
@@ -736,9 +739,7 @@ func (c *Card) Evo6CardLvl1(v *VFile) (atk, def, soldier int) {
 			if mat != nil {
 				// if this is an awakwening, calculate the max...
 				matAtk, matDef, matSoldier := mat.Evo6CardLvl1(v)
-				atk = c.calculateAwakeningStat(matAtk, c.DefaultOffense)
-				def = c.calculateAwakeningStat(matDef, c.DefaultDefense)
-				soldier = c.calculateAwakeningStat(matSoldier, c.DefaultFollower)
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
 				os.Stdout.WriteString(fmt.Sprintf("Awakening 6 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
@@ -813,10 +814,8 @@ func (c *Card) Evo9Card(v *VFile) (atk, def, soldier int) {
 			if mat != nil {
 				// if this is an awakwening, calculate the max...
 				matAtk, matDef, matSoldier := mat.Evo9CardLvl1(v)
-				atk = c.calculateAwakeningStat(matAtk, c.MaxOffense)
-				def = c.calculateAwakeningStat(matDef, c.MaxDefense)
-				soldier = c.calculateAwakeningStat(matSoldier, c.MaxFollower)
-				os.Stdout.WriteString(fmt.Sprintf("Awakening 6 card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
+				os.Stdout.WriteString(fmt.Sprintf("Awakening 9 card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
 				// check for Evo Accident
@@ -896,10 +895,8 @@ func (c *Card) Evo9CardLvl1(v *VFile) (atk, def, soldier int) {
 			if mat != nil {
 				// if this is an awakwening, calculate the max...
 				matAtk, matDef, matSoldier := mat.Evo9CardLvl1(v)
-				atk = c.calculateAwakeningStat(matAtk, c.DefaultOffense)
-				def = c.calculateAwakeningStat(matDef, c.DefaultDefense)
-				soldier = c.calculateAwakeningStat(matSoldier, c.DefaultFollower)
-				os.Stdout.WriteString(fmt.Sprintf("Awakening 6 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				os.Stdout.WriteString(fmt.Sprintf("Awakening 9 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
 				// check for Evo Accident
@@ -977,9 +974,7 @@ func (c *Card) EvoPerfect(v *VFile) (atk, def, soldier int) {
 			// if this is an awakwening, calculate the max...
 			mat := c.AwakensFrom(v)
 			matAtk, matDef, matSoldier := mat.EvoPerfectLvl1(v)
-			atk = c.calculateAwakeningStat(matAtk, c.MaxOffense)
-			def = c.calculateAwakeningStat(matDef, c.MaxDefense)
-			soldier = c.calculateAwakeningStat(matSoldier, c.MaxFollower)
+			atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 			os.Stdout.WriteString(fmt.Sprintf("Awakening Perfect card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 		} else {
@@ -1044,9 +1039,7 @@ func (c *Card) EvoPerfectLvl1(v *VFile) (atk, def, soldier int) {
 			// if this is an awakwening, calculate the max...
 			mat := c.AwakensFrom(v)
 			matAtk, matDef, matSoldier := mat.EvoPerfectLvl1(v)
-			atk = c.calculateAwakeningStat(matAtk, c.DefaultOffense)
-			def = c.calculateAwakeningStat(matDef, c.DefaultDefense)
-			soldier = c.calculateAwakeningStat(matSoldier, c.DefaultFollower)
+			atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
 			os.Stdout.WriteString(fmt.Sprintf("Awakening Perfect card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
 				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 		} else {

@@ -635,11 +635,13 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 	atk = strconv.Itoa(atkStat)
 	def = strconv.Itoa(defStat)
 	sol = strconv.Itoa(solStat)
-	if evo.EvolutionRank >= 2 && !strings.HasSuffix(evo.Rarity(), "LR") {
+	if evo.EvolutionRank >= 2 &&
+		!strings.HasSuffix(evo.Rarity(), "LR") &&
+		evo.Rarity()[0] != 'G' {
 		// TODO need more logic here to check if it's an Amalg vs evo only.
 		// may need different options depending on the type of card.
 		if evo.EvolutionRank == 4 {
-			//If 4* card, calculate 16 card evo stats
+			//If 4* card, calculate 6 card evo stats
 			atkStat, defStat, solStat = evo.Evo6Card(VcData)
 			atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 6)
 			def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 6)
@@ -661,6 +663,24 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 		atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, cards)
 		def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, cards)
 		sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, cards)
+	}
+	if evo.Rarity()[0] == 'G' {
+		evo.EvoStandardLvl1(VcData) // just to print out the level 1 stats
+		awakensFrom := evo.AwakensFrom(VcData)
+		if awakensFrom != nil && awakensFrom.LastEvolutionRank == 4 {
+			//If 4* card, calculate 6 card evo stats
+			atkStat, defStat, solStat = evo.Evo6Card(VcData)
+			atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 6)
+			def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 6)
+			sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 6)
+			if evo.Rarity() != "GLR" {
+				//If SR card, calculate 16 card evo stats
+				atkStat, defStat, solStat = evo.EvoPerfect(VcData)
+				atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 16)
+				def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 16)
+				sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 16)
+			}
+		}
 	}
 	return
 }
