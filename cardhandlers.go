@@ -234,7 +234,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		maxAtk, maxDef, maxSol := maxStats(evo, len(evolutions))
-		fmt.Fprintf(w, "|cost %[1]s = %[2]d\n|atk %[1]s = %[3]d / %s\n|def %[1]s = %[5]d / %s\n|soldiers %[1]s = %[7]d / %s\n",
+		fmt.Fprintf(w, "|cost %[1]s = %[2]d\n|atk %[1]s = %[3]d%s\n|def %[1]s = %[5]d%s\n|soldiers %[1]s = %[7]d%s\n",
 			strings.ToLower(k),
 			evo.DeckCost,
 			evo.DefaultOffense, maxAtk,
@@ -625,60 +625,133 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
-	atkStat, defStat, solStat := evo.EvoStandard(VcData)
-	if atkStat <= 0 {
-		if evo.EvolutionRank == 0 || (numOfEvos == 1 && !evo.IsAmalgamation(VcData.Amalgamations)) {
-			return strconv.Itoa(evo.MaxOffense), strconv.Itoa(evo.MaxDefense), strconv.Itoa(evo.MaxFollower)
+	if evo.CardRarity(VcData).MaxCardLevel == 1 && numOfEvos == 1 {
+		// only X cards have a max level of 1 and they don't evo
+		// only possible amalgamations like Philosopher's Stones
+		if evo.IsAmalgamation(VcData.Amalgamations) {
+			atkStat, defStat, solStat := evo.AmalgamationPerfect(VcData)
+			atk = fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", atkStat)
+			def = fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", defStat)
+			sol = fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", solStat)
 		}
-		return "?", "?", "?"
+		return
 	}
-	atk = strconv.Itoa(atkStat)
-	def = strconv.Itoa(defStat)
-	sol = strconv.Itoa(solStat)
-	if evo.EvolutionRank >= 2 &&
-		!strings.HasSuffix(evo.Rarity(), "LR") &&
-		evo.Rarity()[0] != 'G' {
-		// TODO need more logic here to check if it's an Amalg vs evo only.
-		// may need different options depending on the type of card.
-		if evo.EvolutionRank == 4 {
-			//If 4* card, calculate 6 card evo stats
-			atkStat, defStat, solStat = evo.Evo6Card(VcData)
-			atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 6)
-			def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 6)
-			sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 6)
+	if evo.IsAmalgamation(VcData.Amalgamations) {
+		atkStat, defStat, solStat := evo.EvoStandard(VcData)
+		atk = " / " + strconv.Itoa(atkStat)
+		def = " / " + strconv.Itoa(defStat)
+		sol = " / " + strconv.Itoa(solStat)
+		if strings.HasSuffix(evo.Rarity(), "LR") {
+			// print LR level1 static material amal
+			atkLRStat, defLRStat, solLRStat := evo.AmalgamationLRStaticLvl1(VcData)
+			if atkStat != atkLRStat || defStat != defLRStat || solStat != solLRStat {
+				atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", atkLRStat)
+				def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", defLRStat)
+				sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", solLRStat)
+			}
+			atkPStat, defPStat, solPStat := evo.AmalgamationPerfect(VcData)
+			if atkLRStat != atkPStat || defLRStat != defPStat || solLRStat != solPStat {
+				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", atkPStat)
+				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", defPStat)
+				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", solPStat)
+			}
+		} else {
+			atkPStat, defPStat, solPStat := evo.AmalgamationPerfect(VcData)
+			if atkStat != atkPStat || defStat != defPStat || solStat != solPStat {
+				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", atkPStat)
+				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", defPStat)
+				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", solPStat)
+			}
 		}
-		//If 4* card, calculate 16 card evo stats
-		atkStat, defStat, solStat = evo.EvoPerfect(VcData)
-		var cards int
-		switch evo.EvolutionRank {
-		case 1:
-			cards = 2
-		case 2:
-			cards = 4
-		case 3:
-			cards = 8
-		case 4:
-			cards = 16
+	} else if evo.EvolutionRank < 2 {
+		// not an amalgamation.
+		atkStat, defStat, solStat := evo.EvoStandard(VcData)
+		atk = " / " + strconv.Itoa(atkStat)
+		def = " / " + strconv.Itoa(defStat)
+		sol = " / " + strconv.Itoa(solStat)
+		atkPStat, defPStat, solPStat := evo.EvoPerfect(VcData)
+		if atkStat != atkPStat || defStat != defPStat || solStat != solPStat {
+			atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Evolution}}", atkPStat)
+			def += fmt.Sprintf(" / {{tooltip|%d|Perfect Evolution}}", defPStat)
+			sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Evolution}}", solPStat)
 		}
-		atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, cards)
-		def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, cards)
-		sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, cards)
-	}
-	if evo.Rarity()[0] == 'G' {
-		evo.EvoStandardLvl1(VcData) // just to print out the level 1 stats
-		awakensFrom := evo.AwakensFrom(VcData)
-		if awakensFrom != nil && awakensFrom.LastEvolutionRank == 4 {
-			//If 4* card, calculate 6 card evo stats
-			atkStat, defStat, solStat = evo.Evo6Card(VcData)
-			atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 6)
-			def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 6)
-			sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 6)
-			if evo.Rarity() != "GLR" {
-				//If SR card, calculate 16 card evo stats
-				atkStat, defStat, solStat = evo.EvoPerfect(VcData)
-				atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 16)
-				def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 16)
-				sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 16)
+	} else {
+		// not an amalgamation, Evo Rank >=2 (Awoken cards or 4* evos).
+		atkStat, defStat, solStat := evo.EvoStandard(VcData)
+		atk = " / " + strconv.Itoa(atkStat)
+		def = " / " + strconv.Itoa(defStat)
+		sol = " / " + strconv.Itoa(solStat)
+		if strings.HasSuffix(evo.Rarity(), "LR") {
+			// print LR level1 static material amal
+			atkLRStat, defLRStat, solLRStat := evo.AmalgamationLRStaticLvl1(VcData)
+			if atkStat != atkLRStat || defStat != defLRStat || solStat != solLRStat {
+				atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", atkLRStat)
+				def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", defLRStat)
+				sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", solLRStat)
+			}
+			atkPStat, defPStat, solPStat := evo.AmalgamationPerfect(VcData)
+			if atkLRStat != atkPStat || defLRStat != defPStat || solLRStat != solPStat {
+				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", atkPStat)
+				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", defPStat)
+				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", solPStat)
+			}
+		}
+
+		if !strings.HasSuffix(evo.Rarity(), "LR") &&
+			evo.Rarity()[0] != 'G' {
+			// TODO need more logic here to check if it's an Amalg vs evo only.
+			// may need different options depending on the type of card.
+			if evo.EvolutionRank == 4 {
+				//If 4* card, calculate 6 card evo stats
+				atkStat, defStat, solStat := evo.Evo6Card(VcData)
+				atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 6)
+				def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 6)
+				sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 6)
+				if evo.Rarity() != "GLR" {
+					//If SR card, calculate 9 card evo stats
+					atkStat, defStat, solStat = evo.Evo9Card(VcData)
+					atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 9)
+					def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 9)
+					sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 9)
+				}
+			}
+			//If 4* card, calculate 16 card evo stats
+			atkStat, defStat, solStat := evo.EvoPerfect(VcData)
+			var cards int
+			switch evo.EvolutionRank {
+			case 1:
+				cards = 2
+			case 2:
+				cards = 4
+			case 3:
+				cards = 8
+			case 4:
+				cards = 16
+			}
+			atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, cards)
+			def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, cards)
+			sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, cards)
+		}
+		if evo.Rarity()[0] == 'G' {
+			evo.EvoStandardLvl1(VcData) // just to print out the level 1 G stats
+			awakensFrom := evo.AwakensFrom(VcData)
+			if awakensFrom != nil && awakensFrom.LastEvolutionRank == 4 {
+				//If 4* card, calculate 6 card evo stats
+				atkStat, defStat, solStat := evo.Evo6Card(VcData)
+				atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 6)
+				def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 6)
+				sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 6)
+				if evo.Rarity() != "GLR" {
+					//If SR card, calculate 9 and 16 card evo stats
+					atkStat, defStat, solStat = evo.Evo9Card(VcData)
+					atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 9)
+					def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 9)
+					sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 9)
+					atkStat, defStat, solStat = evo.EvoPerfect(VcData)
+					atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 16)
+					def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 16)
+					sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 16)
+				}
 			}
 		}
 	}

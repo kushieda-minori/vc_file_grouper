@@ -98,11 +98,14 @@ func (c *Card) Image() string {
 }
 
 // Rarity of the card as a plain string
-func (c *Card) Rarity() string {
+func (c *Card) Rarity() (ret string) {
 	if c.CardRareID >= 0 {
-		return Rarity[c.CardRareID-1]
+		ret = Rarity[c.CardRareID-1]
+		if ret == "X" && c.EvolutionRank > 0 && c.EvolutionRank == c.LastEvolutionRank {
+			ret = "HX"
+		}
 	}
-	return ""
+	return
 
 }
 
@@ -227,15 +230,6 @@ func calculateEvoAccidentStat(materialStat, resultMax int) int {
 	return ((int(0.15 * float64(materialStat))) * 2) + resultMax
 }
 
-// calculateAmalStat Calculates Standard Amalgamation assuming everything is max level
-func calculateAmalStat(matStats []int, resultMax int) (ret int) {
-	ret = resultMax
-	for _, matStat := range matStats {
-		ret += int(float64(matStat) * 0.08)
-	}
-	return
-}
-
 // calculateLrAmalStat calculates amalgamation where one of the material is not max stat.
 // this is generaly used for GUR+LR=LR or GLR+LR=GLR
 func calculateLrAmalStat(sourceMatStat, lrMatStat, resultMax int) (ret int) {
@@ -274,20 +268,28 @@ func (c *Card) AmalgamationStandard(v *VFile) (atk, def, soldier int) {
 		return c.EvoStandard(v)
 	}
 	mats := myAmal.Materials(v)
-	matAtks := make([]int, 0)
-	matDefs := make([]int, 0)
-	matSols := make([]int, 0)
+	atk = c.MaxOffense
+	def = c.MaxDefense
+	soldier = c.MaxFollower
 	for _, mat := range mats {
 		if mat.ID != c.ID {
+			os.Stdout.WriteString(fmt.Sprintf("Calculating Standard Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
 			matAtk, matDef, matSoldier := mat.EvoStandard(v)
-			matAtks = append(matAtks, matAtk)
-			matDefs = append(matDefs, matDef)
-			matSols = append(matSols, matSoldier)
+			atk += int(float64(matAtk) * 0.08)
+			def += int(float64(matDef) * 0.08)
+			soldier += int(float64(matSoldier) * 0.08)
 		}
 	}
-	atk = calculateAmalStat(matAtks, c.MaxOffense)
-	def = calculateAmalStat(matDefs, c.MaxDefense)
-	soldier = calculateAmalStat(matSols, c.MaxFollower)
+	rarity := c.CardRarity(v)
+	if atk > rarity.LimtOffense {
+		atk = rarity.LimtOffense
+	}
+	if def > rarity.LimtDefense {
+		def = rarity.LimtDefense
+	}
+	if soldier > rarity.LimtMaxFollower {
+		soldier = rarity.LimtMaxFollower
+	}
 	return
 }
 
@@ -306,20 +308,28 @@ func (c *Card) AmalgamationStandardLvl1(v *VFile) (atk, def, soldier int) {
 		return c.EvoStandardLvl1(v)
 	}
 	mats := myAmal.Materials(v)
-	matAtks := make([]int, 0)
-	matDefs := make([]int, 0)
-	matSols := make([]int, 0)
+	atk = c.DefaultOffense
+	def = c.DefaultDefense
+	soldier = c.DefaultFollower
 	for _, mat := range mats {
 		if mat.ID != c.ID {
+			os.Stdout.WriteString(fmt.Sprintf("Calculating Standard Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
 			matAtk, matDef, matSoldier := mat.EvoStandard(v)
-			matAtks = append(matAtks, matAtk)
-			matDefs = append(matDefs, matDef)
-			matSols = append(matSols, matSoldier)
+			atk += int(float64(matAtk) * 0.08)
+			def += int(float64(matDef) * 0.08)
+			soldier += int(float64(matSoldier) * 0.08)
 		}
 	}
-	atk = calculateAmalStat(matAtks, c.DefaultOffense)
-	def = calculateAmalStat(matDefs, c.DefaultDefense)
-	soldier = calculateAmalStat(matSols, c.DefaultFollower)
+	rarity := c.CardRarity(v)
+	if atk > rarity.LimtOffense {
+		atk = rarity.LimtOffense
+	}
+	if def > rarity.LimtDefense {
+		def = rarity.LimtDefense
+	}
+	if soldier > rarity.LimtMaxFollower {
+		soldier = rarity.LimtMaxFollower
+	}
 	return
 }
 
@@ -338,20 +348,28 @@ func (c *Card) Amalgamation6Card(v *VFile) (atk, def, soldier int) {
 		return c.Evo6Card(v)
 	}
 	mats := myAmal.Materials(v)
-	matAtks := make([]int, 0)
-	matDefs := make([]int, 0)
-	matSols := make([]int, 0)
+	atk = c.MaxOffense
+	def = c.MaxDefense
+	soldier = c.MaxFollower
 	for _, mat := range mats {
 		if mat.ID != c.ID {
+			os.Stdout.WriteString(fmt.Sprintf("Calculating 6-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
 			matAtk, matDef, matSoldier := mat.Evo6Card(v)
-			matAtks = append(matAtks, matAtk)
-			matDefs = append(matDefs, matDef)
-			matSols = append(matSols, matSoldier)
+			atk += int(float64(matAtk) * 0.08)
+			def += int(float64(matDef) * 0.08)
+			soldier += int(float64(matSoldier) * 0.08)
 		}
 	}
-	atk = calculateAmalStat(matAtks, c.MaxOffense)
-	def = calculateAmalStat(matDefs, c.MaxDefense)
-	soldier = calculateAmalStat(matSols, c.MaxFollower)
+	rarity := c.CardRarity(v)
+	if atk > rarity.LimtOffense {
+		atk = rarity.LimtOffense
+	}
+	if def > rarity.LimtDefense {
+		def = rarity.LimtDefense
+	}
+	if soldier > rarity.LimtMaxFollower {
+		soldier = rarity.LimtMaxFollower
+	}
 	return
 }
 
@@ -370,20 +388,28 @@ func (c *Card) Amalgamation6CardLvl1(v *VFile) (atk, def, soldier int) {
 		return c.Evo6CardLvl1(v)
 	}
 	mats := myAmal.Materials(v)
-	matAtks := make([]int, 0)
-	matDefs := make([]int, 0)
-	matSols := make([]int, 0)
+	atk = c.DefaultOffense
+	def = c.DefaultDefense
+	soldier = c.DefaultFollower
 	for _, mat := range mats {
 		if mat.ID != c.ID {
-			matAtk, matDef, matSoldier := mat.Evo6CardLvl1(v)
-			matAtks = append(matAtks, matAtk)
-			matDefs = append(matDefs, matDef)
-			matSols = append(matSols, matSoldier)
+			os.Stdout.WriteString(fmt.Sprintf("Calculating 6-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
+			matAtk, matDef, matSoldier := mat.Evo6Card(v)
+			atk += int(float64(matAtk) * 0.08)
+			def += int(float64(matDef) * 0.08)
+			soldier += int(float64(matSoldier) * 0.08)
 		}
 	}
-	atk = calculateAmalStat(matAtks, c.DefaultOffense)
-	def = calculateAmalStat(matDefs, c.DefaultDefense)
-	soldier = calculateAmalStat(matSols, c.DefaultFollower)
+	rarity := c.CardRarity(v)
+	if atk > rarity.LimtOffense {
+		atk = rarity.LimtOffense
+	}
+	if def > rarity.LimtDefense {
+		def = rarity.LimtDefense
+	}
+	if soldier > rarity.LimtMaxFollower {
+		soldier = rarity.LimtMaxFollower
+	}
 	return
 }
 
@@ -402,20 +428,28 @@ func (c *Card) Amalgamation9Card(v *VFile) (atk, def, soldier int) {
 		return c.Evo9Card(v)
 	}
 	mats := myAmal.Materials(v)
-	matAtks := make([]int, 0)
-	matDefs := make([]int, 0)
-	matSols := make([]int, 0)
+	atk = c.MaxOffense
+	def = c.MaxDefense
+	soldier = c.MaxFollower
 	for _, mat := range mats {
 		if mat.ID != c.ID {
+			os.Stdout.WriteString(fmt.Sprintf("Calculating 9-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
 			matAtk, matDef, matSoldier := mat.Evo9Card(v)
-			matAtks = append(matAtks, matAtk)
-			matDefs = append(matDefs, matDef)
-			matSols = append(matSols, matSoldier)
+			atk += int(float64(matAtk) * 0.08)
+			def += int(float64(matDef) * 0.08)
+			soldier += int(float64(matSoldier) * 0.08)
 		}
 	}
-	atk = calculateAmalStat(matAtks, c.MaxOffense)
-	def = calculateAmalStat(matDefs, c.MaxDefense)
-	soldier = calculateAmalStat(matSols, c.MaxFollower)
+	rarity := c.CardRarity(v)
+	if atk > rarity.LimtOffense {
+		atk = rarity.LimtOffense
+	}
+	if def > rarity.LimtDefense {
+		def = rarity.LimtDefense
+	}
+	if soldier > rarity.LimtMaxFollower {
+		soldier = rarity.LimtMaxFollower
+	}
 	return
 }
 
@@ -434,20 +468,28 @@ func (c *Card) Amalgamation9CardLvl1(v *VFile) (atk, def, soldier int) {
 		return c.Evo9CardLvl1(v)
 	}
 	mats := myAmal.Materials(v)
-	matAtks := make([]int, 0)
-	matDefs := make([]int, 0)
-	matSols := make([]int, 0)
+	atk = c.DefaultOffense
+	def = c.DefaultDefense
+	soldier = c.DefaultFollower
 	for _, mat := range mats {
 		if mat.ID != c.ID {
-			matAtk, matDef, matSoldier := mat.Evo9CardLvl1(v)
-			matAtks = append(matAtks, matAtk)
-			matDefs = append(matDefs, matDef)
-			matSols = append(matSols, matSoldier)
+			os.Stdout.WriteString(fmt.Sprintf("Calculating 9-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
+			matAtk, matDef, matSoldier := mat.Evo9Card(v)
+			atk += int(float64(matAtk) * 0.08)
+			def += int(float64(matDef) * 0.08)
+			soldier += int(float64(matSoldier) * 0.08)
 		}
 	}
-	atk = calculateAmalStat(matAtks, c.DefaultOffense)
-	def = calculateAmalStat(matDefs, c.DefaultDefense)
-	soldier = calculateAmalStat(matSols, c.DefaultFollower)
+	rarity := c.CardRarity(v)
+	if atk > rarity.LimtOffense {
+		atk = rarity.LimtOffense
+	}
+	if def > rarity.LimtDefense {
+		def = rarity.LimtDefense
+	}
+	if soldier > rarity.LimtMaxFollower {
+		soldier = rarity.LimtMaxFollower
+	}
 	return
 }
 
@@ -466,20 +508,28 @@ func (c *Card) AmalgamationPerfect(v *VFile) (atk, def, soldier int) {
 		return c.EvoPerfect(v)
 	}
 	mats := myAmal.Materials(v)
-	matAtks := make([]int, 0)
-	matDefs := make([]int, 0)
-	matSols := make([]int, 0)
+	atk = c.MaxOffense
+	def = c.MaxDefense
+	soldier = c.MaxFollower
 	for _, mat := range mats {
 		if mat.ID != c.ID {
+			os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
 			matAtk, matDef, matSoldier := mat.EvoPerfect(v)
-			matAtks = append(matAtks, matAtk)
-			matDefs = append(matDefs, matDef)
-			matSols = append(matSols, matSoldier)
+			atk += int(float64(matAtk) * 0.08)
+			def += int(float64(matDef) * 0.08)
+			soldier += int(float64(matSoldier) * 0.08)
 		}
 	}
-	atk = calculateAmalStat(matAtks, c.MaxOffense)
-	def = calculateAmalStat(matDefs, c.MaxDefense)
-	soldier = calculateAmalStat(matSols, c.MaxFollower)
+	rarity := c.CardRarity(v)
+	if atk > rarity.LimtOffense {
+		atk = rarity.LimtOffense
+	}
+	if def > rarity.LimtDefense {
+		def = rarity.LimtDefense
+	}
+	if soldier > rarity.LimtMaxFollower {
+		soldier = rarity.LimtMaxFollower
+	}
 	return
 }
 
@@ -498,34 +548,103 @@ func (c *Card) AmalgamationPerfectLvl1(v *VFile) (atk, def, soldier int) {
 		return c.EvoPerfectLvl1(v)
 	}
 	mats := myAmal.Materials(v)
-	matAtks := make([]int, 0)
-	matDefs := make([]int, 0)
-	matSols := make([]int, 0)
+	atk = c.DefaultOffense
+	def = c.DefaultDefense
+	soldier = c.DefaultFollower
 	for _, mat := range mats {
 		if mat.ID != c.ID {
+			os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
 			matAtk, matDef, matSoldier := mat.EvoPerfect(v)
-			matAtks = append(matAtks, matAtk)
-			matDefs = append(matDefs, matDef)
-			matSols = append(matSols, matSoldier)
+			atk += int(float64(matAtk) * 0.08)
+			def += int(float64(matDef) * 0.08)
+			soldier += int(float64(matSoldier) * 0.08)
 		}
 	}
-	atk = calculateAmalStat(matAtks, c.DefaultOffense)
-	def = calculateAmalStat(matDefs, c.DefaultOffense)
-	soldier = calculateAmalStat(matSols, c.DefaultOffense)
+	rarity := c.CardRarity(v)
+	if atk > rarity.LimtOffense {
+		atk = rarity.LimtOffense
+	}
+	if def > rarity.LimtDefense {
+		def = rarity.LimtDefense
+	}
+	if soldier > rarity.LimtMaxFollower {
+		soldier = rarity.LimtMaxFollower
+	}
+	return
+}
+
+// AmalgamationLRStaticLvl1 calculates the amalgamation stats if the material cards
+// have all been evo'd perfectly (4* 16-card evos) with the exception of LR materials
+// that have unchanging stats (i.e. 9999 / 9999)
+func (c *Card) AmalgamationLRStaticLvl1(v *VFile) (atk, def, soldier int) {
+	amalgs := c.Amalgamations(v)
+	var myAmal *Amalgamation
+	for _, a := range amalgs {
+		if c.ID == a.FusionCardID {
+			myAmal = &a
+			break
+		}
+	}
+	if myAmal == nil {
+		if strings.HasSuffix(c.Rarity(), "LR") && c.Element() == "Special" {
+			return c.EvoPerfectLvl1(v)
+		} else {
+			return c.EvoPerfect(v)
+		}
+	}
+	mats := myAmal.Materials(v)
+	atk = c.MaxOffense
+	def = c.MaxDefense
+	soldier = c.MaxFollower
+	for _, mat := range mats {
+		if mat.ID != c.ID {
+			os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
+			if strings.HasSuffix(mat.Rarity(), "LR") && mat.Element() == "Special" {
+				matAtk, matDef, matSoldier := mat.AmalgamationLRStaticLvl1(v)
+				// no 5% bonus for max level
+				atk += int(float64(matAtk) * 0.03)
+				def += int(float64(matDef) * 0.03)
+				soldier += int(float64(matSoldier) * 0.03)
+			} else {
+				matAtk, matDef, matSoldier := mat.AmalgamationLRStaticLvl1(v)
+				atk += int(float64(matAtk) * 0.08)
+				def += int(float64(matDef) * 0.08)
+				soldier += int(float64(matSoldier) * 0.08)
+			}
+		}
+	}
+	rarity := c.CardRarity(v)
+	if atk > rarity.LimtOffense {
+		atk = rarity.LimtOffense
+	}
+	if def > rarity.LimtDefense {
+		def = rarity.LimtDefense
+	}
+	if soldier > rarity.LimtMaxFollower {
+		soldier = rarity.LimtMaxFollower
+	}
 	return
 }
 
 // EvoStandard calculates the standard evolution stat but at max level. If this is a 4* card,
 // calculates for 5-card evo
 func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
+	os.Stdout.WriteString(fmt.Sprintf("Calculating Standard Evo for %s: %d\n", c.Name, c.EvolutionRank))
 	materialCard := c.PrevEvo(v)
 	rarity := c.CardRarity(v)
 	if materialCard == nil {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
 		if c.IsAmalgamation(v.Amalgamations) {
-			// calculate the amalgamation stats here
-			atk, def, soldier = c.AmalgamationStandard(v)
+			if c.EvolutionRank == 0 {
+				// assume we collected this card directly (drop)?
+				atk, def, soldier = c.MaxOffense, c.MaxDefense, c.MaxFollower
+				os.Stdout.WriteString(fmt.Sprintf("Using collected stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			} else {
+				// calculate the amalgamation stats here
+				atk, def, soldier = c.AmalgamationStandard(v)
+				os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			}
 		} else {
 			mat := c.AwakensFrom(v)
 			if mat != nil {
@@ -544,11 +663,13 @@ func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
 					atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
 					def = calculateEvoAccidentStat(matDef, c.MaxDefense)
 					soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
+					os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 				} else {
 					// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
 					atk = c.MaxOffense
 					def = c.MaxDefense
 					soldier = c.MaxFollower
+					os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 				}
 			}
 		}
@@ -569,6 +690,7 @@ func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
 			def = c.calculateEvoStat(matDef, firstEvo.MaxDefense, c.MaxDefense)
 			soldier = c.calculateEvoStat(matSoldier, firstEvo.MaxFollower, c.MaxFollower)
 		}
+		os.Stdout.WriteString(fmt.Sprintf("Using Evo stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 	}
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
@@ -579,6 +701,7 @@ func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
 	if soldier > rarity.LimtMaxFollower {
 		soldier = rarity.LimtMaxFollower
 	}
+	os.Stdout.WriteString(fmt.Sprintf("Final stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 	return
 }
 
@@ -591,8 +714,15 @@ func (c *Card) EvoStandardLvl1(v *VFile) (atk, def, soldier int) {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
 		if c.IsAmalgamation(v.Amalgamations) {
-			// calculate the amalgamation stats here
-			atk, def, soldier = c.AmalgamationStandardLvl1(v)
+			if c.EvolutionRank == 0 {
+				// assume we collected this card directly (drop)?
+				atk, def, soldier = c.DefaultOffense, c.DefaultDefense, c.DefaultFollower
+				os.Stdout.WriteString(fmt.Sprintf("Using collected stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			} else {
+				// calculate the amalgamation stats here
+				atk, def, soldier = c.AmalgamationStandardLvl1(v)
+				os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			}
 		} else {
 			mat := c.AwakensFrom(v)
 			if mat != nil {
