@@ -71,6 +71,7 @@ func main() {
 	http.HandleFunc("/cards/", cardHandler)
 	http.HandleFunc("/cards/table/", cardTableHandler)
 	http.HandleFunc("/cards/csv/", cardCsvHandler)
+	http.HandleFunc("/cards/glrcsv/", cardCsvGLRHandler)
 	http.HandleFunc("/cards/detail/", cardDetailHandler)
 	http.HandleFunc("/cards/levels/", cardLevelHandler)
 	http.HandleFunc("/archwitches/", archwitchHandler)
@@ -166,6 +167,7 @@ Images:<br />
 <br />
 <a href="/cards/csv">Card List as CSV</a><br />
 <a href="/skills/csv">Skill List as CSV</a><br />
+<a href="/cards/glrcsv">GLR Card List as CSV</a><br />
 <br />
 <a href="/awakenings">List of Awakenings</a><br />
 <a href="/awakenings/csv">List of Awakenings as CSV</a><br />

@@ -386,6 +386,7 @@ func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "attachment; filename=vcData-cards-"+strconv.Itoa(VcData.Version)+"_"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv")
 	w.Header().Set("Content-Type", "text/csv")
 	cw := csv.NewWriter(w)
+	cw.UseCRLF = true
 	cw.Write([]string{"ID", "Card #", "Name", "Evo Rank", "TranscardID", "Rarity", "Element", "Deck Cost", "Base ATK",
 		"Base DEF", "Base Sol", "Max ATK", "Max DEF", "Max Sold", "Skill 1 Name", "Skill Min",
 		"Skill Max", "Skill Procs", "Target Scope", "Target Logic", "Skill 2", "Skill 3", "Thor Skill 1", "Skill Special", "Description", "Friendship",
@@ -403,6 +404,42 @@ func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		if err != nil {
 			os.Stderr.WriteString(err.Error() + "\n")
+		}
+	}
+	cw.Flush()
+}
+
+func cardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
+	// File header
+	w.Header().Set("Content-Disposition", "attachment; filename=vcData-glr-cards-"+strconv.Itoa(VcData.Version)+"_"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv")
+	w.Header().Set("Content-Type", "text/csv")
+	cw := csv.NewWriter(w)
+	cw.UseCRLF = true
+	cw.Write([]string{"ID", "Card #", "Name", "Element", "Rarity", "Base ATK",
+		"Base DEF", "Base Sol", "Max ATK", "Max DEF", "Max Sold", "ATK Gain",
+		"DEF Gain", "SOL Gain", "ATK Gain/lvl", "DEF Gain/lvl", "SOL Gain/lvl",
+		"Sol Perfect Min", "Sol Perfect Max",
+		"Is Closed",
+	})
+	for _, card := range VcData.Cards {
+		if card.Rarity() == "GLR" {
+			maxLevel := float64(card.CardRarity(VcData).MaxCardLevel - 1)
+			atkGain := card.MaxOffense - card.DefaultOffense
+			defGain := card.MaxDefense - card.DefaultDefense
+			solGain := card.MaxFollower - card.DefaultFollower
+			_, _, minSol := (card.EvoPerfectLvl1(VcData))
+			_, _, maxSol := (card.EvoPerfect(VcData))
+			err := cw.Write([]string{strconv.Itoa(card.ID), fmt.Sprintf("cd_%05d", card.CardNo), card.Name, card.Element(), card.Rarity(),
+				strconv.Itoa(card.DefaultOffense), strconv.Itoa(card.DefaultDefense), strconv.Itoa(card.DefaultFollower),
+				strconv.Itoa(card.MaxOffense), strconv.Itoa(card.MaxDefense), strconv.Itoa(card.MaxFollower),
+				strconv.Itoa(atkGain), strconv.Itoa(defGain), strconv.Itoa(solGain),
+				fmt.Sprintf("%.2f", float64(atkGain)/maxLevel), fmt.Sprintf("%.2f", float64(defGain)/maxLevel), fmt.Sprintf("%.2f", float64(solGain)/maxLevel),
+				strconv.Itoa(minSol), strconv.Itoa(maxSol),
+				strconv.Itoa(card.IsClosed),
+			})
+			if err != nil {
+				os.Stderr.WriteString(err.Error() + "\n")
+			}
 		}
 	}
 	cw.Flush()

@@ -588,9 +588,8 @@ func (c *Card) AmalgamationLRStaticLvl1(v *VFile) (atk, def, soldier int) {
 	if myAmal == nil {
 		if strings.HasSuffix(c.Rarity(), "LR") && c.Element() == "Special" {
 			return c.EvoPerfectLvl1(v)
-		} else {
-			return c.EvoPerfect(v)
 		}
+		return c.EvoPerfect(v)
 	}
 	mats := myAmal.Materials(v)
 	atk = c.MaxOffense

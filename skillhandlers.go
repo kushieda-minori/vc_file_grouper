@@ -18,6 +18,7 @@ func skillCsvHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "attachment; filename=vcData-skills-"+strconv.Itoa(VcData.Version)+"_"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv")
 	w.Header().Set("Content-Type", "text/csv")
 	cw := csv.NewWriter(w)
+	cw.UseCRLF = true
 	cw.Write([]string{"ID",
 		"Name",
 		"Description",
