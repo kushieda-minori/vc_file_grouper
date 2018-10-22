@@ -433,7 +433,7 @@ func cardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 				strconv.Itoa(card.DefaultOffense), strconv.Itoa(card.DefaultDefense), strconv.Itoa(card.DefaultFollower),
 				strconv.Itoa(card.MaxOffense), strconv.Itoa(card.MaxDefense), strconv.Itoa(card.MaxFollower),
 				strconv.Itoa(atkGain), strconv.Itoa(defGain), strconv.Itoa(solGain),
-				fmt.Sprintf("%.2f", float64(atkGain)/maxLevel), fmt.Sprintf("%.2f", float64(defGain)/maxLevel), fmt.Sprintf("%.2f", float64(solGain)/maxLevel),
+				fmt.Sprintf("%.4f", float64(atkGain)/maxLevel), fmt.Sprintf("%.4f", float64(defGain)/maxLevel), fmt.Sprintf("%.4f", float64(solGain)/maxLevel),
 				strconv.Itoa(minSol), strconv.Itoa(maxSol),
 				strconv.Itoa(card.IsClosed),
 			})
