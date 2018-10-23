@@ -651,15 +651,12 @@ func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
 		if c.IsAmalgamation(v.Amalgamations) {
-			if c.EvolutionRank == 0 {
-				// assume we collected this card directly (drop)?
-				atk, def, soldier = c.MaxOffense, c.MaxDefense, c.MaxFollower
-				os.Stdout.WriteString(fmt.Sprintf("Using collected stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
-			} else {
-				// calculate the amalgamation stats here
-				atk, def, soldier = c.AmalgamationStandard(v)
-				os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
-			}
+			// assume we collected this card directly (drop)?
+			atk, def, soldier = c.MaxOffense, c.MaxDefense, c.MaxFollower
+			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			// calculate the amalgamation stats here
+			// atk, def, soldier = c.AmalgamationStandard(v)
+			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 		} else {
 			mat := c.AwakensFrom(v)
 			if mat != nil {
