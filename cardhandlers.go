@@ -721,9 +721,21 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 		sol = " / " + strconv.Itoa(solStat)
 		atkPStat, defPStat, solPStat := evo.EvoPerfect(VcData)
 		if atkStat != atkPStat || defStat != defPStat || solStat != solPStat {
-			atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Evolution}}", atkPStat)
-			def += fmt.Sprintf(" / {{tooltip|%d|Perfect Evolution}}", defPStat)
-			sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Evolution}}", solPStat)
+			var evoType string
+			if evo.PossibleMixedEvo(VcData) {
+				evoType = "Amalgamation"
+				atkMStat, defMStat, solMStat := evo.EvoMixed(VcData)
+				if atkStat != atkMStat || defStat != defMStat || solStat != solMStat {
+					atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", atkMStat)
+					def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", defMStat)
+					sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", solMStat)
+				}
+			} else {
+				evoType = "Evolution"
+			}
+			atk += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", atkPStat, evoType)
+			def += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", defPStat, evoType)
+			sol += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", solPStat, evoType)
 		}
 	} else {
 		// not an amalgamation, Evo Rank >=2 (Awoken cards or 4* evos).
@@ -784,6 +796,24 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 		}
 		if evo.Rarity()[0] == 'G' {
 			evo.EvoStandardLvl1(VcData) // just to print out the level 1 G stats
+			atkPStat, defPStat, solPStat := evo.EvoPerfect(VcData)
+			if atkStat != atkPStat || defStat != defPStat || solStat != solPStat {
+				var evoType string
+				if evo.PossibleMixedEvo(VcData) {
+					evoType = "Amalgamation"
+					atkMStat, defMStat, solMStat := evo.EvoMixed(VcData)
+					if atkStat != atkMStat || defStat != defMStat || solStat != solMStat {
+						atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", atkMStat)
+						def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", defMStat)
+						sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", solMStat)
+					}
+				} else {
+					evoType = "Evolution"
+				}
+				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", atkPStat, evoType)
+				def += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", defPStat, evoType)
+				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", solPStat, evoType)
+			}
 			awakensFrom := evo.AwakensFrom(VcData)
 			if awakensFrom != nil && awakensFrom.LastEvolutionRank == 4 {
 				//If 4* card, calculate 6 card evo stats

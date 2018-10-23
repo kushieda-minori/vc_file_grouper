@@ -653,10 +653,10 @@ func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
 		if c.IsAmalgamation(v.Amalgamations) {
 			// assume we collected this card directly (drop)?
 			atk, def, soldier = c.MaxOffense, c.MaxDefense, c.MaxFollower
-			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 			// calculate the amalgamation stats here
 			// atk, def, soldier = c.AmalgamationStandard(v)
-			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 		} else {
 			mat := c.AwakensFrom(v)
 			if mat != nil {
@@ -675,13 +675,13 @@ func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
 					atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
 					def = calculateEvoAccidentStat(matDef, c.MaxDefense)
 					soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
-					os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 				} else {
 					// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
 					atk = c.MaxOffense
 					def = c.MaxDefense
 					soldier = c.MaxFollower
-					os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 				}
 			}
 		}
@@ -702,7 +702,7 @@ func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
 			def = c.calculateEvoStat(matDef, firstEvo.MaxDefense, c.MaxDefense)
 			soldier = c.calculateEvoStat(matSoldier, firstEvo.MaxFollower, c.MaxFollower)
 		}
-		os.Stdout.WriteString(fmt.Sprintf("Using Evo stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+		os.Stdout.WriteString(fmt.Sprintf("Using Evo stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 	}
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
@@ -713,7 +713,7 @@ func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
 	if soldier > rarity.LimtMaxFollower {
 		soldier = rarity.LimtMaxFollower
 	}
-	os.Stdout.WriteString(fmt.Sprintf("Final stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+	os.Stdout.WriteString(fmt.Sprintf("Final stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 	return
 }
 
@@ -726,22 +726,19 @@ func (c *Card) EvoStandardLvl1(v *VFile) (atk, def, soldier int) {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
 		if c.IsAmalgamation(v.Amalgamations) {
-			if c.EvolutionRank == 0 {
-				// assume we collected this card directly (drop)?
-				atk, def, soldier = c.DefaultOffense, c.DefaultDefense, c.DefaultFollower
-				os.Stdout.WriteString(fmt.Sprintf("Using collected stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
-			} else {
-				// calculate the amalgamation stats here
-				atk, def, soldier = c.AmalgamationStandardLvl1(v)
-				os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for for %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
-			}
+			// assume we collected this card directly (drop)?
+			atk, def, soldier = c.DefaultOffense, c.DefaultDefense, c.DefaultFollower
+			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for StandardLvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			// calculate the amalgamation stats here
+			// atk, def, soldier = c.AmalgamationStandardLvl1(v)
+			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for StandardLvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 		} else {
 			mat := c.AwakensFrom(v)
 			if mat != nil {
 				// if this is an awakwening, calculate the max...
 				matAtk, matDef, matSoldier := mat.EvoStandardLvl1(v)
 				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
-				os.Stdout.WriteString(fmt.Sprintf("Awakening standard card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
+				os.Stdout.WriteString(fmt.Sprintf("Awakening StandardLvl1 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
 				// check for Evo Accident
@@ -788,6 +785,170 @@ func (c *Card) EvoStandardLvl1(v *VFile) (atk, def, soldier int) {
 	if soldier > rarity.LimtMaxFollower {
 		soldier = rarity.LimtMaxFollower
 	}
+	return
+}
+
+// EvoMixed calculates the standard evolution for cards with a evo[0] amalgamation it calculates
+// the evo[1] using 1 amalgamated, and one as a "drop"
+func (c *Card) EvoMixed(v *VFile) (atk, def, soldier int) {
+	os.Stdout.WriteString(fmt.Sprintf("Calculating Mixed Evo for %s: %d\n", c.Name, c.EvolutionRank))
+	materialCard := c.PrevEvo(v)
+	rarity := c.CardRarity(v)
+	if materialCard == nil {
+		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
+		// check for amalgamation
+		if c.IsAmalgamation(v.Amalgamations) {
+			// assume we collected this card directly (drop)?
+			atk, def, soldier = c.MaxOffense, c.MaxDefense, c.MaxFollower
+			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			// calculate the amalgamation stats here
+			// atk, def, soldier = c.AmalgamationStandard(v)
+			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+		} else {
+			mat := c.AwakensFrom(v)
+			if mat != nil {
+				// if this is an awakwening, calculate the max...
+				matAtk, matDef, matSoldier := mat.EvoMixedLvl1(v)
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
+				os.Stdout.WriteString(fmt.Sprintf("Awakening Mixed card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+			} else {
+				// check for Evo Accident
+				mat = c.EvoAccidentOf(v.Cards)
+				if mat != nil {
+					// calculate the transfered stats of the 2 material cards
+					// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
+					matAtk, matDef, matSoldier := mat.EvoStandard(v)
+					atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
+					def = calculateEvoAccidentStat(matDef, c.MaxDefense)
+					soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
+					os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+				} else {
+					// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
+					atk = c.MaxOffense
+					def = c.MaxDefense
+					soldier = c.MaxFollower
+					os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+				}
+			}
+		}
+	} else {
+		//TODO: For LR cards do we want to use level 1 evos for the first 3?
+		firstEvo := c.GetEvolutions(v)["0"]
+		var matAtk, matDef, matSoldier int
+		if c.EvolutionRank == 1 && c.PossibleMixedEvo(v) && materialCard.ID == firstEvo.ID {
+			// perform the mixed evo here
+			matAtk, matDef, matSoldier = materialCard.AmalgamationStandard(v)
+		} else {
+			matAtk, matDef, matSoldier = materialCard.EvoStandard(v)
+		}
+		// calculate the transfered stats of the 2 material cards
+		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
+		if c.LastEvolutionRank == 4 {
+			// 4* cards do not use the result card stats
+			atk = c.calculateEvoStat(matAtk, firstEvo.MaxOffense, firstEvo.MaxOffense)
+			def = c.calculateEvoStat(matDef, firstEvo.MaxDefense, firstEvo.MaxDefense)
+			soldier = c.calculateEvoStat(matSoldier, firstEvo.MaxFollower, firstEvo.MaxFollower)
+		} else {
+			// 1* cards use the result card stats
+			atk = c.calculateEvoStat(matAtk, firstEvo.MaxOffense, c.MaxOffense)
+			def = c.calculateEvoStat(matDef, firstEvo.MaxDefense, c.MaxDefense)
+			soldier = c.calculateEvoStat(matSoldier, firstEvo.MaxFollower, c.MaxFollower)
+		}
+		os.Stdout.WriteString(fmt.Sprintf("Using Evo stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+	}
+	if atk > rarity.LimtOffense {
+		atk = rarity.LimtOffense
+	}
+	if def > rarity.LimtDefense {
+		def = rarity.LimtDefense
+	}
+	if soldier > rarity.LimtMaxFollower {
+		soldier = rarity.LimtMaxFollower
+	}
+	os.Stdout.WriteString(fmt.Sprintf("Final stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+	return
+}
+
+// EvoMixedLvl1 calculates the standard evolution for cards with a evo[0] amalgamation it calculates
+// the evo[1] using 1 amalgamated, and one as a "drop"
+func (c *Card) EvoMixedLvl1(v *VFile) (atk, def, soldier int) {
+	os.Stdout.WriteString(fmt.Sprintf("Calculating Mixed Evo for Lvl1 %s: %d\n", c.Name, c.EvolutionRank))
+	materialCard := c.PrevEvo(v)
+	rarity := c.CardRarity(v)
+	if materialCard == nil {
+		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
+		// check for amalgamation
+		if c.IsAmalgamation(v.Amalgamations) {
+			// assume we collected this card directly (drop)?
+			atk, def, soldier = c.DefaultOffense, c.DefaultDefense, c.DefaultFollower
+			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			// calculate the amalgamation stats here
+			// atk, def, soldier = c.AmalgamationStandard(v)
+			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+		} else {
+			mat := c.AwakensFrom(v)
+			if mat != nil {
+				// if this is an awakwening, calculate the max...
+				matAtk, matDef, matSoldier := mat.EvoMixedLvl1(v)
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
+				os.Stdout.WriteString(fmt.Sprintf("Awakening Mixed card Lvl1 %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+			} else {
+				// check for Evo Accident
+				mat = c.EvoAccidentOf(v.Cards)
+				if mat != nil {
+					// calculate the transfered stats of the 2 material cards
+					// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
+					matAtk, matDef, matSoldier := mat.EvoStandard(v)
+					atk = calculateEvoAccidentStat(matAtk, c.DefaultOffense)
+					def = calculateEvoAccidentStat(matDef, c.DefaultDefense)
+					soldier = calculateEvoAccidentStat(matSoldier, c.DefaultFollower)
+					os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+				} else {
+					// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
+					atk = c.DefaultOffense
+					def = c.DefaultDefense
+					soldier = c.DefaultFollower
+					os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+				}
+			}
+		}
+	} else {
+		//TODO: For LR cards do we want to use level 1 evos for the first 3?
+		firstEvo := c.GetEvolutions(v)["0"]
+		var matAtk, matDef, matSoldier int
+		if c.EvolutionRank == 1 && c.PossibleMixedEvo(v) && materialCard.ID == firstEvo.ID {
+			// perform the mixed evo here
+			matAtk, matDef, matSoldier = materialCard.AmalgamationStandard(v)
+		} else {
+			matAtk, matDef, matSoldier = materialCard.EvoStandard(v)
+		}
+		// calculate the transfered stats of the 2 material cards
+		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
+		if c.LastEvolutionRank == 4 {
+			// 4* cards do not use the result card stats
+			atk = c.calculateEvoStat(matAtk, firstEvo.MaxOffense, firstEvo.DefaultOffense)
+			def = c.calculateEvoStat(matDef, firstEvo.MaxDefense, firstEvo.DefaultDefense)
+			soldier = c.calculateEvoStat(matSoldier, firstEvo.MaxFollower, firstEvo.DefaultFollower)
+		} else {
+			// 1* cards use the result card stats
+			atk = c.calculateEvoStat(matAtk, firstEvo.MaxOffense, c.DefaultOffense)
+			def = c.calculateEvoStat(matDef, firstEvo.MaxDefense, c.DefaultDefense)
+			soldier = c.calculateEvoStat(matSoldier, firstEvo.MaxFollower, c.DefaultFollower)
+		}
+		os.Stdout.WriteString(fmt.Sprintf("Using Evo stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+	}
+	if atk > rarity.LimtOffense {
+		atk = rarity.LimtOffense
+	}
+	if def > rarity.LimtDefense {
+		def = rarity.LimtDefense
+	}
+	if soldier > rarity.LimtMaxFollower {
+		soldier = rarity.LimtMaxFollower
+	}
+	os.Stdout.WriteString(fmt.Sprintf("Final stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 	return
 }
 
