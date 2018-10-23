@@ -185,15 +185,28 @@ func (v *VFile) Read(root string) ([]byte, error) {
 
 	var data []byte
 	var err error
-	if _, err = os.Stat(filename + ".json"); os.IsNotExist(err) {
+	var jsonFileInfo os.FileInfo
+	if jsonFileInfo, err = os.Stat(filename + ".json"); os.IsNotExist(err) {
 		_, data, err = DecodeAndSave(filename)
 		if err != nil {
 			return nil, errors.New("no such file or directory: " + filename)
 		}
 	} else {
-		data, err = ioutil.ReadFile(filename + ".json")
+		md, err := os.Stat(filename)
 		if err != nil {
 			return nil, err
+		}
+		// check the timestamp on the saved file and verify the master data has not been updated
+		if jsonFileInfo.ModTime().Unix() >= md.ModTime().Unix() {
+			data, err = ioutil.ReadFile(filename + ".json")
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			_, data, err = DecodeAndSave(filename)
+			if err != nil {
+				return nil, errors.New("no such file or directory: " + filename)
+			}
 		}
 	}
 
