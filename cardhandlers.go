@@ -421,7 +421,19 @@ func cardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 		"Sol Perfect Min", "Sol Perfect Max",
 		"Is Closed",
 	})
-	for _, card := range VcData.Cards {
+
+	cards := make([]vc.Card, len(VcData.Cards))
+	copy(cards, VcData.Cards)
+
+	// sort by name A-Z
+	sort.Slice(cards, func(i, j int) bool {
+		first := cards[i]
+		second := cards[j]
+
+		return first.Name < second.Name
+	})
+
+	for _, card := range cards {
 		if card.Rarity() == "GLR" {
 			maxLevel := float64(card.CardRarity(VcData).MaxCardLevel - 1)
 			atkGain := card.MaxOffense - card.DefaultOffense
