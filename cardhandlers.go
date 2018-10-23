@@ -693,14 +693,22 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 		sol = " / " + strconv.Itoa(solStat)
 		if strings.HasSuffix(evo.Rarity(), "LR") {
 			// print LR level1 static material amal
-			atkLRStat, defLRStat, solLRStat := evo.AmalgamationLRStaticLvl1(VcData)
-			if atkStat != atkLRStat || defStat != defLRStat || solStat != solLRStat {
-				atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", atkLRStat)
-				def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", defLRStat)
-				sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", solLRStat)
-			}
 			atkPStat, defPStat, solPStat := evo.AmalgamationPerfect(VcData)
-			if atkLRStat != atkPStat || defLRStat != defPStat || solLRStat != solPStat {
+			if atkStat != atkPStat || defStat != defPStat || solStat != solPStat {
+				if evo.PossibleMixedEvo(VcData) {
+					atkMStat, defMStat, solMStat := evo.EvoMixed(VcData)
+					if atkStat != atkMStat || defStat != defMStat || solStat != solMStat {
+						atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", atkMStat)
+						def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", defMStat)
+						sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", solMStat)
+					}
+				}
+				atkLRStat, defLRStat, solLRStat := evo.AmalgamationLRStaticLvl1(VcData)
+				if atkLRStat != atkPStat || defLRStat != defPStat || solLRStat != solPStat {
+					atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", atkLRStat)
+					def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", defLRStat)
+					sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", solLRStat)
+				}
 				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", atkPStat)
 				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", defPStat)
 				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", solPStat)
@@ -743,16 +751,28 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 		atk = " / " + strconv.Itoa(atkStat)
 		def = " / " + strconv.Itoa(defStat)
 		sol = " / " + strconv.Itoa(solStat)
+		printedMixed := false
+		printedPerfect := false
 		if strings.HasSuffix(evo.Rarity(), "LR") {
 			// print LR level1 static material amal
-			atkLRStat, defLRStat, solLRStat := evo.AmalgamationLRStaticLvl1(VcData)
-			if atkStat != atkLRStat || defStat != defLRStat || solStat != solLRStat {
-				atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", atkLRStat)
-				def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", defLRStat)
-				sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", solLRStat)
+			if evo.PossibleMixedEvo(VcData) {
+				atkMStat, defMStat, solMStat := evo.EvoMixed(VcData)
+				if atkStat != atkMStat || defStat != defMStat || solStat != solMStat {
+					printedMixed = true
+					atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", atkMStat)
+					def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", defMStat)
+					sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", solMStat)
+				}
 			}
 			atkPStat, defPStat, solPStat := evo.AmalgamationPerfect(VcData)
-			if atkLRStat != atkPStat || defLRStat != defPStat || solLRStat != solPStat {
+			if atkStat != atkPStat || defStat != defPStat || solStat != solPStat {
+				atkLRStat, defLRStat, solLRStat := evo.AmalgamationLRStaticLvl1(VcData)
+				if atkLRStat != atkPStat || defLRStat != defPStat || solLRStat != solPStat {
+					atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", atkLRStat)
+					def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", defLRStat)
+					sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", solLRStat)
+				}
+				printedPerfect = true
 				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", atkPStat)
 				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", defPStat)
 				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", solPStat)
@@ -799,7 +819,7 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 			atkPStat, defPStat, solPStat := evo.EvoPerfect(VcData)
 			if atkStat != atkPStat || defStat != defPStat || solStat != solPStat {
 				var evoType string
-				if evo.PossibleMixedEvo(VcData) {
+				if !printedMixed && evo.PossibleMixedEvo(VcData) {
 					evoType = "Amalgamation"
 					atkMStat, defMStat, solMStat := evo.EvoMixed(VcData)
 					if atkStat != atkMStat || defStat != defMStat || solStat != solMStat {
@@ -810,9 +830,11 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 				} else {
 					evoType = "Evolution"
 				}
-				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", atkPStat, evoType)
-				def += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", defPStat, evoType)
-				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", solPStat, evoType)
+				if !printedPerfect {
+					atk += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", atkPStat, evoType)
+					def += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", defPStat, evoType)
+					sol += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", solPStat, evoType)
+				}
 			}
 			awakensFrom := evo.AwakensFrom(VcData)
 			if awakensFrom != nil && awakensFrom.LastEvolutionRank == 4 {
