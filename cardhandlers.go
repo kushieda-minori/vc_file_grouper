@@ -224,6 +224,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	//traverse evolutions in order
 	lenEvoKeys := len(evokeys)
+	fmt.Fprint(w, "<!-- Not all evolution stats here will be applicable. Please delete any that are not needed. -->\n")
 	for _, k := range evokeys {
 		evo := evolutions[k]
 		if k == "H" {

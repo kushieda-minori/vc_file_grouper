@@ -219,7 +219,11 @@ func (v *VFile) Read(root string) ([]byte, error) {
 	for key := range v.Cards {
 		v.Cards[key].Name = cleanCardName(names[key], &(v.Cards[key]))
 	}
-	names = nil
+	// initialize the evolutions
+	for key := range v.Cards {
+		card := &(v.Cards[key])
+		card.GetEvolutions(v)
+	}
 
 	description, err := readStringFile(root + "/string/MsgCharaDesc_en.strb")
 	if err != nil {

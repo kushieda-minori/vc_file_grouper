@@ -101,7 +101,8 @@ func (c *Card) Image() string {
 func (c *Card) Rarity() (ret string) {
 	if c.CardRareID >= 0 {
 		ret = Rarity[c.CardRareID-1]
-		if ret == "X" && c.EvolutionRank > 0 && c.EvolutionRank == c.LastEvolutionRank {
+		// need to handle X cards that have actual Evolutions (Philospher Stone)
+		if ret == "X" && c.EvolutionRank > 0 && c.EvolutionRank == c.LastEvolutionRank && len(c._allEvos) > 1 {
 			ret = "HX"
 		}
 	}
@@ -192,6 +193,21 @@ func (c *Card) PrevEvo(v *VFile) *Card {
 		tmp.nextEvo = c
 	}
 	return c.prevEvo
+}
+
+// PossibleMixedEvo Checks if this card has a possible mixed evo:
+// Amalgamation at evo[0] with a standard evo after it. This may issue
+// false positives for cards that can only be obtained through
+// amalgamation at evo[0] and there is no drop/RR
+func (c *Card) PossibleMixedEvo(v *VFile) bool {
+	firstEvo := c.GetEvolutions(v)["0"]
+	secondEvo := c.GetEvolutions(v)["1"]
+	if secondEvo == nil {
+		secondEvo = c.GetEvolutions(v)["H"]
+	}
+	return firstEvo != nil && secondEvo != nil &&
+		firstEvo.IsAmalgamation(v.Amalgamations) &&
+		firstEvo.EvolutionCardID == secondEvo.ID
 }
 
 // calculateEvoStat calculates the evo stats.
