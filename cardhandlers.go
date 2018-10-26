@@ -235,8 +235,9 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		maxAtk, maxDef, maxSol := maxStats(evo, len(evolutions))
-		fmt.Fprintf(w, "|cost %[1]s = %[2]d\n|atk %[1]s = %[3]d%s\n|def %[1]s = %[5]d%s\n|soldiers %[1]s = %[7]d%s\n",
+		fmt.Fprintf(w, "|max level %[1]s = %[2]d\n|cost %[1]s = %[3]d\n|atk %[1]s = %[4]d%s\n|def %[1]s = %[6]d%s\n|soldiers %[1]s = %[8]d%s\n",
 			strings.ToLower(k),
+			evo.CardRarity(VcData).MaxCardLevel,
 			evo.DeckCost,
 			evo.DefaultOffense, maxAtk,
 			evo.DefaultDefense, maxDef,
