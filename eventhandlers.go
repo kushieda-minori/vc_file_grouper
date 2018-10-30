@@ -252,7 +252,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"",    // Overlap AW Event
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 			genWikiExchange(bb.ExchangeRewards(VcData)), // Ring Exchange
-			rankRewards,                                 // Rewards (combined)
+			rankRewards, // Rewards (combined)
 			prevEventName,
 			nextEventName,
 		)
@@ -595,32 +595,44 @@ func genWikiRankTrend(event *vc.Event, eventMap *vc.Map, midRewardTime time.Time
 }
 
 func genWikiExchange(exchanges []vc.GuildBingoExchangeReward) (ret string) {
-	ret = `{| class="article-table mw-collapsible mw-collapsed" border="1" cellpadding="1" cellspacing="1" style="width:400px;"
+	ret = `{| class="article-table mw-collapsible mw-collapsed sortable" border="1" cellpadding="1" cellspacing="1" style="width:400px;"
 |-
 ! scope="col" |Prize
-! scope="col" |Cost
+! scope="col" data-sort-type="number"|Cost
 `
 	for i := 0; i < len(exchanges); i++ {
 		exchange := exchanges[i]
+		itemSortCode := fmt.Sprintf("%02d", (10 - exchange.RewardType))
 		switch exchange.RewardType {
 		case 1: // card
 			card := vc.CardScan(exchange.RewardID, VcData.Cards)
-			ret += fmt.Sprintf("\n|-\n| {{Card Icon|%s}} || x%d",
+			itemSortCode += fmt.Sprintf("%02d-%s", card.CardRareID, strings.Replace(card.Name, " ", "_", -1))
+			ret += fmt.Sprintf("\n|-\n|data-sort-value=\"%s\"| {{Card Icon|%s}} ||data-sort-value=%d| x%[3]d",
+				itemSortCode,
 				card.Name,
 				exchange.RequireNum,
 			)
 		case 2: //item
 			item := vc.ItemScan(exchange.RewardID, VcData.Items)
 			if item == nil {
-				ret += fmt.Sprintf("__UNKNOWN_ITEM_ID:%d__", exchange.RewardID)
+				ret += fmt.Sprintf("\n|-\n|data-sort-value=\"%s\"|__UNKNOWN_ITEM_ID:%d__ ||data-sort-value=%d| x%[3]d",
+					itemSortCode,
+					exchange.RewardID,
+					exchange.RequireNum,
+				)
 			} else {
-				ret += fmt.Sprintf("\n|-\n| %s || x%d",
+				itemSortCode += fmt.Sprintf("%03d-%s",
+					item.GroupID,
+					strings.Replace(item.NameEng, " ", "_", -1),
+				)
+				ret += fmt.Sprintf("\n|-\n|data-sort-value=\"%s\"| %s ||data-sort-value=%d| x%[3]d",
+					itemSortCode,
 					getWikiItem(item),
 					exchange.RequireNum,
 				)
 			}
 		default: //unknown!
-			ret += fmt.Sprintf("\n|-\n|Unknown reward type %d for reward id %d || x%d",
+			ret += fmt.Sprintf("\n|-\n|Unknown reward type %d for reward id %d ||data-sort-value=%d| x%[3]d",
 				exchange.RewardType,
 				exchange.RewardID,
 				exchange.RequireNum,
