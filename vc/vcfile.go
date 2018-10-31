@@ -169,6 +169,7 @@ type VFile struct {
 	GuildBattles                []GuildBattle              `json:"mst_guildbattle_schedule"`
 	GuildBingoBattles           []GuildBingoBattle         `json:"mst_guildbingo"`
 	GuildBingoExchangeRewards   []GuildBingoExchangeReward `json:"mst_guildbingo_exchange_reward"`
+	GuildBingoPointCampaigns    []GuildBingoPointCampaign  `json:"mst_guildbingo_point_campaign"`
 	GuildBattleRewardRefs       []GuildBattleRewardRef     `json:"mst_guildbattle_point_reward"`
 	GuildBattleIndividualPoints []RankRewardSheet          `json:"mst_guildbattle_point_rewardsheet"`
 	GuildBattleRankingRewards   []RankRewardSheet          `json:"mst_guildbattle_individual_ranking_reward"`

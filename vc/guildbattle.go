@@ -48,6 +48,7 @@ type GuildBingoBattle struct {
 	KingSeriesID                  int       `json:"king_series_id"`
 	CampaignID                    int       `json:"campaign_id"`
 	archwitches                   []Archwitch
+	_campaigns                    []GuildBingoPointCampaign
 }
 
 // GuildBingoExchangeReward ABB item exhange
@@ -95,6 +96,15 @@ type GuildBingoRoundRankingReward struct {
 	RewardNum int `json:"reward_num"`
 }
 
+// GuildBingoPointCampaign campain start/end for ABB double point days
+type GuildBingoPointCampaign struct {
+	ID            int       `json:"_id"`
+	CampaignID    int       `json:"campaign_id"`
+	StartDatetime Timestamp `json:"start_datetime"`
+	EndDatetime   Timestamp `json:"end_datetime"`
+	Multiple      int       `json:"multiple"`
+}
+
 // BingoBattle Bingo battle information
 func (g *GuildBattle) BingoBattle(v *VFile) *GuildBingoBattle {
 	if g.GuildBingoID > 0 {
@@ -132,6 +142,19 @@ func (g *GuildBingoBattle) ExchangeRewards(v *VFile) []GuildBingoExchangeReward 
 	}
 	sort.Sort(GuildBingoExchangeRewardByTypeAndID(set))
 	return set
+}
+
+// Campaigns extra point campaigns for this ABB
+func (g *GuildBingoBattle) Campaigns(v *VFile) []GuildBingoPointCampaign {
+	if g._campaigns == nil {
+		g._campaigns = make([]GuildBingoPointCampaign, 0)
+		for _, a := range v.GuildBingoPointCampaigns {
+			if g.CampaignID == a.CampaignID {
+				g._campaigns = append(g._campaigns, a)
+			}
+		}
+	}
+	return g._campaigns
 }
 
 // IndividualRewards individual rewards for this event
