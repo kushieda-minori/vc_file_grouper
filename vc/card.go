@@ -147,6 +147,10 @@ func (c *Card) Character(v *VFile) *CardCharacter {
 // NextEvo is the next evolution of this card, or nil if no further evolutions are possible.
 // Amalgamations or Awakenings may still be possible.
 func (c *Card) NextEvo(v *VFile) *Card {
+	if c.ID == c.EvolutionCardID {
+		// bad data
+		return nil
+	}
 	if c.nextEvo == nil {
 		if c.CardCharaID <= 0 || c.EvolutionCardID <= 0 || c.Rarity()[0] == 'H' {
 			return nil
@@ -161,6 +165,10 @@ func (c *Card) NextEvo(v *VFile) *Card {
 
 		// Terra -> Rhea evos to a different card
 		if tmp == nil || tmp.CardCharaID != c.CardCharaID {
+			return nil
+		}
+		if tmp.ID == c.ID {
+			// bad data...
 			return nil
 		}
 		c.nextEvo = tmp
@@ -187,6 +195,10 @@ func (c *Card) PrevEvo(v *VFile) *Card {
 
 		// Terra -> Rhea evos to a different card
 		if tmp == nil || tmp.CardCharaID != c.CardCharaID {
+			return nil
+		}
+		if tmp.ID == c.ID {
+			// bad data...
 			return nil
 		}
 		c.prevEvo = tmp
