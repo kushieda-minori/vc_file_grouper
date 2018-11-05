@@ -158,9 +158,25 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		cardName = firstEvo.Image()
 	}
 
+	prevCard, prevCardName := getPrevious(card)
+	nextCard, nextCardName := getNext(card)
+
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", cardName)
-	fmt.Fprintf(w, "<div>Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", cardName)
-	io.WriteString(w, "<textarea readonly=\"readonly\" style=\"width:100%;height:450px\">")
+
+	if prevCardName != "" {
+		fmt.Fprintf(w, "<div style=\"float:left; width: 33%%;\"><a href=\"%d\">&lt;&lt; %s &lt;&lt;</a></div>\n", prevCard.ID, prevCardName)
+	} else {
+		fmt.Fprint(w, "<div style=\"float:left; width: 33%;\"></div>\n")
+	}
+	fmt.Fprint(w, "<div style=\"float:left; width: 33%;text-align:center;\"><a href=\"../table/\">All Cards</a></div>\n")
+	if nextCardName != "" {
+		fmt.Fprintf(w, "<div style=\"float:right; width: 33%%;;text-align:right;\"><a href=\"%d\">&gt;&gt; %s &gt;&gt;</a></div>\n", nextCard.ID, nextCardName)
+	} else {
+		fmt.Fprint(w, "<div style=\"float:left; width: 33%;\"></div>\n")
+	}
+
+	fmt.Fprintf(w, "<div style=\"clear:both;float:left\">Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br /></div>", cardName)
+	io.WriteString(w, "<div><textarea readonly=\"readonly\" style=\"width:100%;height:450px\">")
 	if card.IsClosed != 0 {
 		io.WriteString(w, "{{Unreleased}}")
 	}
@@ -278,9 +294,9 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if gevo != nil {
 		var awakenInfo *vc.CardAwaken
-		for _, val := range VcData.Awakenings {
+		for idx, val := range VcData.Awakenings {
 			if gevo.ID == val.ResultCardID {
-				awakenInfo = &val
+				awakenInfo = &VcData.Awakenings[idx]
 				break
 			}
 		}
@@ -673,6 +689,52 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	io.WriteString(w, "</tbody></table></div></body></html>")
+}
+
+// getPrevious finds the card before the earliest evolution of this card. Does
+// not take into account cards that were released for awakening at a later date
+// maybe should do this by character ID instead?
+func getPrevious(card *vc.Card) (prev *vc.Card, prevName string) {
+	if card == nil {
+		return nil, ""
+	}
+
+	minID := card.GetEvolutionCards(VcData).Earliest().ID - 1
+	for prev = vc.CardScan(minID, VcData.Cards); prev == nil && minID > 0; prev = vc.CardScan(minID, VcData.Cards) {
+		minID--
+	}
+	if prev != nil {
+		prev = prev.GetEvolutionCards(VcData).Earliest()
+		if prev.Name == "" {
+			prevName = prev.Image()
+		} else {
+			prevName = prev.Name
+		}
+	}
+	return
+}
+
+// getNext finds the card before the latest evolution of this card. Does
+// not take into account cards that were released for awakening at a later date
+// maybe should do this by character ID instead?
+func getNext(card *vc.Card) (next *vc.Card, nextName string) {
+	if card == nil {
+		return nil, ""
+	}
+	maxID := card.GetEvolutionCards(VcData).Latest().ID + 1
+	lastID := vc.CardList(VcData.Cards).Latest().ID
+	for next = vc.CardScan(maxID, VcData.Cards); next == nil && maxID < lastID; next = vc.CardScan(maxID, VcData.Cards) {
+		maxID++
+	}
+	if next != nil {
+		next = next.GetEvolutionCards(VcData).Earliest()
+		if next.Name == "" {
+			nextName = next.Image()
+		} else {
+			nextName = next.Name
+		}
+	}
+	return
 }
 
 func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {

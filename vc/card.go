@@ -113,9 +113,9 @@ func (c *Card) Rarity() (ret string) {
 // CardRarity with full rarity information
 func (c *Card) CardRarity(v *VFile) *CardRarity {
 	if c.CardRareID >= 0 {
-		for _, cr := range v.CardRarities {
+		for idx, cr := range v.CardRarities {
 			if cr.ID == c.CardRareID {
-				return &cr
+				return &(v.CardRarities[idx])
 			}
 		}
 	}
@@ -157,9 +157,10 @@ func (c *Card) NextEvo(v *VFile) *Card {
 		}
 
 		var tmp *Card
-		for i, cd := range c.Character(v).Cards(v) {
+		character := c.Character(v)
+		for i, cd := range character.Cards(v) {
 			if cd.ID == c.EvolutionCardID {
-				tmp = &(c.Character(v)._cards[i])
+				tmp = &(character._cards[i])
 			}
 		}
 
@@ -182,7 +183,7 @@ func (c *Card) NextEvo(v *VFile) *Card {
 func (c *Card) PrevEvo(v *VFile) *Card {
 	if c.prevEvo == nil {
 		// no charcter ID or already lowest evo rank
-		if c.CardCharaID <= 0 || c.EvolutionRank < 0 {
+		if c.CardCharaID <= 0 || c.EvolutionRank <= 0 {
 			return nil
 		}
 
@@ -212,14 +213,30 @@ func (c *Card) PrevEvo(v *VFile) *Card {
 // false positives for cards that can only be obtained through
 // amalgamation at evo[0] and there is no drop/RR
 func (c *Card) PossibleMixedEvo(v *VFile) bool {
-	firstEvo := c.GetEvolutions(v)["0"]
-	secondEvo := c.GetEvolutions(v)["1"]
-	if secondEvo == nil {
-		secondEvo = c.GetEvolutions(v)["H"]
+	if len(c._allEvos) == 1 && c.IsAmalgamation(v.Amalgamations) {
+		// if this is an amalgamation only card, we want to find the previous
+		// cards and see if any of those is a "possible mix evos"
+		for _, amal := range c.Amalgamations(v) {
+			if c.ID == amal.FusionCardID {
+				// check if each material is a possible mixed evo
+				for _, amalCard := range amal.MaterialsOnly(v) {
+					if amalCard.PossibleMixedEvo(v) {
+						return true
+					}
+				}
+			}
+		}
+		return false
+	} else {
+		firstEvo := c.GetEvolutions(v)["0"]
+		secondEvo := c.GetEvolutions(v)["1"]
+		if secondEvo == nil {
+			secondEvo = c.GetEvolutions(v)["H"]
+		}
+		return firstEvo != nil && secondEvo != nil &&
+			firstEvo.IsAmalgamation(v.Amalgamations) &&
+			firstEvo.EvolutionCardID == secondEvo.ID
 	}
-	return firstEvo != nil && secondEvo != nil &&
-		firstEvo.IsAmalgamation(v.Amalgamations) &&
-		firstEvo.EvolutionCardID == secondEvo.ID
 }
 
 // calculateEvoStat calculates the evo stats.
@@ -295,18 +312,16 @@ func (c *Card) AmalgamationStandard(v *VFile) (atk, def, soldier int) {
 	if myAmal == nil {
 		return c.EvoStandard(v)
 	}
-	mats := myAmal.Materials(v)
+	mats := myAmal.MaterialsOnly(v)
 	atk = c.MaxOffense
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
-		if mat.ID != c.ID {
-			os.Stdout.WriteString(fmt.Sprintf("Calculating Standard Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
-			matAtk, matDef, matSoldier := mat.EvoStandard(v)
-			atk += int(float64(matAtk) * 0.08)
-			def += int(float64(matDef) * 0.08)
-			soldier += int(float64(matSoldier) * 0.08)
-		}
+		os.Stdout.WriteString(fmt.Sprintf("Calculating Standard Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
+		matAtk, matDef, matSoldier := mat.EvoStandard(v)
+		atk += int(float64(matAtk) * 0.08)
+		def += int(float64(matDef) * 0.08)
+		soldier += int(float64(matSoldier) * 0.08)
 	}
 	rarity := c.CardRarity(v)
 	if atk > rarity.LimtOffense {
@@ -335,18 +350,16 @@ func (c *Card) AmalgamationStandardLvl1(v *VFile) (atk, def, soldier int) {
 	if myAmal == nil {
 		return c.EvoStandardLvl1(v)
 	}
-	mats := myAmal.Materials(v)
+	mats := myAmal.MaterialsOnly(v)
 	atk = c.DefaultOffense
 	def = c.DefaultDefense
 	soldier = c.DefaultFollower
 	for _, mat := range mats {
-		if mat.ID != c.ID {
-			os.Stdout.WriteString(fmt.Sprintf("Calculating Standard Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
-			matAtk, matDef, matSoldier := mat.EvoStandard(v)
-			atk += int(float64(matAtk) * 0.08)
-			def += int(float64(matDef) * 0.08)
-			soldier += int(float64(matSoldier) * 0.08)
-		}
+		os.Stdout.WriteString(fmt.Sprintf("Calculating Standard Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
+		matAtk, matDef, matSoldier := mat.EvoStandard(v)
+		atk += int(float64(matAtk) * 0.08)
+		def += int(float64(matDef) * 0.08)
+		soldier += int(float64(matSoldier) * 0.08)
 	}
 	rarity := c.CardRarity(v)
 	if atk > rarity.LimtOffense {
@@ -375,18 +388,16 @@ func (c *Card) Amalgamation6Card(v *VFile) (atk, def, soldier int) {
 	if myAmal == nil {
 		return c.Evo6Card(v)
 	}
-	mats := myAmal.Materials(v)
+	mats := myAmal.MaterialsOnly(v)
 	atk = c.MaxOffense
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
-		if mat.ID != c.ID {
-			os.Stdout.WriteString(fmt.Sprintf("Calculating 6-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
-			matAtk, matDef, matSoldier := mat.Evo6Card(v)
-			atk += int(float64(matAtk) * 0.08)
-			def += int(float64(matDef) * 0.08)
-			soldier += int(float64(matSoldier) * 0.08)
-		}
+		os.Stdout.WriteString(fmt.Sprintf("Calculating 6-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
+		matAtk, matDef, matSoldier := mat.Evo6Card(v)
+		atk += int(float64(matAtk) * 0.08)
+		def += int(float64(matDef) * 0.08)
+		soldier += int(float64(matSoldier) * 0.08)
 	}
 	rarity := c.CardRarity(v)
 	if atk > rarity.LimtOffense {
@@ -415,18 +426,16 @@ func (c *Card) Amalgamation6CardLvl1(v *VFile) (atk, def, soldier int) {
 	if myAmal == nil {
 		return c.Evo6CardLvl1(v)
 	}
-	mats := myAmal.Materials(v)
+	mats := myAmal.MaterialsOnly(v)
 	atk = c.DefaultOffense
 	def = c.DefaultDefense
 	soldier = c.DefaultFollower
 	for _, mat := range mats {
-		if mat.ID != c.ID {
-			os.Stdout.WriteString(fmt.Sprintf("Calculating 6-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
-			matAtk, matDef, matSoldier := mat.Evo6Card(v)
-			atk += int(float64(matAtk) * 0.08)
-			def += int(float64(matDef) * 0.08)
-			soldier += int(float64(matSoldier) * 0.08)
-		}
+		os.Stdout.WriteString(fmt.Sprintf("Calculating 6-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
+		matAtk, matDef, matSoldier := mat.Evo6Card(v)
+		atk += int(float64(matAtk) * 0.08)
+		def += int(float64(matDef) * 0.08)
+		soldier += int(float64(matSoldier) * 0.08)
 	}
 	rarity := c.CardRarity(v)
 	if atk > rarity.LimtOffense {
@@ -455,18 +464,16 @@ func (c *Card) Amalgamation9Card(v *VFile) (atk, def, soldier int) {
 	if myAmal == nil {
 		return c.Evo9Card(v)
 	}
-	mats := myAmal.Materials(v)
+	mats := myAmal.MaterialsOnly(v)
 	atk = c.MaxOffense
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
-		if mat.ID != c.ID {
-			os.Stdout.WriteString(fmt.Sprintf("Calculating 9-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
-			matAtk, matDef, matSoldier := mat.Evo9Card(v)
-			atk += int(float64(matAtk) * 0.08)
-			def += int(float64(matDef) * 0.08)
-			soldier += int(float64(matSoldier) * 0.08)
-		}
+		os.Stdout.WriteString(fmt.Sprintf("Calculating 9-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
+		matAtk, matDef, matSoldier := mat.Evo9Card(v)
+		atk += int(float64(matAtk) * 0.08)
+		def += int(float64(matDef) * 0.08)
+		soldier += int(float64(matSoldier) * 0.08)
 	}
 	rarity := c.CardRarity(v)
 	if atk > rarity.LimtOffense {
@@ -495,18 +502,16 @@ func (c *Card) Amalgamation9CardLvl1(v *VFile) (atk, def, soldier int) {
 	if myAmal == nil {
 		return c.Evo9CardLvl1(v)
 	}
-	mats := myAmal.Materials(v)
+	mats := myAmal.MaterialsOnly(v)
 	atk = c.DefaultOffense
 	def = c.DefaultDefense
 	soldier = c.DefaultFollower
 	for _, mat := range mats {
-		if mat.ID != c.ID {
-			os.Stdout.WriteString(fmt.Sprintf("Calculating 9-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
-			matAtk, matDef, matSoldier := mat.Evo9Card(v)
-			atk += int(float64(matAtk) * 0.08)
-			def += int(float64(matDef) * 0.08)
-			soldier += int(float64(matSoldier) * 0.08)
-		}
+		os.Stdout.WriteString(fmt.Sprintf("Calculating 9-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
+		matAtk, matDef, matSoldier := mat.Evo9Card(v)
+		atk += int(float64(matAtk) * 0.08)
+		def += int(float64(matDef) * 0.08)
+		soldier += int(float64(matSoldier) * 0.08)
 	}
 	rarity := c.CardRarity(v)
 	if atk > rarity.LimtOffense {
@@ -535,18 +540,16 @@ func (c *Card) AmalgamationPerfect(v *VFile) (atk, def, soldier int) {
 	if myAmal == nil {
 		return c.EvoPerfect(v)
 	}
-	mats := myAmal.Materials(v)
+	mats := myAmal.MaterialsOnly(v)
 	atk = c.MaxOffense
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
-		if mat.ID != c.ID {
-			os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
-			matAtk, matDef, matSoldier := mat.EvoPerfect(v)
-			atk += int(float64(matAtk) * 0.08)
-			def += int(float64(matDef) * 0.08)
-			soldier += int(float64(matSoldier) * 0.08)
-		}
+		os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
+		matAtk, matDef, matSoldier := mat.EvoPerfect(v)
+		atk += int(float64(matAtk) * 0.08)
+		def += int(float64(matDef) * 0.08)
+		soldier += int(float64(matSoldier) * 0.08)
 	}
 	rarity := c.CardRarity(v)
 	if atk > rarity.LimtOffense {
@@ -575,18 +578,16 @@ func (c *Card) AmalgamationPerfectLvl1(v *VFile) (atk, def, soldier int) {
 	if myAmal == nil {
 		return c.EvoPerfectLvl1(v)
 	}
-	mats := myAmal.Materials(v)
+	mats := myAmal.MaterialsOnly(v)
 	atk = c.DefaultOffense
 	def = c.DefaultDefense
 	soldier = c.DefaultFollower
 	for _, mat := range mats {
-		if mat.ID != c.ID {
-			os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
-			matAtk, matDef, matSoldier := mat.EvoPerfect(v)
-			atk += int(float64(matAtk) * 0.08)
-			def += int(float64(matDef) * 0.08)
-			soldier += int(float64(matSoldier) * 0.08)
-		}
+		os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
+		matAtk, matDef, matSoldier := mat.EvoPerfect(v)
+		atk += int(float64(matAtk) * 0.08)
+		def += int(float64(matDef) * 0.08)
+		soldier += int(float64(matSoldier) * 0.08)
 	}
 	rarity := c.CardRarity(v)
 	if atk > rarity.LimtOffense {
@@ -619,25 +620,23 @@ func (c *Card) AmalgamationLRStaticLvl1(v *VFile) (atk, def, soldier int) {
 		}
 		return c.EvoPerfect(v)
 	}
-	mats := myAmal.Materials(v)
+	mats := myAmal.MaterialsOnly(v)
 	atk = c.MaxOffense
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
-		if mat.ID != c.ID {
-			os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
-			if strings.HasSuffix(mat.Rarity(), "LR") && mat.Element() == "Special" {
-				matAtk, matDef, matSoldier := mat.AmalgamationLRStaticLvl1(v)
-				// no 5% bonus for max level
-				atk += int(float64(matAtk) * 0.03)
-				def += int(float64(matDef) * 0.03)
-				soldier += int(float64(matSoldier) * 0.03)
-			} else {
-				matAtk, matDef, matSoldier := mat.AmalgamationLRStaticLvl1(v)
-				atk += int(float64(matAtk) * 0.08)
-				def += int(float64(matDef) * 0.08)
-				soldier += int(float64(matSoldier) * 0.08)
-			}
+		os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
+		if strings.HasSuffix(mat.Rarity(), "LR") && mat.Element() == "Special" {
+			matAtk, matDef, matSoldier := mat.AmalgamationLRStaticLvl1(v)
+			// no 5% bonus for max level
+			atk += int(float64(matAtk) * 0.03)
+			def += int(float64(matDef) * 0.03)
+			soldier += int(float64(matSoldier) * 0.03)
+		} else {
+			matAtk, matDef, matSoldier := mat.AmalgamationLRStaticLvl1(v)
+			atk += int(float64(matAtk) * 0.08)
+			def += int(float64(matDef) * 0.08)
+			soldier += int(float64(matSoldier) * 0.08)
 		}
 	}
 	rarity := c.CardRarity(v)
@@ -1752,25 +1751,31 @@ func (c *Card) FriendshipEvent(v *VFile) string {
 type CardList []Card
 
 // Earliest gets the ealiest released card from a list of cards. Determined by ID
-func (d CardList) Earliest() *Card {
-	var min *Card
-	for _, card := range d {
+func (d CardList) Earliest() (min *Card) {
+	for idx, card := range d {
 		if min == nil || min.ID > card.ID {
-			min = &card
+			// os.Stdout.WriteString(fmt.Sprintf("'Earliest' Card: %d, Name: %s\n", card.ID, card.Name))
+			min = &(d[idx])
 		}
 	}
-	return min
+	// if min != nil {
+	// os.Stdout.WriteString(fmt.Sprintf("-Earliest Card: %d, Name: %s\n", min.ID, min.Name))
+	// }
+	return
 }
 
 // Latest gets the latest released card from a list of cards. Determined by ID
-func (d CardList) Latest() *Card {
-	var max *Card
-	for _, card := range d {
+func (d CardList) Latest() (max *Card) {
+	for idx, card := range d {
 		if max == nil || max.ID < card.ID {
-			max = &card
+			// os.Stdout.WriteString(fmt.Sprintf("'Latest' Card: %d, Name: %s\n", card.ID, card.Name))
+			max = &(d[idx])
 		}
 	}
-	return max
+	// if max != nil {
+	// os.Stdout.WriteString(fmt.Sprintf("-Latest Card: %d, Name: %s\n", max.ID, max.Name))
+	// }
+	return
 }
 
 func getAmalBaseCard(card *Card, v *VFile) *Card {
@@ -1961,6 +1966,21 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 		return ret
 	}
 	return c._allEvos
+}
+
+// GetEvolutionCards same as GetEvolutions, but only returns the cards
+func (c *Card) GetEvolutionCards(v *VFile) CardList {
+	evos := c.GetEvolutions(v)
+	cards := make([]Card, 0, len(evos))
+	//os.Stdout.WriteString(fmt.Sprintf("Card: %d, Name: %s, Evos: %d\n", c.ID, c.Name, len(evos)))
+	for _, c := range evos {
+		if c == nil {
+			continue
+		}
+		cards = append(cards, *c)
+	}
+	//os.Stdout.WriteString(fmt.Sprintf("Cards: %d\n", len(cards)))
+	return CardList(cards)
 }
 
 // Elements of the cards.
