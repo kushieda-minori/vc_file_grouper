@@ -600,8 +600,18 @@ func genWikiExchange(exchanges []vc.GuildBingoExchangeReward) (ret string) {
 ! scope="col" |Prize
 ! scope="col" data-sort-type="number"|Cost
 `
-	for i := 0; i < len(exchanges); i++ {
-		exchange := exchanges[i]
+	atLeatOneLimitedItem := false
+	for _, exchange := range exchanges {
+		if exchange.ExchangeLimit > 0 {
+			atLeatOneLimitedItem = true
+			break
+		}
+	}
+
+	if atLeatOneLimitedItem {
+		ret += `! scope="col" data-sort-type="number"|Limit` + "\n"
+	}
+	for _, exchange := range exchanges {
 		itemSortCode := fmt.Sprintf("%02d", (10 - exchange.RewardType))
 		switch exchange.RewardType {
 		case 1: // card
@@ -638,7 +648,18 @@ func genWikiExchange(exchanges []vc.GuildBingoExchangeReward) (ret string) {
 				exchange.RequireNum,
 			)
 		}
-
+		if atLeatOneLimitedItem {
+			var limit int
+			var slimit string
+			if exchange.ExchangeLimit > 0 {
+				limit = exchange.ExchangeLimit
+				slimit = strconv.Itoa(limit)
+			} else {
+				limit = int(^uint(0) >> 1) // max int
+				slimit = "Infinite"
+			}
+			ret += fmt.Sprintf("||data-sort-value=%d| %s", limit, slimit)
+		}
 	}
 	ret += "\n|}"
 	return

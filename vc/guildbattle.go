@@ -54,13 +54,14 @@ type GuildBingoBattle struct {
 // GuildBingoExchangeReward ABB item exhange
 // "mst_guildbingo_exchange_reward"
 type GuildBingoExchangeReward struct {
-	ID         int `json:"_id"`
-	GroupID    int `json:"group_id"`    // reward group
-	RequireNum int `json:"require_num"` // cost
-	RewardType int `json:"reward_type"` // 1 is card, 2 is item
-	RewardID   int `json:"reward_id"`
-	Num        int `json:"num"` // number obtained from exchange
-	IsPickup   int `json:"is_pickup"`
+	ID            int `json:"_id"`
+	GroupID       int `json:"group_id"`    // reward group
+	RequireNum    int `json:"require_num"` // cost
+	RewardType    int `json:"reward_type"` // 1 is card, 2 is item
+	RewardID      int `json:"reward_id"`
+	ExchangeLimit int `json:"exchange_limit"`
+	Num           int `json:"num"` // number obtained from exchange
+	IsPickup      int `json:"is_pickup"`
 }
 
 // GuildAUBWinReward AUB win rewards
