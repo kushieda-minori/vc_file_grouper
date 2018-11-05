@@ -655,7 +655,7 @@ func genWikiExchange(exchanges []vc.GuildBingoExchangeReward) (ret string) {
 				limit = exchange.ExchangeLimit
 				slimit = strconv.Itoa(limit)
 			} else {
-				limit = int(^uint(0) >> 1) // max int
+				limit = int(int32(^uint32(0) >> 1)) // max int
 				slimit = "Infinite"
 			}
 			ret += fmt.Sprintf("||data-sort-value=%d| %s", limit, slimit)
