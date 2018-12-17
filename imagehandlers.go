@@ -233,7 +233,7 @@ func writeout(decodeOnFly bool, fullpath string, fileName string, w http.Respons
 			return
 		}
 	}
-	w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
+	w.Header().Set("Content-Disposition", "attachment; filename=\""+fileName+"\"")
 	w.Header().Set("Content-Type", "image/png")
 
 	var buff bytes.Buffer

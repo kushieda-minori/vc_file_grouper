@@ -401,7 +401,7 @@ func fixRarity(s string) string {
 
 func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 	// File header
-	w.Header().Set("Content-Disposition", "attachment; filename=vcData-cards-"+strconv.Itoa(VcData.Version)+"_"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"vcData-cards-"+strconv.Itoa(VcData.Version)+"_"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv\"")
 	w.Header().Set("Content-Type", "text/csv")
 	cw := csv.NewWriter(w)
 	cw.UseCRLF = true
@@ -429,7 +429,7 @@ func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
 
 func cardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 	// File header
-	w.Header().Set("Content-Disposition", "attachment; filename=vcData-glr-cards-"+strconv.Itoa(VcData.Version)+"_"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"vcData-glr-cards-"+strconv.Itoa(VcData.Version)+"_"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv\"")
 	w.Header().Set("Content-Type", "text/csv")
 	cw := csv.NewWriter(w)
 	cw.UseCRLF = true
