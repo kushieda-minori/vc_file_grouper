@@ -16,13 +16,15 @@ type Event struct {
 	JumpBanner            int             `json:"jump_banner"`
 	JumpButton            int             `json:"jump_button"`
 	JumpBannerOther       int             `json:"jump_banner_other"`
-	SortOrder             int             `json:"sort_order"`
 	TexIDCell             int             `json:"tex_id_cell"`
 	TexIDImage            int             `json:"tex_id_image"`
 	TexIDImage2           int             `json:"tex_id_image2"`
 	MapID                 int             `json:"map_id"`
 	KingSeriesID          int             `json:"king_series_id"`
 	GuildBattleID         int             `json:"guild_battle_id"`
+	TowerEventID          int             `json:"tower_event_id"`
+	DungeonEventID        int             `json:"dungeon_event_id"`
+	SortOrder             int             `json:"sort_order"`
 	KingID1               int             `json:"king_id1"`
 	KingID2               int             `json:"king_id2"`
 	KingID3               int             `json:"king_id3"`
@@ -49,7 +51,7 @@ type Event struct {
 	TargetMarkets         json.RawMessage `json:"target_markets"`
 	CollaboID             int             `json:"collabo_id"`
 	MaintenanceTarget     int             `json:"maintenance_target"`
-	TowerEventID          int             `json:"tower_event_id"`
+	Pickup                int             `json:"pickup"`
 	Name                  string          `json:"name"`        // MsgEventName_en.strb
 	Description           string          `json:"description"` // MsgEventDesc_en.strb
 	_map                  *Map

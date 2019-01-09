@@ -1470,6 +1470,16 @@ func (c *Card) AwakensFrom(v *VFile) *Card {
 	return nil
 }
 
+// HasRebirth Gets the card this card rebirths to.
+func (c *Card) HasRebirth(v *VFile) bool {
+	for _, val := range v.Rebirths {
+		if c.ID == val.BaseCardID {
+			return true
+		}
+	}
+	return false
+}
+
 // RebirthsTo Gets the card this card rebirths to.
 func (c *Card) RebirthsTo(v *VFile) *Card {
 	for _, val := range v.Rebirths {
@@ -1767,6 +1777,15 @@ func (c *Card) FriendshipEvent(v *VFile) string {
 		return ""
 	}
 	return ch.FriendshipEvent
+}
+
+// RebirthEvent quote for the character
+func (c *Card) RebirthEvent(v *VFile) string {
+	ch := c.Character(v)
+	if ch == nil {
+		return ""
+	}
+	return ch.Rebirth
 }
 
 // CardList helper interface for looking at lists of cards

@@ -14,14 +14,15 @@ type CardCharacter struct {
 	// max friendship 0-30
 	MaxFriendship int `json:"max_friendship"`
 	// text from Strings file
-	Description     string `json:"description"`
-	Friendship      string `json:"friendship"`
-	Login           string `json:"login"`
-	Meet            string `json:"meet"`
-	BattleStart     string `json:"battleStart"`
-	BattleEnd       string `json:"battleEnd"`
-	FriendshipMax   string `json:"friendshipMax"`
-	FriendshipEvent string `json:"friendshipEvent"`
+	Description     string `json:"-"` // MsgCharaDesc_en.strb
+	Friendship      string `json:"-"` // MsgCharaBonds_en.strb
+	Login           string `json:"-"` // MsgCharaWelcome_en.strb
+	Meet            string `json:"-"` // MsgCharaMeet_en.strb
+	BattleStart     string `json:"-"` // MsgCharaBtlStart_en.strb
+	BattleEnd       string `json:"-"` // MsgCharaBtlEnd_en.strb
+	FriendshipMax   string `json:"-"` // MsgCharaFriendshipMax_en.strb
+	FriendshipEvent string `json:"-"` // MsgCharaBonds_en.strb
+	Rebirth         string `json:"-"` // MsgCharaSuperAwaken_en.strb
 	_cards          []Card
 }
 

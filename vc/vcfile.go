@@ -182,9 +182,13 @@ type VFile struct {
 	GuildBattleIndividualPoints []RankRewardSheet           `json:"mst_guildbattle_point_rewardsheet"`
 	GuildBattleRankingRewards   []RankRewardSheet           `json:"mst_guildbattle_individual_ranking_reward"`
 	GuildAUBWinRewards          []GuildAUBWinReward         `json:"mst_guildbattle_win_reward"`
-	Tower                       []Tower                     `json:"mst_tower"`
-	TowerReward                 []RankRewardSheet           `json:"mst_tower_ranking_reward"`
-	TowerArrivalReward          []RankRewardSheet           `json:"mst_tower_arrival_point_reward"`
+	Towers                      []Tower                     `json:"mst_tower"`
+	TowerRewards                []RankRewardSheet           `json:"mst_tower_ranking_reward"`
+	TowerArrivalRewards         []RankRewardSheet           `json:"mst_tower_arrival_point_reward"`
+	Dungeons                    []Dungeon                   `json:"mst_dungeon"`
+	DungeonAreaTypes            []DungeonAreaType           `json:"mst_dungeon_area_type"`
+	DungeonRewards              []RankRewardSheet           `json:"mst_dungeon_ranking_reward"`
+	DungeonArrivalRewards       []RankRewardSheet           `json:"mst_dungeon_arrival_point_reward"`
 }
 
 // This reads the main data file and all associated files for strings
@@ -330,6 +334,17 @@ func (v *VFile) Read(root string) ([]byte, error) {
 			"Character friendship_event", len(v.CardCharacters), len(friendshipEvent))
 	}
 
+	rebirthEvent, err := readStringFile(root + "/string/MsgCharaSuperAwaken_en.strb")
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	if len(v.CardCharacters) > len(rebirthEvent) {
+		debug.PrintStack()
+		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+			"Character friendship_event", len(v.CardCharacters), len(rebirthEvent))
+	}
+
 	for key := range v.CardCharacters {
 		v.CardCharacters[key].Description = strings.Replace(description[key], "\n", " ", -1)
 		v.CardCharacters[key].Friendship = friendship[key]
@@ -341,6 +356,7 @@ func (v *VFile) Read(root string) ([]byte, error) {
 		v.CardCharacters[key].BattleEnd = battleEnd[key]
 		v.CardCharacters[key].FriendshipMax = friendshipMax[key]
 		v.CardCharacters[key].FriendshipEvent = friendshipEvent[key]
+		v.CardCharacters[key].Rebirth = rebirthEvent[key]
 	}
 	description = nil
 	friendship = nil

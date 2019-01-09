@@ -23,7 +23,7 @@ type Tower struct {
 func (t *Tower) RankRewards(v *VFile) []RankRewardSheet {
 	set := make([]RankRewardSheet, 0)
 	if t.RankingRewardGroupID > 0 {
-		for _, val := range v.TowerReward {
+		for _, val := range v.TowerRewards {
 			if val.SheetID == t.RankingRewardGroupID {
 				set = append(set, val)
 			}
@@ -36,7 +36,7 @@ func (t *Tower) RankRewards(v *VFile) []RankRewardSheet {
 func (t *Tower) ArrivalRewards(v *VFile) []RankRewardSheet {
 	set := make([]RankRewardSheet, 0)
 	if t.RankingArrivalGroupID > 0 {
-		for _, val := range v.TowerArrivalReward {
+		for _, val := range v.TowerArrivalRewards {
 			if val.SheetID == t.RankingArrivalGroupID {
 				set = append(set, val)
 			}
@@ -48,10 +48,10 @@ func (t *Tower) ArrivalRewards(v *VFile) []RankRewardSheet {
 // TowerScan search for a tower by ID
 func TowerScan(id int, v *VFile) *Tower {
 	if id > 0 {
-		l := len(v.Tower)
-		i := sort.Search(l, func(i int) bool { return v.Tower[i].ID >= id })
-		if i >= 0 && i < l && v.Tower[i].ID == id {
-			return &(v.Tower[i])
+		l := len(v.Towers)
+		i := sort.Search(l, func(i int) bool { return v.Towers[i].ID >= id })
+		if i >= 0 && i < l && v.Towers[i].ID == id {
+			return &(v.Towers[i])
 		}
 	}
 	return nil

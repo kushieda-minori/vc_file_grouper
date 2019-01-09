@@ -347,9 +347,14 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if len(strings.TrimSpace(login)) > 0 {
 		fmt.Fprintf(w, "|login = %s\n", html.EscapeString(strings.Replace(login, "\n", "<br />", -1)))
 	}
-	fmt.Fprintf(w, "|meet = %s\n|battle start = %s\n|battle end = %s\n|friendship max = %s\n|friendship event = %s\n", html.EscapeString(strings.Replace(card.Meet(VcData), "\n", "<br />", -1)),
-		html.EscapeString(strings.Replace(card.BattleStart(VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.BattleEnd(VcData), "\n", "<br />", -1)),
-		html.EscapeString(strings.Replace(card.FriendshipMax(VcData), "\n", "<br />", -1)), html.EscapeString(strings.Replace(card.FriendshipEvent(VcData), "\n", "<br />", -1)))
+	fmt.Fprintf(w, "|meet = %s\n|battle start = %s\n|battle end = %s\n|friendship max = %s\n|friendship event = %s\n|rebirth = %s\n",
+		html.EscapeString(strings.Replace(card.Meet(VcData), "\n", "<br />", -1)),
+		html.EscapeString(strings.Replace(card.BattleStart(VcData), "\n", "<br />", -1)),
+		html.EscapeString(strings.Replace(card.BattleEnd(VcData), "\n", "<br />", -1)),
+		html.EscapeString(strings.Replace(card.FriendshipMax(VcData), "\n", "<br />", -1)),
+		html.EscapeString(strings.Replace(card.FriendshipEvent(VcData), "\n", "<br />", -1)),
+		html.EscapeString(strings.Replace(card.RebirthEvent(VcData), "\n", "<br />", -1)),
+	)
 
 	gevo, ok := evolutions["G"]
 	if !ok {
@@ -590,6 +595,9 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 		if isThor := qs.Get("isThor"); isThor != "" {
 			match = match && card.ThorSkillID1 > 0
 		}
+		if hasRebirth := qs.Get("hasRebirth"); hasRebirth != "" {
+			match = match && card.HasRebirth(VcData)
+		}
 		if name := qs.Get("name"); name != "" {
 			match = match && strings.Contains(strings.ToLower(card.Name), strings.ToLower(name))
 		}
@@ -643,6 +651,7 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 <label for="f_skillname">Skill Name:</label><input id="f_skillname" name="skillname" value="%s" />
 <label for="f_skilldesc">Skill Description:</label><input id="f_skilldesc" name="skilldesc" value="%s" />
 <label for="f_skillisthor">Has Thor Skill:</label><input id="f_skillisthor" name="isThor" type="checkbox" value="checked" %s />
+<label for="f_hasrebirth">Has Rebirth:</label><input id="f_hasrebirth" name="hasRebirth" type="checkbox" value="checked" %s />
 <button type="submit">Submit</button>
 </form>
 <div>
