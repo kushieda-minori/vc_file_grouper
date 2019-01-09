@@ -148,7 +148,7 @@ func (c *Card) Character(v *VFile) *CardCharacter {
 }
 
 // NextEvo is the next evolution of this card, or nil if no further evolutions are possible.
-// Amalgamations or Awakenings may still be possible.
+// Amalgamations, Awakenings, and Rebirths may still be possible.
 func (c *Card) NextEvo(v *VFile) *Card {
 	if c.ID == c.EvolutionCardID {
 		// bad data
@@ -230,16 +230,15 @@ func (c *Card) PossibleMixedEvo(v *VFile) bool {
 			}
 		}
 		return false
-	} else {
-		firstEvo := c.GetEvolutions(v)["0"]
-		secondEvo := c.GetEvolutions(v)["1"]
-		if secondEvo == nil {
-			secondEvo = c.GetEvolutions(v)["H"]
-		}
-		return firstEvo != nil && secondEvo != nil &&
-			firstEvo.IsAmalgamation(v.Amalgamations) &&
-			firstEvo.EvolutionCardID == secondEvo.ID
 	}
+	firstEvo := c.GetEvolutions(v)["0"]
+	secondEvo := c.GetEvolutions(v)["1"]
+	if secondEvo == nil {
+		secondEvo = c.GetEvolutions(v)["H"]
+	}
+	return firstEvo != nil && secondEvo != nil &&
+		firstEvo.IsAmalgamation(v.Amalgamations) &&
+		firstEvo.EvolutionCardID == secondEvo.ID
 }
 
 // calculateEvoStat calculates the evo stats.
@@ -1844,8 +1843,12 @@ func getAmalBaseCard(card *Card, v *VFile) *Card {
 	return card
 }
 
-func checkEndCards(c *Card, v *VFile) (awakening, amalCard, amalAwakening *Card) {
+func checkEndCards(c *Card, v *VFile) (awakening, amalCard, amalAwakening, rebirth, rebirthAmal *Card) {
 	awakening = c.AwakensTo(v)
+	rebirth = c.RebirthsTo(v)
+	if rebirth == nil && awakening != nil {
+		rebirth = awakening.RebirthsTo(v)
+	}
 	// check for Amalgamation
 	if c.HasAmalgamation(v.Amalgamations) {
 		amals := c.Amalgamations(v)
@@ -1858,12 +1861,17 @@ func checkEndCards(c *Card, v *VFile) (awakening, amalCard, amalAwakening *Card)
 					amalCard = tamalCard
 					// check for amal awakening
 					amalAwakening = amalCard.AwakensTo(v)
-					return // awakening, amalCard, amalAwakening
+					if amalAwakening != nil {
+						rebirthAmal = amalAwakening.RebirthsTo(v)
+					} else {
+						rebirthAmal = amalCard.RebirthsTo(v)
+					}
+					return // awakening, amalCard, amalAwakening, rebirth, rebirthAmal
 				}
 			}
 		}
 	}
-	return // awakening, amalCard, amalAwakening
+	return // awakening, amalCard, amalAwakening, rebirth, rebirthAmal
 }
 
 // GetEvolutions gets the evolutions for a card including Awakening and same character(by name) amalgamations
@@ -1880,6 +1888,19 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 		}
 
 		c2 := c
+		// check if this is an rebirth card
+		if len(c2.Rarity()) > 1 && c2.Rarity()[0] == 'X' {
+			tmp := c2.RebirthsFrom(v)
+			if tmp == nil {
+				ch := c2.Character(v)
+				if ch != nil && ch.Cards(v)[0].Name == c2.Name {
+					c2 = &(ch.Cards(v)[0])
+				}
+				// the name changed, so we'll keep this card
+			} else {
+				c2 = tmp
+			}
+		}
 		// check if this is an awoken card
 		if c2.Rarity()[0] == 'G' {
 			tmp := c2.AwakensFrom(v)
@@ -1923,7 +1944,7 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 				ret[evoRank] = nextEvo
 				if nextEvo.LastEvolutionRank < 0 {
 					// check for awakening
-					awakening, amalCard, amalAwakening := checkEndCards(nextEvo, v)
+					awakening, amalCard, amalAwakening, rebirth, rebirthAmal := checkEndCards(nextEvo, v)
 					if awakening != nil {
 						ret["G"] = awakening
 					}
@@ -1933,6 +1954,14 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 					if amalAwakening != nil {
 						ret["GA"] = amalAwakening
 					}
+					if rebirth != nil {
+						ret["X"] = rebirth
+						if rebirthAmal != nil {
+							ret["XA"] = rebirthAmal
+						}
+					} else if rebirthAmal != nil {
+						ret["X"] = rebirthAmal
+					}
 				}
 			} else if nextEvo.Rarity()[0] == 'G' {
 				// for some reason we hit a G during Evo traversal. Probably a G originating
@@ -1941,7 +1970,7 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 			} else if nextEvo.EvolutionRank == c2.LastEvolutionRank || nextEvo.Rarity()[0] == 'H' || nextEvo.LastEvolutionRank < 0 {
 				ret["H"] = nextEvo
 				// check for awakening
-				awakening, amalCard, amalAwakening := checkEndCards(nextEvo, v)
+				awakening, amalCard, amalAwakening, rebirth, rebirthAmal := checkEndCards(nextEvo, v)
 				if awakening != nil {
 					ret["G"] = awakening
 				}
@@ -1950,6 +1979,14 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 				}
 				if amalAwakening != nil {
 					ret["GA"] = amalAwakening
+				}
+				if rebirth != nil {
+					ret["X"] = rebirth
+					if rebirthAmal != nil {
+						ret["XA"] = rebirthAmal
+					}
+				} else if rebirthAmal != nil {
+					ret["X"] = rebirthAmal
 				}
 			} else {
 				// not the last evo. These never awaken or have amalgamations

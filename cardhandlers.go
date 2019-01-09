@@ -163,7 +163,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	amalgamations := getAmalgamations(evolutions)
 
 	var firstEvo, lastEvo *vc.Card
-	evoOrder := []string{"0", "1", "2", "3", "H", "A", "G", "GA"}
+	evoOrder := []string{"0", "1", "2", "3", "H", "A", "G", "GA", "X", "XA"}
 	var evokeys []string // cache of actual evos for this card
 	for _, k := range evoOrder {
 		evo, ok := evolutions[k]
@@ -192,6 +192,8 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if _, ok := evolutions["A"]; ok {
 		avail += " [[Amalgamation]]"
 	} else if _, ok := evolutions["GA"]; ok {
+		avail += " [[Amalgamation]]"
+	} else if _, ok := evolutions["XA"]; ok {
 		avail += " [[Amalgamation]]"
 	} else {
 		for _, evo := range evolutions {
@@ -236,6 +238,8 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	skillEvoMod := ""
 	if firstEvo.Rarity()[0] == 'G' {
 		skillEvoMod = "g"
+	} else if firstEvo.Rarity()[0] == 'X' {
+		skillEvoMod = "x"
 	} else if evo, ok := evolutions["A"]; ok && firstEvo.ID == evo.ID {
 		// if the first evo is the amalgamation evo...
 		skillEvoMod = ""
@@ -269,6 +273,9 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		if _, ok := evolutions["GA"]; ok {
 			skillMap["ga"] = printWikiSkill(evo.Skill1(VcData), nil, "ga")
 		}
+		if _, ok := evolutions["XA"]; ok {
+			skillMap["xa"] = printWikiSkill(evo.Skill1(VcData), nil, "xa")
+		}
 	}
 	// add awoken skills as long as the first evo wasn't awoken
 	if evo, ok := evolutions["G"]; ok && firstEvo.ID != evo.ID {
@@ -277,8 +284,15 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		skillMap["g3"] = printWikiSkill(evo.Skill3(VcData), nil, "g3")
 		skillMap["gt"] = printWikiSkill(evo.ThorSkill1(VcData), nil, "gt")
 	}
+	// add rebirth skills as long as the first evo wasn't rebirth
+	if evo, ok := evolutions["X"]; ok && firstEvo.ID != evo.ID {
+		skillMap["x"] = printWikiSkill(evo.Skill1(VcData), nil, "x")
+		skillMap["x2"] = printWikiSkill(evo.Skill2(VcData), nil, "x2")
+		skillMap["x3"] = printWikiSkill(evo.Skill3(VcData), nil, "x3")
+		skillMap["xt"] = printWikiSkill(evo.ThorSkill1(VcData), nil, "xt")
+	}
 	// order that we want to print the skills
-	skillEvos := []string{"", "2", "3", "a", "t", "g", "g2", "g3", "ga", "gt"}
+	skillEvos := []string{"", "2", "3", "a", "t", "g", "g2", "g3", "ga", "gt", "x", "x2", "x3", "xa", "xt"}
 
 	// actually print the skills now...
 	for _, skillEvo := range skillEvos {
@@ -351,6 +365,23 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if awakenInfo != nil {
 			printAwakenMaterials(w, awakenInfo)
+		}
+	}
+
+	xevo, ok := evolutions["X"]
+	if !ok {
+		xevo, ok = evolutions["XA"]
+	}
+	if xevo != nil {
+		var rebirthInfo *vc.CardAwaken
+		for idx, val := range VcData.Rebirths {
+			if xevo.ID == val.ResultCardID {
+				rebirthInfo = &VcData.Awakenings[idx]
+				break
+			}
+		}
+		if rebirthInfo != nil {
+			printRebirthMaterials(w, rebirthInfo)
 		}
 	}
 
@@ -445,7 +476,21 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func fixRarity(s string) string {
-	return strings.TrimPrefix(strings.TrimPrefix(s, "G"), "H")
+	l := len(s)
+	switch l {
+	case 1:
+		// N, X, R
+		return s
+	case 2:
+		// HN, HX, HR, SR, UR, LR
+		return strings.TrimPrefix(s, "H")
+	case 3:
+		// HSR, GSR, HUR, GUR, HLR, GLR, XSR, XUR, XLR
+		return strings.TrimPrefix(strings.TrimPrefix(strings.TrimPrefix(s, "H"), "G"), "X")
+	default:
+		// not a known rarity!
+		return s
+	}
 }
 
 func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
@@ -1003,6 +1048,33 @@ func printAwakenMaterial(w http.ResponseWriter, item *vc.Item, count int) {
 		fmt.Fprintf(w, "|awaken s = %d\n", count)
 	} else {
 		fmt.Fprintf(w, "*******Unknown item: %s\n", item.NameEng)
+	}
+}
+
+func printRebirthMaterials(w http.ResponseWriter, awakenInfo *vc.CardAwaken) {
+	if awakenInfo == nil {
+		return
+	}
+
+	fmt.Fprintf(w, "|rebirth chance = %d\n", awakenInfo.Percent)
+
+	printRebirthMaterial(w, 1, awakenInfo.Item(1, VcData), awakenInfo.Material1Count)
+	printRebirthMaterial(w, 2, awakenInfo.Item(2, VcData), awakenInfo.Material2Count)
+	printRebirthMaterial(w, 3, awakenInfo.Item(3, VcData), awakenInfo.Material3Count)
+}
+
+func printRebirthMaterial(w http.ResponseWriter, matNum int, item *vc.Item, count int) {
+	if item == nil || count <= 0 {
+		return
+	}
+	if strings.Contains(item.NameEng, "Crystal") {
+		fmt.Fprintf(w, "|rebirth 1 = %d\n", count)
+	} else if strings.Contains(item.NameEng, "Orb") {
+		fmt.Fprintf(w, "|rebirth 2 = %d\n", count)
+	} else if strings.Contains(item.NameEng, "(L)") {
+		fmt.Fprintf(w, "|rebirth 3 = %d\n", count)
+	} else {
+		fmt.Fprintf(w, "*******Unknown Rebirth item: %s\n", item.NameEng)
 	}
 }
 

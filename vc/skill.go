@@ -59,6 +59,19 @@ type SkillLevel struct {
 	Medal     int `json:"medal"`      // medals to upgrade to the next level
 }
 
+// CustomSkillLevel level information for custom skills
+type CustomSkillLevel struct {
+	ID int `json:""`
+}
+
+// SkillCostIncrementPattern increment pattern for custom skill costs vs card levels
+type SkillCostIncrementPattern struct {
+	ID                int `json:""`
+	CardLevelInterval int `json:"card_level_interval"`
+	Increment         int `json:"increment"`
+	Max               int `json:"max"`
+}
+
 // Effect of the skill (this is a visual effect, not the ability)
 func (s *Skill) Effect() string {
 	if val, ok := Effect[s.EffectID]; ok {
