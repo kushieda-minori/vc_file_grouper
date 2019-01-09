@@ -134,14 +134,20 @@ type VFile struct {
 	SkillLevels                 []SkillLevel               `json:"skill_level"`
 	Amalgamations               []Amalgamation             `json:"fusion_list"`
 	Awakenings                  []CardAwaken               `json:"card_awaken"`
+	Rebirths                    []CardAwaken               `json:"card_super_awaken"`
 	CardCharacters              []CardCharacter            `json:"card_character"`
 	FollowerKinds               []FollowerKind             `json:"follower_kinds"`
 	CardRarities                []CardRarity               `json:"card_rares"`
 	CardSpecialComposes         []CardSpecialCompose       `json:"card_special_compose"`
 	Levels                      []Level                    `json:"levels"`
+	LevelupBonuses              []LevelupBonus             `json:"levelup_bonus"`
 	CardLevels                  []CardLevel                `json:"cardlevel"`
 	CardLevelsLR                []CardLevel                `json:"cardlevel_lr"`
-	LRResources                 []LRResource               `json:"card_compose_resource"`
+	CardLevelsX                 []CardLevel                `json:"cardlevel_x"`
+	CardLevelsXLR               []CardLevel                `json:"cardlevel_xlr"`
+	LevelLRResources            []LevelResource            `json:"card_compose_resource"`
+	LevelXResources             []LevelResource            `json:"card_compose_resource_x"`
+	LevelXLRResources           []LevelResource            `json:"card_compose_resource_xlr"`
 	DeckBonuses                 []DeckBonus                `json:"deck_bonus"`
 	DeckBonusConditions         []DeckBonusCond            `json:"deck_bonus_cond"`
 	Archwitches                 []Archwitch                `json:"kings"`

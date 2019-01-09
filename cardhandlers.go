@@ -31,7 +31,9 @@ func cardLevelHandler(w http.ResponseWriter, r *http.Request) {
 	header := `{| class="article-table" style="float:left"
 !Lvl!!To Next Lvl!!Total Needed`
 	header2 := `{| class="article-table" style="float:left"
-!Lvl!!Gems Needed`
+!Lvl!!{{Icon|gem}} Needed`
+	header3 := `{| class="article-table" style="float:left"
+!Lvl!!{{Icon|gold}} Needed!!{{Icon|iron}} Needed!!{{Icon|ether}} Needed!!{{Icon|gem}} Needed`
 
 	genLevels := func(levels []vc.CardLevel) {
 		io.WriteString(w, header)
@@ -60,17 +62,23 @@ func cardLevelHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "\nN-GUR<br/><textarea rows=\"25\" cols=\"80\">")
 	genLevels(VcData.CardLevels)
 	io.WriteString(w, "</textarea>")
+	io.WriteString(w, "\n<br />XSR and XUR<br/><textarea rows=\"25\" cols=\"80\">")
+	genLevels(VcData.CardLevelsX)
+	io.WriteString(w, "</textarea>")
 	io.WriteString(w, "\n<br />LR-GLR<br/><textarea rows=\"25\" cols=\"80\">")
 	genLevels(VcData.CardLevelsLR)
+	io.WriteString(w, "</textarea>")
+	io.WriteString(w, "\n<br />XLR<br/><textarea rows=\"25\" cols=\"80\">")
+	genLevels(VcData.CardLevelsXLR)
 	io.WriteString(w, "</textarea>")
 	io.WriteString(w, "\n<br />LR Resources<br/><textarea rows=\"25\" cols=\"80\">")
 
 	io.WriteString(w, header2)
-	l := len(VcData.LRResources)
-	for i, lvl := range VcData.LRResources {
+	l := len(VcData.LevelLRResources)
+	for i, lvl := range VcData.LevelLRResources {
 		fmt.Fprintf(w, `
 |-
-|%d||%d{{Icon|gem}}`,
+|%d||%d`,
 			lvl.ID,
 			lvl.Elixir,
 		)
@@ -81,6 +89,47 @@ func cardLevelHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	io.WriteString(w, "\n|}\n</textarea>")
 
+	io.WriteString(w, "\n<br />XSR & XUR Resources<br/><textarea rows=\"25\" cols=\"80\">")
+
+	io.WriteString(w, header3)
+	l = len(VcData.LevelXResources)
+	for i, lvl := range VcData.LevelXResources {
+		fmt.Fprintf(w, `
+|-
+|%d||%d||%d||%d||%d`,
+			lvl.ID,
+			lvl.Gold,
+			lvl.Iron,
+			lvl.Ether,
+			lvl.Elixir,
+		)
+		if (i+1)%25 == 0 && i+1 < l {
+			io.WriteString(w, "\n|}\n\n")
+			io.WriteString(w, header3)
+		}
+	}
+
+	io.WriteString(w, "\n|}\n</textarea>")
+	io.WriteString(w, "\n<br />XLR Resources<br/><textarea rows=\"25\" cols=\"80\">")
+
+	io.WriteString(w, header3)
+	l = len(VcData.LevelXLRResources)
+	for i, lvl := range VcData.LevelXLRResources {
+		fmt.Fprintf(w, `
+|-
+|%d||%d||%d||%d||%d`,
+			lvl.ID,
+			lvl.Gold,
+			lvl.Iron,
+			lvl.Ether,
+			lvl.Elixir,
+		)
+		if (i+1)%25 == 0 && i+1 < l {
+			io.WriteString(w, "\n|}\n\n")
+			io.WriteString(w, header3)
+		}
+	}
+	io.WriteString(w, "\n|}\n</textarea>")
 	io.WriteString(w, "</body></html>")
 }
 

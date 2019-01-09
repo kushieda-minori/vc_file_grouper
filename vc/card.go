@@ -14,32 +14,35 @@ import (
 
 // Card is a distinct card in the game. The card names match the ones listed in the MsgCardName_en.strb file
 type Card struct {
-	ID                int    `json:"_id"`                 // card id
-	CardNo            int    `json:"card_no"`             // card number, matches to the image file
-	CardCharaID       int    `json:"card_chara_id"`       // card character id
-	CardRareID        int    `json:"card_rare_id"`        // rarity of the card
-	CardTypeID        int    `json:"card_type_id"`        // type of the card (Passion, Cool, Light, Dark)
-	DeckCost          int    `json:"deck_cost"`           // unit cost
-	LastEvolutionRank int    `json:"last_evolution_rank"` // number of evolution statges available to the card
-	EvolutionRank     int    `json:"evolution_rank"`      // this card current evolution stage
-	EvolutionCardID   int    `json:"evolution_card_id"`   // id of the card that this card evolves into, -1 for no evolution
-	TransCardID       int    `json:"trans_card_id"`       // id of a possible turnover accident
-	FollowerKindID    int    `json:"follower_kind_id"`    // cost of the followers?
-	DefaultFollower   int    `json:"default_follower"`    // base soldiers
-	MaxFollower       int    `json:"max_follower"`        // max soldiers if evolved minimally
-	DefaultOffense    int    `json:"default_offense"`     // base ATK
-	MaxOffense        int    `json:"max_offense"`         // max ATK if evolved minimally
-	DefaultDefense    int    `json:"default_defense"`     // base DEF
-	MaxDefense        int    `json:"max_defense"`         // max DEF if evolved minimally
-	SkillID1          int    `json:"skill_id_1"`          // First Skill
-	SkillID2          int    `json:"skill_id_2"`          // second Skill
-	SkillID3          int    `json:"skill_id_3"`          // third Skill (LR)
-	SpecialSkillID1   int    `json:"special_skill_id_1"`  // Awakened Burst type (GSR,GUR,GLR)
-	ThorSkillID1      int    `json:"thor_skill_id_1"`     // no one knows
-	MedalRate         int    `json:"medal_rate"`          // amount of medals can be traded for
-	Price             int    `json:"price"`               // amount of gold can be traded for
-	IsClosed          int    `json:"is_closed"`           // is closed
-	Name              string `json:"name"`                // name from the strings file
+	ID                        int    `json:"_id"`                                      // card id
+	CardNo                    int    `json:"card_no"`                                  // card number, matches to the image file
+	CardCharaID               int    `json:"card_chara_id"`                            // card character id
+	CardRareID                int    `json:"card_rare_id"`                             // rarity of the card
+	CardTypeID                int    `json:"card_type_id"`                             // type of the card (Passion, Cool, Light, Dark)
+	DeckCost                  int    `json:"deck_cost"`                                // unit cost
+	LastEvolutionRank         int    `json:"last_evolution_rank"`                      // number of evolution statges available to the card
+	EvolutionRank             int    `json:"evolution_rank"`                           // this card current evolution stage
+	EvolutionCardID           int    `json:"evolution_card_id"`                        // id of the card that this card evolves into, -1 for no evolution
+	TransCardID               int    `json:"trans_card_id"`                            // id of a possible turnover accident
+	FollowerKindID            int    `json:"follower_kind_id"`                         // cost of the followers?
+	DefaultFollower           int    `json:"default_follower"`                         // base soldiers
+	MaxFollower               int    `json:"max_follower"`                             // max soldiers if evolved minimally
+	DefaultOffense            int    `json:"default_offense"`                          // base ATK
+	MaxOffense                int    `json:"max_offense"`                              // max ATK if evolved minimally
+	DefaultDefense            int    `json:"default_defense"`                          // base DEF
+	MaxDefense                int    `json:"max_defense"`                              // max DEF if evolved minimally
+	SkillID1                  int    `json:"skill_id_1"`                               // First Skill
+	SkillID2                  int    `json:"skill_id_2"`                               // second Skill
+	SkillID3                  int    `json:"skill_id_3"`                               // third Skill (LR)
+	SpecialSkillID1           int    `json:"special_skill_id_1"`                       // Awakened Burst type (GSR,GUR,GLR)
+	ThorSkillID1              int    `json:"thor_skill_id_1"`                          // Temporary Thor skills used for AAW
+	CustomSkillCost           int    `json:"custom_skill_cost_1"`                      // initial skill cost
+	CustomSkillCostIncPattern int    `json:"custom_skill_cost_increment_pattern_id_1"` // ?
+	MedalRate                 int    `json:"medal_rate"`                               // amount of medals can be traded for
+	Price                     int    `json:"price"`                                    // amount of gold can be traded for
+	StunRate                  int    `json:"stun_rate"`                                // ?
+	IsClosed                  int    `json:"is_closed"`                                // is closed
+	Name                      string `json:"name"`                                     // name from the strings file
 
 	//Character Link
 	character *CardCharacter
@@ -1468,6 +1471,26 @@ func (c *Card) AwakensFrom(v *VFile) *Card {
 	return nil
 }
 
+// RebirthsTo Gets the card this card rebirths to.
+func (c *Card) RebirthsTo(v *VFile) *Card {
+	for _, val := range v.Rebirths {
+		if c.ID == val.BaseCardID {
+			return CardScan(val.ResultCardID, v.Cards)
+		}
+	}
+	return nil
+}
+
+// RebirthsFrom gets the source card of this rebirth card
+func (c *Card) RebirthsFrom(v *VFile) *Card {
+	for _, val := range v.Rebirths {
+		if c.ID == val.ResultCardID {
+			return CardScan(val.BaseCardID, v.Cards)
+		}
+	}
+	return nil
+}
+
 // HasAmalgamation returns true if this card has an amalgamation
 // (is used as a material)
 func (c *Card) HasAmalgamation(a []Amalgamation) bool {
@@ -1987,4 +2010,4 @@ func (c *Card) GetEvolutionCards(v *VFile) CardList {
 var Elements = [5]string{"Light", "Passion", "Cool", "Dark", "Special"}
 
 // Rarity of the cards
-var Rarity = [14]string{"N", "R", "SR", "HN", "HR", "HSR", "X", "UR", "HUR", "GSR", "GUR", "LR", "HLR", "GLR"}
+var Rarity = [17]string{"N", "R", "SR", "HN", "HR", "HSR", "X", "UR", "HUR", "GSR", "GUR", "LR", "HLR", "GLR", "XSR", "XUR", "XLR"}
