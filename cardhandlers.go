@@ -947,7 +947,7 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 		}
 
 		if !strings.HasSuffix(evo.Rarity(), "LR") &&
-			evo.Rarity()[0] != 'G' {
+			evo.Rarity()[0] != 'G' && evo.Rarity()[0] != 'X' {
 			// TODO need more logic here to check if it's an Amalg vs evo only.
 			// may need different options depending on the type of card.
 			if evo.EvolutionRank == 4 {
@@ -981,7 +981,7 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 			def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, cards)
 			sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, cards)
 		}
-		if evo.Rarity()[0] == 'G' {
+		if evo.Rarity()[0] == 'G' || evo.Rarity()[0] == 'X' {
 			evo.EvoStandardLvl1(VcData) // just to print out the level 1 G stats
 			atkPStat, defPStat, solPStat := evo.EvoPerfect(VcData)
 			if atkStat != atkPStat || defStat != defPStat || solStat != solPStat {
@@ -1004,6 +1004,9 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 				}
 			}
 			awakensFrom := evo.AwakensFrom(VcData)
+			if awakensFrom == nil && evo.RebirthsFrom(VcData) != nil {
+				awakensFrom = evo.RebirthsFrom(VcData).AwakensFrom(VcData)
+			}
 			if awakensFrom != nil && awakensFrom.LastEvolutionRank == 4 {
 				//If 4* card, calculate 6 card evo stats
 				atkStat, defStat, solStat := evo.Evo6Card(VcData)
@@ -1083,6 +1086,12 @@ func printRebirthMaterial(w http.ResponseWriter, matNum int, item *vc.Item, coun
 		fmt.Fprintf(w, "|rebirth bloom = %d\n", count)
 	} else if strings.Contains(item.NameEng, "Flora") {
 		fmt.Fprintf(w, "|rebirth flora = %d\n", count)
+	} else if strings.Contains(item.NameEng, "Secret Elixir") {
+		fmt.Fprintf(w, "|rebirth elixir = %d\n", count)
+	} else if strings.Contains(item.NameEng, "Medicinal Herb") {
+		fmt.Fprintf(w, "|rebirth herb = %d\n", count)
+	} else if strings.Contains(item.NameEng, "Zera") {
+		fmt.Fprintf(w, "|rebirth zera = %d\n", count)
 	} else {
 		fmt.Fprintf(w, "*******Unknown Rebirth item: %s\n", item.NameEng)
 	}

@@ -671,30 +671,41 @@ func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
 			// atk, def, soldier = c.AmalgamationStandard(v)
 			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 		} else {
-			mat := c.AwakensFrom(v)
+			mat := c.RebirthsFrom(v)
 			if mat != nil {
-				// if this is an awakwening, calculate the max...
-				matAtk, matDef, matSoldier := mat.EvoStandardLvl1(v)
-				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
-				os.Stdout.WriteString(fmt.Sprintf("Awakening standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+				// if this is an rebirth, calculate the max...
+				awakenMat := mat.AwakensFrom(v)
+				matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1(v)
+				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
+				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				// check for Evo Accident
-				mat = c.EvoAccidentOf(v.Cards)
+				mat := c.AwakensFrom(v)
 				if mat != nil {
-					// calculate the transfered stats of the 2 material cards
-					// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-					matAtk, matDef, matSoldier := mat.EvoStandard(v)
-					atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
-					def = calculateEvoAccidentStat(matDef, c.MaxDefense)
-					soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
-					os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					// if this is an awakwening, calculate the max...
+					matAtk, matDef, matSoldier := mat.EvoStandardLvl1(v)
+					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
+					os.Stdout.WriteString(fmt.Sprintf("Awakening standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
-					// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
-					atk = c.MaxOffense
-					def = c.MaxDefense
-					soldier = c.MaxFollower
-					os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					// check for Evo Accident
+					mat = c.EvoAccidentOf(v.Cards)
+					if mat != nil {
+						// calculate the transfered stats of the 2 material cards
+						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
+						matAtk, matDef, matSoldier := mat.EvoStandard(v)
+						atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
+						def = calculateEvoAccidentStat(matDef, c.MaxDefense)
+						soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
+						os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					} else {
+						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
+						atk = c.MaxOffense
+						def = c.MaxDefense
+						soldier = c.MaxFollower
+						os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					}
 				}
 			}
 		}
@@ -746,28 +757,39 @@ func (c *Card) EvoStandardLvl1(v *VFile) (atk, def, soldier int) {
 			// atk, def, soldier = c.AmalgamationStandardLvl1(v)
 			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for StandardLvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 		} else {
-			mat := c.AwakensFrom(v)
+			mat := c.RebirthsFrom(v)
 			if mat != nil {
-				// if this is an awakwening, calculate the max...
-				matAtk, matDef, matSoldier := mat.EvoStandardLvl1(v)
-				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
-				os.Stdout.WriteString(fmt.Sprintf("Awakening StandardLvl1 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
+				// if this is an rebirth, calculate the max...
+				awakenMat := mat.AwakensFrom(v)
+				matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1(v)
+				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
+				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				// check for Evo Accident
-				mat = c.EvoAccidentOf(v.Cards)
+				mat := c.AwakensFrom(v)
 				if mat != nil {
-					// calculate the transfered stats of the 2 material cards
-					// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-					matAtk, matDef, matSoldier := mat.EvoStandard(v)
-					atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
-					def = calculateEvoAccidentStat(matDef, c.MaxDefense)
-					soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
+					// if this is an awakwening, calculate the max...
+					matAtk, matDef, matSoldier := mat.EvoStandardLvl1(v)
+					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+					os.Stdout.WriteString(fmt.Sprintf("Awakening StandardLvl1 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
-					// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
-					atk = c.DefaultOffense
-					def = c.DefaultDefense
-					soldier = c.DefaultFollower
+					// check for Evo Accident
+					mat = c.EvoAccidentOf(v.Cards)
+					if mat != nil {
+						// calculate the transfered stats of the 2 material cards
+						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
+						matAtk, matDef, matSoldier := mat.EvoStandard(v)
+						atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
+						def = calculateEvoAccidentStat(matDef, c.MaxDefense)
+						soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
+					} else {
+						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
+						atk = c.DefaultOffense
+						def = c.DefaultDefense
+						soldier = c.DefaultFollower
+					}
 				}
 			}
 		}
@@ -818,30 +840,41 @@ func (c *Card) EvoMixed(v *VFile) (atk, def, soldier int) {
 			// atk, def, soldier = c.AmalgamationStandard(v)
 			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 		} else {
-			mat := c.AwakensFrom(v)
+			mat := c.RebirthsFrom(v)
 			if mat != nil {
-				// if this is an awakwening, calculate the max...
-				matAtk, matDef, matSoldier := mat.EvoMixedLvl1(v)
-				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
-				os.Stdout.WriteString(fmt.Sprintf("Awakening Mixed card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+				// if this is an rebirth, calculate the max...
+				awakenMat := mat.AwakensFrom(v)
+				matAtk, matDef, matSoldier := awakenMat.EvoMixedLvl1(v)
+				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
+				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				// check for Evo Accident
-				mat = c.EvoAccidentOf(v.Cards)
+				mat := c.AwakensFrom(v)
 				if mat != nil {
-					// calculate the transfered stats of the 2 material cards
-					// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-					matAtk, matDef, matSoldier := mat.EvoStandard(v)
-					atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
-					def = calculateEvoAccidentStat(matDef, c.MaxDefense)
-					soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
-					os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					// if this is an awakwening, calculate the max...
+					matAtk, matDef, matSoldier := mat.EvoMixedLvl1(v)
+					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
+					os.Stdout.WriteString(fmt.Sprintf("Awakening Mixed card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
-					// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
-					atk = c.MaxOffense
-					def = c.MaxDefense
-					soldier = c.MaxFollower
-					os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					// check for Evo Accident
+					mat = c.EvoAccidentOf(v.Cards)
+					if mat != nil {
+						// calculate the transfered stats of the 2 material cards
+						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
+						matAtk, matDef, matSoldier := mat.EvoStandard(v)
+						atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
+						def = calculateEvoAccidentStat(matDef, c.MaxDefense)
+						soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
+						os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					} else {
+						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
+						atk = c.MaxOffense
+						def = c.MaxDefense
+						soldier = c.MaxFollower
+						os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					}
 				}
 			}
 		}
@@ -900,30 +933,41 @@ func (c *Card) EvoMixedLvl1(v *VFile) (atk, def, soldier int) {
 			// atk, def, soldier = c.AmalgamationStandard(v)
 			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 		} else {
-			mat := c.AwakensFrom(v)
+			mat := c.RebirthsFrom(v)
 			if mat != nil {
-				// if this is an awakwening, calculate the max...
-				matAtk, matDef, matSoldier := mat.EvoMixedLvl1(v)
-				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
-				os.Stdout.WriteString(fmt.Sprintf("Awakening Mixed card Lvl1 %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+				// if this is an rebirth, calculate the max...
+				awakenMat := mat.AwakensFrom(v)
+				matAtk, matDef, matSoldier := awakenMat.EvoMixedLvl1(v)
+				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
+				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				// check for Evo Accident
-				mat = c.EvoAccidentOf(v.Cards)
+				mat := c.AwakensFrom(v)
 				if mat != nil {
-					// calculate the transfered stats of the 2 material cards
-					// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-					matAtk, matDef, matSoldier := mat.EvoStandard(v)
-					atk = calculateEvoAccidentStat(matAtk, c.DefaultOffense)
-					def = calculateEvoAccidentStat(matDef, c.DefaultDefense)
-					soldier = calculateEvoAccidentStat(matSoldier, c.DefaultFollower)
-					os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					// if this is an awakwening, calculate the max...
+					matAtk, matDef, matSoldier := mat.EvoMixedLvl1(v)
+					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
+					os.Stdout.WriteString(fmt.Sprintf("Awakening Mixed card Lvl1 %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
-					// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
-					atk = c.DefaultOffense
-					def = c.DefaultDefense
-					soldier = c.DefaultFollower
-					os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					// check for Evo Accident
+					mat = c.EvoAccidentOf(v.Cards)
+					if mat != nil {
+						// calculate the transfered stats of the 2 material cards
+						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
+						matAtk, matDef, matSoldier := mat.EvoStandard(v)
+						atk = calculateEvoAccidentStat(matAtk, c.DefaultOffense)
+						def = calculateEvoAccidentStat(matDef, c.DefaultDefense)
+						soldier = calculateEvoAccidentStat(matSoldier, c.DefaultFollower)
+						os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					} else {
+						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
+						atk = c.DefaultOffense
+						def = c.DefaultDefense
+						soldier = c.DefaultFollower
+						os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+					}
 				}
 			}
 		}
@@ -977,28 +1021,39 @@ func (c *Card) Evo6Card(v *VFile) (atk, def, soldier int) {
 			// calculate the amalgamation stats here
 			atk, def, soldier = c.Amalgamation6Card(v)
 		} else {
-			mat := c.AwakensFrom(v)
+			mat := c.RebirthsFrom(v)
 			if mat != nil {
-				// if this is an awakwening, calculate the max...
-				matAtk, matDef, matSoldier := mat.Evo6CardLvl1(v)
-				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
-				os.Stdout.WriteString(fmt.Sprintf("Awakening 6 card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+				// if this is an rebirth, calculate the max...
+				awakenMat := mat.AwakensFrom(v)
+				matAtk, matDef, matSoldier := awakenMat.Evo6CardLvl1(v)
+				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
+				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				// check for Evo Accident
-				mat = c.EvoAccidentOf(v.Cards)
+				mat := c.AwakensFrom(v)
 				if mat != nil {
-					// calculate the transfered stats of the 2 material cards
-					// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-					matAtk, matDef, matSoldier := mat.Evo6Card(v)
-					atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
-					def = calculateEvoAccidentStat(matDef, c.MaxDefense)
-					soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
+					// if this is an awakwening, calculate the max...
+					matAtk, matDef, matSoldier := mat.Evo6CardLvl1(v)
+					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
+					os.Stdout.WriteString(fmt.Sprintf("Awakening 6 card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
-					// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
-					atk = c.MaxOffense
-					def = c.MaxDefense
-					soldier = c.MaxFollower
+					// check for Evo Accident
+					mat = c.EvoAccidentOf(v.Cards)
+					if mat != nil {
+						// calculate the transfered stats of the 2 material cards
+						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
+						matAtk, matDef, matSoldier := mat.Evo6Card(v)
+						atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
+						def = calculateEvoAccidentStat(matDef, c.MaxDefense)
+						soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
+					} else {
+						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
+						atk = c.MaxOffense
+						def = c.MaxDefense
+						soldier = c.MaxFollower
+					}
 				}
 			}
 		}
@@ -1051,28 +1106,39 @@ func (c *Card) Evo6CardLvl1(v *VFile) (atk, def, soldier int) {
 			// calculate the amalgamation stats here
 			atk, def, soldier = c.Amalgamation6CardLvl1(v)
 		} else {
-			mat := c.AwakensFrom(v)
+			mat := c.RebirthsFrom(v)
 			if mat != nil {
-				// if this is an awakwening, calculate the max...
-				matAtk, matDef, matSoldier := mat.Evo6CardLvl1(v)
-				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
-				os.Stdout.WriteString(fmt.Sprintf("Awakening 6 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
+				// if this is an rebirth, calculate the max...
+				awakenMat := mat.AwakensFrom(v)
+				matAtk, matDef, matSoldier := awakenMat.Evo6CardLvl1(v)
+				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
+				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				// check for Evo Accident
-				mat = c.EvoAccidentOf(v.Cards)
+				mat := c.AwakensFrom(v)
 				if mat != nil {
-					// calculate the transfered stats of the 2 material cards
-					// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-					matAtk, matDef, matSoldier := mat.Evo6Card(v)
-					atk = calculateEvoAccidentStat(matAtk, c.DefaultOffense)
-					def = calculateEvoAccidentStat(matDef, c.DefaultDefense)
-					soldier = calculateEvoAccidentStat(matSoldier, c.DefaultFollower)
+					// if this is an awakwening, calculate the max...
+					matAtk, matDef, matSoldier := mat.Evo6CardLvl1(v)
+					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+					os.Stdout.WriteString(fmt.Sprintf("Awakening 6 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
-					// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
-					atk = c.DefaultOffense
-					def = c.DefaultDefense
-					soldier = c.DefaultFollower
+					// check for Evo Accident
+					mat = c.EvoAccidentOf(v.Cards)
+					if mat != nil {
+						// calculate the transfered stats of the 2 material cards
+						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
+						matAtk, matDef, matSoldier := mat.Evo6Card(v)
+						atk = calculateEvoAccidentStat(matAtk, c.DefaultOffense)
+						def = calculateEvoAccidentStat(matDef, c.DefaultDefense)
+						soldier = calculateEvoAccidentStat(matSoldier, c.DefaultFollower)
+					} else {
+						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
+						atk = c.DefaultOffense
+						def = c.DefaultDefense
+						soldier = c.DefaultFollower
+					}
 				}
 			}
 		}
@@ -1126,28 +1192,39 @@ func (c *Card) Evo9Card(v *VFile) (atk, def, soldier int) {
 			// calculate the amalgamation stats here
 			atk, def, soldier = c.Amalgamation9Card(v)
 		} else {
-			mat := c.AwakensFrom(v)
+			mat := c.RebirthsFrom(v)
 			if mat != nil {
-				// if this is an awakwening, calculate the max...
-				matAtk, matDef, matSoldier := mat.Evo9CardLvl1(v)
-				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
-				os.Stdout.WriteString(fmt.Sprintf("Awakening 9 card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+				// if this is an rebirth, calculate the max...
+				awakenMat := mat.AwakensFrom(v)
+				matAtk, matDef, matSoldier := awakenMat.Evo9CardLvl1(v)
+				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
+				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				// check for Evo Accident
-				mat = c.EvoAccidentOf(v.Cards)
+				mat := c.AwakensFrom(v)
 				if mat != nil {
-					// calculate the transfered stats of the 2 material cards
-					// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-					matAtk, matDef, matSoldier := mat.Evo9Card(v)
-					atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
-					def = calculateEvoAccidentStat(matDef, c.MaxDefense)
-					soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
+					// if this is an awakwening, calculate the max...
+					matAtk, matDef, matSoldier := mat.Evo9CardLvl1(v)
+					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
+					os.Stdout.WriteString(fmt.Sprintf("Awakening 9 card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
-					// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
-					atk = c.MaxOffense
-					def = c.MaxDefense
-					soldier = c.MaxFollower
+					// check for Evo Accident
+					mat = c.EvoAccidentOf(v.Cards)
+					if mat != nil {
+						// calculate the transfered stats of the 2 material cards
+						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
+						matAtk, matDef, matSoldier := mat.Evo9Card(v)
+						atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
+						def = calculateEvoAccidentStat(matDef, c.MaxDefense)
+						soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
+					} else {
+						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
+						atk = c.MaxOffense
+						def = c.MaxDefense
+						soldier = c.MaxFollower
+					}
 				}
 			}
 		}
@@ -1207,28 +1284,39 @@ func (c *Card) Evo9CardLvl1(v *VFile) (atk, def, soldier int) {
 			// calculate the amalgamation stats here
 			atk, def, soldier = c.Amalgamation9CardLvl1(v)
 		} else {
-			mat := c.AwakensFrom(v)
+			mat := c.RebirthsFrom(v)
 			if mat != nil {
-				// if this is an awakwening, calculate the max...
-				matAtk, matDef, matSoldier := mat.Evo9CardLvl1(v)
-				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
-				os.Stdout.WriteString(fmt.Sprintf("Awakening 9 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
+				// if this is an rebirth, calculate the max...
+				awakenMat := mat.AwakensFrom(v)
+				matAtk, matDef, matSoldier := awakenMat.Evo9CardLvl1(v)
+				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
+				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				// check for Evo Accident
-				mat = c.EvoAccidentOf(v.Cards)
+				mat := c.AwakensFrom(v)
 				if mat != nil {
-					// calculate the transfered stats of the 2 material cards
-					// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-					matAtk, matDef, matSoldier := mat.Evo9Card(v)
-					atk = calculateEvoAccidentStat(matAtk, c.DefaultOffense)
-					def = calculateEvoAccidentStat(matDef, c.DefaultDefense)
-					soldier = calculateEvoAccidentStat(matSoldier, c.DefaultFollower)
+					// if this is an awakwening, calculate the max...
+					matAtk, matDef, matSoldier := mat.Evo9CardLvl1(v)
+					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+					os.Stdout.WriteString(fmt.Sprintf("Awakening 9 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
-					// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
-					atk = c.DefaultOffense
-					def = c.DefaultDefense
-					soldier = c.DefaultFollower
+					// check for Evo Accident
+					mat = c.EvoAccidentOf(v.Cards)
+					if mat != nil {
+						// calculate the transfered stats of the 2 material cards
+						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
+						matAtk, matDef, matSoldier := mat.Evo9Card(v)
+						atk = calculateEvoAccidentStat(matAtk, c.DefaultOffense)
+						def = calculateEvoAccidentStat(matDef, c.DefaultDefense)
+						soldier = calculateEvoAccidentStat(matSoldier, c.DefaultFollower)
+					} else {
+						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
+						atk = c.DefaultOffense
+						def = c.DefaultDefense
+						soldier = c.DefaultFollower
+					}
 				}
 			}
 		}
@@ -1286,6 +1374,15 @@ func (c *Card) EvoPerfect(v *VFile) (atk, def, soldier int) {
 		if c.IsAmalgamation(v.Amalgamations) {
 			// calculate the amalgamation stats here
 			atk, def, soldier = c.AmalgamationPerfect(v)
+		} else if c.RebirthsFrom(v) != nil {
+			mat := c.RebirthsFrom(v)
+			// if this is an rebirth, calculate the max...
+			awakenMat := mat.AwakensFrom(v)
+			matAtk, matDef, matSoldier := awakenMat.EvoPerfectLvl1(v)
+			aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+			atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
+			os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 		} else if c.AwakensFrom(v) != nil {
 			// if this is an awakwening, calculate the max...
 			mat := c.AwakensFrom(v)
@@ -1351,6 +1448,15 @@ func (c *Card) EvoPerfectLvl1(v *VFile) (atk, def, soldier int) {
 		if c.IsAmalgamation(v.Amalgamations) {
 			// calculate the amalgamation stats here
 			atk, def, soldier = c.AmalgamationPerfectLvl1(v)
+		} else if c.RebirthsFrom(v) != nil {
+			mat := c.RebirthsFrom(v)
+			// if this is an rebirth, calculate the max...
+			awakenMat := mat.AwakensFrom(v)
+			matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1(v)
+			aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+			atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
+			os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 		} else if c.AwakensFrom(v) != nil {
 			// if this is an awakwening, calculate the max...
 			mat := c.AwakensFrom(v)
