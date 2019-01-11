@@ -532,11 +532,15 @@ func cardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/csv")
 	cw := csv.NewWriter(w)
 	cw.UseCRLF = true
-	cw.Write([]string{"ID", "Card #", "Name", "Element", "Rarity", "Base ATK",
+	cw.Write([]string{"VC ID", "Name", "name-rare", "Element", "Rarity", "Base ATK",
 		"Base DEF", "Base Sol", "Max ATK", "Max DEF", "Max Sold", "ATK Gain",
 		"DEF Gain", "SOL Gain", "ATK Gain/lvl", "DEF Gain/lvl", "SOL Gain/lvl",
 		"Sol Perfect Min", "Sol Perfect Max",
 		"Is Closed",
+		"Max Level",
+		"Max Rarity Atk",
+		"Max Rarity Def",
+		"Max Rarity Sold",
 	})
 
 	cards := make([]vc.Card, len(VcData.Cards))
@@ -551,20 +555,25 @@ func cardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	for _, card := range cards {
-		if card.Rarity() == "GLR" {
-			maxLevel := float64(card.CardRarity(VcData).MaxCardLevel - 1)
+		if card.Rarity() == "GLR" || (len(card.Rarity()) == 3 && card.Rarity()[0] == 'X') {
+			cardRare := card.CardRarity(VcData)
+			maxLevel := float64(cardRare.MaxCardLevel - 1)
 			atkGain := card.MaxOffense - card.DefaultOffense
 			defGain := card.MaxDefense - card.DefaultDefense
 			solGain := card.MaxFollower - card.DefaultFollower
 			_, _, minSol := (card.EvoPerfectLvl1(VcData))
 			_, _, maxSol := (card.EvoPerfect(VcData))
-			err := cw.Write([]string{strconv.Itoa(card.ID), fmt.Sprintf("cd_%05d", card.CardNo), card.Name, card.Element(), card.Rarity(),
+			err := cw.Write([]string{strconv.Itoa(card.ID), card.Name, card.Name + " - " + card.Rarity(), card.Element(), card.Rarity(),
 				strconv.Itoa(card.DefaultOffense), strconv.Itoa(card.DefaultDefense), strconv.Itoa(card.DefaultFollower),
 				strconv.Itoa(card.MaxOffense), strconv.Itoa(card.MaxDefense), strconv.Itoa(card.MaxFollower),
 				strconv.Itoa(atkGain), strconv.Itoa(defGain), strconv.Itoa(solGain),
 				fmt.Sprintf("%.4f", float64(atkGain)/maxLevel), fmt.Sprintf("%.4f", float64(defGain)/maxLevel), fmt.Sprintf("%.4f", float64(solGain)/maxLevel),
 				strconv.Itoa(minSol), strconv.Itoa(maxSol),
 				strconv.Itoa(card.IsClosed),
+				strconv.Itoa(cardRare.MaxCardLevel),
+				strconv.Itoa(cardRare.LimtOffense),
+				strconv.Itoa(cardRare.LimtDefense),
+				strconv.Itoa(cardRare.LimtMaxFollower),
 			})
 			if err != nil {
 				os.Stderr.WriteString(err.Error() + "\n")
