@@ -88,6 +88,7 @@ type RankReward struct {
 type RankRewardSheet struct {
 	ID          int `json:"_id"`
 	SheetID     int `json:"sheet_id"`
+	GroupID     int `json:"group_id"`
 	RankFrom    int `json:"rank_from"`
 	RankTo      int `json:"rank_to"`
 	Cash        int `json:"cash"`
@@ -119,6 +120,15 @@ func (e *Event) Tower(v *VFile) *Tower {
 	}
 
 	return TowerScan(e.TowerEventID, v)
+}
+
+// DemonRealm information for the event if it's a Demon Realm Voyage event
+func (e *Event) DemonRealm(v *VFile) *Dungeon {
+	if e.DungeonEventID <= 0 {
+		return nil
+	}
+
+	return DungeonScan(e.DungeonEventID, v)
 }
 
 // GuildBattle information if it's an Alliance Battle

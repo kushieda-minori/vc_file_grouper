@@ -252,7 +252,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"",    // Overlap AW Event
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 			genWikiExchange(bb.ExchangeRewards(VcData)), // Ring Exchange
-			rankRewards, // Rewards (combined)
+			rankRewards,                                 // Rewards (combined)
 			prevEventName,
 			nextEventName,
 		)
@@ -272,6 +272,26 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 				genWikiAWRewards(tower.ArrivalRewards(VcData), "Floor Arrival Rewards", "Floor"), // RR 1
 				genWikiAWRewards(tower.RankRewards(VcData), "Rank Rewards", "Rank"),              // RR 2
+				prevEventName,
+				nextEventName,
+			)
+		}
+	case 19: // Demon Realm Voyage
+		realm := event.DemonRealm(VcData)
+		if realm == nil {
+			fmt.Fprintf(w, "Unable to find demon realm event")
+		} else {
+			element := realm.ElementID - 1
+			shield := vc.Elements[element]
+
+			fmt.Fprintf(w,
+				getEventTemplate(event.EventTypeID), event.EventTypeID,
+				event.StartDatetime.Format(wikiFmt),
+				event.EndDatetime.Format(wikiFmt),
+				shield,
+				html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
+				genWikiAWRewards(realm.ArrivalRewards(VcData), "Point Rewards", "Floor"), // RR 1
+				genWikiAWRewards(realm.RankRewards(VcData), "Rank Rewards", "Rank"),      // RR 2
 				prevEventName,
 				nextEventName,
 			)
@@ -405,8 +425,8 @@ func getWikiItem(item *vc.Item) (r string) {
 			item.GroupID <= 16) {
 		// Arcana
 		r = fmt.Sprintf("{{Arcana|%s}}", cleanArcanaName(item.NameEng))
-	} else if (item.GroupID >= 5 && item.GroupID <= 7) || item.GroupID == 31 || item.GroupID == 22 || item.GroupID == 47 {
-		// sword, shoe, key, rod, potion
+	} else if (item.GroupID >= 5 && item.GroupID <= 7) || item.GroupID == 31 || item.GroupID == 22 || item.GroupID == 47 || item.GroupID == 48 {
+		// sword, shoe, key, rod, potion, crystal, feather
 		r = fmt.Sprintf("{{Valkyrie|%s}}", cleanItemName(item.NameEng))
 	} else if item.GroupID == 18 || item.GroupID == 19 || item.GroupID == 43 {
 		switch item.ID {
@@ -440,7 +460,36 @@ func getWikiItem(item *vc.Item) (r string) {
 		} else if strings.Contains(item.NameEng, "(S)") {
 			itemName += "S"
 		}
-		r = fmt.Sprintf("{{Stone|%s}}", itemName)
+		if itemName == "" {
+			// check rebirth items
+			element := ""
+			if strings.Contains(item.NameEng, "Stellar") {
+				element = "Light"
+			} else if strings.Contains(item.NameEng, "Flame") {
+				element = "Passion"
+			} else if strings.Contains(item.NameEng, "Frost") {
+				element = "Cool"
+			} else if strings.Contains(item.NameEng, "Crescent") {
+				element = "Dark"
+			}
+			itype := ""
+			if strings.Contains(item.NameEng, "Bud") {
+				itype = "Bud"
+			} else if strings.Contains(item.NameEng, "Bloom") {
+				itype = "Bloom"
+			} else if strings.Contains(item.NameEng, "Flora") {
+				itype = "Flora"
+			} else if strings.Contains(item.NameEng, "Secret Elixir") {
+				itype = "Secret Elixir"
+			} else if strings.Contains(item.NameEng, "Medicinal Herb") {
+				itype = "Medicinal Herb"
+			} else if strings.Contains(item.NameEng, "Zera") {
+				itype = "Zera"
+			}
+			r = fmt.Sprintf("{{Flower|%s|%s}}", element, itype)
+		} else {
+			r = fmt.Sprintf("{{Stone|%s}}", itemName)
+		}
 	} else if item.GroupID == 32 {
 		// ABB Ring
 		r = fmt.Sprintf("{{Icon|%s}}", item.NameEng)
@@ -531,6 +580,8 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 {{NavEvent|%[15]s|%s}}
 `
 	case 18: // Tower Events
+		fallthrough
+	case 19: // Demon Realm
 		return `{{Event|eventType = %d
 |start jst = %s
 |end jst = %s
