@@ -676,7 +676,7 @@ func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
 				// if this is an rebirth, calculate the max...
 				awakenMat := mat.AwakensFrom(v)
 				matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1(v)
-				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
@@ -762,7 +762,7 @@ func (c *Card) EvoStandardLvl1(v *VFile) (atk, def, soldier int) {
 				// if this is an rebirth, calculate the max...
 				awakenMat := mat.AwakensFrom(v)
 				matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1(v)
-				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
@@ -845,7 +845,7 @@ func (c *Card) EvoMixed(v *VFile) (atk, def, soldier int) {
 				// if this is an rebirth, calculate the max...
 				awakenMat := mat.AwakensFrom(v)
 				matAtk, matDef, matSoldier := awakenMat.EvoMixedLvl1(v)
-				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
@@ -938,7 +938,7 @@ func (c *Card) EvoMixedLvl1(v *VFile) (atk, def, soldier int) {
 				// if this is an rebirth, calculate the max...
 				awakenMat := mat.AwakensFrom(v)
 				matAtk, matDef, matSoldier := awakenMat.EvoMixedLvl1(v)
-				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
@@ -1026,7 +1026,7 @@ func (c *Card) Evo6Card(v *VFile) (atk, def, soldier int) {
 				// if this is an rebirth, calculate the max...
 				awakenMat := mat.AwakensFrom(v)
 				matAtk, matDef, matSoldier := awakenMat.Evo6CardLvl1(v)
-				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
@@ -1111,7 +1111,7 @@ func (c *Card) Evo6CardLvl1(v *VFile) (atk, def, soldier int) {
 				// if this is an rebirth, calculate the max...
 				awakenMat := mat.AwakensFrom(v)
 				matAtk, matDef, matSoldier := awakenMat.Evo6CardLvl1(v)
-				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
@@ -1197,7 +1197,7 @@ func (c *Card) Evo9Card(v *VFile) (atk, def, soldier int) {
 				// if this is an rebirth, calculate the max...
 				awakenMat := mat.AwakensFrom(v)
 				matAtk, matDef, matSoldier := awakenMat.Evo9CardLvl1(v)
-				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
@@ -1289,7 +1289,7 @@ func (c *Card) Evo9CardLvl1(v *VFile) (atk, def, soldier int) {
 				// if this is an rebirth, calculate the max...
 				awakenMat := mat.AwakensFrom(v)
 				matAtk, matDef, matSoldier := awakenMat.Evo9CardLvl1(v)
-				aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
@@ -1379,7 +1379,7 @@ func (c *Card) EvoPerfect(v *VFile) (atk, def, soldier int) {
 			// if this is an rebirth, calculate the max...
 			awakenMat := mat.AwakensFrom(v)
 			matAtk, matDef, matSoldier := awakenMat.EvoPerfectLvl1(v)
-			aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+			aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 			atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
 			os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
@@ -1452,8 +1452,8 @@ func (c *Card) EvoPerfectLvl1(v *VFile) (atk, def, soldier int) {
 			mat := c.RebirthsFrom(v)
 			// if this is an rebirth, calculate the max...
 			awakenMat := mat.AwakensFrom(v)
-			matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1(v)
-			aatk, adef, asoldier := c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
+			matAtk, matDef, matSoldier := awakenMat.EvoPerfectLvl1(v)
+			aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 			atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
 			os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
