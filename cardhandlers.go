@@ -381,7 +381,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		var rebirthInfo *vc.CardAwaken
 		for idx, val := range VcData.Rebirths {
 			if xevo.ID == val.ResultCardID {
-				rebirthInfo = &VcData.Awakenings[idx]
+				rebirthInfo = &VcData.Rebirths[idx]
 				break
 			}
 		}
@@ -702,6 +702,7 @@ func cardTableHandler(w http.ResponseWriter, r *http.Request) {
 		qs.Get("skillname"),
 		qs.Get("skilldesc"),
 		qs.Get("isThor"),
+		qs.Get("hasRebirth"),
 	)
 	for i := len(VcData.Cards) - 1; i >= 0; i-- {
 		card := VcData.Cards[i]
@@ -1076,12 +1077,12 @@ func printRebirthMaterial(w http.ResponseWriter, matNum int, item *vc.Item, coun
 	if item == nil || count <= 0 {
 		return
 	}
-	if strings.Contains(item.NameEng, "Crystal") {
-		fmt.Fprintf(w, "|rebirth 1 = %d\n", count)
-	} else if strings.Contains(item.NameEng, "Orb") {
-		fmt.Fprintf(w, "|rebirth 2 = %d\n", count)
-	} else if strings.Contains(item.NameEng, "(L)") {
-		fmt.Fprintf(w, "|rebirth 3 = %d\n", count)
+	if strings.Contains(item.NameEng, "Bud") {
+		fmt.Fprintf(w, "|rebirth bud = %d\n", count)
+	} else if strings.Contains(item.NameEng, "Bloom") {
+		fmt.Fprintf(w, "|rebirth bloom = %d\n", count)
+	} else if strings.Contains(item.NameEng, "Flora") {
+		fmt.Fprintf(w, "|rebirth flora = %d\n", count)
 	} else {
 		fmt.Fprintf(w, "*******Unknown Rebirth item: %s\n", item.NameEng)
 	}
