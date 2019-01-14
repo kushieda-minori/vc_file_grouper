@@ -205,8 +205,8 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			faws,                                // Fantasy Archwitch
 			aws,                                 // Regular Archwitch
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
-			(midrewards + finalrewards),                             //rewards
-			genWikiRankTrend(event, eventMap, midRewardTime, ranks), // Rank trend
+			(midrewards + finalrewards),                                    //rewards
+			genWikiRankTrend(event, eventMap, midRewardTime, ranks, false), // Rank trend
 			"",            // sub event (Alliance Battle)
 			prevEventName, //Previous event name
 			nextEventName, // next event name
@@ -252,7 +252,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"",    // Overlap AW Event
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 			genWikiExchange(bb.ExchangeRewards(VcData)), // Ring Exchange
-			rankRewards,                                 // Rewards (combined)
+			rankRewards, // Rewards (combined)
 			prevEventName,
 			nextEventName,
 		)
@@ -263,7 +263,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			element := tower.ElementID - 1
 			towerShield := vc.Elements[element]
-
+			var ranks = []int{1, 100, 300, 500, 1000, 2000, 3000, 5000}
 			fmt.Fprintf(w,
 				getEventTemplate(event.EventTypeID), event.EventTypeID,
 				event.StartDatetime.Format(wikiFmt),
@@ -272,6 +272,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 				genWikiAWRewards(tower.ArrivalRewards(VcData), "Floor Arrival Rewards", "Floor"), // RR 1
 				genWikiAWRewards(tower.RankRewards(VcData), "Rank Rewards", "Rank"),              // RR 2
+				genWikiRankTrend(event, nil, time.Unix(0, 0), ranks, true),                       // rank trend
 				prevEventName,
 				nextEventName,
 			)
@@ -283,7 +284,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			element := realm.ElementID - 1
 			shield := vc.Elements[element]
-
+			var ranks = []int{1, 100, 300, 500, 1000, 2000, 3000, 5000}
 			fmt.Fprintf(w,
 				getEventTemplate(event.EventTypeID), event.EventTypeID,
 				event.StartDatetime.Format(wikiFmt),
@@ -292,6 +293,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 				genWikiAWRewards(realm.ArrivalRewards(VcData), "Point Rewards", "Floor"), // RR 1
 				genWikiAWRewards(realm.RankRewards(VcData), "Rank Rewards", "Rank"),      // RR 2
+				genWikiRankTrend(event, nil, time.Unix(0, 0), ranks, true),               // rank trend
 				prevEventName,
 				nextEventName,
 			)
@@ -580,21 +582,82 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 {{NavEvent|%[15]s|%s}}
 `
 	case 18: // Tower Events
-		fallthrough
+		return `{{Event|eventType = %d
+		|start jst = %s
+		|end jst = %s
+		|towerShield=%s
+		|image = Banner {{PAGENAME}}.png
+		||Ranking Reward<br />Amalgamation
+		||Floor Reward
+		||Floor Reward
+		||Amalgamation
+		||Amalgamation
+		||Amalgamation
+		||Fantasy Archwitch
+		||Archwitch
+		||Floor Reward<br/>Amalgamation Material
+		||Floor Reward<br/>Amalgamation Material
+		||Floor Reward<br/>Amalgamation Material
+		||Ranking Reward<br />Amalgamation Material
+		||Floor Reward<br />Amalgamation Material
+		||Ranking Reward<br />Amalgamation Material
+		||Event ATK and DEF 10x <br /> KO Gauge 100%% <br /> Pass 180%% / 460%% UP
+		||Event ATK and DEF 10x <br /> KO Gauge 100%% <br /> Pass 180%% / 460%% UP
+		||Event ATK and DEF 10x <br /> KO Gauge 100%% UP
+		}}
+		
+		%s
+		
+		==Rewards==
+		%s%s
+		{{clr}}
+		
+		==Final Ranking==
+		%s
+		
+		{{clr}}
+		{{NavEvent|%s|%s}}
+		`
 	case 19: // Demon Realm
 		return `{{Event|eventType = %d
 |start jst = %s
 |end jst = %s
 |towerShield=%s
+|story=yes
 |image = Banner {{PAGENAME}}.png
+||Ranking Reward<br>Amalgmation
+||Point Rewards
+||Point Rewards
+||Point Rewards
+||Point Rewards
+||Fantasy Archwitch
+||Archwitch
+||ATK • DEF 10x<br>Soldiers +50%% / 100%%<br>Demon Core +20%% / 50%%<br>Pts +30%% / 100%%
+||ATK • DEF 10x<br>Soldiers +50%% / 100%%<br>Demon Core +20%% / 50%%<br>Pts +30%% / 100%%
+||ATK • DEF 10x<br>Soldiers +50%% / 100%%
 }}
 
 %s
+
+==Demon Core Exchange==
+{| class="article-table mw-collapsible mw-collapsed" border="1" cellpadding="1" cellspacing="1"
+|-
+! scope="col" |Prize
+! scope="col" |Cost
+! scope="col" |Limit
+
+|-
+| prize || [[File:Demon Core.png|30px|link=]] xCost || limit
+|}
 
 ==Rewards==
 %s%s
 {{clr}}
 
+==Final Ranking==
+%s
+
+{{clr}}
 {{NavEvent|%s|%s}}
 `
 	default: // Default event handler
@@ -613,7 +676,7 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 	}
 }
 
-func genWikiRankTrend(event *vc.Event, eventMap *vc.Map, midRewardTime time.Time, ranks []int) (rtrend string) {
+func genWikiRankTrend(event *vc.Event, eventMap *vc.Map, midRewardTime time.Time, ranks []int, finalDayOnly bool) (rtrend string) {
 	rtrend = `{| class="article-table rank-trend" border="1"
 |-
 !Date (JST)`
@@ -621,24 +684,32 @@ func genWikiRankTrend(event *vc.Event, eventMap *vc.Map, midRewardTime time.Time
 		// headers
 		rtrend += fmt.Sprintf(" !! Rank %d", rank)
 	}
-	for i := event.StartDatetime.Add(24 * time.Hour); event.EndDatetime.After(i.Add(-24 * time.Hour)); i = i.Add(24 * time.Hour) {
-		ehElement := ""
-		if eventMap != nil && !eventMap.ElementalhallStart.IsZero() && !i.Before(eventMap.ElementalhallStart.Time) {
-			ehElement = fmt.Sprintf("{{ {{subst:#invoke:ElementalHall|elementForDate|%s|1 }} }} ", i.Format("January _2, 2006"))
-		}
-		pre := ""
-		post := ""
-		if !midRewardTime.IsZero() {
-			midRewardDate := midRewardTime.Truncate(time.Duration(24) * time.Hour).Unix()
-			iDate := i.Truncate(time.Duration(24) * time.Hour).Unix()
-			if iDate == midRewardDate {
-				pre = "{{tooltip|"
-				post = "|Mid Ranking}}"
-			}
-		}
-		rtrend += fmt.Sprintf("\n|-\n|%s%s%s%s", ehElement, pre, i.Format("Jan _2"), post)
+	if finalDayOnly {
+		i := event.EndDatetime
+		rtrend += fmt.Sprintf("\n|-\n|%s", i.Format("Jan _2"))
 		for r := 0; r < len(ranks); r++ {
 			rtrend += "\n|"
+		}
+	} else {
+		for i := event.StartDatetime.Add(24 * time.Hour); event.EndDatetime.After(i.Add(-24 * time.Hour)); i = i.Add(24 * time.Hour) {
+			ehElement := ""
+			if eventMap != nil && !eventMap.ElementalhallStart.IsZero() && !i.Before(eventMap.ElementalhallStart.Time) {
+				ehElement = fmt.Sprintf("{{ {{subst:#invoke:ElementalHall|elementForDate|%s|1 }} }} ", i.Format("January _2, 2006"))
+			}
+			pre := ""
+			post := ""
+			if !midRewardTime.IsZero() {
+				midRewardDate := midRewardTime.Truncate(time.Duration(24) * time.Hour).Unix()
+				iDate := i.Truncate(time.Duration(24) * time.Hour).Unix()
+				if iDate == midRewardDate {
+					pre = "{{tooltip|"
+					post = "|Mid Ranking}}"
+				}
+			}
+			rtrend += fmt.Sprintf("\n|-\n|%s%s%s%s", ehElement, pre, i.Format("Jan _2"), post)
+			for r := 0; r < len(ranks); r++ {
+				rtrend += "\n|"
+			}
 		}
 	}
 	rtrend += "\n|}"

@@ -60,10 +60,12 @@ func main() {
 	http.HandleFunc("/images/event/", imageHandlerFor("/event/", "/event/"))
 	http.HandleFunc("/images/battle/", imageHandlerFor("/battle/", "/battle/"))
 	http.HandleFunc("/images/garden/", imageHandlerFor("/garden/", "/garden/"))
+	http.HandleFunc("/images/dungeon/", imageHandlerFor("/dungeon/", "/dungeon/"))
 	http.HandleFunc("/images/alliance/", imageHandlerFor("/alliance/", "/guild/"))
 	http.HandleFunc("/images/summon/", imageHandlerFor("/summon/", "/gacha/"))
 	http.HandleFunc("/images/item/", imageHandlerFor("/item/", "/item/"))
 	http.HandleFunc("/images/treasure/", imageHandlerFor("/treasure/", "/treasure/"))
+	http.HandleFunc("/images/navi/", imageHandlerFor("/navi/", "/navi/"))
 
 	// vc master data
 	http.HandleFunc("/data/", dataHandler)
@@ -161,9 +163,11 @@ Images:<br />
 <a href="/images/event/">Event</a><br />
 <a href="/images/garden/">Garden</a><br />
 <a href="/images/alliance/">Alliance</a><br />
+<a href="/images/dungeon/">Dungeon</a><br />
 <a href="/images/summon/">Summon</a><br />
 <a href="/images/item/">Items</a><br />
 <a href="/images/treasure/">Sacred Relics</a><br />
+<a href="/images/navi/">Navi</a><br />
 <br />
 <a href="/cards/csv">Card List as CSV</a><br />
 <a href="/skills/csv">Skill List as CSV</a><br />
