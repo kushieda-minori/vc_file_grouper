@@ -252,7 +252,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"",    // Overlap AW Event
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 			genWikiExchange(bb.ExchangeRewards(VcData)), // Ring Exchange
-			rankRewards, // Rewards (combined)
+			rankRewards,                                 // Rewards (combined)
 			prevEventName,
 			nextEventName,
 		)

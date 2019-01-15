@@ -231,7 +231,7 @@ func (v *VFile) Read(root string) ([]byte, error) {
 	}
 
 	// card names
-	names, err := readStringFile(root + "/string/MsgCardName_en.strb")
+	names, err := ReadStringFile(root + "/string/MsgCardName_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -251,7 +251,7 @@ func (v *VFile) Read(root string) ([]byte, error) {
 		card.GetEvolutions(v)
 	}
 
-	description, err := readStringFile(root + "/string/MsgCharaDesc_en.strb")
+	description, err := ReadStringFile(root + "/string/MsgCharaDesc_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -262,7 +262,7 @@ func (v *VFile) Read(root string) ([]byte, error) {
 			"Character descriptions", len(v.CardCharacters), len(description))
 	}
 
-	friendship, err := readStringFile(root + "/string/MsgCharaFriendship_en.strb")
+	friendship, err := ReadStringFile(root + "/string/MsgCharaFriendship_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -273,13 +273,13 @@ func (v *VFile) Read(root string) ([]byte, error) {
 			"Character friendship", len(v.CardCharacters), len(friendship))
 	}
 
-	login, err := readStringFile(root + "/string/MsgCharaWelcome_en.strb")
+	login, err := ReadStringFile(root + "/string/MsgCharaWelcome_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
 
-	meet, err := readStringFile(root + "/string/MsgCharaMeet_en.strb")
+	meet, err := ReadStringFile(root + "/string/MsgCharaMeet_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -290,7 +290,7 @@ func (v *VFile) Read(root string) ([]byte, error) {
 			"Character meet", len(v.CardCharacters), len(meet))
 	}
 
-	battleStart, err := readStringFile(root + "/string/MsgCharaBtlStart_en.strb")
+	battleStart, err := ReadStringFile(root + "/string/MsgCharaBtlStart_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -301,7 +301,7 @@ func (v *VFile) Read(root string) ([]byte, error) {
 			"Character battle_start", len(v.CardCharacters), len(battleStart))
 	}
 
-	battleEnd, err := readStringFile(root + "/string/MsgCharaBtlEnd_en.strb")
+	battleEnd, err := ReadStringFile(root + "/string/MsgCharaBtlEnd_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -312,7 +312,7 @@ func (v *VFile) Read(root string) ([]byte, error) {
 			"Character battle_end", len(v.CardCharacters), len(battleEnd))
 	}
 
-	friendshipMax, err := readStringFile(root + "/string/MsgCharaFriendshipMax_en.strb")
+	friendshipMax, err := ReadStringFile(root + "/string/MsgCharaFriendshipMax_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -323,7 +323,7 @@ func (v *VFile) Read(root string) ([]byte, error) {
 			"Character friendship_max", len(v.CardCharacters), len(friendshipMax))
 	}
 
-	friendshipEvent, err := readStringFile(root + "/string/MsgCharaBonds_en.strb")
+	friendshipEvent, err := ReadStringFile(root + "/string/MsgCharaBonds_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -334,7 +334,7 @@ func (v *VFile) Read(root string) ([]byte, error) {
 			"Character friendship_event", len(v.CardCharacters), len(friendshipEvent))
 	}
 
-	rebirthEvent, err := readStringFile(root + "/string/MsgCharaSuperAwaken_en.strb")
+	rebirthEvent, err := ReadStringFile(root + "/string/MsgCharaSuperAwaken_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -368,19 +368,19 @@ func (v *VFile) Read(root string) ([]byte, error) {
 	friendshipEvent = nil
 
 	//Read Skill strings
-	names, err = readStringFile(root + "/string/MsgSkillName_en.strb")
+	names, err = ReadStringFile(root + "/string/MsgSkillName_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
 
-	description, err = readStringFile(root + "/string/MsgSkillDesc_en.strb")
+	description, err = ReadStringFile(root + "/string/MsgSkillDesc_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
 
-	fire, err := readStringFile(root + "/string/MsgSkillFire_en.strb")
+	fire, err := ReadStringFile(root + "/string/MsgSkillFire_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -399,12 +399,12 @@ func (v *VFile) Read(root string) ([]byte, error) {
 	}
 
 	// event strings
-	evntNames, err := readStringFile(root + "/string/MsgEventName_en.strb")
+	evntNames, err := ReadStringFile(root + "/string/MsgEventName_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	evntDescrs, err := readStringFile(root + "/string/MsgEventDesc_en.strb")
+	evntDescrs, err := ReadStringFile(root + "/string/MsgEventDesc_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -421,13 +421,13 @@ func (v *VFile) Read(root string) ([]byte, error) {
 	}
 
 	// map strings
-	mapNames, err := readStringFile(root + "/string/MsgNPCMapName_en.strb")
+	mapNames, err := ReadStringFile(root + "/string/MsgNPCMapName_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
 
-	mapStart, err := readStringFile(root + "/string/MsgNPCMapStart_en.strb")
+	mapStart, err := ReadStringFile(root + "/string/MsgNPCMapStart_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -442,37 +442,37 @@ func (v *VFile) Read(root string) ([]byte, error) {
 		}
 	}
 
-	areaName, err := readStringFile(root + "/string/MsgNPCAreaName_en.strb")
+	areaName, err := ReadStringFile(root + "/string/MsgNPCAreaName_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	areaLongName, err := readStringFile(root + "/string/MsgNPCAreaLongName_en.strb")
+	areaLongName, err := ReadStringFile(root + "/string/MsgNPCAreaLongName_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	areaStart, err := readStringFile(root + "/string/MsgNPCAreaStart_en.strb")
+	areaStart, err := ReadStringFile(root + "/string/MsgNPCAreaStart_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	areaEnd, err := readStringFile(root + "/string/MsgNPCAreaEnd_en.strb")
+	areaEnd, err := ReadStringFile(root + "/string/MsgNPCAreaEnd_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	areaStory, err := readStringFile(root + "/string/MsgNPCAreaStory_en.strb")
+	areaStory, err := ReadStringFile(root + "/string/MsgNPCAreaStory_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	bossStart, err := readStringFile(root + "/string/MsgNPCBossEnd_en.strb")
+	bossStart, err := ReadStringFile(root + "/string/MsgNPCBossEnd_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	bossEnd, err := readStringFile(root + "/string/MsgNPCBossStart_en.strb")
+	bossEnd, err := ReadStringFile(root + "/string/MsgNPCBossStart_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -502,7 +502,7 @@ func (v *VFile) Read(root string) ([]byte, error) {
 		}
 	}
 
-	awlikeability, err := readStringFile(root + "/string/MsgKingFriendshipDesc_en.strb")
+	awlikeability, err := ReadStringFile(root + "/string/MsgKingFriendshipDesc_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -515,7 +515,7 @@ func (v *VFile) Read(root string) ([]byte, error) {
 		}
 	}
 
-	kingDescription, err := readStringFile(root + "/string/MsgKingTitle_en.strb")
+	kingDescription, err := ReadStringFile(root + "/string/MsgKingTitle_en.strb")
 	// king series descriptions
 	for key := range v.ArchwitchSeries {
 		if key < len(kingDescription) {
@@ -523,12 +523,12 @@ func (v *VFile) Read(root string) ([]byte, error) {
 		}
 	}
 
-	dbonusName, err := readStringFile(root + "/string/MsgDeckBonusName_en.strb")
+	dbonusName, err := ReadStringFile(root + "/string/MsgDeckBonusName_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	dbonusDesc, err := readStringFile(root + "/string/MsgDeckBonusDesc_en.strb")
+	dbonusDesc, err := ReadStringFile(root + "/string/MsgDeckBonusDesc_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -545,27 +545,27 @@ func (v *VFile) Read(root string) ([]byte, error) {
 	}
 
 	//Items
-	itemdsc, err := readStringFile(root + "/string/MsgShopItemDesc_en.strb")
+	itemdsc, err := ReadStringFile(root + "/string/MsgShopItemDesc_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	itemdscshp, err := readStringFile(root + "/string/MsgShopItemDescInShop_en.strb")
+	itemdscshp, err := ReadStringFile(root + "/string/MsgShopItemDescInShop_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	itemdscsub, err := readStringFile(root + "/string/MsgShopItemDescSub_en.strb")
+	itemdscsub, err := ReadStringFile(root + "/string/MsgShopItemDescSub_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	itemname, err := readStringFile(root + "/string/MsgShopItemName_en.strb")
+	itemname, err := ReadStringFile(root + "/string/MsgShopItemName_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	itemuse, err := readStringFile(root + "/string/MsgShopItemUseResult_en.strb")
+	itemuse, err := ReadStringFile(root + "/string/MsgShopItemUseResult_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -589,12 +589,12 @@ func (v *VFile) Read(root string) ([]byte, error) {
 		}
 	}
 
-	buildname, err := readStringFile(root + "/string/MsgBuildingName_en.strb")
+	buildname, err := ReadStringFile(root + "/string/MsgBuildingName_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	builddesc, err := readStringFile(root + "/string/MsgBuildingDesc_en.strb")
+	builddesc, err := ReadStringFile(root + "/string/MsgBuildingDesc_en.strb")
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -610,7 +610,7 @@ func (v *VFile) Read(root string) ([]byte, error) {
 	}
 
 	if v.ThorEvents != nil {
-		thorTitle, err := readStringFile(root + "/string/MsgThorhammerTitle_en.strb")
+		thorTitle, err := ReadStringFile(root + "/string/MsgThorhammerTitle_en.strb")
 		if err != nil {
 			debug.PrintStack()
 			return data, err
@@ -624,7 +624,8 @@ func (v *VFile) Read(root string) ([]byte, error) {
 	return data, nil
 }
 
-func readStringFile(fname string) ([]string, error) {
+//ReadStringFile Reads a binary string file
+func ReadStringFile(fname string) ([]string, error) {
 	filename := strings.Replace(fname, "_en.strb", "_"+LangPack+".strb", 1)
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		debug.PrintStack()
@@ -635,6 +636,8 @@ func readStringFile(fname string) ([]string, error) {
 		debug.PrintStack()
 		return nil, errors.New("Error opening: " + filename)
 	}
+	defer f.Close()
+
 	r := bufio.NewReader(f)
 
 	//skip the 8 byte header
@@ -669,6 +672,54 @@ func readStringFile(fname string) ([]string, error) {
 		}
 		// remove the null terminator
 		ret = append(ret, filter(string(line[:len(line)-1])))
+	}
+	return ret, nil
+}
+
+//ReadBinFileImages reads a binary file and returns the image data (PNG only)
+func ReadBinFileImages(filename string) ([][]byte, error) {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	pngStart := []byte("\x89PNG")
+	lpngStart := len(pngStart)
+	pngEnd := []byte("IEND\xAEB`\x82")
+	lpngEnd := len(pngEnd)
+	l := len(data)
+	findPngStart := func(data []byte, startIdx int) int {
+		for i := startIdx; i < (l - lpngStart); i++ {
+			if bytes.Equal(data[i:i+lpngStart], pngStart) {
+				return i
+			}
+		}
+		return -1
+	}
+	findPngEnd := func(data []byte, startIdx int) int {
+		for i := startIdx; i < (l - lpngEnd); i++ {
+			if bytes.Equal(data[i:i+lpngEnd], pngEnd) {
+				return i + lpngEnd
+			}
+		}
+		return -1
+	}
+	//start of the PNG image
+	start := 0
+	// look for PNG images
+	ret := make([][]byte, 0)
+	for start < (l - (lpngStart + lpngEnd)) {
+		start = findPngStart(data, start)
+		if start < 0 {
+			return ret, nil
+		}
+		end := findPngEnd(data, start)
+		if end < 0 {
+			return nil, errors.New("unable to locate the end of an image")
+		}
+
+		ret = append(ret, data[start:end])
+		//os.Stdout.WriteString(fmt.Sprintf("found image file, idx: %d\n", start))
+		start = end + 1
 	}
 	return ret, nil
 }

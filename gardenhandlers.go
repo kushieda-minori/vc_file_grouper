@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -115,6 +117,26 @@ func structureDetailHandler(w http.ResponseWriter, r *http.Request) {
 		printBank(w, structure)
 	} else {
 		io.WriteString(w, "Not ready yet.")
+	}
+
+	io.WriteString(w, "</body></html>")
+}
+
+func handleStructureImages(w http.ResponseWriter, r *http.Request) {
+	gardenBin := vcfilepath + "/garden/map_01.bin"
+	os.Stdout.WriteString("reading garden image file\n")
+	images, err := vc.ReadBinFileImages(gardenBin)
+	os.Stdout.WriteString("read garden image file\n")
+	if err != nil {
+		http.Error(w, "Error "+err.Error(), http.StatusInternalServerError)
+	}
+
+	io.WriteString(w, "<html><head><title>Structure Images</title>\n")
+	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
+	io.WriteString(w, "</head><body>\n")
+	for i := 0; i < len(images); i++ {
+		encoded := base64.StdEncoding.EncodeToString(images[i])
+		fmt.Fprintf(w, "<img src=\"data:image/png;charset=utf-8;base64, %s\" />", encoded)
 	}
 
 	io.WriteString(w, "</body></html>")

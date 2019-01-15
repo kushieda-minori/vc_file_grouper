@@ -60,6 +60,7 @@ func main() {
 	http.HandleFunc("/images/event/", imageHandlerFor("/event/", "/event/"))
 	http.HandleFunc("/images/battle/", imageHandlerFor("/battle/", "/battle/"))
 	http.HandleFunc("/images/garden/", imageHandlerFor("/garden/", "/garden/"))
+	http.HandleFunc("/images/garden/map", handleStructureImages)
 	http.HandleFunc("/images/dungeon/", imageHandlerFor("/dungeon/", "/dungeon/"))
 	http.HandleFunc("/images/alliance/", imageHandlerFor("/alliance/", "/guild/"))
 	http.HandleFunc("/images/summon/", imageHandlerFor("/summon/", "/gacha/"))
@@ -162,6 +163,7 @@ Images:<br />
 <a href="/images/battle/map/">Battle Maps</a><br />
 <a href="/images/event/">Event</a><br />
 <a href="/images/garden/">Garden</a><br />
+<a href="/images/garden/map">Garden Structures</a><br />
 <a href="/images/alliance/">Alliance</a><br />
 <a href="/images/dungeon/">Dungeon</a><br />
 <a href="/images/summon/">Summon</a><br />
