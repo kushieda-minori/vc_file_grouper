@@ -677,16 +677,43 @@ func ReadStringFile(fname string) ([]string, error) {
 }
 
 //ReadBinFileImages reads a binary file and returns the image data (PNG only)
-func ReadBinFileImages(filename string) ([][]byte, error) {
+func ReadBinFileImages(filename string) ([][]byte, []string, error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+	l := len(data)
+
+	nameStart := []byte("\x00\x00\x00")
+	lnameStart := len(nameStart)
+	nameEnd := byte('\000')
+
+	findNameStart := func(data []byte, startIdx int) int {
+		for i := startIdx; i < (l - lnameStart); i++ {
+			if bytes.Equal(data[i:i+lnameStart], nameStart) {
+				if i+lnameStart+1 < l {
+					c := data[i+lnameStart+1]
+					if (c > 'A' && c < 'Z') || (c > 'a' && c < 'z') {
+						return i + lnameStart // exclude the 3 null bytes
+					}
+				}
+			}
+		}
+		return -1
+	}
+	findNameEnd := func(data []byte, startIdx int) int {
+		for i := startIdx; i < (l - 1); i++ {
+			if data[i] == nameEnd {
+				return i
+			}
+		}
+		return -1
+	}
+
 	pngStart := []byte("\x89PNG")
 	lpngStart := len(pngStart)
 	pngEnd := []byte("IEND\xAEB`\x82")
 	lpngEnd := len(pngEnd)
-	l := len(data)
 	findPngStart := func(data []byte, startIdx int) int {
 		for i := startIdx; i < (l - lpngStart); i++ {
 			if bytes.Equal(data[i:i+lpngStart], pngStart) {
@@ -704,24 +731,49 @@ func ReadBinFileImages(filename string) ([][]byte, error) {
 		return -1
 	}
 	//start of the PNG image
-	start := 0
+	firstPng := findPngStart(data, 0)
+	if firstPng < 0 {
+		return nil, nil, errors.New("unable to locate any images")
+	}
+	//parse names
+	start := 200
+	names := make([]string, 0)
+	for start < firstPng {
+		start = findNameStart(data, start)
+		if start < 0 || start > firstPng {
+			break
+		}
+		end := findNameEnd(data, start)
+		if end < 0 || end > firstPng {
+			break
+		}
+		names = append(names, string(data[start:end]))
+		//os.Stdout.WriteString(fmt.Sprintf("found image name, idx: %d\n", start))
+		start = end + 1
+	}
+
+	start = firstPng
 	// look for PNG images
 	ret := make([][]byte, 0)
 	for start < (l - (lpngStart + lpngEnd)) {
 		start = findPngStart(data, start)
 		if start < 0 {
-			return ret, nil
+			break
 		}
 		end := findPngEnd(data, start)
 		if end < 0 {
-			return nil, errors.New("unable to locate the end of an image")
+			return nil, nil, errors.New("unable to locate the end of an image")
 		}
 
 		ret = append(ret, data[start:end])
-		//os.Stdout.WriteString(fmt.Sprintf("found image file, idx: %d\n", start))
+		//os.Stdout.WriteString(fmt.Sprintf("found image, idx: %d\n", start))
 		start = end + 1
 	}
-	return ret, nil
+	os.Stdout.WriteString(fmt.Sprintf("found %d image names and %d images\n",
+		len(names),
+		len(ret),
+	))
+	return ret, names, nil
 }
 
 func cleanCardName(name string, card *Card) string {

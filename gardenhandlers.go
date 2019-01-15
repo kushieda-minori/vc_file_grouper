@@ -125,18 +125,27 @@ func structureDetailHandler(w http.ResponseWriter, r *http.Request) {
 func handleStructureImages(w http.ResponseWriter, r *http.Request) {
 	gardenBin := vcfilepath + "/garden/map_01.bin"
 	os.Stdout.WriteString("reading garden image file\n")
-	images, err := vc.ReadBinFileImages(gardenBin)
+	images, _, err := vc.ReadBinFileImages(gardenBin)
 	os.Stdout.WriteString("read garden image file\n")
 	if err != nil {
 		http.Error(w, "Error "+err.Error(), http.StatusInternalServerError)
 	}
 
 	io.WriteString(w, "<html><head><title>Structure Images</title>\n")
-	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
+	io.WriteString(w, "<style>table, th, td {border: 1px solid black;}\ndiv{float:left;text-align:center;height:350px;padding:2px;border:1px solid black;};</style>")
 	io.WriteString(w, "</head><body>\n")
+
 	for i := 0; i < len(images); i++ {
 		encoded := base64.StdEncoding.EncodeToString(images[i])
-		fmt.Fprintf(w, "<img src=\"data:image/png;charset=utf-8;base64, %s\" />", encoded)
+
+		name := fmt.Sprintf("structure_%05d", i+1)
+
+		name += ".png"
+		fmt.Fprintf(w,
+			"<div><a download=\"%[1]s\" href=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\"><img src=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\" /><br/>%[1]s</a></div>",
+			name,
+			encoded,
+		)
 	}
 
 	io.WriteString(w, "</body></html>")
