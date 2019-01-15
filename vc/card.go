@@ -115,10 +115,15 @@ func (c *Card) Rarity() (ret string) {
 
 // CardRarity with full rarity information
 func (c *Card) CardRarity(v *VFile) *CardRarity {
-	if c.CardRareID >= 0 {
-		for idx, cr := range v.CardRarities {
-			if cr.ID == c.CardRareID {
-				return &(v.CardRarities[idx])
+	return CardRarityScan(c.CardRareID, &v.CardRarities)
+}
+
+//CardRarityScan scans for a card rarity by id
+func CardRarityScan(id int, v *[]CardRarity) *CardRarity {
+	if id >= 0 {
+		for idx, cr := range *v {
+			if cr.ID == id {
+				return &((*v)[idx])
 			}
 		}
 	}

@@ -49,29 +49,11 @@ func (d *DeckBonus) Conditions(v *VFile) DeckBonusCondArray {
 					val.RefName = fmt.Sprintf("Unknown Element (%d)", val.RefID)
 				}
 			case 8:
-				switch val.RefID {
-				case 1:
-					val.RefName = "N"
-				case 2:
-					val.RefName = "R"
-				case 3:
-					val.RefName = "SR"
-				case 4:
-					val.RefName = "HN"
-				case 5:
-					val.RefName = "HR"
-				case 6:
-					val.RefName = "HSR"
-				case 8:
-					val.RefName = "UR"
-				case 9:
-					val.RefName = "HUR"
-				case 10:
-					val.RefName = "GSR"
-				case 11:
-					val.RefName = "GUR"
-				default:
+				r := CardRarityScan(val.RefID, &v.CardRarities)
+				if r == nil {
 					val.RefName = fmt.Sprintf("Unknown Rarity (%d)", val.RefID)
+				} else {
+					val.RefName = strings.ToUpper(r.Signature)
 				}
 			default:
 				val.RefName = fmt.Sprintf("Unknown Type (%d)", val.CondTypeID)
