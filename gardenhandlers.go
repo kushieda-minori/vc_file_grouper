@@ -165,12 +165,17 @@ func handleStructureImages(w http.ResponseWriter, r *http.Request) {
 
 		// Create a new zip archive.
 		z := zip.NewWriter(buf)
+		// Register a custom Deflate compressor.
+		// z.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
+		// 	return flate.NewWriter(out, flate.BestCompression)
+		// })
 
 		// Add some files to the archive.
 		for i := 0; i < len(images); i++ {
 			image := images[i]
 			name := getImageName(i)
-			f, err := z.Create(name)
+			p := name[0:strings.Index(name, "_")]
+			f, err := z.Create(p + "/" + name)
 			if err != nil {
 				http.Error(w, "Error "+err.Error(), http.StatusInternalServerError)
 				return
@@ -198,7 +203,7 @@ func handleStructureImages(w http.ResponseWriter, r *http.Request) {
 
 	io.WriteString(w, "<html><head><title>Structure Images</title>\n")
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;}\ndiv{float:left;text-align:center;height:350px;padding:2px;border:1px solid black;};</style>")
-	io.WriteString(w, "</head><body>\n<a style=\"display:block;clear:both;\" href=\"zip\">Download All</a>")
+	io.WriteString(w, "</head><body>\n<a style=\"display:block;clear:both;\" href=\"zip\">Download All As Zip</a>")
 
 	for i := 0; i < limages; i++ {
 		fmt.Fprintf(w,
