@@ -743,7 +743,7 @@ func ReadBinFileImages(filename string) ([]BinImage, error) {
 		return nil, errors.New("unable to locate any images")
 	}
 	//parse names
-	start := 0 // skip the "dummy" name
+	start := 0
 	names := make([]string, 0)
 	for start < firstPng {
 		start = findNameStart(data, start)
@@ -775,7 +775,7 @@ func ReadBinFileImages(filename string) ([]BinImage, error) {
 	start = firstPng
 	// look for PNG images
 	ret := make([]BinImage, 0)
-	i := 0
+	i := 0 // skip the "dummy" name
 	for start < (l - (lpngStart + lpngEnd)) {
 		i++
 		start = findPngStart(data, start)
