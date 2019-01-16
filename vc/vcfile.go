@@ -692,8 +692,8 @@ func ReadBinFileImages(filename string) ([][]byte, []string, error) {
 		for i := startIdx; i < (l - lnameStart); i++ {
 			if bytes.Equal(data[i:i+lnameStart], nameStart) {
 				if i+lnameStart+1 < l {
-					c := data[i+lnameStart+1]
-					if (c > 'A' && c < 'Z') || (c > 'a' && c < 'z') {
+					c := data[i+lnameStart]
+					if c >= 'a' && c <= 'z' {
 						return i + lnameStart // exclude the 3 null bytes
 					}
 				}
@@ -736,7 +736,7 @@ func ReadBinFileImages(filename string) ([][]byte, []string, error) {
 		return nil, nil, errors.New("unable to locate any images")
 	}
 	//parse names
-	start := 200
+	start := 200 // skip the "dummy" name
 	names := make([]string, 0)
 	for start < firstPng {
 		start = findNameStart(data, start)
@@ -747,9 +747,14 @@ func ReadBinFileImages(filename string) ([][]byte, []string, error) {
 		if end < 0 || end > firstPng {
 			break
 		}
-		names = append(names, string(data[start:end]))
-		//os.Stdout.WriteString(fmt.Sprintf("found image name, idx: %d\n", start))
-		start = end + 1
+		if end-start < 5 {
+			start = end
+			continue
+		}
+		name := data[start:end]
+		names = append(names, string(name))
+		os.Stdout.WriteString(fmt.Sprintf("found image name '%s', idx: %d-%d\n", name, start, end))
+		start = end
 	}
 
 	start = firstPng
@@ -767,7 +772,7 @@ func ReadBinFileImages(filename string) ([][]byte, []string, error) {
 
 		ret = append(ret, data[start:end])
 		//os.Stdout.WriteString(fmt.Sprintf("found image, idx: %d\n", start))
-		start = end + 1
+		start = end
 	}
 	os.Stdout.WriteString(fmt.Sprintf("found %d image names and %d images\n",
 		len(names),

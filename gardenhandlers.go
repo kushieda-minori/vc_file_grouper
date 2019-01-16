@@ -125,7 +125,7 @@ func structureDetailHandler(w http.ResponseWriter, r *http.Request) {
 func handleStructureImages(w http.ResponseWriter, r *http.Request) {
 	gardenBin := vcfilepath + "/garden/map_01.bin"
 	os.Stdout.WriteString("reading garden image file\n")
-	images, _, err := vc.ReadBinFileImages(gardenBin)
+	images, names, err := vc.ReadBinFileImages(gardenBin)
 	os.Stdout.WriteString("read garden image file\n")
 	if err != nil {
 		http.Error(w, "Error "+err.Error(), http.StatusInternalServerError)
@@ -135,10 +135,17 @@ func handleStructureImages(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;}\ndiv{float:left;text-align:center;height:350px;padding:2px;border:1px solid black;};</style>")
 	io.WriteString(w, "</head><body>\n")
 
-	for i := 0; i < len(images); i++ {
+	limages := len(images)
+	lnames := len(names)
+	for i := 0; i < limages; i++ {
 		encoded := base64.StdEncoding.EncodeToString(images[i])
-
-		name := fmt.Sprintf("structure_%05d", i+1)
+		name := ""
+		if i < lnames {
+			name = names[i]
+		}
+		if name == "" {
+			name = fmt.Sprintf("structure_%05d", i+1)
+		}
 
 		name += ".png"
 		fmt.Fprintf(w,
