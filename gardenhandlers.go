@@ -202,18 +202,21 @@ func handleStructureImages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	io.WriteString(w, "<html><head><title>Structure Images</title>\n")
-	io.WriteString(w, "<style>table, th, td {border: 1px solid black;}\ndiv{float:left;text-align:center;height:350px;padding:2px;border:1px solid black;};</style>")
-	io.WriteString(w, "</head><body>\n<a style=\"display:block;clear:both;\" href=\"zip\">Download All As Zip</a>")
-
+	io.WriteString(w, "<style>\n"+
+		".images{display:flex;flex-direction:row;flex-wrap:wrap;}\n"+
+		".image-wrapper{align-self:flex-end;text-align:center;padding:2px;border:1px solid black;}\n"+
+		"</style>")
+	io.WriteString(w, "</head><body>\n<a style=\"display:block;clear:both;\" href=\"zip\">Download All As Zip</a>\n")
+	io.WriteString(w, "<div class=\"images\">")
 	for i := 0; i < limages; i++ {
 		fmt.Fprintf(w,
-			"<div><a download=\"%[1]s\" href=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\"><img src=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\" /><br/>%[1]s</a></div>",
+			"<div class=\"image-wrapper\"><a download=\"%[1]s\" href=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\"><img src=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\" /><br/>%[1]s</a></div>\n",
 			getImageName(i),
 			base64.StdEncoding.EncodeToString(images[i]),
 		)
 	}
 
-	io.WriteString(w, "</body></html>")
+	io.WriteString(w, "</div></body></html>")
 }
 
 func printResource(w http.ResponseWriter, structure *vc.Structure) {
