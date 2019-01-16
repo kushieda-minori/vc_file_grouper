@@ -747,13 +747,13 @@ func ReadBinFileImages(filename string) ([][]byte, []string, error) {
 		if end < 0 || end > firstPng {
 			break
 		}
-		if end-start < 5 {
+		if end-start < 5 { // none of the names are shorter than 5 characters
 			start = end
 			continue
 		}
 		name := data[start:end]
 		names = append(names, string(name))
-		os.Stdout.WriteString(fmt.Sprintf("found image name '%s', idx: %d-%d\n", name, start, end))
+		//os.Stdout.WriteString(fmt.Sprintf("found image name '%s', idx: %d-%d\n", name, start, end))
 		start = end
 	}
 
