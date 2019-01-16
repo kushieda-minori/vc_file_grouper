@@ -60,7 +60,7 @@ func main() {
 	http.HandleFunc("/images/event/", imageHandlerFor("/event/", "/event/"))
 	http.HandleFunc("/images/battle/", imageHandlerFor("/battle/", "/battle/"))
 	http.HandleFunc("/images/garden/", imageHandlerFor("/garden/", "/garden/"))
-	http.HandleFunc("/images/garden/map", handleStructureImages)
+	http.HandleFunc("/images/garden/map/", handleStructureImages)
 	http.HandleFunc("/images/dungeon/", imageHandlerFor("/dungeon/", "/dungeon/"))
 	http.HandleFunc("/images/alliance/", imageHandlerFor("/alliance/", "/guild/"))
 	http.HandleFunc("/images/summon/", imageHandlerFor("/summon/", "/gacha/"))

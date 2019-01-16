@@ -751,8 +751,8 @@ func ReadBinFileImages(filename string) ([][]byte, []string, error) {
 			start = end
 			continue
 		}
-		name := data[start:end]
-		names = append(names, string(name))
+		name := string(data[start:end])
+		names = append(names, name)
 		//os.Stdout.WriteString(fmt.Sprintf("found image name '%s', idx: %d-%d\n", name, start, end))
 		start = end
 	}

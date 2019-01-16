@@ -1,6 +1,8 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -123,35 +125,86 @@ func structureDetailHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleStructureImages(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	var pathLen int
+	if path[len(path)-1] == '/' {
+		pathLen = len(path) - 1
+	} else {
+		pathLen = len(path)
+	}
+
+	pathParts := strings.Split(path[1:pathLen], "/")
+	// "images/garden/map/zip"
+	if len(pathParts) < 3 {
+		http.Error(w, "Invalid garden path ", http.StatusNotFound)
+		return
+	}
+
 	gardenBin := vcfilepath + "/garden/map_01.bin"
 	os.Stdout.WriteString("reading garden image file\n")
 	images, names, err := vc.ReadBinFileImages(gardenBin)
+	limages := len(images)
+	lnames := len(names)
 	os.Stdout.WriteString("read garden image file\n")
+
 	if err != nil {
 		http.Error(w, "Error "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	getImageName := func(idx int) string {
+		if idx < lnames && names[idx] != "" {
+			return names[idx] + ".png"
+		}
+		return fmt.Sprintf("structure_%05d.png", idx+1)
+	}
+
+	if len(pathParts) == 4 && pathParts[3] == "zip" {
+		// Create a buffer to write our archive to.
+		buf := new(bytes.Buffer)
+
+		// Create a new zip archive.
+		z := zip.NewWriter(buf)
+
+		// Add some files to the archive.
+		for i := 0; i < len(images); i++ {
+			image := images[i]
+			name := getImageName(i)
+			f, err := z.Create(name)
+			if err != nil {
+				http.Error(w, "Error "+err.Error(), http.StatusInternalServerError)
+				return
+			}
+			_, err = f.Write(image)
+			if err != nil {
+				http.Error(w, "Error "+err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+
+		// Make sure to check the error on Close.
+		err := z.Close()
+		if err != nil {
+			http.Error(w, "Error "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Disposition", "attachment; filename=\"garden_map01.zip\"")
+		w.Header().Set("Content-Type", "application/zip")
+
+		buf.WriteTo(w)
+		return
 	}
 
 	io.WriteString(w, "<html><head><title>Structure Images</title>\n")
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;}\ndiv{float:left;text-align:center;height:350px;padding:2px;border:1px solid black;};</style>")
-	io.WriteString(w, "</head><body>\n")
+	io.WriteString(w, "</head><body>\n<a style=\"display:block;clear:both;\" href=\"zip\">Download All</a>")
 
-	limages := len(images)
-	lnames := len(names)
 	for i := 0; i < limages; i++ {
-		encoded := base64.StdEncoding.EncodeToString(images[i])
-		name := ""
-		if i < lnames {
-			name = names[i]
-		}
-		if name == "" {
-			name = fmt.Sprintf("structure_%05d", i+1)
-		}
-
-		name += ".png"
 		fmt.Fprintf(w,
 			"<div><a download=\"%[1]s\" href=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\"><img src=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\" /><br/>%[1]s</a></div>",
-			name,
-			encoded,
+			getImageName(i),
+			base64.StdEncoding.EncodeToString(images[i]),
 		)
 	}
 
