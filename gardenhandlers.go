@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -142,9 +143,8 @@ func handleStructureImages(w http.ResponseWriter, r *http.Request) {
 
 	gardenBin := vcfilepath + "/garden/map_01.bin"
 	os.Stdout.WriteString("reading garden image file\n")
-	images, names, err := vc.ReadBinFileImages(gardenBin)
+	images, err := vc.ReadBinFileImages(gardenBin)
 	limages := len(images)
-	lnames := len(names)
 	os.Stdout.WriteString("read garden image file\n")
 
 	if err != nil {
@@ -152,16 +152,14 @@ func handleStructureImages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	getImageName := func(idx int) string {
-		if idx < lnames && names[idx] != "" {
-			return names[idx] + ".png"
-		}
-		return fmt.Sprintf("structure_%05d.png", idx+1)
-	}
-
-	if len(pathParts) == 4 && pathParts[3] == "zip" {
+	if len(pathParts) >= 4 && pathParts[3] == "zip" {
 		// Create a buffer to write our archive to.
 		buf := new(bytes.Buffer)
+
+		withDir := false
+		if len(pathParts) >= 5 && pathParts[4] == "withDirs" {
+			withDir = true
+		}
 
 		// Create a new zip archive.
 		z := zip.NewWriter(buf)
@@ -173,14 +171,16 @@ func handleStructureImages(w http.ResponseWriter, r *http.Request) {
 		// Add some files to the archive.
 		for i := 0; i < len(images); i++ {
 			image := images[i]
-			name := getImageName(i)
-			p := name[0:strings.Index(name, "_")]
-			f, err := z.Create(p + "/" + name)
+			p := ""
+			if withDir {
+				p = image.Name[0:strings.Index(image.Name, "_")] + "/"
+			}
+			f, err := z.Create(p + image.Name)
 			if err != nil {
 				http.Error(w, "Error "+err.Error(), http.StatusInternalServerError)
 				return
 			}
-			_, err = f.Write(image)
+			_, err = f.Write(image.Data)
 			if err != nil {
 				http.Error(w, "Error "+err.Error(), http.StatusInternalServerError)
 				return
@@ -201,18 +201,44 @@ func handleStructureImages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(pathParts) >= 4 && pathParts[3] == "byName" {
+		// sort the images by name
+		sort.Slice(images, func(i, j int) bool {
+			first := images[i]
+			second := images[j]
+
+			return first.Name < second.Name
+		})
+	} else {
+		// sort the images by ID
+		sort.Slice(images, func(i, j int) bool {
+			first := images[i]
+			second := images[j]
+
+			return first.ID < second.ID
+		})
+
+	}
+
 	io.WriteString(w, "<html><head><title>Structure Images</title>\n")
 	io.WriteString(w, "<style>\n"+
+		".nav {display:flex;flex-direction:row;flex-wrap:wrap;}\n"+
+		".nav a {padding: 5px;}\n"+
 		".images{display:flex;flex-direction:row;flex-wrap:wrap;}\n"+
 		".image-wrapper{align-self:flex-end;text-align:center;padding:2px;border:1px solid black;}\n"+
 		"</style>")
-	io.WriteString(w, "</head><body>\n<a style=\"display:block;clear:both;\" href=\"zip\">Download All As Zip</a>\n")
-	io.WriteString(w, "<div class=\"images\">")
+	io.WriteString(w, "</head><body><div class=\"nav\">\n")
+	io.WriteString(w, "<a href=\"./\">Sort By ID</a>\n")
+	io.WriteString(w, "<a href=\"byName\">Sort By Name</a>\n")
+	io.WriteString(w, "<a href=\"zip\">Download All As Zip</a>\n")
+	io.WriteString(w, "<a href=\"zip/withDirs\">Download All As Zip With Directories</a>\n")
+	io.WriteString(w, "</div>\n<div class=\"images\">")
 	for i := 0; i < limages; i++ {
+		image := images[i]
 		fmt.Fprintf(w,
 			"<div class=\"image-wrapper\"><a download=\"%[1]s\" href=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\"><img src=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\" /><br/>%[1]s</a></div>\n",
-			getImageName(i),
-			base64.StdEncoding.EncodeToString(images[i]),
+			image.Name,
+			base64.StdEncoding.EncodeToString(image.Data),
 		)
 	}
 

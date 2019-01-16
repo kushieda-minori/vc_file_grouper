@@ -25,6 +25,13 @@ type Timestamp struct {
 	time.Time
 }
 
+//BinImage image information from a .BIN file
+type BinImage struct {
+	ID   int
+	Name string
+	Data []byte
+}
+
 // MarshalJSON converts a JSON timestamp to a GO time
 func (t *Timestamp) MarshalJSON() ([]byte, error) {
 	if t.Time.IsZero() {
@@ -677,16 +684,21 @@ func ReadStringFile(fname string) ([]string, error) {
 }
 
 //ReadBinFileImages reads a binary file and returns the image data (PNG only)
-func ReadBinFileImages(filename string) ([][]byte, []string, error) {
+func ReadBinFileImages(filename string) ([]BinImage, error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	l := len(data)
 
 	nameStart := []byte("\x00\x00\x00")
 	lnameStart := len(nameStart)
 	nameEnd := byte('\000')
+
+	pngStart := []byte("\x89PNG")
+	lpngStart := len(pngStart)
+	pngEnd := []byte("IEND\xAEB`\x82")
+	lpngEnd := len(pngEnd)
 
 	findNameStart := func(data []byte, startIdx int) int {
 		for i := startIdx; i < (l - lnameStart); i++ {
@@ -709,11 +721,6 @@ func ReadBinFileImages(filename string) ([][]byte, []string, error) {
 		}
 		return -1
 	}
-
-	pngStart := []byte("\x89PNG")
-	lpngStart := len(pngStart)
-	pngEnd := []byte("IEND\xAEB`\x82")
-	lpngEnd := len(pngEnd)
 	findPngStart := func(data []byte, startIdx int) int {
 		for i := startIdx; i < (l - lpngStart); i++ {
 			if bytes.Equal(data[i:i+lpngStart], pngStart) {
@@ -733,10 +740,10 @@ func ReadBinFileImages(filename string) ([][]byte, []string, error) {
 	//start of the PNG image
 	firstPng := findPngStart(data, 0)
 	if firstPng < 0 {
-		return nil, nil, errors.New("unable to locate any images")
+		return nil, errors.New("unable to locate any images")
 	}
 	//parse names
-	start := 200 // skip the "dummy" name
+	start := 0 // skip the "dummy" name
 	names := make([]string, 0)
 	for start < firstPng {
 		start = findNameStart(data, start)
@@ -757,28 +764,39 @@ func ReadBinFileImages(filename string) ([][]byte, []string, error) {
 		start = end
 	}
 
+	lnames := len(names)
+	getImageName := func(idx int) string {
+		if idx < lnames && names[idx] != "" {
+			return names[idx] + ".png"
+		}
+		return fmt.Sprintf("structure_%05d.png", idx+1)
+	}
+
 	start = firstPng
 	// look for PNG images
-	ret := make([][]byte, 0)
+	ret := make([]BinImage, 0)
+	i := 0
 	for start < (l - (lpngStart + lpngEnd)) {
+		i++
 		start = findPngStart(data, start)
 		if start < 0 {
 			break
 		}
 		end := findPngEnd(data, start)
 		if end < 0 {
-			return nil, nil, errors.New("unable to locate the end of an image")
+			return nil, errors.New("unable to locate the end of an image")
 		}
 
-		ret = append(ret, data[start:end])
+		ret = append(ret, BinImage{ID: i, Name: getImageName(i), Data: data[start:end]})
 		//os.Stdout.WriteString(fmt.Sprintf("found image, idx: %d\n", start))
 		start = end
 	}
 	os.Stdout.WriteString(fmt.Sprintf("found %d image names and %d images\n",
-		len(names),
+		lnames,
 		len(ret),
 	))
-	return ret, names, nil
+
+	return ret, nil
 }
 
 func cleanCardName(name string, card *Card) string {
