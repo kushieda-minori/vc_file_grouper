@@ -238,7 +238,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	skillEvoMod := ""
 	if firstEvo.Rarity()[0] == 'G' {
 		skillEvoMod = "g"
-	} else if firstEvo.Rarity()[0] == 'X' {
+	} else if len(firstEvo.Rarity()) > 2 && firstEvo.Rarity()[0] == 'X' {
 		skillEvoMod = "x"
 	} else if evo, ok := evolutions["A"]; ok && firstEvo.ID == evo.ID {
 		// if the first evo is the amalgamation evo...

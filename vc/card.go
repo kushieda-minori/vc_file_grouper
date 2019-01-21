@@ -2019,7 +2019,7 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 
 		c2 := c
 		// check if this is an rebirth card
-		if len(c2.Rarity()) > 1 && c2.Rarity()[0] == 'X' {
+		if len(c2.Rarity()) > 2 && c2.Rarity()[0] == 'X' {
 			tmp := c2.RebirthsFrom(v)
 			if tmp == nil {
 				ch := c2.Character(v)
