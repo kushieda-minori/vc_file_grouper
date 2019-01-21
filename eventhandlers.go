@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -24,20 +25,52 @@ func isInt(s string) bool {
 
 func eventHandler(w http.ResponseWriter, r *http.Request) {
 	qs := r.URL.Query()
+	qEventType := qs.Get("eventType")
+	eventTypeID, _ := strconv.Atoi(qEventType)
+	qSearch := strings.ToLower(strings.TrimSpace(qs.Get("search")))
+	qIsActive := strings.ToLower(strings.TrimSpace(qs.Get("isActive")))
+
 	filter := func(event *vc.Event) (match bool) {
 		match = true
 		if len(qs) < 1 {
 			return
 		}
-		if eventType := qs.Get("eventType"); isInt(eventType) {
-			eventTypeID, _ := strconv.Atoi(eventType)
+		if eventTypeID > 0 {
 			match = match && event.EventTypeID == eventTypeID
+		}
+		if qSearch != "" {
+			match = match && (strings.Contains(strings.ToLower(event.Description), qSearch) || strings.Contains(strings.ToLower(event.Name), qSearch))
+		}
+		if qIsActive != "" {
+			match = match && event.StartDatetime.Before(time.Now()) && event.EndDatetime.After(time.Now())
 		}
 		return
 	}
+
+	eventTypeKeys := make([]int, 0, len(vc.EventType))
+	for i := range vc.EventType {
+		eventTypeKeys = append(eventTypeKeys, i)
+	}
+	sort.Ints(eventTypeKeys)
+
 	io.WriteString(w, "<html><head><title>All Events</title>\n")
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
 	io.WriteString(w, "</head><body>\n")
+	io.WriteString(w, "<form name=\"searchForm\">\n")
+	fmt.Fprintf(w, "<label for=\"f_search\">Contains Text:</label><input id=\"f_search\" name=\"search\" value=\"%s\" />\n", qs.Get("search"))
+	io.WriteString(w, "<label for=\"f_eventType\">Event Type:</label><select id=\"f_eventType\" name=\"eventType\">\n")
+	io.WriteString(w, "<option value=\"\"></option>\n")
+	for _, key := range eventTypeKeys {
+		sKey := strconv.Itoa(key)
+		selected := ""
+		if sKey == qEventType {
+			selected = " selected=\"selected\""
+		}
+		fmt.Fprintf(w, "<option value=\"%d\"%[3]s>%[1]d: %s</option>\n", key, vc.EventType[key], selected)
+	}
+	io.WriteString(w, "</select>\n")
+	fmt.Fprintf(w, "<label for=\"f_isActive\">Is Active:</label><input id=\"f_isActive\" name=\"isActive\" type=\"checkbox\" value=\"checked\" %s/>", qIsActive)
+	io.WriteString(w, "<button type=\"submit\">Submit</button>\n</form>\n")
 	io.WriteString(w, "<div>\n")
 	io.WriteString(w, "<table><thead><tr>\n")
 	io.WriteString(w, "<th>_id</th><th>Event Name</th><th>Event Type</th><th>Start Date</th><th>End Date</th><th>King Series</th><th>Guild Battle</th><th>Tower Event</th>\n")
@@ -252,7 +285,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"",    // Overlap AW Event
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 			genWikiExchange(bb.ExchangeRewards(VcData)), // Ring Exchange
-			rankRewards,                                 // Rewards (combined)
+			rankRewards, // Rewards (combined)
 			prevEventName,
 			nextEventName,
 		)

@@ -79,7 +79,10 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 		} else {
 			fName = forceFileName
 		}
-		writeout(true, fullpath, fName+".png", w, r)
+		if !strings.HasSuffix(strings.ToLower(fName), ".png") {
+			fName += ".png"
+		}
+		writeout(true, fullpath, fName, w, r)
 		return
 	} else if finfo.IsDir() {
 		if !strings.HasSuffix(fullpath, "/") {
