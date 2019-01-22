@@ -255,6 +255,15 @@ func (v *VFile) Read(root string) ([]byte, error) {
 	// initialize the evolutions
 	for key := range v.Cards {
 		card := &(v.Cards[key])
+		// the name 'Goddess Crystal Shard' is reused, so we use a naming convention for it.
+		if card.Name == "Goddess Crystal Shard" {
+			for _, a := range card.Amalgamations(v) {
+				if a.FusionCardID != card.ID { // this is the material card
+					rCard := CardScan(a.FusionCardID, v.Cards)
+					card.Name += " (" + rCard.Name + ")"
+				}
+			}
+		}
 		card.GetEvolutions(v)
 	}
 
