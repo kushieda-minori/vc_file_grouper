@@ -839,7 +839,7 @@ func filter(s string) string {
 	ret = strings.Replace(ret, "／", "/", -1)
 	ret = strings.Replace(ret, "＞", ">", -1)
 	ret = strings.Replace(ret, "・", " • ", -1)
-	// game controls that aren't needed for wikia
+	// game controls that aren't needed for fandom
 	ret = strings.Replace(ret, "<i><break>", "\n", -1)
 	// remove duplicate newlines
 	for strings.Contains(ret, "\n\n") {

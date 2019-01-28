@@ -226,7 +226,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "<div style=\"float:left; width: 33%;\"></div>\n")
 	}
 
-	fmt.Fprintf(w, "<div style=\"clear:both;float:left\">Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br /></div>", cardName)
+	fmt.Fprintf(w, "<div style=\"clear:both;float:left\">Edit on the <a href=\"https://valkyriecrusade.fandom.com/wiki/%s?action=edit\">fandom</a>\n<br /></div>", cardName)
 	io.WriteString(w, "<div><textarea readonly=\"readonly\" style=\"width:100%;height:450px\">")
 	if card.IsClosed != 0 {
 		io.WriteString(w, "{{Unreleased}}")
