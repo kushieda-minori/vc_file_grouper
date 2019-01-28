@@ -616,41 +616,41 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 `
 	case 18: // Tower Events
 		return `{{Event|eventType = %d
-		|start jst = %s
-		|end jst = %s
-		|towerShield=%s
-		|image = Banner {{PAGENAME}}.png
-		||Ranking Reward<br />Amalgamation
-		||Floor Reward
-		||Floor Reward
-		||Amalgamation
-		||Amalgamation
-		||Amalgamation
-		||Fantasy Archwitch
-		||Archwitch
-		||Floor Reward<br/>Amalgamation Material
-		||Floor Reward<br/>Amalgamation Material
-		||Floor Reward<br/>Amalgamation Material
-		||Ranking Reward<br />Amalgamation Material
-		||Floor Reward<br />Amalgamation Material
-		||Ranking Reward<br />Amalgamation Material
-		||Event ATK and DEF 10x <br /> KO Gauge 100%% <br /> Pass 180%% / 460%% UP
-		||Event ATK and DEF 10x <br /> KO Gauge 100%% <br /> Pass 180%% / 460%% UP
-		||Event ATK and DEF 10x <br /> KO Gauge 100%% UP
-		}}
-		
-		%s
-		
-		==Rewards==
-		%s%s
-		{{clr}}
-		
-		==Final Ranking==
-		%s
-		
-		{{clr}}
-		{{NavEvent|%s|%s}}
-		`
+|start jst = %s
+|end jst = %s
+|towerShield=%s
+|image = Banner {{PAGENAME}}.png
+||Ranking Reward<br />Amalgamation
+||Floor Reward
+||Floor Reward
+||Amalgamation
+||Amalgamation
+||Amalgamation
+||Fantasy Archwitch
+||Archwitch
+||Floor Reward<br/>Amalgamation Material
+||Floor Reward<br/>Amalgamation Material
+||Floor Reward<br/>Amalgamation Material
+||Ranking Reward<br />Amalgamation Material
+||Floor Reward<br />Amalgamation Material
+||Ranking Reward<br />Amalgamation Material
+||Event ATK and DEF 10x <br /> KO Gauge 100%% <br /> Pass 180%% / 460%% UP
+||Event ATK and DEF 10x <br /> KO Gauge 100%% <br /> Pass 180%% / 460%% UP
+||Event ATK and DEF 10x <br /> KO Gauge 100%% UP
+}}
+
+%s
+
+==Rewards==
+%s%s
+{{clr}}
+
+==Final Ranking==
+%s
+
+{{clr}}
+{{NavEvent|%s|%s}}
+`
 	case 19: // Demon Realm
 		return `{{Event|eventType = %d
 |start jst = %s
