@@ -2004,6 +2004,36 @@ func checkEndCards(c *Card, v *VFile) (awakening, amalCard, amalAwakening, rebir
 	return // awakening, amalCard, amalAwakening, rebirth, rebirthAmal
 }
 
+// GetEvoImageName gets the nice name of the image for this card's evolution for use on the wiki
+func (c *Card) GetEvoImageName(v *VFile, isIcon bool) string {
+	evos := c.GetEvolutions(v)
+	thisKey := ""
+	for k, v := range evos {
+		if v.ID == c.ID {
+			thisKey = k
+			break
+		}
+	}
+	fileName := c.Name
+	if fileName == "" {
+		fileName = c.Character(v).FirstEvoCard(v).Image()
+	}
+	if thisKey == "0" {
+		return fileName
+	}
+	if !isIcon {
+		if len(evos) == 1 && thisKey == "G" {
+			return fileName + "_H"
+		}
+		if thisKey == "A" {
+			if _, hasH := evos["H"]; !hasH {
+				return fileName + "_H"
+			}
+		}
+	}
+	return fileName + "_" + thisKey
+}
+
 // GetEvolutions gets the evolutions for a card including Awakening and same character(by name) amalgamations
 func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 	if c._allEvos == nil {

@@ -9,7 +9,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"zetsuboushita.net/vc_file_grouper/vc"
@@ -188,25 +187,13 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 
 	card := vc.CardScanImage(cardID, VcData.Cards)
 	ext := ".png"
+	isIcon := false
 	if strings.Contains(fullpath, "/thumb/") {
 		ext = "_icon.png"
+		isIcon = true
 	}
 	if card != nil {
-		fileName = card.Name
-		if fileName == "" {
-			fileName = card.Character(VcData).FirstEvoCard(VcData).Image()
-		}
-		if strings.HasPrefix(card.Rarity(), "X") {
-			fileName = fileName + "_X" + ext
-		} else if strings.HasPrefix(card.Rarity(), "G") {
-			fileName = fileName + "_G" + ext
-		} else if card.EvolutionRank == 0 {
-			fileName = fileName + ext
-		} else if card.EvolutionRank == card.LastEvolutionRank || card.EvolutionCardID <= 0 {
-			fileName = fileName + "_H" + ext
-		} else {
-			fileName = fileName + "_" + strconv.Itoa(card.EvolutionRank) + ext
-		}
+		fileName = card.GetEvoImageName(VcData, isIcon) + ext
 	} else {
 		//os.Stderr.WriteString("Card info not found for image " + cardID + "\n")
 		if decodeOnFly {
