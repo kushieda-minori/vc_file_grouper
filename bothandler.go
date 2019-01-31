@@ -45,7 +45,7 @@ func botHandler(w http.ResponseWriter, r *http.Request) {
 		return first.ID < second.ID
 	})
 
-	io.WriteString(w, "[\n")
+	io.WriteString(w, "    [\n")
 	cLen := len(cards)
 	for idx, card := range cards {
 		// to get the image location, we are going to ask Fandom for it:
@@ -70,18 +70,18 @@ func botHandler(w http.ResponseWriter, r *http.Request) {
 
 		comma := ""
 		if idx+1 < cLen {
-			comma = ", "
+			comma = ",\n"
 		}
 
 		fmt.Fprintf(w,
-			`{
-	"name": "%s",
-	"element": "%s",
-	"rarity": "%s",
-	"skill": [%s],
-	"image": "%s",
-	"link": "http://valkyriecrusade.fandom.com/wiki/%s"
-  }%s`,
+			`      {
+        "name": "%s",
+        "element": "%s",
+        "rarity": "%s",
+        "skill": [%s],
+        "image": "%s",
+        "link": "http://valkyriecrusade.fandom.com/wiki/%s"
+      }%s`,
 			card.Name,
 			card.Element(),
 			card.Rarity(),
@@ -92,7 +92,7 @@ func botHandler(w http.ResponseWriter, r *http.Request) {
 		)
 
 	}
-	io.WriteString(w, "\n]\n")
+	io.WriteString(w, "\n    ]\n")
 }
 
 func getWikiImageLocation(cardImageName string) (string, error) {

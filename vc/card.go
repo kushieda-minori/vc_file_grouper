@@ -2038,6 +2038,16 @@ func (c *Card) GetEvoImageName(v *VFile, isIcon bool) string {
 		fileName = c.Character(v).FirstEvoCard(v).Image()
 	}
 	if thisKey == "0" {
+		if c.Rarity()[0] == 'G' {
+			if isIcon {
+				return fileName + "_G"
+			} else {
+				return fileName + "_H"
+			}
+		}
+		if c.Rarity()[0] == 'H' {
+			return fileName + "_H"
+		}
 		return fileName
 	}
 	if !isIcon {
@@ -2045,9 +2055,7 @@ func (c *Card) GetEvoImageName(v *VFile, isIcon bool) string {
 			return fileName + "_H"
 		}
 		if thisKey == "A" {
-			if _, hasH := evos["H"]; !hasH {
-				return fileName + "_H"
-			}
+			return fileName + "_H"
 		}
 	}
 	if thisKey == "" {

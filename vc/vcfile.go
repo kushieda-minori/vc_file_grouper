@@ -99,7 +99,15 @@ var characterNameOverride = map[int]string{
 	465:  "Joker (Cane)",              // Joker
 	466:  "Joker (Sickle)",            // Joker
 	495:  "Snowman MK II",             // Snowman MKⅡ
+	1319: "Jack-O'-Sisters",           // Jack-o'-Sisters (older card with newer name format)
 	1173: "Al-mi'raj",                 // Al-Mi'Raj
+	1869: "Super Chimry (Passion)",    // Super Chimry
+	1870: "Super Chimry (Cool)",       // Super Chimry
+	1871: "Super Chimry (Light)",      // Super Chimry
+	1872: "Super Chimry (Dark)",       // Super Chimry
+	2024: "Playful Hades (Red)",       // Playful Hades
+	2025: "Playful Hades (Green)",     // Playful Hades
+	2026: "Playful Hades (Blue)",      // Playful Hades
 	2397: "PM Demise",                 // Pm Demise
 	2479: "DIY Ninja",                 // Diy Ninja
 	2549: "Thunder Stone Shard (L)",   // Thunderstone Shard (L)
