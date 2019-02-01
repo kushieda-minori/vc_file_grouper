@@ -76,16 +76,17 @@ type CardRarity struct {
 	MaxCardLevel     int `json:"max_card_level"`
 	SkillCoefficient int `json:"skill_coefficient"`
 	// used to calculate the amount of exp this card gives when used as a material
-	CardExpCoefficient     int    `json:"card_exp_coefficient"`
-	EvolutionCoefficient   int    `json:"evolution_coefficient"`
-	GuildbattleCoefficient int    `json:"guildbattle_coefficient"`
-	Order                  int    `json:"order"`
-	Signature              string `json:"signature"`
-	CardLevelCoefficient   int    `json:"card_level_coefficient"`
-	FragmentSlot           int    `json:"fragment_slot"`
-	LimtOffense            int    `json:"limt_offense"`
-	LimtDefense            int    `json:"limt_defense"`
-	LimtMaxFollower        int    `json:"limt_max_follower"`
+	CardExpCoefficient     int `json:"card_exp_coefficient"`
+	EvolutionCoefficient   int `json:"evolution_coefficient"`
+	GuildbattleCoefficient int `json:"guildbattle_coefficient"`
+	Order                  int `json:"order"`
+	// Signature lowercase rarity name "n" "hn" etc
+	Signature            string `json:"signature"`
+	CardLevelCoefficient int    `json:"card_level_coefficient"`
+	FragmentSlot         int    `json:"fragment_slot"`
+	LimtOffense          int    `json:"limt_offense"`
+	LimtDefense          int    `json:"limt_defense"`
+	LimtMaxFollower      int    `json:"limt_max_follower"`
 }
 
 // CardSpecialCompose special information regaurding a cards use as material during fusion (leveling up)
@@ -214,6 +215,24 @@ func (c *Card) PrevEvo(v *VFile) *Card {
 		tmp.nextEvo = c
 	}
 	return c.prevEvo
+}
+
+// FirstEvo Gets the first evolution for the card
+func (c *Card) FirstEvo(v *VFile) *Card {
+	t := c
+	for t.PrevEvo(v) != nil {
+		t = t.PrevEvo(v)
+	}
+	return t
+}
+
+// LastEvo Gets the last evolution for the card
+func (c *Card) LastEvo(v *VFile) *Card {
+	t := c
+	for t.NextEvo(v) != nil {
+		t = t.NextEvo(v)
+	}
+	return t
 }
 
 // PossibleMixedEvo Checks if this card has a possible mixed evo:
@@ -2002,6 +2021,47 @@ func checkEndCards(c *Card, v *VFile) (awakening, amalCard, amalAwakening, rebir
 		}
 	}
 	return // awakening, amalCard, amalAwakening, rebirth, rebirthAmal
+}
+
+// GetEvoImageName gets the nice name of the image for this card's evolution for use on the wiki
+func (c *Card) GetEvoImageName(v *VFile, isIcon bool) string {
+	evos := c.GetEvolutions(v)
+	thisKey := ""
+	for k, v := range evos {
+		if v.ID == c.ID {
+			thisKey = k
+			break
+		}
+	}
+	fileName := c.Name
+	if fileName == "" {
+		fileName = c.Character(v).FirstEvoCard(v).Image()
+	}
+	if thisKey == "0" {
+		if c.Rarity()[0] == 'G' {
+			if isIcon {
+				return fileName + "_G"
+			} else {
+				return fileName + "_H"
+			}
+		}
+		if c.Rarity()[0] == 'H' {
+			return fileName + "_H"
+		}
+		return fileName
+	}
+	if !isIcon {
+		if len(evos) == 1 && thisKey == "G" {
+			return fileName + "_H"
+		}
+		if thisKey == "A" {
+			return fileName + "_H"
+		}
+	}
+	if thisKey == "" {
+		return fileName
+	}
+	return fileName + "_" + thisKey
 }
 
 // GetEvolutions gets the evolutions for a card including Awakening and same character(by name) amalgamations

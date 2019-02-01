@@ -171,7 +171,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if nextEventName != "" {
 		fmt.Fprintf(w, "<div style=\"float:right\"><a href=\"%d\">%s</a>\n</div>", nextEvent.ID, nextEventName)
 	}
-	fmt.Fprintf(w, "<div style=\"clear:both;float:left\">Edit on the <a href=\"https://valkyriecrusade.wikia.com/wiki/%s?action=edit\">wikia</a>\n<br />", strings.Replace(event.Name, "【New Event】", "", -1))
+	fmt.Fprintf(w, "<div style=\"clear:both;float:left\">Edit on the <a href=\"https://valkyriecrusade.fandom.com/wiki/%s?action=edit\">fandom</a>\n<br />", strings.Replace(event.Name, "【New Event】", "", -1))
 	if event.MapID > 0 {
 		fmt.Fprintf(w, "<a href=\"/maps/%d\">Map Information</a>\n<br />", event.MapID)
 	}
@@ -285,7 +285,7 @@ func eventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"",    // Overlap AW Event
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
 			genWikiExchange(bb.ExchangeRewards(VcData)), // Ring Exchange
-			rankRewards, // Rewards (combined)
+			rankRewards,                                 // Rewards (combined)
 			prevEventName,
 			nextEventName,
 		)

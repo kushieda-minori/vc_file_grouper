@@ -91,6 +91,31 @@ var newCards = []int{
 	4711, 4712, // Diana
 }
 
+var characterNameOverride = map[int]string{
+	62:   "Kung-Fu Master",            // Kung Fu Master
+	181:  "Ariel (Light)",             // Ariel
+	352:  "Ariel (Dark)",              // Ariel
+	452:  "Joker",                     // Joker
+	465:  "Joker (Cane)",              // Joker
+	466:  "Joker (Sickle)",            // Joker
+	495:  "Snowman MK II",             // Snowman MKⅡ
+	1319: "Jack-O'-Sisters",           // Jack-o'-Sisters (older card with newer name format)
+	1173: "Al-mi'raj",                 // Al-Mi'Raj
+	1869: "Super Chimry (Passion)",    // Super Chimry
+	1870: "Super Chimry (Cool)",       // Super Chimry
+	1871: "Super Chimry (Light)",      // Super Chimry
+	1872: "Super Chimry (Dark)",       // Super Chimry
+	2024: "Playful Hades (Red)",       // Playful Hades
+	2025: "Playful Hades (Green)",     // Playful Hades
+	2026: "Playful Hades (Blue)",      // Playful Hades
+	2397: "PM Demise",                 // Pm Demise
+	2479: "DIY Ninja",                 // Diy Ninja
+	2549: "Thunder Stone Shard (L)",   // Thunderstone Shard (L)
+	2550: "Thunder Stone Shard (D)",   // Thunderstone Shard (D)
+	2554: "Lightning Stone Shard (L)", // Lightning Shard (L)
+	2555: "Lightning Stone Shard (D)", // Lightning Shard (D)
+}
+
 func init() {
 	sort.Ints(retiredCards)
 	sort.Ints(newCards)
@@ -809,10 +834,28 @@ func ReadBinFileImages(filename string) ([]BinImage, error) {
 }
 
 func cleanCardName(name string, card *Card) string {
-	ret := strings.Replace(strings.Title(strings.ToLower(name)), "'S", "'s", -1)
-	ret = strings.Replace(ret, "(Sr)", "(SR)", -1)
-	ret = strings.Replace(ret, "(Ur)", "(UR)", -1)
-	ret = strings.Replace(ret, "(Lr)", "(LR)", -1)
+	ret := ""
+	if newName, ok := characterNameOverride[card.CardCharaID]; ok {
+		// use an overridden hard-coded name
+		ret = newName
+	} else {
+		ret = strings.Replace(strings.Title(strings.ToLower(name)), "'S", "'s", -1)
+		ret = strings.Replace(ret, "(Sr)", "(SR)", -1)
+		ret = strings.Replace(ret, "(Ur)", "(UR)", -1)
+		ret = strings.Replace(ret, "(Lr)", "(LR)", -1)
+		if card.CardCharaID < 1450 {
+			// use lowecase prepositions and articles as these are cards in the wiki before this program.
+			ret = strings.Replace(ret, " Of ", " of ", -1)
+			ret = strings.Replace(ret, "-Of-", "-of-", -1)
+			ret = strings.Replace(ret, " The ", " the ", -1)
+			ret = strings.Replace(ret, "-The-", "-the-", -1)
+			ret = strings.Replace(ret, " In ", " in ", -1)
+			ret = strings.Replace(ret, "-In-", "-in-", -1)
+			ret = strings.Replace(ret, " O'", " o'", -1)
+			ret = strings.Replace(ret, "-O'", "-o'", -1)
+			ret = strings.Replace(ret, " Du ", " du ", -1) // french "of"
+		}
+	}
 	// old cards
 	oldIDx := sort.SearchInts(retiredCards, card.ID)
 	if oldIDx >= 0 && oldIDx < len(retiredCards) && retiredCards[oldIDx] == card.ID {
@@ -839,7 +882,7 @@ func filter(s string) string {
 	ret = strings.Replace(ret, "／", "/", -1)
 	ret = strings.Replace(ret, "＞", ">", -1)
 	ret = strings.Replace(ret, "・", " • ", -1)
-	// game controls that aren't needed for wikia
+	// game controls that aren't needed for fandom
 	ret = strings.Replace(ret, "<i><break>", "\n", -1)
 	// remove duplicate newlines
 	for strings.Contains(ret, "\n\n") {
