@@ -111,7 +111,27 @@ func (c *Card) Rarity() (ret string) {
 		}
 	}
 	return
+}
 
+// MainRarity gets the main rarity of this card instead of the exact evo rarity
+// (i.e. GUR => UR, HSR => SR)
+func (c *Card) MainRarity() string {
+	s := c.Rarity()
+	l := len(s)
+	switch l {
+	case 1:
+		// N, X, R
+		return s
+	case 2:
+		// HN, HX, HR, SR, UR, LR
+		return strings.TrimPrefix(s, "H")
+	case 3:
+		// HSR, GSR, HUR, GUR, HLR, GLR, XSR, XUR, XLR
+		return strings.TrimPrefix(strings.TrimPrefix(strings.TrimPrefix(s, "H"), "G"), "X")
+	default:
+		// not a known rarity!
+		return s
+	}
 }
 
 // CardRarity with full rarity information
@@ -138,6 +158,13 @@ func (c *Card) Element() string {
 	}
 	return ""
 
+}
+
+// IsRetired returns true if this card is no longer available because a newer card
+// of the same character was released.
+func (c *Card) IsRetired() bool {
+	oldIDx := sort.SearchInts(retiredCards, c.ID)
+	return oldIDx >= 0 && oldIDx < len(retiredCards) && retiredCards[oldIDx] == c.ID
 }
 
 // Character information of the card
@@ -1580,7 +1607,8 @@ func (c *Card) Amalgamations(v *VFile) []Amalgamation {
 	return ret
 }
 
-// AwakensTo Gets the card this card awakens to.
+// AwakensTo Gets the card this card awakens to. Call LastEvo first if
+// you want the awoken card and aren't sure if this is the direct material.
 func (c *Card) AwakensTo(v *VFile) *Card {
 	for _, val := range v.Awakenings {
 		if c.ID == val.BaseCardID {
@@ -1610,7 +1638,9 @@ func (c *Card) HasRebirth(v *VFile) bool {
 	return false
 }
 
-// RebirthsTo Gets the card this card rebirths to.
+// RebirthsTo Gets the card this card rebirths to. Call LastEvo().AwakensTo()
+// first if you want the rebith card and aren't sure if this is the direct
+// material.
 func (c *Card) RebirthsTo(v *VFile) *Card {
 	for _, val := range v.Rebirths {
 		if c.ID == val.BaseCardID {

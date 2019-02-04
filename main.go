@@ -105,6 +105,8 @@ func main() {
 
 	http.HandleFunc("/decode/", decodeHandler)
 
+	http.HandleFunc("/bot/", botHandler)
+
 	http.HandleFunc("/raw/", rawDataHandler)
 	http.HandleFunc("/raw/KEYS", rawDataKeysHandler)
 
@@ -174,6 +176,8 @@ Images:<br />
 <a href="/cards/csv">Card List as CSV</a><br />
 <a href="/skills/csv">Skill List as CSV</a><br />
 <a href="/cards/glrcsv">GLR Card List as CSV</a><br />
+<br />
+<a href="/bot">Bot JSON DB (this is slow... it pulls the image locations from the Wiki)</a><br />
 <br />
 <a href="/awakenings">List of Awakenings</a><br />
 <a href="/awakenings/csv">List of Awakenings as CSV</a><br />

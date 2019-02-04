@@ -231,7 +231,7 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if card.IsClosed != 0 {
 		io.WriteString(w, "{{Unreleased}}")
 	}
-	fmt.Fprintf(w, "{{Card\n|element = %s\n|rarity = %s\n", card.Element(), fixRarity(card.Rarity()))
+	fmt.Fprintf(w, "{{Card\n|element = %s\n|rarity = %s\n", card.Element(), card.MainRarity())
 
 	skillMap := make(map[string]string)
 
@@ -478,24 +478,6 @@ func cardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	io.WriteString(w, "</div>")
 	io.WriteString(w, "</body></html>")
-}
-
-func fixRarity(s string) string {
-	l := len(s)
-	switch l {
-	case 1:
-		// N, X, R
-		return s
-	case 2:
-		// HN, HX, HR, SR, UR, LR
-		return strings.TrimPrefix(s, "H")
-	case 3:
-		// HSR, GSR, HUR, GUR, HLR, GLR, XSR, XUR, XLR
-		return strings.TrimPrefix(strings.TrimPrefix(strings.TrimPrefix(s, "H"), "G"), "X")
-	default:
-		// not a known rarity!
-		return s
-	}
 }
 
 func cardCsvHandler(w http.ResponseWriter, r *http.Request) {
@@ -1171,7 +1153,7 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 	}
 
 	// Check if the second skill expires
-	if (s.PublicEndDatetime.After(time.Time{})) {
+	if s.Expires() {
 		ret += fmt.Sprintf("|skill %send = %v\n", evoMod, s.PublicEndDatetime)
 	}
 	return

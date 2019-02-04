@@ -857,8 +857,7 @@ func cleanCardName(name string, card *Card) string {
 		}
 	}
 	// old cards
-	oldIDx := sort.SearchInts(retiredCards, card.ID)
-	if oldIDx >= 0 && oldIDx < len(retiredCards) && retiredCards[oldIDx] == card.ID {
+	if card.IsRetired() {
 		ret += " (Old)"
 	} else {
 		// new cards that are named the same as an old card that is still active

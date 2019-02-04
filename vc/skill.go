@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Skill info from master data field "skills" These match to the string in the files:
@@ -70,6 +71,11 @@ type SkillCostIncrementPattern struct {
 	CardLevelInterval int `json:"card_level_interval"`
 	Increment         int `json:"increment"`
 	Max               int `json:"max"`
+}
+
+// Expires true if the skill has an expiration date
+func (s *Skill) Expires() bool {
+	return s.PublicEndDatetime.After(time.Time{})
 }
 
 // Effect of the skill (this is a visual effect, not the ability)
