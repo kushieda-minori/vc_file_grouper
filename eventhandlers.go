@@ -28,7 +28,8 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 	qEventType := qs.Get("eventType")
 	eventTypeID, _ := strconv.Atoi(qEventType)
 	qSearch := strings.ToLower(strings.TrimSpace(qs.Get("search")))
-	qIsActive := strings.ToLower(strings.TrimSpace(qs.Get("isActive")))
+	r.ParseForm()
+	qWhenHappened := r.Form["whenHappened"]
 
 	filter := func(event *vc.Event) (match bool) {
 		match = true
@@ -41,8 +42,20 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 		if qSearch != "" {
 			match = match && (strings.Contains(strings.ToLower(event.Description), qSearch) || strings.Contains(strings.ToLower(event.Name), qSearch))
 		}
-		if qIsActive != "" {
-			match = match && event.StartDatetime.Before(time.Now()) && event.EndDatetime.After(time.Now())
+		if len(qWhenHappened) > 0 {
+			if match {
+				dateMatch := false
+				if isChecked(qWhenHappened, "expired") != "" {
+					dateMatch = dateMatch || event.EndDatetime.Before(time.Now())
+				}
+				if isChecked(qWhenHappened, "active") != "" {
+					dateMatch = dateMatch || event.StartDatetime.Before(time.Now()) && event.EndDatetime.After(time.Now())
+				}
+				if isChecked(qWhenHappened, "upcoming") != "" {
+					dateMatch = dateMatch || event.StartDatetime.After(time.Now())
+				}
+				match = match && dateMatch
+			}
 		}
 		return
 	}
@@ -69,11 +82,15 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "<option value=\"%d\"%[3]s>%[1]d: %s</option>\n", key, vc.EventType[key], selected)
 	}
 	io.WriteString(w, "</select>\n")
-	fmt.Fprintf(w, "<label for=\"f_isActive\">Is Active:</label><input id=\"f_isActive\" name=\"isActive\" type=\"checkbox\" value=\"checked\" %s/>", qIsActive)
+	io.WriteString(w, "<span>\n")
+	fmt.Fprintf(w, "<label for=\"f_whenHappened\">Is Expired:</label><input id=\"f_whenHappened\" name=\"whenHappened\" type=\"checkbox\" value=\"expired\" %s/> ", isChecked(qWhenHappened, "expired"))
+	fmt.Fprintf(w, "<label for=\"f_whenHappened\">Is Active:</label><input id=\"f_whenHappened\" name=\"whenHappened\" type=\"checkbox\" value=\"active\" %s/> ", isChecked(qWhenHappened, "active"))
+	fmt.Fprintf(w, "<label for=\"f_whenHappened\">Is Upcoming:</label><input id=\"f_whenHappened\" name=\"whenHappened\" type=\"checkbox\" value=\"upcoming\" %s/> ", isChecked(qWhenHappened, "upcoming"))
+	io.WriteString(w, "</span>\n")
 	io.WriteString(w, "<button type=\"submit\">Submit</button>\n</form>\n")
 	io.WriteString(w, "<div>\n")
 	io.WriteString(w, "<table><thead><tr>\n")
-	io.WriteString(w, "<th>_id</th><th>Event Name</th><th>Event Type</th><th>Start Date</th><th>End Date</th><th>King Series</th><th>Guild Battle</th><th>Tower Event</th>\n")
+	io.WriteString(w, "<th>_id</th><th>Event Name</th><th>Event Type</th><th>Start Date</th><th>End Date</th><th>King Series</th><th>Guild Battle</th><th>Tower Event</th><th>DRV</th>\n")
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
 	for i := len(VcData.Events) - 1; i >= 0; i-- {
@@ -90,6 +107,7 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 	<td>%d</td>
 	<td>%d</td>
 	<td>%d</td>
+	<td>%d</td>
 </tr>`,
 			e.ID,
 			e.Name,
@@ -99,6 +117,7 @@ func eventHandler(w http.ResponseWriter, r *http.Request) {
 			e.KingSeriesID,
 			e.GuildBattleID,
 			e.TowerEventID,
+			e.DungeonEventID,
 		)
 	}
 	io.WriteString(w, "</tbody></table></div></body></html>")
@@ -899,4 +918,13 @@ func cleanArcanaName(name string) string {
 	ret = strings.Replace(ret, "strongdef", "def", 1)
 	ret = strings.TrimSpace(ret)
 	return ret
+}
+
+func isChecked(values []string, contains string) string {
+	sort.Strings(values)
+	i := sort.SearchStrings(values, contains)
+	if i < len(values) && values[i] == contains {
+		return "checked"
+	}
+	return ""
 }
