@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"fmt"
@@ -11,14 +11,15 @@ import (
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-func characterTableHandler(w http.ResponseWriter, r *http.Request) {
+// CharacterTableHandler show character data in a table format
+func CharacterTableHandler(w http.ResponseWriter, r *http.Request) {
 	qs := r.URL.Query()
 	filter := func(character *vc.CardCharacter) (match bool) {
 		match = true
 		if len(qs) < 1 {
 			return
 		}
-		card := character.FirstEvoCard(VcData)
+		card := character.FirstEvoCard(vc.Data)
 		if card == nil {
 			return false
 		}
@@ -30,11 +31,11 @@ func characterTableHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if skillname := qs.Get("skillname"); skillname != "" && match {
 			var s1, s2 bool
-			if skill1 := card.Skill1(VcData); skill1 != nil {
+			if skill1 := card.Skill1(vc.Data); skill1 != nil {
 				s1 = skill1.Name != "" && strings.Contains(strings.ToLower(skill1.Name), strings.ToLower(skillname))
 				//os.Stdout.WriteString(skill1.Name + " " + strconv.FormatBool(s1) + "\n")
 			}
-			if skill2 := card.Skill2(VcData); skill2 != nil {
+			if skill2 := card.Skill2(vc.Data); skill2 != nil {
 				s2 = skill2.Name != "" && strings.Contains(strings.ToLower(skill2.Name), strings.ToLower(skillname))
 				//os.Stdout.WriteString(skill2.Name + " " + strconv.FormatBool(s2) + "\n")
 			}
@@ -42,11 +43,11 @@ func characterTableHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if skilldesc := qs.Get("skilldesc"); skilldesc != "" && match {
 			var s1, s2 bool
-			if skill1 := card.Skill1(VcData); skill1 != nil {
+			if skill1 := card.Skill1(vc.Data); skill1 != nil {
 				s1 = skill1.Fire != "" && strings.Contains(strings.ToLower(skill1.Fire), strings.ToLower(skilldesc))
 				//os.Stdout.WriteString(skill1.Fire + " " + strconv.FormatBool(s1) + "\n")
 			}
-			if skill2 := card.Skill2(VcData); skill2 != nil {
+			if skill2 := card.Skill2(vc.Data); skill2 != nil {
 				s2 = skill2.Fire != "" && strings.Contains(strings.ToLower(skill2.Fire), strings.ToLower(skilldesc))
 				//os.Stdout.WriteString(skill2.Fire + " " + strconv.FormatBool(s2) + "\n")
 			}
@@ -90,15 +91,15 @@ func characterTableHandler(w http.ResponseWriter, r *http.Request) {
 
 	// sort the characters by most recent card
 	// copy the character data so we don't modify the inline global
-	chars := make([]vc.CardCharacter, len(VcData.CardCharacters))
-	copy(chars, VcData.CardCharacters)
+	chars := make([]vc.CardCharacter, len(vc.Data.CardCharacters))
+	copy(chars, vc.Data.CardCharacters)
 
 	sort.Slice(chars, func(i, j int) bool {
 		first := chars[i]
 		second := chars[j]
 
-		firstCards := vc.CardList(first.Cards(VcData))
-		secondCards := vc.CardList(second.Cards(VcData))
+		firstCards := vc.CardList(first.Cards(vc.Data))
+		secondCards := vc.CardList(second.Cards(vc.Data))
 
 		maxFirst := firstCards.Latest()
 		maxSecond := secondCards.Latest()
@@ -121,7 +122,7 @@ func characterTableHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		card := character.FirstEvoCard(VcData)
+		card := character.FirstEvoCard(vc.Data)
 
 		cardName := "N/A"
 
@@ -134,7 +135,7 @@ func characterTableHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		cardNos := ""
-		for _, card := range character.Cards(VcData) {
+		for _, card := range character.Cards(vc.Data) {
 			if len(cardNos) > 0 {
 				cardNos = cardNos + ", "
 			}
@@ -169,7 +170,8 @@ func characterTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</tbody></table></div></body></html>")
 }
 
-func characterDetailHandler(w http.ResponseWriter, r *http.Request) {
+// CharacterDetailHandler show character details
+func CharacterDetailHandler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	var pathLen int
 	if path[len(path)-1] == '/' {
@@ -185,14 +187,14 @@ func characterDetailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cardID, err := strconv.Atoi(pathParts[2])
-	if err != nil || cardID < 1 || cardID > len(VcData.CardCharacters) {
+	if err != nil || cardID < 1 || cardID > len(vc.Data.CardCharacters) {
 		http.Error(w, "Invalid character id "+pathParts[2], http.StatusNotFound)
 		return
 	}
 
-	character := vc.CardCharacterScan(cardID, VcData.CardCharacters)
+	character := vc.CardCharacterScan(cardID, vc.Data.CardCharacters)
 
-	cards := character.Cards(VcData)
+	cards := character.Cards(vc.Data)
 
 	if len(cards) == 0 {
 		http.Error(w, "Character has no cards "+pathParts[2], http.StatusNotFound)
@@ -261,12 +263,12 @@ func characterDetailHandler(w http.ResponseWriter, r *http.Request) {
 `)
 
 	for _, card := range cards {
-		skill1 := card.Skill1(VcData)
+		skill1 := card.Skill1(vc.Data)
 		if skill1 == nil {
 			skill1 = &vc.Skill{}
 		}
-		// skill2 := card.Skill2(VcData)
-		// skillS1 := card.SpecialSkill1(VcData)
+		// skill2 := card.Skill2(vc.Data)
+		// skillS1 := card.SpecialSkill1(vc.Data)
 		fmt.Fprintf(w, "<tr><td>%d</td>"+
 			"<td><a href=\"/cards/detail/%[1]d\">%05[2]d</a></td>"+
 			"<td><a href=\"/cards/detail/%[1]d\">%[3]s</a></td>"+
@@ -321,28 +323,28 @@ func characterDetailHandler(w http.ResponseWriter, r *http.Request) {
 			card.MaxOffense,
 			card.MaxDefense,
 			card.MaxFollower,
-			card.Skill1Name(VcData),
-			card.SkillMin(VcData),
-			card.SkillMax(VcData),
-			card.SkillProcs(VcData),
+			card.Skill1Name(vc.Data),
+			card.SkillMin(vc.Data),
+			card.SkillMax(vc.Data),
+			card.SkillProcs(vc.Data),
 			skill1.EffectDefaultValue,
 			skill1.DefaultRatio,
 			skill1.EffectMaxValue,
 			skill1.MaxRatio,
-			card.SkillTarget(VcData),
-			card.SkillTargetLogic(VcData),
-			card.Skill2Name(VcData),
-			card.Skill3Name(VcData),
-			card.ThorSkill1Name(VcData),
-			card.SpecialSkill1Name(VcData),
-			card.Description(VcData),
-			card.Friendship(VcData),
-			card.Login(VcData),
-			card.Meet(VcData),
-			card.BattleStart(VcData),
-			card.BattleEnd(VcData),
-			card.FriendshipMax(VcData),
-			card.FriendshipEvent(VcData),
+			card.SkillTarget(vc.Data),
+			card.SkillTargetLogic(vc.Data),
+			card.Skill2Name(vc.Data),
+			card.Skill3Name(vc.Data),
+			card.ThorSkill1Name(vc.Data),
+			card.SpecialSkill1Name(vc.Data),
+			card.Description(vc.Data),
+			card.Friendship(vc.Data),
+			card.Login(vc.Data),
+			card.Meet(vc.Data),
+			card.BattleStart(vc.Data),
+			card.BattleEnd(vc.Data),
+			card.FriendshipMax(vc.Data),
+			card.FriendshipEvent(vc.Data),
 		)
 	}
 

@@ -17,6 +17,12 @@ import (
 	"time"
 )
 
+// Data Main data file
+var Data *VFile
+
+// MasterDataStr master data as read from the file as a string.
+var MasterDataStr string
+
 // LangPack language pack to use
 var LangPack string
 
@@ -30,6 +36,22 @@ type BinImage struct {
 	ID   int
 	Name string
 	Data []byte
+}
+
+// ReadMasterData Reads the master data from the file location
+func ReadMasterData(files string) error {
+	data := VFile{}
+	b, err := data.Read(files)
+	if err != nil {
+		if Data == nil {
+			Data = &data
+		}
+		os.Stderr.WriteString(err.Error() + "\n")
+		return err
+	}
+	Data = &data
+	MasterDataStr = string(b)
+	return nil
 }
 
 // MarshalJSON converts a JSON timestamp to a GO time

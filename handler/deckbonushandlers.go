@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"fmt"
@@ -11,7 +11,8 @@ import (
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-func deckBonusHandler(w http.ResponseWriter, r *http.Request) {
+// DeckBonusHandler show deck bonuses as a table
+func DeckBonusHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, `<html><head><title>Deck Bonuses</title>
 <style>table, th, td {border: 1px solid black;};</style>
 </head><body>
@@ -31,9 +32,9 @@ func deckBonusHandler(w http.ResponseWriter, r *http.Request) {
 </tr></thead>
 <tbody>`)
 
-	//sort.Sort(vc.DeckBonusByCountAndName(VcData.DeckBonuses))
+	//sort.Sort(vc.DeckBonusByCountAndName(vc.Data.DeckBonuses))
 
-	for _, d := range VcData.DeckBonuses {
+	for _, d := range vc.Data.DeckBonuses {
 		fmt.Fprintf(w, `<tr>
   <td>%d</td>
   <td>%s</td>
@@ -55,13 +56,14 @@ func deckBonusHandler(w http.ResponseWriter, r *http.Request) {
 			d.CondType,
 			d.ReqNum,
 			d.DupFlg,
-			d.Conditions(VcData),
+			d.Conditions(vc.Data),
 		)
 	}
 	io.WriteString(w, "</tbody></table></div></body></html>")
 }
 
-func deckBonusWikiHandler(w http.ResponseWriter, r *http.Request) {
+// DeckBonusWikiHandler show deck bonuses as wiki formatted
+func DeckBonusWikiHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, `<html><head><title>Deck Bonuses</title>
 <style>table, th, td {border: 1px solid black;};</style>
 </head><body>
@@ -80,13 +82,13 @@ func deckBonusWikiHandler(w http.ResponseWriter, r *http.Request) {
 
 `
 
-	sort.Sort(vc.DeckBonusByCountAndName(VcData.DeckBonuses))
+	sort.Sort(vc.DeckBonusByCountAndName(vc.Data.DeckBonuses))
 
 	reg := regexp.MustCompile(`\[|【(.+)\]|】\n?(.*)`)
 
 	oldReq := -1
 
-	for _, d := range VcData.DeckBonuses {
+	for _, d := range vc.Data.DeckBonuses {
 		if oldReq != d.ReqNum {
 			if oldReq > 1 {
 				io.WriteString(w, tableFooter)
@@ -96,7 +98,7 @@ func deckBonusWikiHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		descMatch := reg.FindStringSubmatch(d.Description)
 
-		dca := d.Conditions(VcData)
+		dca := d.Conditions(vc.Data)
 		switch d.CondType {
 		case 2:
 			fmt.Fprintf(w, `|-

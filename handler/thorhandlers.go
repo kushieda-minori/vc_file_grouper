@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"fmt"
@@ -11,7 +11,8 @@ import (
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-func thorHandler(w http.ResponseWriter, r *http.Request) {
+// ThorHandler handle Thor events
+func ThorHandler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	var pathLen int
 	if path[len(path)-1] == '/' {
@@ -23,16 +24,16 @@ func thorHandler(w http.ResponseWriter, r *http.Request) {
 	pathParts := strings.Split(path[1:pathLen], "/")
 	// "thor/id/WIKI"
 	if len(pathParts) < 2 {
-		thorTableHandler(w, r)
+		ThorTableHandler(w, r)
 		return
 	}
 
 	thorID, err := strconv.Atoi(pathParts[1])
-	if err != nil || thorID < 1 || thorID > len(VcData.ThorEvents) {
+	if err != nil || thorID < 1 || thorID > len(vc.Data.ThorEvents) {
 		http.Error(w, "Invalid Thor Event id "+pathParts[1], http.StatusNotFound)
 		return
 	}
-	t := vc.ThorEventScan(thorID, VcData.ThorEvents)
+	t := vc.ThorEventScan(thorID, vc.Data.ThorEvents)
 
 	if t == nil {
 		http.Error(w, "Invalid Thor Event id "+pathParts[1], http.StatusNotFound)
@@ -40,20 +41,23 @@ func thorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(pathParts) >= 3 && "WIKI" == pathParts[2] {
-		thorDetailWikiHandler(w, r, t)
+		ThorDetailWikiHandler(w, r, t)
 		return
 	}
 
-	thorDetailHandler(w, r, t)
+	ThorDetailHandler(w, r, t)
 }
 
-func thorDetailWikiHandler(w http.ResponseWriter, r *http.Request, t *vc.ThorEvent) {
+// ThorDetailWikiHandler does nothing
+func ThorDetailWikiHandler(w http.ResponseWriter, r *http.Request, t *vc.ThorEvent) {
 }
 
-func thorDetailHandler(w http.ResponseWriter, r *http.Request, t *vc.ThorEvent) {
+// ThorDetailHandler does nothing
+func ThorDetailHandler(w http.ResponseWriter, r *http.Request, t *vc.ThorEvent) {
 }
 
-func thorTableHandler(w http.ResponseWriter, r *http.Request) {
+// ThorTableHandler shows thor events as a table
+func ThorTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>Thor Events</title>\n")
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
 	io.WriteString(w, "</head><body>\n")
@@ -68,7 +72,7 @@ func thorTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
 
-	for _, t := range VcData.ThorEvents {
+	for _, t := range vc.Data.ThorEvents {
 		fmt.Fprintf(w, "<tr><td><a href=\"/thor/%[1]d\">%[1]d</a></td>"+
 			"<td>%[2]s</td>"+
 			"<td>%s</td>"+

@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"fmt"
@@ -12,7 +12,8 @@ import (
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-func mapHandler(w http.ResponseWriter, r *http.Request) {
+// MapHandler handle Map requests
+func MapHandler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	var pathLen int
 	if path[len(path)-1] == '/' {
@@ -24,16 +25,16 @@ func mapHandler(w http.ResponseWriter, r *http.Request) {
 	pathParts := strings.Split(path[1:pathLen], "/")
 	// "maps/id/WIKI"
 	if len(pathParts) < 2 {
-		mapTableHandler(w, r)
+		MapTableHandler(w, r)
 		return
 	}
 
 	mapID, err := strconv.Atoi(pathParts[1])
-	if err != nil || mapID < 1 || mapID > len(VcData.Maps) {
+	if err != nil || mapID < 1 || mapID > len(vc.Data.Maps) {
 		http.Error(w, "Invalid map id "+pathParts[1], http.StatusNotFound)
 		return
 	}
-	m := vc.MapScan(mapID, VcData.Maps)
+	m := vc.MapScan(mapID, vc.Data.Maps)
 
 	if m == nil {
 		http.Error(w, "Invalid map id "+pathParts[1], http.StatusNotFound)
@@ -41,14 +42,15 @@ func mapHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(pathParts) >= 3 && "WIKI" == pathParts[2] {
-		mapDetailWikiHandler(w, r, m)
+		MapDetailWikiHandler(w, r, m)
 		return
 	}
 
-	mapDetailHandler(w, r, m)
+	MapDetailHandler(w, r, m)
 }
 
-func mapDetailHandler(w http.ResponseWriter, r *http.Request, m *vc.Map) {
+// MapDetailHandler show details for a single map
+func MapDetailHandler(w http.ResponseWriter, r *http.Request, m *vc.Map) {
 	fmt.Fprintf(w, "<html><head><title>Map %s</title>\n", m.Name)
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
 	io.WriteString(w, "</head><body>\n")
@@ -59,7 +61,7 @@ func mapDetailHandler(w http.ResponseWriter, r *http.Request, m *vc.Map) {
 	io.WriteString(w, "<th>No</th><th>Name</th><th>Long Name</th><th>Start</th><th>End</th><th>Story</th><th>Boss Start</th><th>Boss End</th>\n")
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
-	for _, e := range m.Areas(VcData) {
+	for _, e := range m.Areas(vc.Data) {
 		fmt.Fprintf(w, "<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>",
 			e.AreaNo,
 			e.Name,
@@ -74,7 +76,8 @@ func mapDetailHandler(w http.ResponseWriter, r *http.Request, m *vc.Map) {
 	io.WriteString(w, "</tbody></table></div></body></html>")
 }
 
-func mapDetailWikiHandler(w http.ResponseWriter, r *http.Request, m *vc.Map) {
+// MapDetailWikiHandler show map details but in wiki format
+func MapDetailWikiHandler(w http.ResponseWriter, r *http.Request, m *vc.Map) {
 	fmt.Fprintf(w, "<html><head><title>Map %s</title>\n", m.Name)
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
 	io.WriteString(w, "</head><body>\n")
@@ -117,7 +120,7 @@ BattleBG %d.png
 		fmt.Fprintf(w, "|-\n| align=\"center\" |%s\n|%s\n", m.Name, html.EscapeString(strings.Replace(m.StartMsg, "\n", " ", -1)))
 	}
 
-	for _, e := range m.Areas(VcData) {
+	for _, e := range m.Areas(vc.Data) {
 		if e.Story != "" || e.Start != "" || e.End != "" || e.BossStart != "" || e.BossEnd != "" {
 			fmt.Fprintf(w, "|-\n| align=\"center\" |%s\n|\n", e.LongName)
 
@@ -169,7 +172,8 @@ BattleBG %d.png
 	io.WriteString(w, "|}\n[[Category:Story]]\n</textarea></div></body></html>")
 }
 
-func mapTableHandler(w http.ResponseWriter, r *http.Request) {
+// MapTableHandler show maps as a table
+func MapTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>Maps</title>\n")
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
 	io.WriteString(w, "</head><body>\n")
@@ -179,8 +183,8 @@ func mapTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
 
-	for i := len(VcData.Maps) - 1; i >= 0; i-- {
-		m := VcData.Maps[i]
+	for i := len(vc.Data.Maps) - 1; i >= 0; i-- {
+		m := vc.Data.Maps[i]
 		fmt.Fprintf(w, "<tr><td><a href=\"/maps/%[1]d\">%[1]d</a></td><td><a href=\"/maps/%[1]d\">%[2]s</a></td><td>%[3]s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td>",
 			m.ID,
 			m.Name,

@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"fmt"
@@ -10,7 +10,8 @@ import (
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-func itemHandler(w http.ResponseWriter, r *http.Request) {
+// ItemHandler shows item details as a table
+func ItemHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>All Items</title>\n")
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
 	io.WriteString(w, "</head><body>\n")
@@ -19,8 +20,8 @@ func itemHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<th>_id</th><th>Item Name</th><th>Image</th><th>Description</th><th>Group</th><th>End Date</th><th>Max Own</th><th>Limited Item</th><th>Is Deleted</th>\n")
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
-	for i := len(VcData.Items) - 1; i >= 0; i-- {
-		e := VcData.Items[i]
+	for i := len(vc.Data.Items) - 1; i >= 0; i-- {
+		e := vc.Data.Items[i]
 		fmt.Fprintf(w, "<tr>"+
 			"<td>%d</td>"+
 			"<td>%s<br />%s</td>"+

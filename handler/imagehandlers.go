@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"bytes"
@@ -14,29 +14,34 @@ import (
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-func imageCardSDHandler(w http.ResponseWriter, r *http.Request) {
-	//vcfilepath+"/card/sd"
-	serveCardImage(vcfilepath+"/card/sd/", "/images/cardSD/", w, r)
+// ImageCardSDHandler show SD card images
+func ImageCardSDHandler(w http.ResponseWriter, r *http.Request) {
+	//VcFilePath+"/card/sd"
+	serveCardImage(VcFilePath+"/card/sd/", "/images/cardSD/", w, r)
 }
 
-func imageCardHandler(w http.ResponseWriter, r *http.Request) {
-	//vcfilepath+"/card/md"
-	serveCardImage(vcfilepath+"/card/md/", "/images/card/", w, r)
+// ImageCardHandler show MD card images
+func ImageCardHandler(w http.ResponseWriter, r *http.Request) {
+	//VcFilePath+"/card/md"
+	serveCardImage(VcFilePath+"/card/md/", "/images/card/", w, r)
 }
 
-func imageCardThumbHandler(w http.ResponseWriter, r *http.Request) {
-	//vcfilepath+"/card/thumb"
-	serveCardImage(vcfilepath+"/card/thumb/", "/images/cardthumb/", w, r)
+// ImageCardThumbHandler show thumbnail card images
+func ImageCardThumbHandler(w http.ResponseWriter, r *http.Request) {
+	//VcFilePath+"/card/thumb"
+	serveCardImage(VcFilePath+"/card/thumb/", "/images/cardthumb/", w, r)
 }
 
-func imageCardHDHandler(w http.ResponseWriter, r *http.Request) {
-	//vcfilepath+"/card/hd"
-	serveCardImage(vcfilepath+"/card/hd/", "/images/cardHD/", w, r)
+// ImageCardHDHandler show HD card images
+func ImageCardHDHandler(w http.ResponseWriter, r *http.Request) {
+	//VcFilePath+"/card/hd"
+	serveCardImage(VcFilePath+"/card/hd/", "/images/cardHD/", w, r)
 }
 
-func imageHandlerFor(urlPath string, imageDir string) func(http.ResponseWriter, *http.Request) {
+// ImageHandlerFor handles images under a specified path
+func ImageHandlerFor(urlPath string, imageDir string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		//vcfilepath+"/event"
+		//VcFilePath+"/event"
 		servImageDir(w, r, urlPath, imageDir)
 	}
 }
@@ -64,7 +69,7 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 			"<br />Relative path modification not allowed", http.StatusNotFound)
 		return
 	}
-	fullpath := path.Join(vcfilepath, root, imgname)
+	fullpath := path.Join(VcFilePath, root, imgname)
 
 	finfo, err := os.Stat(fullpath)
 	if err != nil {
@@ -131,7 +136,7 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 
 func checkImageName(info os.FileInfo) bool {
 	imageName := info.Name()
-	for _, card := range VcData.Cards {
+	for _, card := range vc.Data.Cards {
 		if card.Image() == imageName {
 			return false
 		}
@@ -145,7 +150,7 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 	if imgname == "" || imgname == "/" || strings.HasPrefix(imgname, "../") {
 		if len(qs) > 0 {
 			if unused := qs.Get("unused"); unused != "" {
-				servImageDir(w, r, strings.TrimPrefix(urlprefix, "/images"), strings.TrimPrefix(imagePath, vcfilepath), checkImageName)
+				servImageDir(w, r, strings.TrimPrefix(urlprefix, "/images"), strings.TrimPrefix(imagePath, VcFilePath), checkImageName)
 				return
 			}
 		}
@@ -185,7 +190,7 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 		cardID = imgname[3:]
 	}
 
-	card := vc.CardScanImage(cardID, VcData.Cards)
+	card := vc.CardScanImage(cardID, vc.Data.Cards)
 	ext := ".png"
 	isIcon := false
 	if strings.Contains(fullpath, "/thumb/") {
@@ -193,7 +198,7 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 		isIcon = true
 	}
 	if card != nil {
-		fileName = card.GetEvoImageName(VcData, isIcon) + ext
+		fileName = card.GetEvoImageName(vc.Data, isIcon) + ext
 	} else {
 		//os.Stderr.WriteString("Card info not found for image " + cardID + "\n")
 		if decodeOnFly {

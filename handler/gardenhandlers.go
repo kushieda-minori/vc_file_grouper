@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"archive/zip"
@@ -16,7 +16,8 @@ import (
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-func structureListHandler(w http.ResponseWriter, r *http.Request) {
+// StructureListHandler show structures as a list
+func StructureListHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>Structures</title>\n")
 	io.WriteString(w, "<style>table, th, td {border: 1px solid black;};</style>")
 	io.WriteString(w, "</head><body>\n")
@@ -35,7 +36,7 @@ func structureListHandler(w http.ResponseWriter, r *http.Request) {
 `)
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
-	for _, s := range VcData.Structures {
+	for _, s := range vc.Data.Structures {
 		fmt.Fprintf(w, `<tr>
 	<td><a href="/garden/structures/detail/%[1]d">%[1]d</a></td>
 	<td>%[2]s</td>
@@ -63,7 +64,8 @@ func structureListHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</tbody></table></div></body></html>")
 }
 
-func structureDetailHandler(w http.ResponseWriter, r *http.Request) {
+// StructureDetailHandler show details for a single structure
+func StructureDetailHandler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	var pathLen int
 	if path[len(path)-1] == '/' {
@@ -84,7 +86,7 @@ func structureDetailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	structure := vc.StructureScan(structureID, VcData)
+	structure := vc.StructureScan(structureID, vc.Data)
 	if structure == nil {
 		http.Error(w, "Structure not found with id "+pathParts[3], http.StatusNotFound)
 		return
@@ -94,7 +96,7 @@ func structureDetailHandler(w http.ResponseWriter, r *http.Request) {
 		structure.ID,
 		structure.Name,
 	)
-	pc := structure.PurchaseCosts(VcData)
+	pc := structure.PurchaseCosts(vc.Data)
 	if len(pc) > 0 {
 		io.WriteString(w, "\nPurchase Costs<br/><textarea rows=\"25\" cols=\"80\">")
 		io.WriteString(w, `{| class="article-table"
@@ -125,7 +127,7 @@ func structureDetailHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</body></html>")
 }
 
-func handleStructureImages(w http.ResponseWriter, r *http.Request) {
+func StructureImagesHandler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	var pathLen int
 	if path[len(path)-1] == '/' {
@@ -141,7 +143,7 @@ func handleStructureImages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gardenBin := vcfilepath + "/garden/map_01.bin"
+	gardenBin := VcFilePath + "/garden/map_01.bin"
 	os.Stdout.WriteString("reading garden image file\n")
 	images, err := vc.ReadBinFileImages(gardenBin)
 	limages := len(images)
@@ -272,7 +274,7 @@ Max quantity: %d
 		structure.Description,
 		structure.SizeX,
 		structure.SizeY,
-		structure.MaxQty(VcData),
+		structure.MaxQty(vc.Data),
 	)
 	castleReq := ""
 	if structure.UnlockCastleLv > 0 {
@@ -286,10 +288,10 @@ Max quantity: %d
 	}
 	areaReq := ""
 	if structure.UnlockAreaID > 0 {
-		areaReq = fmt.Sprintf("<br />Clear Area %s", VcData.Areas[structure.UnlockAreaID].Name)
+		areaReq = fmt.Sprintf("<br />Clear Area %s", vc.Data.Areas[structure.UnlockAreaID].Name)
 	}
 	io.WriteString(w, lvlHeader)
-	levels := structure.Levels(VcData)
+	levels := structure.Levels(vc.Data)
 	expTot, goldTot, ethTot, ironTot := 0, 0, 0, 0
 	for _, l := range levels {
 		buildTime := time.Duration(l.Time) * time.Second
@@ -353,7 +355,7 @@ Max quantity: %d
 		structure.Description,
 		structure.SizeX,
 		structure.SizeY,
-		structure.MaxQty(VcData),
+		structure.MaxQty(vc.Data),
 	)
 	castleReq := ""
 	if structure.UnlockCastleLv > 0 {
@@ -367,10 +369,10 @@ Max quantity: %d
 	}
 	areaReq := ""
 	if structure.UnlockAreaID > 0 {
-		areaReq = fmt.Sprintf("<br />Clear Area %s", VcData.Areas[structure.UnlockAreaID].Name)
+		areaReq = fmt.Sprintf("<br />Clear Area %s", vc.Data.Areas[structure.UnlockAreaID].Name)
 	}
 	io.WriteString(w, lvlHeader)
-	levels := structure.Levels(VcData)
+	levels := structure.Levels(vc.Data)
 	expTot, goldTot, ethTot, ironTot := 0, 0, 0, 0
 	for _, l := range levels {
 		buildTime := time.Duration(l.Time) * time.Second

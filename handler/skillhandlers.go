@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"encoding/csv"
@@ -7,15 +7,19 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-func skillTableHandler(w http.ResponseWriter, r *http.Request) {
+// SkillTableHandler does nothing
+func SkillTableHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func skillCsvHandler(w http.ResponseWriter, r *http.Request) {
+// SkillCsvHandler outputs skills as a csv file
+func SkillCsvHandler(w http.ResponseWriter, r *http.Request) {
 	// File header
-	w.Header().Set("Content-Disposition", "attachment; filename=vcData-skills-"+strconv.Itoa(VcData.Version)+"_"+VcData.Common.UnixTime.Format(time.RFC3339)+".csv")
+	w.Header().Set("Content-Disposition", "attachment; filename=vcData-skills-"+strconv.Itoa(vc.Data.Version)+"_"+vc.Data.Common.UnixTime.Format(time.RFC3339)+".csv")
 	w.Header().Set("Content-Type", "text/csv")
 	cw := csv.NewWriter(w)
 	cw.UseCRLF = true
@@ -56,7 +60,7 @@ func skillCsvHandler(w http.ResponseWriter, r *http.Request) {
 		"AnimationID",
 		"ThorHammerAnimationType",
 	})
-	for _, s := range VcData.Skills {
+	for _, s := range vc.Data.Skills {
 		var startDate, endDate string
 		if s.PublicStartDatetime.IsZero() {
 			startDate = "-1"

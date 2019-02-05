@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"fmt"
@@ -6,9 +6,12 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-func dataHandler(w http.ResponseWriter, r *http.Request) {
+// ConfigHandler configures the path for the main VC data file
+func ConfigHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>Update Master Data</title></head><body>\n")
 
 	// check form value and update if valid
@@ -17,11 +20,11 @@ func dataHandler(w http.ResponseWriter, r *http.Request) {
 		if _, err := os.Stat(newpath); os.IsNotExist(err) {
 			io.WriteString(w, "<div>Invalid new path specified</div>")
 		} else {
-			if err = readMasterData(newpath); err != nil {
+			if err = vc.ReadMasterData(newpath); err != nil {
 				fmt.Fprintf(w, "<div>%s</div>", err.Error())
 			} else {
 				io.WriteString(w, "<div>Success</div>")
-				vcfilepath = newpath
+				VcFilePath = newpath
 			}
 		}
 	}
@@ -32,7 +35,7 @@ func dataHandler(w http.ResponseWriter, r *http.Request) {
 <button type="submit">Submit</button>
 <p><a href="/">back</a></p>
 </form>`,
-		html.EscapeString(vcfilepath),
+		html.EscapeString(VcFilePath),
 	)
 	io.WriteString(w, "</body></html>")
 }
