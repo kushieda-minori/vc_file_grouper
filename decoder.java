@@ -1,6 +1,6 @@
 /**
  * @Author Kellindil Maendellyn
- * http://valkyriecrusade.wikia.com/wiki/Thread:119497#19
+ * https://valkyriecrusade.fandom.com/wiki/Thread:119497#19
  */
 package vc;
 

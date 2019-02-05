@@ -69,7 +69,7 @@ func main() {
 	http.HandleFunc("/images/navi/", imageHandlerFor("/navi/", "/navi/"))
 
 	// vc master data
-	http.HandleFunc("/data/", dataHandler)
+	http.HandleFunc("/config/", dataHandler)
 	//dynamic pages
 	http.HandleFunc("/cards/", cardHandler)
 	http.HandleFunc("/cards/table/", cardTableHandler)
@@ -106,6 +106,8 @@ func main() {
 	http.HandleFunc("/decode/", decodeHandler)
 
 	http.HandleFunc("/bot/", botHandler)
+	http.HandleFunc("/bot/config", botConfigHandler)
+	http.HandleFunc("/bot/update", botUpdateHandler)
 
 	http.HandleFunc("/raw/", rawDataHandler)
 	http.HandleFunc("/raw/KEYS", rawDataKeysHandler)
@@ -146,7 +148,7 @@ func masterDataHandler(w http.ResponseWriter, r *http.Request) {
 	// File header
 	fmt.Fprintf(w, `<html><body>
 <p>Version: %d,&nbsp;&nbsp;&nbsp;&nbsp;Timestamp: %d,&nbsp;&nbsp;&nbsp;&nbsp;JST: %s</p>
-<a href="/data">Set Data Location</a><br />
+<a href="/config">Configure Data Location</a><br />
 <br />
 <a href="/cards/table">Card List as a Table</a><br />
 <a href="/events">Event List</a><br />
@@ -177,7 +179,9 @@ Images:<br />
 <a href="/skills/csv">Skill List as CSV</a><br />
 <a href="/cards/glrcsv">GLR Card List as CSV</a><br />
 <br />
-<a href="/bot">Bot JSON DB (this is slow... it pulls the image locations from the Wiki)</a><br />
+<a href="/bot">Bot JSON DB (this is slow... it pulls the image locations from the Wiki for every card)</a><br />
+<a href="/bot/config">Set Existing NobuDB Location</a><br />
+<a href="/bot/update">Update NobuDB With New/Missing cards</a><br />
 <br />
 <a href="/awakenings">List of Awakenings</a><br />
 <a href="/awakenings/csv">List of Awakenings as CSV</a><br />

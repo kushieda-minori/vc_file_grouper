@@ -9,7 +9,7 @@ import (
 )
 
 // Original Author: Kellindil Maendellyn
-// http://valkyriecrusade.fandom.com/wiki/Thread:119497#19
+// https://valkyriecrusade.fandom.com/wiki/Thread:119497#19
 // Converted to go from java
 
 // Decode File header : 16 bytes

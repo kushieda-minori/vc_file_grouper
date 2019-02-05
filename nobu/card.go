@@ -1,16 +1,21 @@
 package nobu
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
+	"runtime/debug"
 	"time"
 
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
+
+// DbFileLocation location of an existing nobu db file
+var DbFileLocation = ""
 
 // Card card as known by Nobu Bot
 type Card struct {
@@ -22,6 +27,37 @@ type Card struct {
 	Link    string  `json:"link"`
 }
 
+// Db list of cards Nobu-bot knows about
+type Db []Card
+
+// LoadDb loads an existing Db
+func LoadDb() (*Db, error) {
+	// ensure our path has been set
+	if DbFileLocation == "" {
+		return nil, errors.New("Nobu DB Location not set")
+	}
+	// check if the file exists
+	if _, err := os.Stat(DbFileLocation); os.IsNotExist(err) {
+		return nil, errors.New("no such file or directory: " + DbFileLocation)
+	}
+
+	// load the existing data from disk
+	data, err := ioutil.ReadFile(DbFileLocation)
+	if err != nil {
+		return nil, err
+	}
+
+	v := make(Db, 0)
+
+	// decode the main file
+	err = json.Unmarshal(data[:], &v)
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	return &v, nil
+}
+
 // NewCard Converts a VC card to a Nobu DB card
 func NewCard(c *vc.Card, v *vc.VFile) Card {
 	imgLoc, err := getWikiImageLocation(c.GetEvoImageName(v, false) + ".png")
@@ -30,18 +66,53 @@ func NewCard(c *vc.Card, v *vc.VFile) Card {
 	if err != nil {
 		os.Stderr.WriteString(err.Error() + "\n")
 	}
-	imgLoc = strings.Replace(imgLoc, "_G.png", "_H.png", -1)
-	imgLoc = strings.Replace(imgLoc, "_A.png", "_H.png", -1)
+	//imgLoc = strings.Replace(imgLoc, "_G.png", "_H.png", -1)
+	//imgLoc = strings.Replace(imgLoc, "_A.png", "_H.png", -1)
 	return Card{
 		Name:    c.Name,
 		Element: c.Element(),
 		Rarity:  c.MainRarity(),
 		Skills:  newSkills(c, v),
 		Image:   imgLoc,
-		Link: fmt.Sprintf("http://valkyriecrusade.fandom.com/wiki/%s",
+		Link: fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
 			url.PathEscape(c.Name),
 		),
 	}
+}
+
+// AddOrUpdate Checks if the card exists in the DB or is not yet there.
+// If the card exists, then the skill information is updated.
+// If the card does not exists, it is added to the end of the array.
+// Since the "DB" is not indexed, this call is O(N) scanning the "DB"
+// for every add/updated.
+// If the card is found, true is returned, if a new card is added, false is returned.
+func (n *Db) AddOrUpdate(c *vc.Card, v *vc.VFile) bool {
+	name := c.Name
+	element := c.Element()
+	rarity := c.MainRarity()
+	for i, card := range *n {
+		if card.Name == name && card.Element == element && (card.Rarity == rarity || card.Rarity == c.Rarity()) {
+			ref := (*n)[i]
+			ref.Skills = newSkills(c, v)
+			if ref.Image == "" {
+				imgLoc, err := getWikiImageLocation(c.GetEvoImageName(v, false) + ".png")
+				if err != nil {
+					ref.Image = imgLoc
+				}
+			}
+			newPath := fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
+				url.PathEscape(name),
+			)
+			if ref.Link != newPath {
+				ref.Link = newPath
+			}
+			return true
+		}
+	}
+
+	*n = append(*n, NewCard(c, v))
+
+	return false
 }
 
 func getWikiImageLocation(cardImageName string) (string, error) {
