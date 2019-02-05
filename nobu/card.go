@@ -17,6 +17,9 @@ import (
 // DbFileLocation location of an existing nobu db file
 var DbFileLocation = ""
 
+// DB actual data after being loaded
+var DB *Db
+
 // Card card as known by Nobu Bot
 type Card struct {
 	Name    string  `json:"name"`
@@ -31,20 +34,20 @@ type Card struct {
 type Db []Card
 
 // LoadDb loads an existing Db
-func LoadDb() (*Db, error) {
+func LoadDb() error {
 	// ensure our path has been set
 	if DbFileLocation == "" {
-		return nil, errors.New("Nobu DB Location not set")
+		return errors.New("Nobu DB Location not set")
 	}
 	// check if the file exists
 	if _, err := os.Stat(DbFileLocation); os.IsNotExist(err) {
-		return nil, errors.New("no such file or directory: " + DbFileLocation)
+		return errors.New("no such file or directory: " + DbFileLocation)
 	}
 
 	// load the existing data from disk
 	data, err := ioutil.ReadFile(DbFileLocation)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	v := make(Db, 0)
@@ -53,9 +56,10 @@ func LoadDb() (*Db, error) {
 	err = json.Unmarshal(data[:], &v)
 	if err != nil {
 		debug.PrintStack()
-		return nil, err
+		return err
 	}
-	return &v, nil
+	DB = &v
+	return nil
 }
 
 // NewCard Converts a VC card to a Nobu DB card

@@ -17,8 +17,6 @@ import (
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-var nobuDB *nobu.Db
-
 // BotHandler Generates a new Bot database
 func BotHandler(w http.ResponseWriter, r *http.Request) {
 	// File header
@@ -80,7 +78,7 @@ func BotConfigHandler(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, "<div>Invalid new path specified</div>")
 		} else {
 			nobu.DbFileLocation = newpath
-			if nobuDB, err = nobu.LoadDb(); err != nil {
+			if err = nobu.LoadDb(); err != nil {
 				fmt.Fprintf(w, "<div>%s</div>", err.Error())
 			} else {
 				io.WriteString(w, "<div>Success</div>")
@@ -130,7 +128,7 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 				!card.IsRetired() &&
 				(evosLen == 1 || card.EvolutionRank == 0) &&
 				(card.MainRarity() == "SR" || card.MainRarity() == "UR" || card.MainRarity() == "LR") {
-				os.Stderr.WriteString(fmt.Sprintf("Skipped and %s: %s - evo: %d/%d\n", cardRare.Signature, card.Name, card.EvolutionRank, evosLen))
+				os.Stderr.WriteString(fmt.Sprintf("Skipped %s: %s - evo: %d/%d\n", cardRare.Signature, card.Name, card.EvolutionRank, evosLen))
 			}
 			continue
 		}
@@ -149,10 +147,10 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		// to get the image location, we are going to ask Fandom for it:
 		// https://valkyriecrusade.fandom.com/index.php?title=Special:FilePath&file=Image Name.jpg
 		// this URL returns the actual image location in the HTTP Redirect Location header.
-		nobuDB.AddOrUpdate(&card, vc.Data)
+		nobu.DB.AddOrUpdate(&card, vc.Data)
 	}
 
-	b, err := json.MarshalIndent(nobuDB, "", " ")
+	b, err := json.MarshalIndent(nobu.DB, "", " ")
 	if err != nil {
 		fmt.Fprintf(w, "<div>%s</div>", err.Error())
 	} else {

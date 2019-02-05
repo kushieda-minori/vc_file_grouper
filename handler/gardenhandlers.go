@@ -127,6 +127,7 @@ func StructureDetailHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</body></html>")
 }
 
+// StructureImagesHandler show structure images
 func StructureImagesHandler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	var pathLen int

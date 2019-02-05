@@ -22,7 +22,13 @@ import (
 func main() {
 
 	cmdLang := flag.String("lang", "en", "The language pack to use. 'en' for English, 'zhs' for Chinese. ")
+	cmdHelp := flag.Bool("help", false, "Show the help message")
 	flag.Parse()
+
+	if *cmdHelp {
+		usage()
+		return
+	}
 
 	if cmdLang == nil {
 		vc.LangPack = "en"
@@ -45,6 +51,12 @@ func main() {
 		//return
 	} else {
 		vc.ReadMasterData(handler.VcFilePath)
+	}
+	if nobu.DbFileLocation != "" {
+		if err := nobu.LoadDb(); err != nil {
+			os.Stderr.WriteString("Error loading Bot DB: " + err.Error())
+		}
+
 	}
 
 	//main page
@@ -120,8 +132,21 @@ func main() {
 
 // Prints useage to the console
 func usage() {
-	os.Stderr.WriteString("You must pass the location of the files.\n" +
-		"Usage: " + os.Args[0] + " /path/to/com.nubee.valkyriecrusade/files\n")
+	os.Stdout.WriteString(fmt.Sprintf("To use this program you can specify the following command options:\n"+
+		"-help\n\tShow this help message\n"+
+		"-lang\n\tSelect a language pack to use. 'en' is the default\n"+
+		"file1\n\tlocation of the VC master data file\n"+
+		"file2\n\tlocation of the VC bot data file\n\n"+
+		"example usages:\n\t%[1]s -help\n"+
+		"\t%[1]s -lang %[2]s\n"+
+		"\t%[1]s \"%[3]s\"\n"+
+		"\t%[1]s \"%[3]s\" \"%[4]s\"\n"+
+		"\t%[1]s -lang %[2]s \"%[3]s\" \"%[4]s\"\n",
+		os.Args[0],
+		"zh",
+		"/path/to/vc/data/file",
+		"/path/to/bot/db/file",
+	))
 }
 
 func rawDataHandler(w http.ResponseWriter, r *http.Request) {
