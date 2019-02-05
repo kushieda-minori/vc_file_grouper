@@ -237,13 +237,3 @@ func writeout(decodeOnFly bool, fullpath string, fileName string, w http.Respons
 	buff.Write(b)
 	buff.WriteTo(w)
 }
-
-func nthPos(s string, pat string, n int) int {
-	l := len(s)
-	i := 0
-	for ; n-1 > 0 && i+1 < l; n = n - 1 {
-		i = strings.Index(s[i:], pat)
-		i = i + 1
-	}
-	return i
-}

@@ -1193,12 +1193,3 @@ func getAmalgamations(evolutions map[string]*vc.Card) []vc.Amalgamation {
 	sort.Sort(vc.ByMaterialCount(amalgamations))
 	return amalgamations
 }
-
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
