@@ -137,7 +137,7 @@ func usage() {
 		"\t%[1]s \"%[3]s\" \"%[4]s\"\n"+
 		"\t%[1]s -lang %[2]s \"%[3]s\" \"%[4]s\"\n",
 		os.Args[0],
-		"zh",
+		"zhs",
 		"/path/to/vc/data/file",
 		"/path/to/bot/db/file",
 	))

@@ -9,6 +9,12 @@ Run from the command line:
 
 The program defaults to using the English language packs. To use a different language pack, use the `-lang` flag and use the language part of the string file, i.e `MsgSkillName_zhs.strb` use `zhs` for `MsgSkillName_en.strb` us `en` for `MsgSkillName_SOME_VALUE.strb` use `SOME_VALUE`
 
+If you are just going to be updating Wiki information, or for your own use/curiosity, you would specify the command as: `vc_file_grouper path/to/vc/data`
+
+If you will also be updating discord Bot information, then you would specify the command as: `vc_file_grouper path/to/vc/data path/to/bot/data`
+
+For a list of all command line options, use the `-help` flag.
+
 ## Windows
 
 * Open a command prompt (```cmd.exe``` or powershell)
