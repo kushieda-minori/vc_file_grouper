@@ -2262,6 +2262,9 @@ func (c *Card) GetEvolutionCards() CardList {
 	return CardList(cards)
 }
 
+// EvoOrder order of evolutions in the map.
+var EvoOrder = [10]string{"0", "1", "2", "3", "H", "A", "G", "GA", "X", "XA"}
+
 // Elements of the cards.
 var Elements = [5]string{"Light", "Passion", "Cool", "Dark", "Special"}
 

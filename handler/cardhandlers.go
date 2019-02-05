@@ -166,9 +166,8 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	amalgamations := getAmalgamations(evolutions)
 
 	var firstEvo, lastEvo *vc.Card
-	evoOrder := []string{"0", "1", "2", "3", "H", "A", "G", "GA", "X", "XA"}
 	var evokeys []string // cache of actual evos for this card
-	for _, k := range evoOrder {
+	for _, k := range vc.EvoOrder {
 		evo, ok := evolutions[k]
 		if ok {
 			evokeys = append(evokeys, k)

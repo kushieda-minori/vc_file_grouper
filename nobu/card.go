@@ -73,12 +73,18 @@ func NewCard(c *vc.Card) Card {
 	}
 	//imgLoc = strings.Replace(imgLoc, "_G.png", "_H.png", -1)
 	//imgLoc = strings.Replace(imgLoc, "_A.png", "_H.png", -1)
+
+	imgLocs, err := getWikiImageLocations(c)
+	if err != nil {
+		os.Stderr.WriteString(err.Error() + "\n")
+	}
 	return Card{
 		Name:    c.Name,
 		Element: c.Element(),
 		Rarity:  c.MainRarity(),
 		Skills:  newSkills(c),
 		Image:   imgLoc,
+		Images:  imgLocs,
 		Link: fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
 			url.PathEscape(c.Name),
 		),
@@ -127,8 +133,25 @@ func (n *Db) AddOrUpdate(c *vc.Card) bool {
 }
 
 func getWikiImageLocations(c *vc.Card) ([]string, error) {
-	// TODO make this work
-	return []string{}, nil
+	ret := make([]string, 0)
+	errorMsg := ""
+	evos := c.GetEvolutions()
+	for _, evoID := range vc.EvoOrder {
+		if evo, ok := evos[evoID]; ok {
+			imgName := evo.GetEvoImageName(false) + ".png"
+			imgLoc, err := getWikiImageLocation(imgName)
+			if err != nil {
+				errorMsg += "|" + err.Error()
+			}
+			if imgLoc != "" {
+				ret = append(ret, imgLoc)
+			}
+		}
+	}
+	if errorMsg != "" {
+		return ret, errors.New(errorMsg)
+	}
+	return ret, nil
 }
 
 func getWikiImageLocation(cardImageName string) (string, error) {
