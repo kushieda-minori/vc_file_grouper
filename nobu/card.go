@@ -22,12 +22,13 @@ var DB *Db
 
 // Card card as known by Nobu Bot
 type Card struct {
-	Name    string  `json:"name"`
-	Element string  `json:"element"`
-	Rarity  string  `json:"rarity"`
-	Skills  []Skill `json:"skill"`
-	Image   string  `json:"image"`
-	Link    string  `json:"link"`
+	Name    string   `json:"name"`
+	Element string   `json:"element"`
+	Rarity  string   `json:"rarity"`
+	Skills  []Skill  `json:"skill"`
+	Image   string   `json:"image"`  // will be phased out
+	Images  []string `json:"images"` // contains all images (not icons)
+	Link    string   `json:"link"`
 }
 
 // Db list of cards Nobu-bot knows about
@@ -63,8 +64,8 @@ func LoadDb() error {
 }
 
 // NewCard Converts a VC card to a Nobu DB card
-func NewCard(c *vc.Card, v *vc.VFile) Card {
-	imgLoc, err := getWikiImageLocation(c.GetEvoImageName(v, false) + ".png")
+func NewCard(c *vc.Card) Card {
+	imgLoc, err := getWikiImageLocation(c.GetEvoImageName(false) + ".png")
 	//imgLoc := ""
 	//var err error
 	if err != nil {
@@ -76,7 +77,7 @@ func NewCard(c *vc.Card, v *vc.VFile) Card {
 		Name:    c.Name,
 		Element: c.Element(),
 		Rarity:  c.MainRarity(),
-		Skills:  newSkills(c, v),
+		Skills:  newSkills(c),
 		Image:   imgLoc,
 		Link: fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
 			url.PathEscape(c.Name),
@@ -90,18 +91,24 @@ func NewCard(c *vc.Card, v *vc.VFile) Card {
 // Since the "DB" is not indexed, this call is O(N) scanning the "DB"
 // for every add/updated.
 // If the card is found, true is returned, if a new card is added, false is returned.
-func (n *Db) AddOrUpdate(c *vc.Card, v *vc.VFile) bool {
+func (n *Db) AddOrUpdate(c *vc.Card) bool {
 	name := c.Name
 	element := c.Element()
 	rarity := c.MainRarity()
 	for i, card := range *n {
 		if card.Name == name && card.Element == element && (card.Rarity == rarity || card.Rarity == c.Rarity()) {
 			ref := (*n)[i]
-			ref.Skills = newSkills(c, v)
+			ref.Skills = newSkills(c)
 			if ref.Image == "" {
-				imgLoc, err := getWikiImageLocation(c.GetEvoImageName(v, false) + ".png")
+				imgLoc, err := getWikiImageLocation(c.GetEvoImageName(false) + ".png")
 				if err != nil {
 					ref.Image = imgLoc
+				}
+			}
+			if ref.Images == nil || len(ref.Images) == 0 {
+				imgLocs, err := getWikiImageLocations(c)
+				if err != nil {
+					ref.Images = imgLocs
 				}
 			}
 			newPath := fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
@@ -114,9 +121,14 @@ func (n *Db) AddOrUpdate(c *vc.Card, v *vc.VFile) bool {
 		}
 	}
 
-	*n = append(*n, NewCard(c, v))
+	*n = append(*n, NewCard(c))
 
 	return false
+}
+
+func getWikiImageLocations(c *vc.Card) ([]string, error) {
+	// TODO make this work
+	return []string{}, nil
 }
 
 func getWikiImageLocation(cardImageName string) (string, error) {

@@ -23,13 +23,13 @@ type DeckBonus struct {
 }
 
 // Conditions that trigger the bonus
-func (d *DeckBonus) Conditions(v *VFile) DeckBonusCondArray {
+func (d *DeckBonus) Conditions() DeckBonusCondArray {
 	ret := make([]DeckBonusCond, 0)
-	for _, val := range v.DeckBonusConditions {
+	for _, val := range Data.DeckBonusConditions {
 		if val.DeckBonusID == d.ID {
 			switch d.CondType {
 			case 2:
-				c := CardScanCharacter(val.RefID, v.Cards)
+				c := CardScanCharacter(val.RefID)
 				if c == nil || c.Name == "" {
 					continue
 				} else {
@@ -49,7 +49,7 @@ func (d *DeckBonus) Conditions(v *VFile) DeckBonusCondArray {
 					val.RefName = fmt.Sprintf("Unknown Element (%d)", val.RefID)
 				}
 			case 8:
-				r := CardRarityScan(val.RefID, &v.CardRarities)
+				r := CardRarityScan(val.RefID)
 				if r == nil {
 					val.RefName = fmt.Sprintf("Unknown Rarity (%d)", val.RefID)
 				} else {

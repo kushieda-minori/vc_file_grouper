@@ -60,11 +60,11 @@ type ThorReward struct {
 }
 
 // Archwitches for the event
-func (e *ThorEvent) Archwitches(v *VFile) []ThorKing {
+func (e *ThorEvent) Archwitches() []ThorKing {
 	if e._archwitches == nil {
 		// picks only unique Cards for the event
 		set := make(map[int]ThorKing)
-		for _, a := range v.ThorKings {
+		for _, a := range Data.ThorKings {
 			if e.ID == a.ThorhammerID {
 				set[a.ID] = a
 			}
@@ -90,12 +90,12 @@ func MaxThorEventID(events []ThorEvent) (max int) {
 }
 
 // ThorEventScan searches for a thor event by ID
-func ThorEventScan(id int, events []ThorEvent) *ThorEvent {
+func ThorEventScan(id int) *ThorEvent {
 	if id > 0 {
-		l := len(events)
-		i := sort.Search(l, func(i int) bool { return events[i].ID >= id })
-		if i >= 0 && i < l && events[i].ID == id {
-			return &(events[i])
+		l := len(Data.ThorEvents)
+		i := sort.Search(l, func(i int) bool { return Data.ThorEvents[i].ID >= id })
+		if i >= 0 && i < l && Data.ThorEvents[i].ID == id {
+			return &(Data.ThorEvents[i])
 		}
 	}
 	return nil

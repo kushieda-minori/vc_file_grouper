@@ -16,8 +16,8 @@ func AwakeningsTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>All Awakenings</title></head><body>\n")
 	io.WriteString(w, "<table><thead><tr><th>From Card</th><th>To Card</th><th>Chance</th><th>Crystals</th><th>Orb</th><th>Large</th><th>Medium</th><th>Small</th></tr></thead><tbody>\n")
 	for _, value := range vc.Data.Awakenings {
-		baseCard := vc.CardScan(value.BaseCardID, vc.Data.Cards)
-		resultCard := vc.CardScan(value.ResultCardID, vc.Data.Cards)
+		baseCard := vc.CardScan(value.BaseCardID)
+		resultCard := vc.CardScan(value.ResultCardID)
 		fmt.Fprintf(w,
 			"<tr><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td>%d%%</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>",
 			baseCard.Image(),
@@ -64,7 +64,7 @@ func AwakeningsCsvHandler(w http.ResponseWriter, r *http.Request) {
 		"IsClosed",
 	})
 	for _, value := range vc.Data.Awakenings {
-		baseCard := vc.CardScan(value.BaseCardID, vc.Data.Cards)
+		baseCard := vc.CardScan(value.BaseCardID)
 		cw.Write([]string{
 			strconv.Itoa(value.ID),
 			baseCard.Name,

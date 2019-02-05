@@ -27,10 +27,10 @@ type CardCharacter struct {
 }
 
 // Cards that are under this character
-func (c *CardCharacter) Cards(v *VFile) []Card {
+func (c *CardCharacter) Cards() []Card {
 	if c._cards == nil || len(c._cards) == 0 {
 		c._cards = make([]Card, 0)
-		for _, val := range v.Cards {
+		for _, val := range Data.Cards {
 			//return the first one we find.
 			if val.CardCharaID == c.ID {
 				c._cards = append(c._cards, val)
@@ -41,9 +41,9 @@ func (c *CardCharacter) Cards(v *VFile) []Card {
 }
 
 // FirstEvoCard first evolution of the cards under this character
-func (c *CardCharacter) FirstEvoCard(v *VFile) (card *Card) {
+func (c *CardCharacter) FirstEvoCard() (card *Card) {
 	card = nil
-	for i, cd := range c.Cards(v) {
+	for i, cd := range c.Cards() {
 		if card == nil || cd.EvolutionRank <= card.EvolutionRank {
 			card = &(c._cards[i])
 		}
@@ -52,12 +52,12 @@ func (c *CardCharacter) FirstEvoCard(v *VFile) (card *Card) {
 }
 
 // CardCharacterScan searches for a character by id
-func CardCharacterScan(charID int, chars []CardCharacter) *CardCharacter {
+func CardCharacterScan(charID int) *CardCharacter {
 	if charID > 0 {
-		for k, val := range chars {
+		for k, val := range Data.CardCharacters {
 			//return the first one we find.
 			if val.ID == charID {
-				return &chars[k]
+				return &(Data.CardCharacters[k])
 			}
 		}
 	}

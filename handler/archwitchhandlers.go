@@ -15,7 +15,7 @@ func ArchwitchHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<table><thead><tr><th>Series ID</th><th>Reward Card Name</th><th>Event Start</th><th>Event End</th><th>Recieve Limit</th><th>Is Beginner</th></tr></thead><tbody>\n")
 	for i := len(vc.Data.ArchwitchSeries) - 1; i >= 0; i-- {
 		series := vc.Data.ArchwitchSeries[i]
-		rewardCard := vc.CardScan(series.RewardCardID, vc.Data.Cards)
+		rewardCard := vc.CardScan(series.RewardCardID)
 		fmt.Fprintf(w,
 			"<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>",
 			series.ID,
@@ -28,12 +28,12 @@ func ArchwitchHandler(w http.ResponseWriter, r *http.Request) {
 		)
 		io.WriteString(w, "\n<tr><td></td><td></td><td colspan=5><table border=1>")
 		io.WriteString(w, "<thead><tr><th>ID</th><th>Card Master / servants</th><th>Skill 1</th><th>Skill 2</th><th>Status Group</th><th>Public</th><th>Rarity</th><th>RareIntensity</th><th>Battle Time</th><th>Exp</th><th>Max Friendship</th><th>Weather</th><th>Model</th><th>Chain Ratio 2</th><th>Likability</th></tr></thead><tbody>")
-		for _, aw := range series.Archwitches(vc.Data) {
-			cardMaster := vc.CardScan(aw.CardMasterID, vc.Data.Cards)
-			skill1 := vc.SkillScan(aw.SkillID1, vc.Data.Skills)
-			skill2 := vc.SkillScan(aw.SkillID2, vc.Data.Skills)
-			//servant1 := vc.CardScanCharacter(aw.ServantID1, vc.Data.Cards)
-			//servant2 := vc.CardScanCharacter(aw.ServantID2, vc.Data.Cards)
+		for _, aw := range series.Archwitches() {
+			cardMaster := vc.CardScan(aw.CardMasterID)
+			skill1 := vc.SkillScan(aw.SkillID1)
+			skill2 := vc.SkillScan(aw.SkillID2)
+			//servant1 := vc.CardScanCharacter(aw.ServantID1)
+			//servant2 := vc.CardScanCharacter(aw.ServantID2)
 			fmt.Fprintf(w,
 				"<tr><td>%d</td><td>%s",
 				aw.ID,
@@ -92,7 +92,7 @@ func printSkill(skill *vc.Skill) string {
 
 func printFriendship(aw *vc.Archwitch) string {
 	s := "<ol>"
-	for _, af := range aw.Likeability(vc.Data) {
+	for _, af := range aw.Likeability() {
 		s = s + fmt.Sprintf("<li>%d%% chance to the next heart</li>\n", af.UpRate)
 	}
 	return s + "</ol>"

@@ -71,10 +71,10 @@ type Limited struct {
 }
 
 // Likeability information for the AW
-func (a *Archwitch) Likeability(v *VFile) []ArchwitchFriendship {
+func (a *Archwitch) Likeability() []ArchwitchFriendship {
 	if a.likeability == nil {
 		a.likeability = make([]ArchwitchFriendship, 0)
-		for _, af := range v.ArchwitchFriendships {
+		for _, af := range Data.ArchwitchFriendships {
 			if a.ID == af.KingID {
 				a.likeability = append(a.likeability, af)
 			}
@@ -99,10 +99,10 @@ func (a *Archwitch) IsAW() bool {
 }
 
 // Archwitches in this AW Series
-func (as *ArchwitchSeries) Archwitches(v *VFile) []Archwitch {
+func (as *ArchwitchSeries) Archwitches() []Archwitch {
 	if as.archwitches == nil {
 		as.archwitches = make([]Archwitch, 0)
-		for _, a := range v.Archwitches {
+		for _, a := range Data.Archwitches {
 			if as.ID == a.KingSeriesID {
 				as.archwitches = append(as.archwitches, a)
 			}

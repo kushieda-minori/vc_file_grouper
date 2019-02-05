@@ -107,10 +107,10 @@ func (s *Skill) FireMax() string {
 }
 
 // Levels level information for the skill
-func (s *Skill) Levels(v *VFile) []SkillLevel {
+func (s *Skill) Levels() []SkillLevel {
 	if s._skillLevels == nil {
 		s._skillLevels = make([]SkillLevel, 0)
-		for _, sl := range v.SkillLevels {
+		for _, sl := range Data.SkillLevels {
 			if sl.LevelType == s.LevelType {
 				s._skillLevels = append(s._skillLevels, sl)
 			}
@@ -136,12 +136,12 @@ func (s *Skill) TargetLogic() string {
 }
 
 // SkillScan searches for a skill by ID
-func SkillScan(id int, skills []Skill) *Skill {
+func SkillScan(id int) *Skill {
 	if id > 0 {
-		l := len(skills)
-		i := sort.Search(l, func(i int) bool { return skills[i].ID >= id })
-		if i >= 0 && i < l && skills[i].ID == id {
-			return &(skills[i])
+		l := len(Data.Skills)
+		i := sort.Search(l, func(i int) bool { return Data.Skills[i].ID >= id })
+		if i >= 0 && i < l && Data.Skills[i].ID == id {
+			return &(Data.Skills[i])
 		}
 	}
 	return nil

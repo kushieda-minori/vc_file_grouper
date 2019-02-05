@@ -36,12 +36,12 @@ type Item struct {
 }
 
 // ItemScan searches for an item by ID
-func ItemScan(id int, items []Item) *Item {
+func ItemScan(id int) *Item {
 	if id > 0 {
-		l := len(items)
-		i := sort.Search(l, func(i int) bool { return items[i].ID >= id })
-		if i >= 0 && i < l && items[i].ID == id {
-			return &(items[i])
+		l := len(Data.Items)
+		i := sort.Search(l, func(i int) bool { return Data.Items[i].ID >= id })
+		if i >= 0 && i < l && Data.Items[i].ID == id {
+			return &(Data.Items[i])
 		}
 	}
 	return nil

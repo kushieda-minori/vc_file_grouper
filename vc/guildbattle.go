@@ -107,22 +107,22 @@ type GuildBingoPointCampaign struct {
 }
 
 // BingoBattle Bingo battle information
-func (g *GuildBattle) BingoBattle(v *VFile) *GuildBingoBattle {
+func (g *GuildBattle) BingoBattle() *GuildBingoBattle {
 	if g.GuildBingoID > 0 {
-		l := len(v.GuildBingoBattles)
-		i := sort.Search(l, func(i int) bool { return v.GuildBingoBattles[i].ID >= g.GuildBingoID })
-		if i >= 0 && i < l && v.GuildBingoBattles[i].ID == g.GuildBingoID {
-			return &(v.GuildBingoBattles[i])
+		l := len(Data.GuildBingoBattles)
+		i := sort.Search(l, func(i int) bool { return Data.GuildBingoBattles[i].ID >= g.GuildBingoID })
+		if i >= 0 && i < l && Data.GuildBingoBattles[i].ID == g.GuildBingoID {
+			return &(Data.GuildBingoBattles[i])
 		}
 	}
 	return nil
 }
 
 // Archwitches AW information. this is different than the AW even AW list.
-func (g *GuildBingoBattle) Archwitches(v *VFile) []Archwitch {
+func (g *GuildBingoBattle) Archwitches() []Archwitch {
 	if g.archwitches == nil {
 		g.archwitches = make([]Archwitch, 0)
-		for _, a := range v.Archwitches {
+		for _, a := range Data.Archwitches {
 			if g.KingSeriesID == a.KingSeriesID {
 				g.archwitches = append(g.archwitches, a)
 			}
@@ -132,10 +132,10 @@ func (g *GuildBingoBattle) Archwitches(v *VFile) []Archwitch {
 }
 
 // ExchangeRewards rewards for item exchanges for this battle
-func (g *GuildBingoBattle) ExchangeRewards(v *VFile) []GuildBingoExchangeReward {
+func (g *GuildBingoBattle) ExchangeRewards() []GuildBingoExchangeReward {
 	set := make([]GuildBingoExchangeReward, 0)
 	if g.ExchangeRewardGroupID > 0 {
-		for _, val := range v.GuildBingoExchangeRewards {
+		for _, val := range Data.GuildBingoExchangeRewards {
 			if val.GroupID == g.ExchangeRewardGroupID {
 				set = append(set, val)
 			}
@@ -146,10 +146,10 @@ func (g *GuildBingoBattle) ExchangeRewards(v *VFile) []GuildBingoExchangeReward 
 }
 
 // Campaigns extra point campaigns for this ABB
-func (g *GuildBingoBattle) Campaigns(v *VFile) []GuildBingoPointCampaign {
+func (g *GuildBingoBattle) Campaigns() []GuildBingoPointCampaign {
 	if g._campaigns == nil {
 		g._campaigns = make([]GuildBingoPointCampaign, 0)
-		for _, a := range v.GuildBingoPointCampaigns {
+		for _, a := range Data.GuildBingoPointCampaigns {
 			if g.CampaignID == a.CampaignID {
 				g._campaigns = append(g._campaigns, a)
 			}
@@ -159,11 +159,11 @@ func (g *GuildBingoBattle) Campaigns(v *VFile) []GuildBingoPointCampaign {
 }
 
 // IndividualRewards individual rewards for this event
-func (g *GuildBattle) IndividualRewards(v *VFile) []RankRewardSheet {
+func (g *GuildBattle) IndividualRewards() []RankRewardSheet {
 	if g.individualRewards == nil {
 		g.individualRewards = make([]RankRewardSheet, 0)
-		rewards := g.rewards(v)
-		for _, ipr := range v.GuildBattleIndividualPoints {
+		rewards := g.rewards()
+		for _, ipr := range Data.GuildBattleIndividualPoints {
 			if rewards.SheetID == ipr.SheetID {
 				g.individualRewards = append(g.individualRewards, ipr)
 			}
@@ -173,11 +173,11 @@ func (g *GuildBattle) IndividualRewards(v *VFile) []RankRewardSheet {
 }
 
 // RankRewards for this event
-func (g *GuildBattle) RankRewards(v *VFile) []RankRewardSheet {
+func (g *GuildBattle) RankRewards() []RankRewardSheet {
 	if g.rankRewards == nil {
 		g.rankRewards = make([]RankRewardSheet, 0)
-		rewards := g.rewards(v)
-		for _, rr := range v.GuildBattleRankingRewards {
+		rewards := g.rewards()
+		for _, rr := range Data.GuildBattleRankingRewards {
 			if rewards.IndividualRankingSheetID == rr.SheetID {
 				g.rankRewards = append(g.rankRewards, rr)
 			}
@@ -186,8 +186,8 @@ func (g *GuildBattle) RankRewards(v *VFile) []RankRewardSheet {
 	return g.rankRewards
 }
 
-func (g *GuildBattle) rewards(v *VFile) *GuildBattleRewardRef {
-	for _, rref := range v.GuildBattleRewardRefs {
+func (g *GuildBattle) rewards() *GuildBattleRewardRef {
+	for _, rref := range Data.GuildBattleRewardRefs {
 		if g.ID == rref.EventID {
 			return &rref
 		}
@@ -196,14 +196,14 @@ func (g *GuildBattle) rewards(v *VFile) *GuildBattleRewardRef {
 }
 
 // GuildBattleScan searches for a guild battle by ID
-func GuildBattleScan(id int, battles []GuildBattle) *GuildBattle {
+func GuildBattleScan(id int) *GuildBattle {
 	if id <= 0 {
 		return nil
 	}
-	l := len(battles)
-	i := sort.Search(l, func(i int) bool { return battles[i].ID >= id })
-	if i >= 0 && i < l && battles[i].ID == id {
-		return &(battles[i])
+	l := len(Data.GuildBattles)
+	i := sort.Search(l, func(i int) bool { return Data.GuildBattles[i].ID >= id })
+	if i >= 0 && i < l && Data.GuildBattles[i].ID == id {
+		return &(Data.GuildBattles[i])
 	}
 	return nil
 }

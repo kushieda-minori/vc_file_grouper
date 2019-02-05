@@ -106,58 +106,58 @@ type RankRewardSheet struct {
 }
 
 // Map for an event if one exists (usually just AW events)
-func (e *Event) Map(v *VFile) *Map {
+func (e *Event) Map() *Map {
 	if e._map == nil && e.MapID > 0 {
-		e._map = MapScan(e.MapID, v.Maps)
+		e._map = MapScan(e.MapID, Data.Maps)
 	}
 	return e._map
 }
 
 // Tower information for the event if it's a tower event
-func (e *Event) Tower(v *VFile) *Tower {
+func (e *Event) Tower() *Tower {
 	if e.TowerEventID <= 0 {
 		return nil
 	}
 
-	return TowerScan(e.TowerEventID, v)
+	return TowerScan(e.TowerEventID)
 }
 
 // DemonRealm information for the event if it's a Demon Realm Voyage event
-func (e *Event) DemonRealm(v *VFile) *Dungeon {
+func (e *Event) DemonRealm() *Dungeon {
 	if e.DungeonEventID <= 0 {
 		return nil
 	}
 
-	return DungeonScan(e.DungeonEventID, v)
+	return DungeonScan(e.DungeonEventID)
 }
 
 // GuildBattle information if it's an Alliance Battle
-func (e *Event) GuildBattle(v *VFile) *GuildBattle {
+func (e *Event) GuildBattle() *GuildBattle {
 	if e.GuildBattleID <= 0 {
 		return nil
 	}
 
-	return GuildBattleScan(e.GuildBattleID, v.GuildBattles)
+	return GuildBattleScan(e.GuildBattleID)
 }
 
 // Thor information for Thor events
-func (e *Event) Thor(v *VFile) *ThorEvent {
-	for k, te := range v.ThorEvents {
+func (e *Event) Thor() *ThorEvent {
+	for k, te := range Data.ThorEvents {
 		if te.PublicStartDatetime == e.StartDatetime && te.PublicEndDatetime == e.EndDatetime {
-			return &(v.ThorEvents[k])
+			return &(Data.ThorEvents[k])
 		}
 	}
 	return nil
 }
 
 // Archwitches for this event.
-func (e *Event) Archwitches(v *VFile) []Archwitch {
+func (e *Event) Archwitches() []Archwitch {
 	if e.KingSeriesID > 0 {
 		if e._archwitches == nil {
 
 			// picks only unique Cards for the event
 			set := make(map[int]Archwitch)
-			for _, a := range v.Archwitches {
+			for _, a := range Data.Archwitches {
 				if e.KingSeriesID == a.KingSeriesID {
 					set[a.CardMasterID] = a
 				}
@@ -175,11 +175,11 @@ func (e *Event) Archwitches(v *VFile) []Archwitch {
 }
 
 // RankRewards for this event
-func (e *Event) RankRewards(v *VFile) *RankReward {
+func (e *Event) RankRewards() *RankReward {
 	if e.KingSeriesID > 0 {
-		for k, val := range v.RankRewards {
+		for k, val := range Data.RankRewards {
 			if val.KingListID == e.KingSeriesID {
-				return &v.RankRewards[k]
+				return &(Data.RankRewards[k])
 			}
 		}
 	}
@@ -187,10 +187,10 @@ func (e *Event) RankRewards(v *VFile) *RankReward {
 }
 
 // MidRewards for this event
-func (r *RankReward) MidRewards(v *VFile) []RankRewardSheet {
+func (r *RankReward) MidRewards() []RankRewardSheet {
 	set := make([]RankRewardSheet, 0)
 	if r.MidSheetID > 0 {
-		for _, val := range v.RankRewardSheets {
+		for _, val := range Data.RankRewardSheets {
 			if val.SheetID == r.MidSheetID {
 				set = append(set, val)
 			}
@@ -200,10 +200,10 @@ func (r *RankReward) MidRewards(v *VFile) []RankRewardSheet {
 }
 
 // FinalRewards for this event
-func (r *RankReward) FinalRewards(v *VFile) []RankRewardSheet {
+func (r *RankReward) FinalRewards() []RankRewardSheet {
 	set := make([]RankRewardSheet, 0)
 	if r.SheetID > 0 {
-		for _, val := range v.RankRewardSheets {
+		for _, val := range Data.RankRewardSheets {
 			if val.SheetID == r.SheetID {
 				set = append(set, val)
 			}
@@ -224,12 +224,12 @@ func MaxEventID(events []Event) (max int) {
 }
 
 // EventScan searches for an event by ID
-func EventScan(id int, events []Event) *Event {
+func EventScan(id int) *Event {
 	if id > 0 {
-		l := len(events)
-		i := sort.Search(l, func(i int) bool { return events[i].ID >= id })
-		if i >= 0 && i < l && events[i].ID == id {
-			return &(events[i])
+		l := len(Data.Events)
+		i := sort.Search(l, func(i int) bool { return Data.Events[i].ID >= id })
+		if i >= 0 && i < l && Data.Events[i].ID == id {
+			return &(Data.Events[i])
 		}
 	}
 	return nil

@@ -28,22 +28,20 @@ func (a *Amalgamation) MaterialCount() int {
 }
 
 // Materials material used in the amalgamation including the result
-func (a *Amalgamation) Materials(v *VFile) []*Card {
-	ret := a.MaterialsOnly(v)
-	ret = append(ret, CardScan(a.FusionCardID, v.Cards))
-	return ret
+func (a *Amalgamation) Materials() []*Card {
+	return append(a.MaterialsOnly(), CardScan(a.FusionCardID))
 }
 
 // MaterialsOnly material used in the amalgamation excluding the result
-func (a *Amalgamation) MaterialsOnly(v *VFile) []*Card {
+func (a *Amalgamation) MaterialsOnly() []*Card {
 	ret := make([]*Card, 0)
-	ret = append(ret, CardScan(a.Material1, v.Cards))
-	ret = append(ret, CardScan(a.Material2, v.Cards))
+	ret = append(ret, CardScan(a.Material1))
+	ret = append(ret, CardScan(a.Material2))
 	if a.Material3 > 0 {
-		ret = append(ret, CardScan(a.Material3, v.Cards))
+		ret = append(ret, CardScan(a.Material3))
 	}
 	if a.Material4 > 0 {
-		ret = append(ret, CardScan(a.Material4, v.Cards))
+		ret = append(ret, CardScan(a.Material4))
 	}
 	return ret
 }

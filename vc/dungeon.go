@@ -28,10 +28,10 @@ type DungeonAreaType struct {
 }
 
 // RankRewards rank rewards for the Dungeon
-func (t *Dungeon) RankRewards(v *VFile) []RankRewardSheet {
+func (t *Dungeon) RankRewards() []RankRewardSheet {
 	set := make([]RankRewardSheet, 0)
 	if t.RankingRewardGroupID > 0 {
-		for _, val := range v.DungeonRewards {
+		for _, val := range Data.DungeonRewards {
 			if val.GroupID == t.RankingRewardGroupID {
 				set = append(set, val)
 			}
@@ -41,10 +41,10 @@ func (t *Dungeon) RankRewards(v *VFile) []RankRewardSheet {
 }
 
 // ArrivalRewards rewards for arriving at a certain Dungeon floor
-func (t *Dungeon) ArrivalRewards(v *VFile) []RankRewardSheet {
+func (t *Dungeon) ArrivalRewards() []RankRewardSheet {
 	set := make([]RankRewardSheet, 0)
 	if t.RankingArrivalGroupID > 0 {
-		for _, val := range v.DungeonArrivalRewards {
+		for _, val := range Data.DungeonArrivalRewards {
 			if val.GroupID == t.RankingArrivalGroupID {
 				set = append(set, val)
 			}
@@ -54,12 +54,12 @@ func (t *Dungeon) ArrivalRewards(v *VFile) []RankRewardSheet {
 }
 
 // DungeonScan search for a Dungeon by ID
-func DungeonScan(id int, v *VFile) *Dungeon {
+func DungeonScan(id int) *Dungeon {
 	if id > 0 {
-		l := len(v.Dungeons)
-		i := sort.Search(l, func(i int) bool { return v.Dungeons[i].ID >= id })
-		if i >= 0 && i < l && v.Dungeons[i].ID == id {
-			return &(v.Dungeons[i])
+		l := len(Data.Dungeons)
+		i := sort.Search(l, func(i int) bool { return Data.Dungeons[i].ID >= id })
+		if i >= 0 && i < l && Data.Dungeons[i].ID == id {
+			return &(Data.Dungeons[i])
 		}
 	}
 	return nil

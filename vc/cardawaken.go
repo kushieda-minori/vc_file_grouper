@@ -28,7 +28,7 @@ type CardAwaken struct {
 }
 
 // Item needed to awaken the source card
-func (ca *CardAwaken) Item(i int, data *VFile) *Item {
+func (ca *CardAwaken) Item(i int) *Item {
 	if i < 1 || i > 5 {
 		return nil
 	}
@@ -37,27 +37,27 @@ func (ca *CardAwaken) Item(i int, data *VFile) *Item {
 		if ca.Material1Item <= 0 {
 			return nil
 		}
-		return ItemScan(ca.Material1Item, data.Items)
+		return ItemScan(ca.Material1Item)
 	case 2:
 		if ca.Material2Item <= 0 {
 			return nil
 		}
-		return ItemScan(ca.Material2Item, data.Items)
+		return ItemScan(ca.Material2Item)
 	case 3:
 		if ca.Material3Item <= 0 {
 			return nil
 		}
-		return ItemScan(ca.Material3Item, data.Items)
+		return ItemScan(ca.Material3Item)
 	case 4:
 		if ca.Material4Item <= 0 {
 			return nil
 		}
-		return ItemScan(ca.Material4Item, data.Items)
+		return ItemScan(ca.Material4Item)
 	case 5:
 		if ca.Material5Item <= 0 {
 			return nil
 		}
-		return ItemScan(ca.Material5Item, data.Items)
+		return ItemScan(ca.Material5Item)
 	}
 	return nil
 }

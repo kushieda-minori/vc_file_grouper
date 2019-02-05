@@ -146,12 +146,12 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event := vc.EventScan(eventID, vc.Data.Events)
+	event := vc.EventScan(eventID)
 
 	var prevEvent, nextEvent *vc.Event = nil, nil
 
 	for i := event.ID - 1; i > 0; i-- {
-		tmp := vc.EventScan(i, vc.Data.Events)
+		tmp := vc.EventScan(i)
 		if tmp != nil && tmp.EventTypeID == event.EventTypeID && !strings.Contains(tmp.Name, "Rune Boss") && !strings.Contains(tmp.Name, " 2x ") {
 			prevEvent = tmp
 			break
@@ -164,7 +164,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i := event.ID + 1; i <= vc.MaxEventID(vc.Data.Events); i++ {
-		tmp := vc.EventScan(i, vc.Data.Events)
+		tmp := vc.EventScan(i)
 		if tmp != nil && tmp.EventTypeID == event.EventTypeID && !strings.Contains(tmp.Name, "Rune Boss") && !strings.Contains(tmp.Name, " 2x ") {
 			nextEvent = tmp
 			break
@@ -203,8 +203,8 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		var faws string
 		var aws string
 
-		for _, aw := range event.Archwitches(vc.Data) {
-			cardMaster := vc.CardScan(aw.CardMasterID, vc.Data.Cards)
+		for _, aw := range event.Archwitches() {
+			cardMaster := vc.CardScan(aw.CardMasterID)
 			if aw.IsLAW() {
 				legendary = cardMaster.Name
 			} else if aw.IsFAW() {
@@ -214,7 +214,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		eventMap := event.Map(vc.Data)
+		eventMap := event.Map()
 		var eHallStart string
 		if eventMap == nil || eventMap.ElementalhallStart.IsZero() || event.EndDatetime.Before(eventMap.ElementalhallStart.Time) {
 			eHallStart = ""
@@ -226,9 +226,9 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		midRewardTime := time.Time{}
 		finalrewards := ""
 		rankReward := ""
-		rr := event.RankRewards(vc.Data)
+		rr := event.RankRewards()
 		if rr != nil {
-			mid := rr.MidRewards(vc.Data)
+			mid := rr.MidRewards()
 			if mid != nil {
 				midRewardTime = rr.MidBonusDistributionDate.Time
 				midCaption := fmt.Sprintf("Mid Rankings<br /><small>Cutoff@ %s (JST)</small>",
@@ -236,11 +236,11 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				)
 				midrewards = genWikiAWRewards(mid, midCaption, "Rank")
 			}
-			finalRewardList := rr.FinalRewards(vc.Data)
+			finalRewardList := rr.FinalRewards()
 			finalrewards = genWikiAWRewards(finalRewardList, "Final Rankings", "Rank")
 			for _, fr := range finalRewardList {
 				if fr.CardID > 0 {
-					rrCard := vc.CardScan(fr.CardID, vc.Data.Cards)
+					rrCard := vc.CardScan(fr.CardID)
 					rankReward = rrCard.Name
 					break
 				}
@@ -267,31 +267,31 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		)
 	case 16: // alliance bingo battle
 		// rewards
-		//rr := event.RankRewards(vc.Data)
-		//finalRewardList := rr.FinalRewards(vc.Data)
+		//rr := event.RankRewards()
+		//finalRewardList := rr.FinalRewards()
 		//finalrewards := genWikiAWRewards(finalRewardList, "Ranking")
-		gb := event.GuildBattle(vc.Data)
-		bb := gb.BingoBattle(vc.Data)
+		gb := event.GuildBattle()
+		bb := gb.BingoBattle()
 
-		// aws := bb.Archwitches(vc.Data)
+		// aws := bb.Archwitches()
 		// aw := ""
 		//os.Stderr.WriteString(fmt.Sprintf("found %d archwitches on guild battle %d king series id %d\n", len(aws), bb.ID, bb.KingSeriesID))
 		// if len(aws) > 0 {
 		// 	king := aws[0]
-		// 	kingCard := vc.CardScan(king.CardMasterID, vc.Data.Cards)
+		// 	kingCard := vc.CardScan(king.CardMasterID, )
 		// 	aw = kingCard.Name
 		// 	if len(aws) > 1 {
 		// 		// append extra AW cards
 		// 		for i := 1; i < len(aws); i++ {
 		// 			king = aws[i]
-		// 			kingCard = vc.CardScan(king.CardMasterID, vc.Data.Cards)
+		// 			kingCard = vc.CardScan(king.CardMasterID, )
 		// 			aw += " |Archwitch Panel Encounter\n| " + kingCard.Name
 		// 		}
 		// 	}
 		// }
 
-		rankRewards := genWikiAWRewards(gb.RankRewards(vc.Data), "Ranking", "Rank") +
-			genWikiAWRewards(gb.IndividualRewards(vc.Data), "Point Reward", "Points")
+		rankRewards := genWikiAWRewards(gb.RankRewards(), "Ranking", "Rank") +
+			genWikiAWRewards(gb.IndividualRewards(), "Point Reward", "Points")
 
 		fmt.Fprintf(w, getEventTemplate(event.EventTypeID), event.EventTypeID,
 			event.StartDatetime.Format(wikiFmt),
@@ -305,13 +305,13 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"#th", // Guild Battle Number spelled out (first, second, third, etc)
 			"",    // Overlap AW Event
 			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
-			genWikiExchange(bb.ExchangeRewards(vc.Data)), // Ring Exchange
-			rankRewards, // Rewards (combined)
+			genWikiExchange(bb.ExchangeRewards()), // Ring Exchange
+			rankRewards,                           // Rewards (combined)
 			prevEventName,
 			nextEventName,
 		)
 	case 18: // Tower Event
-		tower := event.Tower(vc.Data)
+		tower := event.Tower()
 		if tower == nil {
 			fmt.Fprintf(w, "Unable to find tower event")
 		} else {
@@ -324,15 +324,15 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				event.EndDatetime.Format(wikiFmt),
 				towerShield,
 				html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
-				genWikiAWRewards(tower.ArrivalRewards(vc.Data), "Floor Arrival Rewards", "Floor"), // RR 1
-				genWikiAWRewards(tower.RankRewards(vc.Data), "Rank Rewards", "Rank"),              // RR 2
-				genWikiRankTrend(event, nil, time.Unix(0, 0), ranks, true),                        // rank trend
+				genWikiAWRewards(tower.ArrivalRewards(), "Floor Arrival Rewards", "Floor"), // RR 1
+				genWikiAWRewards(tower.RankRewards(), "Rank Rewards", "Rank"),              // RR 2
+				genWikiRankTrend(event, nil, time.Unix(0, 0), ranks, true),                 // rank trend
 				prevEventName,
 				nextEventName,
 			)
 		}
 	case 19: // Demon Realm Voyage
-		realm := event.DemonRealm(vc.Data)
+		realm := event.DemonRealm()
 		if realm == nil {
 			fmt.Fprintf(w, "Unable to find demon realm event")
 		} else {
@@ -345,9 +345,9 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				event.EndDatetime.Format(wikiFmt),
 				shield,
 				html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
-				genWikiAWRewards(realm.ArrivalRewards(vc.Data), "Point Rewards", "Floor"), // RR 1
-				genWikiAWRewards(realm.RankRewards(vc.Data), "Rank Rewards", "Rank"),      // RR 2
-				genWikiRankTrend(event, nil, time.Unix(0, 0), ranks, true),                // rank trend
+				genWikiAWRewards(realm.ArrivalRewards(), "Point Rewards", "Floor"), // RR 1
+				genWikiAWRewards(realm.RankRewards(), "Rank Rewards", "Rank"),      // RR 2
+				genWikiRankTrend(event, nil, time.Unix(0, 0), ranks, true),         // rank trend
 				prevEventName,
 				nextEventName,
 			)
@@ -450,14 +450,14 @@ func getWikiAWRewards(reward vc.RankRewardSheet, newline bool) string {
 
 	var r string
 	if reward.CardID > 0 {
-		card := vc.CardScan(reward.CardID, vc.Data.Cards)
+		card := vc.CardScan(reward.CardID)
 		if card == nil {
 			r = "{{Card Icon|Unknown Card ID}}"
 		} else {
 			r = fmt.Sprintf("{{Card Icon|%s}}", card.Name)
 		}
 	} else if reward.ItemID > 0 {
-		item := vc.ItemScan(reward.ItemID, vc.Data.Items)
+		item := vc.ItemScan(reward.ItemID)
 		if item == nil {
 			r = fmt.Sprintf("__UNKNOWN_ITEM_ID:%d__", reward.ItemID)
 		} else {
@@ -791,7 +791,7 @@ func genWikiExchange(exchanges []vc.GuildBingoExchangeReward) (ret string) {
 		itemSortCode := fmt.Sprintf("%02d", (10 - exchange.RewardType))
 		switch exchange.RewardType {
 		case 1: // card
-			card := vc.CardScan(exchange.RewardID, vc.Data.Cards)
+			card := vc.CardScan(exchange.RewardID)
 			itemSortCode += fmt.Sprintf("%02d-%s", card.CardRareID, strings.Replace(card.Name, " ", "_", -1))
 			ret += fmt.Sprintf("\n|-\n|data-sort-value=\"%s\"| {{Card Icon|%s}} ||data-sort-value=%d| x%[3]d",
 				itemSortCode,
@@ -799,7 +799,7 @@ func genWikiExchange(exchanges []vc.GuildBingoExchangeReward) (ret string) {
 				exchange.RequireNum,
 			)
 		case 2: //item
-			item := vc.ItemScan(exchange.RewardID, vc.Data.Items)
+			item := vc.ItemScan(exchange.RewardID)
 			if item == nil {
 				ret += fmt.Sprintf("\n|-\n|data-sort-value=\"%s\"|__UNKNOWN_ITEM_ID:%d__ ||data-sort-value=%d| x%[3]d",
 					itemSortCode,

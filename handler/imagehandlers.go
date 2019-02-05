@@ -190,7 +190,7 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 		cardID = imgname[3:]
 	}
 
-	card := vc.CardScanImage(cardID, vc.Data.Cards)
+	card := vc.CardScanImage(cardID)
 	ext := ".png"
 	isIcon := false
 	if strings.Contains(fullpath, "/thumb/") {
@@ -198,7 +198,7 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 		isIcon = true
 	}
 	if card != nil {
-		fileName = card.GetEvoImageName(vc.Data, isIcon) + ext
+		fileName = card.GetEvoImageName(isIcon) + ext
 	} else {
 		//os.Stderr.WriteString("Card info not found for image " + cardID + "\n")
 		if decodeOnFly {

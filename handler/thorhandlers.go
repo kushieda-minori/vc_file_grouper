@@ -33,7 +33,7 @@ func ThorHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid Thor Event id "+pathParts[1], http.StatusNotFound)
 		return
 	}
-	t := vc.ThorEventScan(thorID, vc.Data.ThorEvents)
+	t := vc.ThorEventScan(thorID)
 
 	if t == nil {
 		http.Error(w, "Invalid Thor Event id "+pathParts[1], http.StatusNotFound)

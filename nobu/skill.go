@@ -15,11 +15,11 @@ type Skill struct {
 }
 
 // NewSkills generates a skill array for a given card
-func newSkills(c *vc.Card, v *vc.VFile) []Skill {
+func newSkills(c *vc.Card) []Skill {
 	skills := make([]Skill, 0)
 
 	// skill 1
-	s := c.Skill1(v)
+	s := c.Skill1()
 	if s != nil {
 		activations := getActivations(s)
 		sPrefix := "Skill"
@@ -40,7 +40,7 @@ func newSkills(c *vc.Card, v *vc.VFile) []Skill {
 		})
 	}
 	// skill 2
-	s = c.Skill2(v)
+	s = c.Skill2()
 	if s != nil && !s.Expires() {
 		activations := getActivations(s)
 		sPrefix := "Second Skill"
@@ -61,14 +61,14 @@ func newSkills(c *vc.Card, v *vc.VFile) []Skill {
 		})
 	}
 
-	if a := c.LastEvo(v).AwakensTo(v); a != nil {
-		tmp := newSkills(a, v)
+	if a := c.LastEvo().AwakensTo(); a != nil {
+		tmp := newSkills(a)
 		skills = append(skills, tmp...)
 		// the recursion will catch any rebirths
 	}
 	// will only pick up rebirths if we are looking at the awoken card.
-	if r := c.RebirthsTo(v); r != nil {
-		tmp := newSkills(r, v)
+	if r := c.RebirthsTo(); r != nil {
+		tmp := newSkills(r)
 		skills = append(skills, tmp...)
 	}
 

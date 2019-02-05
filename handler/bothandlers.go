@@ -25,8 +25,8 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 
 	cards := make([]vc.Card, 0)
 	for _, card := range vc.Data.Cards {
-		cardRare := card.CardRarity(vc.Data)
-		evos := card.GetEvolutions(vc.Data)
+		cardRare := card.CardRarity()
+		evos := card.GetEvolutions()
 		if card.IsClosed != 0 ||
 			card.IsRetired() ||
 			(len(evos) > 1 && card.EvolutionRank != 0) ||
@@ -35,8 +35,8 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 			cardRare.Signature[0] == 'x' || // ignore normal X and all "Reborn"
 			//cardRare.Signature == "r" ||
 			//cardRare.Signature == "hr" ||
-			card.AwakensFrom(vc.Data) != nil ||
-			card.PrevEvo(vc.Data) != nil {
+			card.AwakensFrom() != nil ||
+			card.PrevEvo() != nil {
 			// don't output low rarities or non-final evos
 			continue
 		}
@@ -56,7 +56,7 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 		// to get the image location, we are going to ask Fandom for it:
 		// https://valkyriecrusade.fandom.com/index.php?title=Special:FilePath&file=Image Name.jpg
 		// this URL returns the actual image location in the HTTP Redirect Location header.
-		nobuCards = append(nobuCards, nobu.NewCard(&card, vc.Data))
+		nobuCards = append(nobuCards, nobu.NewCard(&card))
 	}
 	b, err := json.MarshalIndent(nobuCards, "", " ")
 
@@ -102,10 +102,10 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>Update Bot DB</title></head><body>\n")
 	cards := make([]vc.Card, 0)
 	for _, card := range vc.Data.Cards {
-		cardRare := card.CardRarity(vc.Data)
-		evos := card.GetEvolutions(vc.Data)
+		cardRare := card.CardRarity()
+		evos := card.GetEvolutions()
 		evosLen := len(evos)
-		skill1 := card.Skill1(vc.Data)
+		skill1 := card.Skill1()
 		skill1Min := ""
 		if skill1 != nil {
 			skill1Min = skill1.SkillMin()
@@ -120,8 +120,8 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 			cardRare.Signature[0] == 'x' || // ignore normal X and all "Reborn"
 			cardRare.Signature == "r" ||
 			cardRare.Signature == "hr" ||
-			card.AwakensFrom(vc.Data) != nil || // ignore G* cards that are actually awoken
-			card.PrevEvo(vc.Data) != nil || // ignore cards that have a previous evolution
+			card.AwakensFrom() != nil || // ignore G* cards that are actually awoken
+			card.PrevEvo() != nil || // ignore cards that have a previous evolution
 			strings.Contains(skill1Min, "Battle EXP +5%") {
 			// don't output low rarities or non-final evos
 			if card.IsClosed == 0 &&
@@ -147,7 +147,7 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		// to get the image location, we are going to ask Fandom for it:
 		// https://valkyriecrusade.fandom.com/index.php?title=Special:FilePath&file=Image Name.jpg
 		// this URL returns the actual image location in the HTTP Redirect Location header.
-		nobu.DB.AddOrUpdate(&card, vc.Data)
+		nobu.DB.AddOrUpdate(&card)
 	}
 
 	b, err := json.MarshalIndent(nobu.DB, "", " ")

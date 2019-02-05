@@ -135,16 +135,16 @@ func (c *Card) MainRarity() string {
 }
 
 // CardRarity with full rarity information
-func (c *Card) CardRarity(v *VFile) *CardRarity {
-	return CardRarityScan(c.CardRareID, &v.CardRarities)
+func (c *Card) CardRarity() *CardRarity {
+	return CardRarityScan(c.CardRareID)
 }
 
 //CardRarityScan scans for a card rarity by id
-func CardRarityScan(id int, v *[]CardRarity) *CardRarity {
+func CardRarityScan(id int) *CardRarity {
 	if id >= 0 {
-		for idx, cr := range *v {
+		for idx, cr := range Data.CardRarities {
 			if cr.ID == id {
-				return &((*v)[idx])
+				return &(Data.CardRarities[idx])
 			}
 		}
 	}
@@ -168,11 +168,11 @@ func (c *Card) IsRetired() bool {
 }
 
 // Character information of the card
-func (c *Card) Character(v *VFile) *CardCharacter {
+func (c *Card) Character() *CardCharacter {
 	if c.character == nil && c.CardCharaID > 0 {
-		for k, val := range v.CardCharacters {
+		for k, val := range Data.CardCharacters {
 			if val.ID == c.CardCharaID {
-				c.character = &v.CardCharacters[k]
+				c.character = &(Data.CardCharacters[k])
 				break
 			}
 		}
@@ -182,7 +182,7 @@ func (c *Card) Character(v *VFile) *CardCharacter {
 
 // NextEvo is the next evolution of this card, or nil if no further evolutions are possible.
 // Amalgamations, Awakenings, and Rebirths may still be possible.
-func (c *Card) NextEvo(v *VFile) *Card {
+func (c *Card) NextEvo() *Card {
 	if c.ID == c.EvolutionCardID {
 		// bad data
 		return nil
@@ -193,8 +193,8 @@ func (c *Card) NextEvo(v *VFile) *Card {
 		}
 
 		var tmp *Card
-		character := c.Character(v)
-		for i, cd := range character.Cards(v) {
+		character := c.Character()
+		for i, cd := range character.Cards() {
 			if cd.ID == c.EvolutionCardID {
 				tmp = &(character._cards[i])
 			}
@@ -216,7 +216,7 @@ func (c *Card) NextEvo(v *VFile) *Card {
 
 // PrevEvo is the previous evolution of this card, or nil if no further evolutions are possible.
 // Evo Accidents or amalgamtions may still be possible.
-func (c *Card) PrevEvo(v *VFile) *Card {
+func (c *Card) PrevEvo() *Card {
 	if c.prevEvo == nil {
 		// no charcter ID or already lowest evo rank
 		if c.CardCharaID <= 0 || c.EvolutionRank <= 0 {
@@ -224,9 +224,9 @@ func (c *Card) PrevEvo(v *VFile) *Card {
 		}
 
 		var tmp *Card
-		for i, cd := range c.Character(v).Cards(v) {
+		for i, cd := range c.Character().Cards() {
 			if c.ID == cd.EvolutionCardID {
-				tmp = &(c.Character(v)._cards[i])
+				tmp = &(c.Character()._cards[i])
 			}
 		}
 
@@ -245,19 +245,19 @@ func (c *Card) PrevEvo(v *VFile) *Card {
 }
 
 // FirstEvo Gets the first evolution for the card
-func (c *Card) FirstEvo(v *VFile) *Card {
+func (c *Card) FirstEvo() *Card {
 	t := c
-	for t.PrevEvo(v) != nil {
-		t = t.PrevEvo(v)
+	for t.PrevEvo() != nil {
+		t = t.PrevEvo()
 	}
 	return t
 }
 
 // LastEvo Gets the last evolution for the card
-func (c *Card) LastEvo(v *VFile) *Card {
+func (c *Card) LastEvo() *Card {
 	t := c
-	for t.NextEvo(v) != nil {
-		t = t.NextEvo(v)
+	for t.NextEvo() != nil {
+		t = t.NextEvo()
 	}
 	return t
 }
@@ -266,15 +266,15 @@ func (c *Card) LastEvo(v *VFile) *Card {
 // Amalgamation at evo[0] with a standard evo after it. This may issue
 // false positives for cards that can only be obtained through
 // amalgamation at evo[0] and there is no drop/RR
-func (c *Card) PossibleMixedEvo(v *VFile) bool {
-	if len(c._allEvos) == 1 && c.IsAmalgamation(v.Amalgamations) {
+func (c *Card) PossibleMixedEvo() bool {
+	if len(c._allEvos) == 1 && c.IsAmalgamation() {
 		// if this is an amalgamation only card, we want to find the previous
 		// cards and see if any of those is a "possible mix evos"
-		for _, amal := range c.Amalgamations(v) {
+		for _, amal := range c.Amalgamations() {
 			if c.ID == amal.FusionCardID {
 				// check if each material is a possible mixed evo
-				for _, amalCard := range amal.MaterialsOnly(v) {
-					if amalCard.PossibleMixedEvo(v) {
+				for _, amalCard := range amal.MaterialsOnly() {
+					if amalCard.PossibleMixedEvo() {
 						return true
 					}
 				}
@@ -282,13 +282,13 @@ func (c *Card) PossibleMixedEvo(v *VFile) bool {
 		}
 		return false
 	}
-	firstEvo := c.GetEvolutions(v)["0"]
-	secondEvo := c.GetEvolutions(v)["1"]
+	firstEvo := c.GetEvolutions()["0"]
+	secondEvo := c.GetEvolutions()["1"]
 	if secondEvo == nil {
-		secondEvo = c.GetEvolutions(v)["H"]
+		secondEvo = c.GetEvolutions()["H"]
 	}
 	return firstEvo != nil && secondEvo != nil &&
-		firstEvo.IsAmalgamation(v.Amalgamations) &&
+		firstEvo.IsAmalgamation() &&
 		firstEvo.EvolutionCardID == secondEvo.ID
 }
 
@@ -353,8 +353,8 @@ func (c *Card) calculateAwakeningStat(mat *Card, materialAtkAtLvl1, materialDefA
 
 // AmalgamationStandard calculated the stats if the materials have been evo'd using
 // standard processes (4* 5 card evos).
-func (c *Card) AmalgamationStandard(v *VFile) (atk, def, soldier int) {
-	amalgs := c.Amalgamations(v)
+func (c *Card) AmalgamationStandard() (atk, def, soldier int) {
+	amalgs := c.Amalgamations()
 	var myAmal *Amalgamation
 	for _, a := range amalgs {
 		if c.ID == a.FusionCardID {
@@ -363,20 +363,20 @@ func (c *Card) AmalgamationStandard(v *VFile) (atk, def, soldier int) {
 		}
 	}
 	if myAmal == nil {
-		return c.EvoStandard(v)
+		return c.EvoStandard()
 	}
-	mats := myAmal.MaterialsOnly(v)
+	mats := myAmal.MaterialsOnly()
 	atk = c.MaxOffense
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
 		os.Stdout.WriteString(fmt.Sprintf("Calculating Standard Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
-		matAtk, matDef, matSoldier := mat.EvoStandard(v)
+		matAtk, matDef, matSoldier := mat.EvoStandard()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
 		soldier += int(float64(matSoldier) * 0.08)
 	}
-	rarity := c.CardRarity(v)
+	rarity := c.CardRarity()
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
 	}
@@ -391,8 +391,8 @@ func (c *Card) AmalgamationStandard(v *VFile) (atk, def, soldier int) {
 
 // AmalgamationStandardLvl1 calculated the stats at level 1 if the materials have been evo'd using
 // standard processes (4* 5 card evos).
-func (c *Card) AmalgamationStandardLvl1(v *VFile) (atk, def, soldier int) {
-	amalgs := c.Amalgamations(v)
+func (c *Card) AmalgamationStandardLvl1() (atk, def, soldier int) {
+	amalgs := c.Amalgamations()
 	var myAmal *Amalgamation
 	for _, a := range amalgs {
 		if c.ID == a.FusionCardID {
@@ -401,20 +401,20 @@ func (c *Card) AmalgamationStandardLvl1(v *VFile) (atk, def, soldier int) {
 		}
 	}
 	if myAmal == nil {
-		return c.EvoStandardLvl1(v)
+		return c.EvoStandardLvl1()
 	}
-	mats := myAmal.MaterialsOnly(v)
+	mats := myAmal.MaterialsOnly()
 	atk = c.DefaultOffense
 	def = c.DefaultDefense
 	soldier = c.DefaultFollower
 	for _, mat := range mats {
 		os.Stdout.WriteString(fmt.Sprintf("Calculating Standard Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
-		matAtk, matDef, matSoldier := mat.EvoStandard(v)
+		matAtk, matDef, matSoldier := mat.EvoStandard()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
 		soldier += int(float64(matSoldier) * 0.08)
 	}
-	rarity := c.CardRarity(v)
+	rarity := c.CardRarity()
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
 	}
@@ -429,8 +429,8 @@ func (c *Card) AmalgamationStandardLvl1(v *VFile) (atk, def, soldier int) {
 
 // Amalgamation6Card calculated the stats if the materials have been evo'd using
 // standard processes (4* 6 card evos).
-func (c *Card) Amalgamation6Card(v *VFile) (atk, def, soldier int) {
-	amalgs := c.Amalgamations(v)
+func (c *Card) Amalgamation6Card() (atk, def, soldier int) {
+	amalgs := c.Amalgamations()
 	var myAmal *Amalgamation
 	for _, a := range amalgs {
 		if c.ID == a.FusionCardID {
@@ -439,20 +439,20 @@ func (c *Card) Amalgamation6Card(v *VFile) (atk, def, soldier int) {
 		}
 	}
 	if myAmal == nil {
-		return c.Evo6Card(v)
+		return c.Evo6Card()
 	}
-	mats := myAmal.MaterialsOnly(v)
+	mats := myAmal.MaterialsOnly()
 	atk = c.MaxOffense
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
 		os.Stdout.WriteString(fmt.Sprintf("Calculating 6-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
-		matAtk, matDef, matSoldier := mat.Evo6Card(v)
+		matAtk, matDef, matSoldier := mat.Evo6Card()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
 		soldier += int(float64(matSoldier) * 0.08)
 	}
-	rarity := c.CardRarity(v)
+	rarity := c.CardRarity()
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
 	}
@@ -467,8 +467,8 @@ func (c *Card) Amalgamation6Card(v *VFile) (atk, def, soldier int) {
 
 // Amalgamation6CardLvl1 calculated the stats at level 1 if the materials have been evo'd using
 // standard processes (4* 6 card evos).
-func (c *Card) Amalgamation6CardLvl1(v *VFile) (atk, def, soldier int) {
-	amalgs := c.Amalgamations(v)
+func (c *Card) Amalgamation6CardLvl1() (atk, def, soldier int) {
+	amalgs := c.Amalgamations()
 	var myAmal *Amalgamation
 	for _, a := range amalgs {
 		if c.ID == a.FusionCardID {
@@ -477,20 +477,20 @@ func (c *Card) Amalgamation6CardLvl1(v *VFile) (atk, def, soldier int) {
 		}
 	}
 	if myAmal == nil {
-		return c.Evo6CardLvl1(v)
+		return c.Evo6CardLvl1()
 	}
-	mats := myAmal.MaterialsOnly(v)
+	mats := myAmal.MaterialsOnly()
 	atk = c.DefaultOffense
 	def = c.DefaultDefense
 	soldier = c.DefaultFollower
 	for _, mat := range mats {
 		os.Stdout.WriteString(fmt.Sprintf("Calculating 6-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
-		matAtk, matDef, matSoldier := mat.Evo6Card(v)
+		matAtk, matDef, matSoldier := mat.Evo6Card()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
 		soldier += int(float64(matSoldier) * 0.08)
 	}
-	rarity := c.CardRarity(v)
+	rarity := c.CardRarity()
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
 	}
@@ -505,8 +505,8 @@ func (c *Card) Amalgamation6CardLvl1(v *VFile) (atk, def, soldier int) {
 
 // Amalgamation9Card calculated the stats if the materials have been evo'd using
 // standard processes (4* 9 card evos).
-func (c *Card) Amalgamation9Card(v *VFile) (atk, def, soldier int) {
-	amalgs := c.Amalgamations(v)
+func (c *Card) Amalgamation9Card() (atk, def, soldier int) {
+	amalgs := c.Amalgamations()
 	var myAmal *Amalgamation
 	for _, a := range amalgs {
 		if c.ID == a.FusionCardID {
@@ -515,20 +515,20 @@ func (c *Card) Amalgamation9Card(v *VFile) (atk, def, soldier int) {
 		}
 	}
 	if myAmal == nil {
-		return c.Evo9Card(v)
+		return c.Evo9Card()
 	}
-	mats := myAmal.MaterialsOnly(v)
+	mats := myAmal.MaterialsOnly()
 	atk = c.MaxOffense
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
 		os.Stdout.WriteString(fmt.Sprintf("Calculating 9-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
-		matAtk, matDef, matSoldier := mat.Evo9Card(v)
+		matAtk, matDef, matSoldier := mat.Evo9Card()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
 		soldier += int(float64(matSoldier) * 0.08)
 	}
-	rarity := c.CardRarity(v)
+	rarity := c.CardRarity()
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
 	}
@@ -543,8 +543,8 @@ func (c *Card) Amalgamation9Card(v *VFile) (atk, def, soldier int) {
 
 // Amalgamation9CardLvl1 calculated the stats at level 1 if the materials have been evo'd using
 // standard processes (4* 9 card evos).
-func (c *Card) Amalgamation9CardLvl1(v *VFile) (atk, def, soldier int) {
-	amalgs := c.Amalgamations(v)
+func (c *Card) Amalgamation9CardLvl1() (atk, def, soldier int) {
+	amalgs := c.Amalgamations()
 	var myAmal *Amalgamation
 	for _, a := range amalgs {
 		if c.ID == a.FusionCardID {
@@ -553,20 +553,20 @@ func (c *Card) Amalgamation9CardLvl1(v *VFile) (atk, def, soldier int) {
 		}
 	}
 	if myAmal == nil {
-		return c.Evo9CardLvl1(v)
+		return c.Evo9CardLvl1()
 	}
-	mats := myAmal.MaterialsOnly(v)
+	mats := myAmal.MaterialsOnly()
 	atk = c.DefaultOffense
 	def = c.DefaultDefense
 	soldier = c.DefaultFollower
 	for _, mat := range mats {
 		os.Stdout.WriteString(fmt.Sprintf("Calculating 9-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
-		matAtk, matDef, matSoldier := mat.Evo9Card(v)
+		matAtk, matDef, matSoldier := mat.Evo9Card()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
 		soldier += int(float64(matSoldier) * 0.08)
 	}
-	rarity := c.CardRarity(v)
+	rarity := c.CardRarity()
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
 	}
@@ -581,8 +581,8 @@ func (c *Card) Amalgamation9CardLvl1(v *VFile) (atk, def, soldier int) {
 
 // AmalgamationPerfect calculates the amalgamation stats if the material cards
 // have all been evo'd perfectly (4* 16-card evos)
-func (c *Card) AmalgamationPerfect(v *VFile) (atk, def, soldier int) {
-	amalgs := c.Amalgamations(v)
+func (c *Card) AmalgamationPerfect() (atk, def, soldier int) {
+	amalgs := c.Amalgamations()
 	var myAmal *Amalgamation
 	for _, a := range amalgs {
 		if c.ID == a.FusionCardID {
@@ -591,20 +591,20 @@ func (c *Card) AmalgamationPerfect(v *VFile) (atk, def, soldier int) {
 		}
 	}
 	if myAmal == nil {
-		return c.EvoPerfect(v)
+		return c.EvoPerfect()
 	}
-	mats := myAmal.MaterialsOnly(v)
+	mats := myAmal.MaterialsOnly()
 	atk = c.MaxOffense
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
 		os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
-		matAtk, matDef, matSoldier := mat.EvoPerfect(v)
+		matAtk, matDef, matSoldier := mat.EvoPerfect()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
 		soldier += int(float64(matSoldier) * 0.08)
 	}
-	rarity := c.CardRarity(v)
+	rarity := c.CardRarity()
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
 	}
@@ -619,8 +619,8 @@ func (c *Card) AmalgamationPerfect(v *VFile) (atk, def, soldier int) {
 
 // AmalgamationPerfectLvl1 calculates the amalgamation stats at level 1 if the material cards
 // have all been evo'd perfectly (4* 16-card evos)
-func (c *Card) AmalgamationPerfectLvl1(v *VFile) (atk, def, soldier int) {
-	amalgs := c.Amalgamations(v)
+func (c *Card) AmalgamationPerfectLvl1() (atk, def, soldier int) {
+	amalgs := c.Amalgamations()
 	var myAmal *Amalgamation
 	for _, a := range amalgs {
 		if c.ID == a.FusionCardID {
@@ -629,20 +629,20 @@ func (c *Card) AmalgamationPerfectLvl1(v *VFile) (atk, def, soldier int) {
 		}
 	}
 	if myAmal == nil {
-		return c.EvoPerfectLvl1(v)
+		return c.EvoPerfectLvl1()
 	}
-	mats := myAmal.MaterialsOnly(v)
+	mats := myAmal.MaterialsOnly()
 	atk = c.DefaultOffense
 	def = c.DefaultDefense
 	soldier = c.DefaultFollower
 	for _, mat := range mats {
 		os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
-		matAtk, matDef, matSoldier := mat.EvoPerfect(v)
+		matAtk, matDef, matSoldier := mat.EvoPerfect()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
 		soldier += int(float64(matSoldier) * 0.08)
 	}
-	rarity := c.CardRarity(v)
+	rarity := c.CardRarity()
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
 	}
@@ -658,8 +658,8 @@ func (c *Card) AmalgamationPerfectLvl1(v *VFile) (atk, def, soldier int) {
 // AmalgamationLRStaticLvl1 calculates the amalgamation stats if the material cards
 // have all been evo'd perfectly (4* 16-card evos) with the exception of LR materials
 // that have unchanging stats (i.e. 9999 / 9999)
-func (c *Card) AmalgamationLRStaticLvl1(v *VFile) (atk, def, soldier int) {
-	amalgs := c.Amalgamations(v)
+func (c *Card) AmalgamationLRStaticLvl1() (atk, def, soldier int) {
+	amalgs := c.Amalgamations()
 	var myAmal *Amalgamation
 	for _, a := range amalgs {
 		if c.ID == a.FusionCardID {
@@ -669,30 +669,30 @@ func (c *Card) AmalgamationLRStaticLvl1(v *VFile) (atk, def, soldier int) {
 	}
 	if myAmal == nil {
 		if strings.HasSuffix(c.Rarity(), "LR") && c.Element() == "Special" {
-			return c.EvoPerfectLvl1(v)
+			return c.EvoPerfectLvl1()
 		}
-		return c.EvoPerfect(v)
+		return c.EvoPerfect()
 	}
-	mats := myAmal.MaterialsOnly(v)
+	mats := myAmal.MaterialsOnly()
 	atk = c.MaxOffense
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
 		os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
 		if strings.HasSuffix(mat.Rarity(), "LR") && mat.Element() == "Special" {
-			matAtk, matDef, matSoldier := mat.AmalgamationLRStaticLvl1(v)
+			matAtk, matDef, matSoldier := mat.AmalgamationLRStaticLvl1()
 			// no 5% bonus for max level
 			atk += int(float64(matAtk) * 0.03)
 			def += int(float64(matDef) * 0.03)
 			soldier += int(float64(matSoldier) * 0.03)
 		} else {
-			matAtk, matDef, matSoldier := mat.AmalgamationLRStaticLvl1(v)
+			matAtk, matDef, matSoldier := mat.AmalgamationLRStaticLvl1()
 			atk += int(float64(matAtk) * 0.08)
 			def += int(float64(matDef) * 0.08)
 			soldier += int(float64(matSoldier) * 0.08)
 		}
 	}
-	rarity := c.CardRarity(v)
+	rarity := c.CardRarity()
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
 	}
@@ -707,45 +707,45 @@ func (c *Card) AmalgamationLRStaticLvl1(v *VFile) (atk, def, soldier int) {
 
 // EvoStandard calculates the standard evolution stat but at max level. If this is a 4* card,
 // calculates for 5-card evo
-func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
+func (c *Card) EvoStandard() (atk, def, soldier int) {
 	os.Stdout.WriteString(fmt.Sprintf("Calculating Standard Evo for %s: %d\n", c.Name, c.EvolutionRank))
-	materialCard := c.PrevEvo(v)
-	rarity := c.CardRarity(v)
+	materialCard := c.PrevEvo()
+	rarity := c.CardRarity()
 	if materialCard == nil {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
-		if c.IsAmalgamation(v.Amalgamations) {
+		if c.IsAmalgamation() {
 			// assume we collected this card directly (drop)?
 			atk, def, soldier = c.MaxOffense, c.MaxDefense, c.MaxFollower
 			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 			// calculate the amalgamation stats here
-			// atk, def, soldier = c.AmalgamationStandard(v)
+			// atk, def, soldier = c.AmalgamationStandard()
 			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 		} else {
-			mat := c.RebirthsFrom(v)
+			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom(v)
-				matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1(v)
+				awakenMat := mat.AwakensFrom()
+				matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				mat := c.AwakensFrom(v)
+				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
-					matAtk, matDef, matSoldier := mat.EvoStandardLvl1(v)
+					matAtk, matDef, matSoldier := mat.EvoStandardLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 					os.Stdout.WriteString(fmt.Sprintf("Awakening standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
 					// check for Evo Accident
-					mat = c.EvoAccidentOf(v.Cards)
+					mat = c.EvoAccidentOf()
 					if mat != nil {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-						matAtk, matDef, matSoldier := mat.EvoStandard(v)
+						matAtk, matDef, matSoldier := mat.EvoStandard()
 						atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
 						def = calculateEvoAccidentStat(matDef, c.MaxDefense)
 						soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
@@ -762,8 +762,8 @@ func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
 		}
 	} else {
 		//TODO: For LR cards do we want to use level 1 evos for the first 3?
-		matAtk, matDef, matSoldier := materialCard.EvoStandard(v)
-		firstEvo := c.GetEvolutions(v)["0"]
+		matAtk, matDef, matSoldier := materialCard.EvoStandard()
+		firstEvo := c.GetEvolutions()["0"]
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
 		if c.LastEvolutionRank == 4 {
@@ -794,44 +794,44 @@ func (c *Card) EvoStandard(v *VFile) (atk, def, soldier int) {
 
 // EvoStandardLvl1 calculates the standard evolution stat but at level 1. If this is a 4* card,
 // calculates for 5-card evo
-func (c *Card) EvoStandardLvl1(v *VFile) (atk, def, soldier int) {
-	materialCard := c.PrevEvo(v)
-	rarity := c.CardRarity(v)
+func (c *Card) EvoStandardLvl1() (atk, def, soldier int) {
+	materialCard := c.PrevEvo()
+	rarity := c.CardRarity()
 	if materialCard == nil {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
-		if c.IsAmalgamation(v.Amalgamations) {
+		if c.IsAmalgamation() {
 			// assume we collected this card directly (drop)?
 			atk, def, soldier = c.DefaultOffense, c.DefaultDefense, c.DefaultFollower
 			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for StandardLvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 			// calculate the amalgamation stats here
-			// atk, def, soldier = c.AmalgamationStandardLvl1(v)
+			// atk, def, soldier = c.AmalgamationStandardLvl1()
 			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for StandardLvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 		} else {
-			mat := c.RebirthsFrom(v)
+			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom(v)
-				matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1(v)
+				awakenMat := mat.AwakensFrom()
+				matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				mat := c.AwakensFrom(v)
+				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
-					matAtk, matDef, matSoldier := mat.EvoStandardLvl1(v)
+					matAtk, matDef, matSoldier := mat.EvoStandardLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
 					os.Stdout.WriteString(fmt.Sprintf("Awakening StandardLvl1 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
 						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
 					// check for Evo Accident
-					mat = c.EvoAccidentOf(v.Cards)
+					mat = c.EvoAccidentOf()
 					if mat != nil {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-						matAtk, matDef, matSoldier := mat.EvoStandard(v)
+						matAtk, matDef, matSoldier := mat.EvoStandard()
 						atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
 						def = calculateEvoAccidentStat(matDef, c.MaxDefense)
 						soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
@@ -846,8 +846,8 @@ func (c *Card) EvoStandardLvl1(v *VFile) (atk, def, soldier int) {
 		}
 	} else {
 		//TODO: For LR cards do we want to use level 1 evos for the first 3?
-		matAtk, matDef, matSoldier := materialCard.EvoStandard(v)
-		firstEvo := c.GetEvolutions(v)["0"]
+		matAtk, matDef, matSoldier := materialCard.EvoStandard()
+		firstEvo := c.GetEvolutions()["0"]
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
 		if c.LastEvolutionRank == 4 {
@@ -876,45 +876,45 @@ func (c *Card) EvoStandardLvl1(v *VFile) (atk, def, soldier int) {
 
 // EvoMixed calculates the standard evolution for cards with a evo[0] amalgamation it calculates
 // the evo[1] using 1 amalgamated, and one as a "drop"
-func (c *Card) EvoMixed(v *VFile) (atk, def, soldier int) {
+func (c *Card) EvoMixed() (atk, def, soldier int) {
 	os.Stdout.WriteString(fmt.Sprintf("Calculating Mixed Evo for %s: %d\n", c.Name, c.EvolutionRank))
-	materialCard := c.PrevEvo(v)
-	rarity := c.CardRarity(v)
+	materialCard := c.PrevEvo()
+	rarity := c.CardRarity()
 	if materialCard == nil {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
-		if c.IsAmalgamation(v.Amalgamations) {
+		if c.IsAmalgamation() {
 			// assume we collected this card directly (drop)?
 			atk, def, soldier = c.MaxOffense, c.MaxDefense, c.MaxFollower
 			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 			// calculate the amalgamation stats here
-			// atk, def, soldier = c.AmalgamationStandard(v)
+			// atk, def, soldier = c.AmalgamationStandard()
 			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 		} else {
-			mat := c.RebirthsFrom(v)
+			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom(v)
-				matAtk, matDef, matSoldier := awakenMat.EvoMixedLvl1(v)
+				awakenMat := mat.AwakensFrom()
+				matAtk, matDef, matSoldier := awakenMat.EvoMixedLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				mat := c.AwakensFrom(v)
+				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
-					matAtk, matDef, matSoldier := mat.EvoMixedLvl1(v)
+					matAtk, matDef, matSoldier := mat.EvoMixedLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 					os.Stdout.WriteString(fmt.Sprintf("Awakening Mixed card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
 					// check for Evo Accident
-					mat = c.EvoAccidentOf(v.Cards)
+					mat = c.EvoAccidentOf()
 					if mat != nil {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-						matAtk, matDef, matSoldier := mat.EvoStandard(v)
+						matAtk, matDef, matSoldier := mat.EvoStandard()
 						atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
 						def = calculateEvoAccidentStat(matDef, c.MaxDefense)
 						soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
@@ -931,13 +931,13 @@ func (c *Card) EvoMixed(v *VFile) (atk, def, soldier int) {
 		}
 	} else {
 		//TODO: For LR cards do we want to use level 1 evos for the first 3?
-		firstEvo := c.GetEvolutions(v)["0"]
+		firstEvo := c.GetEvolutions()["0"]
 		var matAtk, matDef, matSoldier int
-		if c.EvolutionRank == 1 && c.PossibleMixedEvo(v) && materialCard.ID == firstEvo.ID {
+		if c.EvolutionRank == 1 && c.PossibleMixedEvo() && materialCard.ID == firstEvo.ID {
 			// perform the mixed evo here
-			matAtk, matDef, matSoldier = materialCard.AmalgamationStandard(v)
+			matAtk, matDef, matSoldier = materialCard.AmalgamationStandard()
 		} else {
-			matAtk, matDef, matSoldier = materialCard.EvoStandard(v)
+			matAtk, matDef, matSoldier = materialCard.EvoStandard()
 		}
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
@@ -969,45 +969,45 @@ func (c *Card) EvoMixed(v *VFile) (atk, def, soldier int) {
 
 // EvoMixedLvl1 calculates the standard evolution for cards with a evo[0] amalgamation it calculates
 // the evo[1] using 1 amalgamated, and one as a "drop"
-func (c *Card) EvoMixedLvl1(v *VFile) (atk, def, soldier int) {
+func (c *Card) EvoMixedLvl1() (atk, def, soldier int) {
 	os.Stdout.WriteString(fmt.Sprintf("Calculating Mixed Evo for Lvl1 %s: %d\n", c.Name, c.EvolutionRank))
-	materialCard := c.PrevEvo(v)
-	rarity := c.CardRarity(v)
+	materialCard := c.PrevEvo()
+	rarity := c.CardRarity()
 	if materialCard == nil {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
-		if c.IsAmalgamation(v.Amalgamations) {
+		if c.IsAmalgamation() {
 			// assume we collected this card directly (drop)?
 			atk, def, soldier = c.DefaultOffense, c.DefaultDefense, c.DefaultFollower
 			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 			// calculate the amalgamation stats here
-			// atk, def, soldier = c.AmalgamationStandard(v)
+			// atk, def, soldier = c.AmalgamationStandard()
 			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
 		} else {
-			mat := c.RebirthsFrom(v)
+			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom(v)
-				matAtk, matDef, matSoldier := awakenMat.EvoMixedLvl1(v)
+				awakenMat := mat.AwakensFrom()
+				matAtk, matDef, matSoldier := awakenMat.EvoMixedLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				mat := c.AwakensFrom(v)
+				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
-					matAtk, matDef, matSoldier := mat.EvoMixedLvl1(v)
+					matAtk, matDef, matSoldier := mat.EvoMixedLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 					os.Stdout.WriteString(fmt.Sprintf("Awakening Mixed card Lvl1 %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
 					// check for Evo Accident
-					mat = c.EvoAccidentOf(v.Cards)
+					mat = c.EvoAccidentOf()
 					if mat != nil {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-						matAtk, matDef, matSoldier := mat.EvoStandard(v)
+						matAtk, matDef, matSoldier := mat.EvoStandard()
 						atk = calculateEvoAccidentStat(matAtk, c.DefaultOffense)
 						def = calculateEvoAccidentStat(matDef, c.DefaultDefense)
 						soldier = calculateEvoAccidentStat(matSoldier, c.DefaultFollower)
@@ -1024,13 +1024,13 @@ func (c *Card) EvoMixedLvl1(v *VFile) (atk, def, soldier int) {
 		}
 	} else {
 		//TODO: For LR cards do we want to use level 1 evos for the first 3?
-		firstEvo := c.GetEvolutions(v)["0"]
+		firstEvo := c.GetEvolutions()["0"]
 		var matAtk, matDef, matSoldier int
-		if c.EvolutionRank == 1 && c.PossibleMixedEvo(v) && materialCard.ID == firstEvo.ID {
+		if c.EvolutionRank == 1 && c.PossibleMixedEvo() && materialCard.ID == firstEvo.ID {
 			// perform the mixed evo here
-			matAtk, matDef, matSoldier = materialCard.AmalgamationStandard(v)
+			matAtk, matDef, matSoldier = materialCard.AmalgamationStandard()
 		} else {
-			matAtk, matDef, matSoldier = materialCard.EvoStandard(v)
+			matAtk, matDef, matSoldier = materialCard.EvoStandard()
 		}
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
@@ -1062,40 +1062,40 @@ func (c *Card) EvoMixedLvl1(v *VFile) (atk, def, soldier int) {
 
 // Evo6Card calculates the standard evolution stat but at max level. If this is a 4* card,
 // calculates for 6-card evo
-func (c *Card) Evo6Card(v *VFile) (atk, def, soldier int) {
-	materialCard := c.PrevEvo(v)
-	rarity := c.CardRarity(v)
+func (c *Card) Evo6Card() (atk, def, soldier int) {
+	materialCard := c.PrevEvo()
+	rarity := c.CardRarity()
 	if materialCard == nil {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
-		if c.IsAmalgamation(v.Amalgamations) {
+		if c.IsAmalgamation() {
 			// calculate the amalgamation stats here
-			atk, def, soldier = c.Amalgamation6Card(v)
+			atk, def, soldier = c.Amalgamation6Card()
 		} else {
-			mat := c.RebirthsFrom(v)
+			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom(v)
-				matAtk, matDef, matSoldier := awakenMat.Evo6CardLvl1(v)
+				awakenMat := mat.AwakensFrom()
+				matAtk, matDef, matSoldier := awakenMat.Evo6CardLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				mat := c.AwakensFrom(v)
+				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
-					matAtk, matDef, matSoldier := mat.Evo6CardLvl1(v)
+					matAtk, matDef, matSoldier := mat.Evo6CardLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 					os.Stdout.WriteString(fmt.Sprintf("Awakening 6 card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
 					// check for Evo Accident
-					mat = c.EvoAccidentOf(v.Cards)
+					mat = c.EvoAccidentOf()
 					if mat != nil {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-						matAtk, matDef, matSoldier := mat.Evo6Card(v)
+						matAtk, matDef, matSoldier := mat.Evo6Card()
 						atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
 						def = calculateEvoAccidentStat(matDef, c.MaxDefense)
 						soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
@@ -1110,13 +1110,13 @@ func (c *Card) Evo6Card(v *VFile) (atk, def, soldier int) {
 		}
 	} else {
 		//TODO: For LR cards do we want to use level 1 evos for the first 3?
-		firstEvo := c.GetEvolutions(v)["0"]
-		mat1Atk, mat1Def, mat1Soldier := materialCard.Evo6Card(v)
+		firstEvo := c.GetEvolutions()["0"]
+		mat1Atk, mat1Def, mat1Soldier := materialCard.Evo6Card()
 		var mat2Atk, mat2Def, mat2Soldier int
 		if c.EvolutionRank == 4 {
-			mat2Atk, mat2Def, mat2Soldier = c.GetEvolutions(v)["1"].Evo6Card(v)
+			mat2Atk, mat2Def, mat2Soldier = c.GetEvolutions()["1"].Evo6Card()
 		} else {
-			mat2Atk, mat2Def, mat2Soldier = firstEvo.Evo6Card(v)
+			mat2Atk, mat2Def, mat2Soldier = firstEvo.Evo6Card()
 		}
 
 		// calculate the transfered stats of the 2 material cards
@@ -1147,40 +1147,40 @@ func (c *Card) Evo6Card(v *VFile) (atk, def, soldier int) {
 
 // Evo6CardLvl1 calculates the standard evolution stat but at level 1. If this is a 4* card,
 // calculates for 6-card evo
-func (c *Card) Evo6CardLvl1(v *VFile) (atk, def, soldier int) {
-	materialCard := c.PrevEvo(v)
-	rarity := c.CardRarity(v)
+func (c *Card) Evo6CardLvl1() (atk, def, soldier int) {
+	materialCard := c.PrevEvo()
+	rarity := c.CardRarity()
 	if materialCard == nil {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
-		if c.IsAmalgamation(v.Amalgamations) {
+		if c.IsAmalgamation() {
 			// calculate the amalgamation stats here
-			atk, def, soldier = c.Amalgamation6CardLvl1(v)
+			atk, def, soldier = c.Amalgamation6CardLvl1()
 		} else {
-			mat := c.RebirthsFrom(v)
+			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom(v)
-				matAtk, matDef, matSoldier := awakenMat.Evo6CardLvl1(v)
+				awakenMat := mat.AwakensFrom()
+				matAtk, matDef, matSoldier := awakenMat.Evo6CardLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				mat := c.AwakensFrom(v)
+				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
-					matAtk, matDef, matSoldier := mat.Evo6CardLvl1(v)
+					matAtk, matDef, matSoldier := mat.Evo6CardLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
 					os.Stdout.WriteString(fmt.Sprintf("Awakening 6 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
 						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
 					// check for Evo Accident
-					mat = c.EvoAccidentOf(v.Cards)
+					mat = c.EvoAccidentOf()
 					if mat != nil {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-						matAtk, matDef, matSoldier := mat.Evo6Card(v)
+						matAtk, matDef, matSoldier := mat.Evo6Card()
 						atk = calculateEvoAccidentStat(matAtk, c.DefaultOffense)
 						def = calculateEvoAccidentStat(matDef, c.DefaultDefense)
 						soldier = calculateEvoAccidentStat(matSoldier, c.DefaultFollower)
@@ -1195,13 +1195,13 @@ func (c *Card) Evo6CardLvl1(v *VFile) (atk, def, soldier int) {
 		}
 	} else {
 		//TODO: For LR cards do we want to use level 1 evos for the first 3?
-		firstEvo := c.GetEvolutions(v)["0"]
-		mat1Atk, mat1Def, mat1Soldier := materialCard.Evo6Card(v)
+		firstEvo := c.GetEvolutions()["0"]
+		mat1Atk, mat1Def, mat1Soldier := materialCard.Evo6Card()
 		var mat2Atk, mat2Def, mat2Soldier int
 		if c.EvolutionRank == 4 {
-			mat2Atk, mat2Def, mat2Soldier = c.GetEvolutions(v)["1"].Evo6Card(v)
+			mat2Atk, mat2Def, mat2Soldier = c.GetEvolutions()["1"].Evo6Card()
 		} else {
-			mat2Atk, mat2Def, mat2Soldier = firstEvo.Evo6Card(v)
+			mat2Atk, mat2Def, mat2Soldier = firstEvo.Evo6Card()
 		}
 
 		// calculate the transfered stats of the 2 material cards
@@ -1233,40 +1233,40 @@ func (c *Card) Evo6CardLvl1(v *VFile) (atk, def, soldier int) {
 // Evo9Card calculates the standard evolution stat but at max level. If this is a 4* card,
 // calculates for 9-card evo
 // this one should only be used for <= SR
-func (c *Card) Evo9Card(v *VFile) (atk, def, soldier int) {
-	materialCard := c.PrevEvo(v)
-	rarity := c.CardRarity(v)
+func (c *Card) Evo9Card() (atk, def, soldier int) {
+	materialCard := c.PrevEvo()
+	rarity := c.CardRarity()
 	if materialCard == nil {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
-		if c.IsAmalgamation(v.Amalgamations) {
+		if c.IsAmalgamation() {
 			// calculate the amalgamation stats here
-			atk, def, soldier = c.Amalgamation9Card(v)
+			atk, def, soldier = c.Amalgamation9Card()
 		} else {
-			mat := c.RebirthsFrom(v)
+			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom(v)
-				matAtk, matDef, matSoldier := awakenMat.Evo9CardLvl1(v)
+				awakenMat := mat.AwakensFrom()
+				matAtk, matDef, matSoldier := awakenMat.Evo9CardLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				mat := c.AwakensFrom(v)
+				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
-					matAtk, matDef, matSoldier := mat.Evo9CardLvl1(v)
+					matAtk, matDef, matSoldier := mat.Evo9CardLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 					os.Stdout.WriteString(fmt.Sprintf("Awakening 9 card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
 					// check for Evo Accident
-					mat = c.EvoAccidentOf(v.Cards)
+					mat = c.EvoAccidentOf()
 					if mat != nil {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-						matAtk, matDef, matSoldier := mat.Evo9Card(v)
+						matAtk, matDef, matSoldier := mat.Evo9Card()
 						atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
 						def = calculateEvoAccidentStat(matDef, c.MaxDefense)
 						soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
@@ -1281,19 +1281,19 @@ func (c *Card) Evo9Card(v *VFile) (atk, def, soldier int) {
 		}
 	} else {
 		//TODO: For LR cards do we want to use level 1 evos for the first 3?
-		firstEvo := c.GetEvolutions(v)["0"]
+		firstEvo := c.GetEvolutions()["0"]
 		var mat1Atk, mat1Def, mat1Soldier, mat2Atk, mat2Def, mat2Soldier int
 		if c.EvolutionRank <= 2 {
 			// pretend it's a perfect evo. this gets tricky after evo 2
-			mat1Atk, mat1Def, mat1Soldier = materialCard.EvoPerfect(v)
+			mat1Atk, mat1Def, mat1Soldier = materialCard.EvoPerfect()
 			mat2Atk, mat2Def, mat2Soldier = mat1Atk, mat1Def, mat1Soldier
 		} else if c.EvolutionRank == 3 {
-			mat1Atk, mat1Def, mat1Soldier = c.GetEvolutions(v)["2"].EvoStandard(v)
-			mat2Atk, mat2Def, mat2Soldier = c.GetEvolutions(v)["1"].EvoStandard(v)
+			mat1Atk, mat1Def, mat1Soldier = c.GetEvolutions()["2"].EvoStandard()
+			mat2Atk, mat2Def, mat2Soldier = c.GetEvolutions()["1"].EvoStandard()
 		} else {
 			// this would be the materials to get 4*
-			mat1Atk, mat1Def, mat1Soldier = c.GetEvolutions(v)["2"].Evo9Card(v)
-			mat2Atk, mat2Def, mat2Soldier = c.GetEvolutions(v)["3"].Evo9Card(v)
+			mat1Atk, mat1Def, mat1Soldier = c.GetEvolutions()["2"].Evo9Card()
+			mat2Atk, mat2Def, mat2Soldier = c.GetEvolutions()["3"].Evo9Card()
 		}
 
 		// calculate the transfered stats of the 2 material cards
@@ -1325,40 +1325,40 @@ func (c *Card) Evo9Card(v *VFile) (atk, def, soldier int) {
 // Evo9CardLvl1 calculates the standard evolution stat but at level 1. If this is a 4* card,
 // calculates for 9-card evo
 // this one should only be used for <= SR
-func (c *Card) Evo9CardLvl1(v *VFile) (atk, def, soldier int) {
-	materialCard := c.PrevEvo(v)
-	rarity := c.CardRarity(v)
+func (c *Card) Evo9CardLvl1() (atk, def, soldier int) {
+	materialCard := c.PrevEvo()
+	rarity := c.CardRarity()
 	if materialCard == nil {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
-		if c.IsAmalgamation(v.Amalgamations) {
+		if c.IsAmalgamation() {
 			// calculate the amalgamation stats here
-			atk, def, soldier = c.Amalgamation9CardLvl1(v)
+			atk, def, soldier = c.Amalgamation9CardLvl1()
 		} else {
-			mat := c.RebirthsFrom(v)
+			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom(v)
-				matAtk, matDef, matSoldier := awakenMat.Evo9CardLvl1(v)
+				awakenMat := mat.AwakensFrom()
+				matAtk, matDef, matSoldier := awakenMat.Evo9CardLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
 				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 			} else {
-				mat := c.AwakensFrom(v)
+				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
-					matAtk, matDef, matSoldier := mat.Evo9CardLvl1(v)
+					matAtk, matDef, matSoldier := mat.Evo9CardLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
 					os.Stdout.WriteString(fmt.Sprintf("Awakening 9 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
 						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 				} else {
 					// check for Evo Accident
-					mat = c.EvoAccidentOf(v.Cards)
+					mat = c.EvoAccidentOf()
 					if mat != nil {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-						matAtk, matDef, matSoldier := mat.Evo9Card(v)
+						matAtk, matDef, matSoldier := mat.Evo9Card()
 						atk = calculateEvoAccidentStat(matAtk, c.DefaultOffense)
 						def = calculateEvoAccidentStat(matDef, c.DefaultDefense)
 						soldier = calculateEvoAccidentStat(matSoldier, c.DefaultFollower)
@@ -1373,19 +1373,19 @@ func (c *Card) Evo9CardLvl1(v *VFile) (atk, def, soldier int) {
 		}
 	} else {
 		//TODO: For LR cards do we want to use level 1 evos for the first 3?
-		firstEvo := c.GetEvolutions(v)["0"]
+		firstEvo := c.GetEvolutions()["0"]
 		var mat1Atk, mat1Def, mat1Soldier, mat2Atk, mat2Def, mat2Soldier int
 		if c.EvolutionRank <= 2 {
 			// pretend it's a perfect evo. this gets tricky after evo 2
-			mat1Atk, mat1Def, mat1Soldier = materialCard.EvoPerfect(v)
+			mat1Atk, mat1Def, mat1Soldier = materialCard.EvoPerfect()
 			mat2Atk, mat2Def, mat2Soldier = mat1Atk, mat1Def, mat1Soldier
 		} else if c.EvolutionRank == 3 {
-			mat1Atk, mat1Def, mat1Soldier = c.GetEvolutions(v)["2"].Evo9Card(v)
-			mat2Atk, mat2Def, mat2Soldier = c.GetEvolutions(v)["1"].Evo9Card(v)
+			mat1Atk, mat1Def, mat1Soldier = c.GetEvolutions()["2"].Evo9Card()
+			mat2Atk, mat2Def, mat2Soldier = c.GetEvolutions()["1"].Evo9Card()
 		} else {
 			// this would be the materials to get 4*
-			mat1Atk, mat1Def, mat1Soldier = c.GetEvolutions(v)["2"].Evo9Card(v)
-			mat2Atk, mat2Def, mat2Soldier = c.GetEvolutions(v)["3"].Evo9Card(v)
+			mat1Atk, mat1Def, mat1Soldier = c.GetEvolutions()["2"].Evo9Card()
+			mat2Atk, mat2Def, mat2Soldier = c.GetEvolutions()["3"].Evo9Card()
 		}
 
 		// calculate the transfered stats of the 2 material cards
@@ -1416,38 +1416,38 @@ func (c *Card) Evo9CardLvl1(v *VFile) (atk, def, soldier int) {
 
 // EvoPerfect calculates the standard evolution stat but at max level. If this is a 4* card,
 // calculates for 16-card evo
-func (c *Card) EvoPerfect(v *VFile) (atk, def, soldier int) {
-	materialCard := c.PrevEvo(v)
-	rarity := c.CardRarity(v)
+func (c *Card) EvoPerfect() (atk, def, soldier int) {
+	materialCard := c.PrevEvo()
+	rarity := c.CardRarity()
 	if materialCard == nil {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
-		if c.IsAmalgamation(v.Amalgamations) {
+		if c.IsAmalgamation() {
 			// calculate the amalgamation stats here
-			atk, def, soldier = c.AmalgamationPerfect(v)
-		} else if c.RebirthsFrom(v) != nil {
-			mat := c.RebirthsFrom(v)
+			atk, def, soldier = c.AmalgamationPerfect()
+		} else if c.RebirthsFrom() != nil {
+			mat := c.RebirthsFrom()
 			// if this is an rebirth, calculate the max...
-			awakenMat := mat.AwakensFrom(v)
-			matAtk, matDef, matSoldier := awakenMat.EvoPerfectLvl1(v)
+			awakenMat := mat.AwakensFrom()
+			matAtk, matDef, matSoldier := awakenMat.EvoPerfectLvl1()
 			aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 			atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
 			os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
-		} else if c.AwakensFrom(v) != nil {
+		} else if c.AwakensFrom() != nil {
 			// if this is an awakwening, calculate the max...
-			mat := c.AwakensFrom(v)
-			matAtk, matDef, matSoldier := mat.EvoPerfectLvl1(v)
+			mat := c.AwakensFrom()
+			matAtk, matDef, matSoldier := mat.EvoPerfectLvl1()
 			atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 			os.Stdout.WriteString(fmt.Sprintf("Awakening Perfect card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 		} else {
 			// check for Evo Accident
-			turnOver := c.EvoAccidentOf(v.Cards)
+			turnOver := c.EvoAccidentOf()
 			if turnOver != nil {
 				// calculate the transfered stats of the 2 material cards
 				// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-				matAtk, matDef, matSoldier := turnOver.EvoPerfect(v)
+				matAtk, matDef, matSoldier := turnOver.EvoPerfect()
 				atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
 				def = calculateEvoAccidentStat(matDef, c.MaxDefense)
 				soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
@@ -1460,12 +1460,12 @@ func (c *Card) EvoPerfect(v *VFile) (atk, def, soldier int) {
 		}
 	} else {
 		//TODO: For LR cards do we want to use level 1 evos for the first 3?
-		matAtk, matDef, matSoldier := materialCard.EvoPerfect(v)
+		matAtk, matDef, matSoldier := materialCard.EvoPerfect()
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
 		if c.LastEvolutionRank == 4 {
 			// 4* cards do not use the result card stats
-			firstEvo := c.GetEvolutions(v)["0"]
+			firstEvo := c.GetEvolutions()["0"]
 			atk = c.calculateEvoStat(matAtk, matAtk, firstEvo.MaxOffense)
 			def = c.calculateEvoStat(matDef, matDef, firstEvo.MaxDefense)
 			soldier = c.calculateEvoStat(matSoldier, matSoldier, firstEvo.MaxFollower)
@@ -1490,38 +1490,38 @@ func (c *Card) EvoPerfect(v *VFile) (atk, def, soldier int) {
 
 // EvoPerfectLvl1 calculates the standard evolution stat but at level 1. If this is a 4* card,
 // calculates for 16-card evo
-func (c *Card) EvoPerfectLvl1(v *VFile) (atk, def, soldier int) {
-	materialCard := c.PrevEvo(v)
-	rarity := c.CardRarity(v)
+func (c *Card) EvoPerfectLvl1() (atk, def, soldier int) {
+	materialCard := c.PrevEvo()
+	rarity := c.CardRarity()
 	if materialCard == nil {
 		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
 		// check for amalgamation
-		if c.IsAmalgamation(v.Amalgamations) {
+		if c.IsAmalgamation() {
 			// calculate the amalgamation stats here
-			atk, def, soldier = c.AmalgamationPerfectLvl1(v)
-		} else if c.RebirthsFrom(v) != nil {
-			mat := c.RebirthsFrom(v)
+			atk, def, soldier = c.AmalgamationPerfectLvl1()
+		} else if c.RebirthsFrom() != nil {
+			mat := c.RebirthsFrom()
 			// if this is an rebirth, calculate the max...
-			awakenMat := mat.AwakensFrom(v)
-			matAtk, matDef, matSoldier := awakenMat.EvoPerfectLvl1(v)
+			awakenMat := mat.AwakensFrom()
+			matAtk, matDef, matSoldier := awakenMat.EvoPerfectLvl1()
 			aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 			atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
 			os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
-		} else if c.AwakensFrom(v) != nil {
+		} else if c.AwakensFrom() != nil {
 			// if this is an awakwening, calculate the max...
-			mat := c.AwakensFrom(v)
-			matAtk, matDef, matSoldier := mat.EvoPerfectLvl1(v)
+			mat := c.AwakensFrom()
+			matAtk, matDef, matSoldier := mat.EvoPerfectLvl1()
 			atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
 			os.Stdout.WriteString(fmt.Sprintf("Awakening Perfect card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
 				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
 		} else {
 			// check for Evo Accident
-			turnOver := c.EvoAccidentOf(v.Cards)
+			turnOver := c.EvoAccidentOf()
 			if turnOver != nil {
 				// calculate the transfered stats of the 2 material cards
 				// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
-				matAtk, matDef, matSoldier := turnOver.EvoPerfect(v)
+				matAtk, matDef, matSoldier := turnOver.EvoPerfect()
 				atk = calculateEvoAccidentStat(matAtk, c.DefaultOffense)
 				def = calculateEvoAccidentStat(matDef, c.DefaultDefense)
 				soldier = calculateEvoAccidentStat(matSoldier, c.DefaultFollower)
@@ -1534,12 +1534,12 @@ func (c *Card) EvoPerfectLvl1(v *VFile) (atk, def, soldier int) {
 		}
 	} else {
 		//TODO: For LR cards do we want to use level 1 evos for the first 3?
-		matAtk, matDef, matSoldier := materialCard.EvoPerfect(v)
+		matAtk, matDef, matSoldier := materialCard.EvoPerfect()
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
 		if c.LastEvolutionRank == 4 {
 			// 4* cards do not use the result card stats
-			firstEvo := c.GetEvolutions(v)["0"]
+			firstEvo := c.GetEvolutions()["0"]
 			atk = c.calculateEvoStat(matAtk, matAtk, firstEvo.DefaultOffense)
 			def = c.calculateEvoStat(matDef, matDef, firstEvo.DefaultDefense)
 			soldier = c.calculateEvoStat(matSoldier, matSoldier, firstEvo.DefaultFollower)
@@ -1564,9 +1564,9 @@ func (c *Card) EvoPerfectLvl1(v *VFile) (atk, def, soldier int) {
 
 // Archwitch If this card was used as an AW, get the AW information.
 // This can be used to get Likability information.
-func (c *Card) Archwitch(v *VFile) *Archwitch {
+func (c *Card) Archwitch() *Archwitch {
 	if c.archwitch == nil {
-		for _, aw := range v.Archwitches {
+		for _, aw := range Data.Archwitches {
 			if c.ID == aw.CardMasterID {
 				c.archwitch = &aw
 				break
@@ -1577,24 +1577,24 @@ func (c *Card) Archwitch(v *VFile) *Archwitch {
 }
 
 // EvoAccident If this card can produce an evolution accident, get the result card.
-func (c *Card) EvoAccident(cards []Card) *Card {
-	return CardScan(c.TransCardID, cards)
+func (c *Card) EvoAccident() *Card {
+	return CardScan(c.TransCardID)
 }
 
 // EvoAccidentOf If this card is the result of an evo accident, get the source card.
-func (c *Card) EvoAccidentOf(cards []Card) *Card {
-	for key, val := range cards {
+func (c *Card) EvoAccidentOf() *Card {
+	for key, val := range Data.Cards {
 		if val.TransCardID == c.ID {
-			return &(cards[key])
+			return &(Data.Cards[key])
 		}
 	}
 	return nil
 }
 
 // Amalgamations get any amalgamations for this card (material or result)
-func (c *Card) Amalgamations(v *VFile) []Amalgamation {
+func (c *Card) Amalgamations() []Amalgamation {
 	ret := make([]Amalgamation, 0)
-	for _, a := range v.Amalgamations {
+	for _, a := range Data.Amalgamations {
 		if c.ID == a.FusionCardID ||
 			c.ID == a.Material1 ||
 			c.ID == a.Material2 ||
@@ -1609,28 +1609,28 @@ func (c *Card) Amalgamations(v *VFile) []Amalgamation {
 
 // AwakensTo Gets the card this card awakens to. Call LastEvo first if
 // you want the awoken card and aren't sure if this is the direct material.
-func (c *Card) AwakensTo(v *VFile) *Card {
-	for _, val := range v.Awakenings {
+func (c *Card) AwakensTo() *Card {
+	for _, val := range Data.Awakenings {
 		if c.ID == val.BaseCardID {
-			return CardScan(val.ResultCardID, v.Cards)
+			return CardScan(val.ResultCardID)
 		}
 	}
 	return nil
 }
 
 // AwakensFrom gets the source card of this awoken card
-func (c *Card) AwakensFrom(v *VFile) *Card {
-	for _, val := range v.Awakenings {
+func (c *Card) AwakensFrom() *Card {
+	for _, val := range Data.Awakenings {
 		if c.ID == val.ResultCardID {
-			return CardScan(val.BaseCardID, v.Cards)
+			return CardScan(val.BaseCardID)
 		}
 	}
 	return nil
 }
 
 // HasRebirth Gets the card this card rebirths to.
-func (c *Card) HasRebirth(v *VFile) bool {
-	for _, val := range v.Rebirths {
+func (c *Card) HasRebirth() bool {
+	for _, val := range Data.Rebirths {
 		if c.ID == val.BaseCardID {
 			return true
 		}
@@ -1641,20 +1641,20 @@ func (c *Card) HasRebirth(v *VFile) bool {
 // RebirthsTo Gets the card this card rebirths to. Call LastEvo().AwakensTo()
 // first if you want the rebith card and aren't sure if this is the direct
 // material.
-func (c *Card) RebirthsTo(v *VFile) *Card {
-	for _, val := range v.Rebirths {
+func (c *Card) RebirthsTo() *Card {
+	for _, val := range Data.Rebirths {
 		if c.ID == val.BaseCardID {
-			return CardScan(val.ResultCardID, v.Cards)
+			return CardScan(val.ResultCardID)
 		}
 	}
 	return nil
 }
 
 // RebirthsFrom gets the source card of this rebirth card
-func (c *Card) RebirthsFrom(v *VFile) *Card {
-	for _, val := range v.Rebirths {
+func (c *Card) RebirthsFrom() *Card {
+	for _, val := range Data.Rebirths {
 		if c.ID == val.ResultCardID {
-			return CardScan(val.BaseCardID, v.Cards)
+			return CardScan(val.BaseCardID)
 		}
 	}
 	return nil
@@ -1662,12 +1662,12 @@ func (c *Card) RebirthsFrom(v *VFile) *Card {
 
 // HasAmalgamation returns true if this card has an amalgamation
 // (is used as a material)
-func (c *Card) HasAmalgamation(a []Amalgamation) bool {
-	for _, v := range a {
-		if c.ID == v.Material1 ||
-			c.ID == v.Material2 ||
-			c.ID == v.Material3 ||
-			c.ID == v.Material4 {
+func (c *Card) HasAmalgamation() bool {
+	for _, a := range Data.Amalgamations {
+		if c.ID == a.Material1 ||
+			c.ID == a.Material2 ||
+			c.ID == a.Material3 ||
+			c.ID == a.Material4 {
 			return true
 		}
 	}
@@ -1676,9 +1676,9 @@ func (c *Card) HasAmalgamation(a []Amalgamation) bool {
 
 // IsAmalgamation returns true if this card has an amalgamation
 // (is the result of amalgamating other material)
-func (c *Card) IsAmalgamation(a []Amalgamation) bool {
-	for _, v := range a {
-		if c.ID == v.FusionCardID {
+func (c *Card) IsAmalgamation() bool {
+	for _, a := range Data.Amalgamations {
+		if c.ID == a.FusionCardID {
 			return true
 		}
 	}
@@ -1686,65 +1686,65 @@ func (c *Card) IsAmalgamation(a []Amalgamation) bool {
 }
 
 // Skill1 of the card
-func (c *Card) Skill1(v *VFile) *Skill {
+func (c *Card) Skill1() *Skill {
 	if c.skill1 == nil && c.SkillID1 > 0 {
-		c.skill1 = SkillScan(c.SkillID1, v.Skills)
+		c.skill1 = SkillScan(c.SkillID1)
 	}
 	return c.skill1
 }
 
 // Skill2 of the card
-func (c *Card) Skill2(v *VFile) *Skill {
+func (c *Card) Skill2() *Skill {
 	if c.skill2 == nil && c.SkillID2 > 0 {
-		c.skill2 = SkillScan(c.SkillID2, v.Skills)
+		c.skill2 = SkillScan(c.SkillID2)
 	}
 	return c.skill2
 }
 
 // Skill3 of the card
-func (c *Card) Skill3(v *VFile) *Skill {
+func (c *Card) Skill3() *Skill {
 	if c.skill3 == nil && c.SkillID3 > 0 {
-		c.skill3 = SkillScan(c.SkillID3, v.Skills)
+		c.skill3 = SkillScan(c.SkillID3)
 	}
 	return c.skill3
 }
 
 // SpecialSkill1 of the card
-func (c *Card) SpecialSkill1(v *VFile) *Skill {
+func (c *Card) SpecialSkill1() *Skill {
 	if c.specialSkill1 == nil && c.SpecialSkillID1 > 0 {
-		c.specialSkill1 = SkillScan(c.SpecialSkillID1, v.Skills)
+		c.specialSkill1 = SkillScan(c.SpecialSkillID1)
 	}
 	return c.specialSkill1
 }
 
 // ThorSkill1 of the card
-func (c *Card) ThorSkill1(v *VFile) *Skill {
+func (c *Card) ThorSkill1() *Skill {
 	if c.thorSkill1 == nil && c.ThorSkillID1 > 0 {
-		c.thorSkill1 = SkillScan(c.ThorSkillID1, v.Skills)
+		c.thorSkill1 = SkillScan(c.ThorSkillID1)
 	}
 	return c.thorSkill1
 }
 
 // CardScan searches for a card by ID
-func CardScan(id int, cards []Card) *Card {
+func CardScan(id int) *Card {
 	if id <= 0 {
 		return nil
 	}
-	l := len(cards)
-	i := sort.Search(l, func(i int) bool { return cards[i].ID >= id })
-	if i >= 0 && i < l && cards[i].ID == id {
-		return &(cards[i])
+	l := len(Data.Cards)
+	i := sort.Search(l, func(i int) bool { return Data.Cards[i].ID >= id })
+	if i >= 0 && i < l && Data.Cards[i].ID == id {
+		return &(Data.Cards[i])
 	}
 	return nil
 }
 
 // CardScanCharacter searches for a card by the character ID
-func CardScanCharacter(charID int, cards []Card) *Card {
+func CardScanCharacter(charID int) *Card {
 	if charID > 0 {
-		for k, val := range cards {
+		for k, val := range Data.Cards {
 			//return the first one we find.
 			if val.CardCharaID == charID {
-				return &cards[k]
+				return &(Data.Cards[k])
 			}
 		}
 	}
@@ -1752,15 +1752,15 @@ func CardScanCharacter(charID int, cards []Card) *Card {
 }
 
 // CardScanImage searches for a card by the card image number
-func CardScanImage(cardID string, cards []Card) *Card {
+func CardScanImage(cardID string) *Card {
 	if cardID != "" {
 		i, err := strconv.Atoi(cardID)
 		if err != nil {
 			return nil
 		}
-		for k, val := range cards {
+		for k, val := range Data.Cards {
 			if val.CardNo == i {
-				return &cards[k]
+				return &(Data.Cards[k])
 			}
 		}
 	}
@@ -1768,8 +1768,8 @@ func CardScanImage(cardID string, cards []Card) *Card {
 }
 
 // Skill1Name returns the name of the first skill
-func (c *Card) Skill1Name(v *VFile) string {
-	s := c.Skill1(v)
+func (c *Card) Skill1Name() string {
+	s := c.Skill1()
 	if s == nil {
 		return ""
 	}
@@ -1777,8 +1777,8 @@ func (c *Card) Skill1Name(v *VFile) string {
 }
 
 // SkillMin returns the minimum skill level info
-func (c *Card) SkillMin(v *VFile) string {
-	s := c.Skill1(v)
+func (c *Card) SkillMin() string {
+	s := c.Skill1()
 	if s == nil {
 		return ""
 	}
@@ -1786,8 +1786,8 @@ func (c *Card) SkillMin(v *VFile) string {
 }
 
 // SkillMax returns the maximum skill level info
-func (c *Card) SkillMax(v *VFile) string {
-	s := c.Skill1(v)
+func (c *Card) SkillMax() string {
+	s := c.Skill1()
 	if s == nil {
 		return ""
 	}
@@ -1796,22 +1796,22 @@ func (c *Card) SkillMax(v *VFile) string {
 
 // SkillProcs rturns the number of times a skill can activate.
 // a negative number indicates infinite procs
-func (c *Card) SkillProcs(v *VFile) string {
-	s := c.Skill1(v)
+func (c *Card) SkillProcs() string {
+	s := c.Skill1()
 	if s == nil {
 		return ""
 	}
 	// battle start skills seem to have random Max Count values. Force it to 1
 	// since they can only proc once anyway
-	if strings.Contains(strings.ToLower(c.SkillMin(v)), "battle start") {
+	if strings.Contains(strings.ToLower(c.SkillMin()), "battle start") {
 		return "1"
 	}
 	return strconv.Itoa(s.MaxCount)
 }
 
 // SkillTarget gets the target scope of the skill
-func (c *Card) SkillTarget(v *VFile) string {
-	s := c.Skill1(v)
+func (c *Card) SkillTarget() string {
+	s := c.Skill1()
 	if s == nil {
 		return ""
 	}
@@ -1819,8 +1819,8 @@ func (c *Card) SkillTarget(v *VFile) string {
 }
 
 // SkillTargetLogic gets the target logic for the skill
-func (c *Card) SkillTargetLogic(v *VFile) string {
-	s := c.Skill1(v)
+func (c *Card) SkillTargetLogic() string {
+	s := c.Skill1()
 	if s == nil {
 		return ""
 	}
@@ -1828,8 +1828,8 @@ func (c *Card) SkillTargetLogic(v *VFile) string {
 }
 
 // Skill2Name name of the second skill
-func (c *Card) Skill2Name(v *VFile) string {
-	s := c.Skill2(v)
+func (c *Card) Skill2Name() string {
+	s := c.Skill2()
 	if s == nil {
 		return ""
 	}
@@ -1837,8 +1837,8 @@ func (c *Card) Skill2Name(v *VFile) string {
 }
 
 // Skill3Name name of the 3rd skill
-func (c *Card) Skill3Name(v *VFile) string {
-	s := c.Skill3(v)
+func (c *Card) Skill3Name() string {
+	s := c.Skill3()
 	if s == nil {
 		return ""
 	}
@@ -1846,8 +1846,8 @@ func (c *Card) Skill3Name(v *VFile) string {
 }
 
 // SpecialSkill1Name name of the 1st special skill
-func (c *Card) SpecialSkill1Name(v *VFile) string {
-	s := c.SpecialSkill1(v)
+func (c *Card) SpecialSkill1Name() string {
+	s := c.SpecialSkill1()
 	if s == nil {
 		return ""
 	}
@@ -1859,8 +1859,8 @@ func (c *Card) SpecialSkill1Name(v *VFile) string {
 }
 
 // ThorSkill1Name name of the 1st thor skill
-func (c *Card) ThorSkill1Name(v *VFile) string {
-	s := c.ThorSkill1(v)
+func (c *Card) ThorSkill1Name() string {
+	s := c.ThorSkill1()
 	if s == nil {
 		return ""
 	}
@@ -1868,8 +1868,8 @@ func (c *Card) ThorSkill1Name(v *VFile) string {
 }
 
 // Description of the character
-func (c *Card) Description(v *VFile) string {
-	ch := c.Character(v)
+func (c *Card) Description() string {
+	ch := c.Character()
 	if ch == nil {
 		return ""
 	}
@@ -1877,8 +1877,8 @@ func (c *Card) Description(v *VFile) string {
 }
 
 // Friendship quote for the character
-func (c *Card) Friendship(v *VFile) string {
-	ch := c.Character(v)
+func (c *Card) Friendship() string {
+	ch := c.Character()
 	if ch == nil {
 		return ""
 	}
@@ -1886,8 +1886,8 @@ func (c *Card) Friendship(v *VFile) string {
 }
 
 // Login quote for the character (not used on newer cards)
-func (c *Card) Login(v *VFile) string {
-	ch := c.Character(v)
+func (c *Card) Login() string {
+	ch := c.Character()
 	if ch == nil {
 		return ""
 	}
@@ -1895,8 +1895,8 @@ func (c *Card) Login(v *VFile) string {
 }
 
 // Meet quote for the character
-func (c *Card) Meet(v *VFile) string {
-	ch := c.Character(v)
+func (c *Card) Meet() string {
+	ch := c.Character()
 	if ch == nil {
 		return ""
 	}
@@ -1904,8 +1904,8 @@ func (c *Card) Meet(v *VFile) string {
 }
 
 // BattleStart quote for the character
-func (c *Card) BattleStart(v *VFile) string {
-	ch := c.Character(v)
+func (c *Card) BattleStart() string {
+	ch := c.Character()
 	if ch == nil {
 		return ""
 	}
@@ -1913,8 +1913,8 @@ func (c *Card) BattleStart(v *VFile) string {
 }
 
 // BattleEnd quote for the character
-func (c *Card) BattleEnd(v *VFile) string {
-	ch := c.Character(v)
+func (c *Card) BattleEnd() string {
+	ch := c.Character()
 	if ch == nil {
 		return ""
 	}
@@ -1922,8 +1922,8 @@ func (c *Card) BattleEnd(v *VFile) string {
 }
 
 // FriendshipMax quote for the character
-func (c *Card) FriendshipMax(v *VFile) string {
-	ch := c.Character(v)
+func (c *Card) FriendshipMax() string {
+	ch := c.Character()
 	if ch == nil {
 		return ""
 	}
@@ -1931,8 +1931,8 @@ func (c *Card) FriendshipMax(v *VFile) string {
 }
 
 // FriendshipEvent quote for the character
-func (c *Card) FriendshipEvent(v *VFile) string {
-	ch := c.Character(v)
+func (c *Card) FriendshipEvent() string {
+	ch := c.Character()
 	if ch == nil {
 		return ""
 	}
@@ -1940,8 +1940,8 @@ func (c *Card) FriendshipEvent(v *VFile) string {
 }
 
 // RebirthEvent quote for the character
-func (c *Card) RebirthEvent(v *VFile) string {
-	ch := c.Character(v)
+func (c *Card) RebirthEvent() string {
+	ch := c.Character()
 	if ch == nil {
 		return ""
 	}
@@ -1979,40 +1979,40 @@ func (d CardList) Latest() (max *Card) {
 	return
 }
 
-func getAmalBaseCard(card *Card, v *VFile) *Card {
-	if card.IsAmalgamation(v.Amalgamations) {
+func getAmalBaseCard(card *Card) *Card {
+	if card.IsAmalgamation() {
 		os.Stdout.WriteString(fmt.Sprintf("Checking Amalgamation base for Card: %d, Name: %s, Evo: %d\n", card.ID, card.Name, card.EvolutionRank))
-		for _, amal := range card.Amalgamations(v) {
+		for _, amal := range card.Amalgamations() {
 			if card.ID == amal.FusionCardID {
 				// material 1
-				ac := CardScan(amal.Material1, v.Cards)
+				ac := CardScan(amal.Material1)
 				if ac.ID != card.ID && ac.Name == card.Name {
-					if ac.IsAmalgamation(v.Amalgamations) {
-						return getAmalBaseCard(ac, v)
+					if ac.IsAmalgamation() {
+						return getAmalBaseCard(ac)
 					}
 					return ac
 				}
 				// material 2
-				ac = CardScan(amal.Material2, v.Cards)
+				ac = CardScan(amal.Material2)
 				if ac.ID != card.ID && ac.Name == card.Name {
-					if ac.IsAmalgamation(v.Amalgamations) {
-						return getAmalBaseCard(ac, v)
+					if ac.IsAmalgamation() {
+						return getAmalBaseCard(ac)
 					}
 					return ac
 				}
 				// material 3
-				ac = CardScan(amal.Material3, v.Cards)
+				ac = CardScan(amal.Material3)
 				if ac != nil && ac.ID != card.ID && ac.Name == card.Name {
-					if ac.IsAmalgamation(v.Amalgamations) {
-						return getAmalBaseCard(ac, v)
+					if ac.IsAmalgamation() {
+						return getAmalBaseCard(ac)
 					}
 					return ac
 				}
 				// material 4
-				ac = CardScan(amal.Material4, v.Cards)
+				ac = CardScan(amal.Material4)
 				if ac != nil && ac.ID != card.ID && ac.Name == card.Name {
-					if ac.IsAmalgamation(v.Amalgamations) {
-						return getAmalBaseCard(ac, v)
+					if ac.IsAmalgamation() {
+						return getAmalBaseCard(ac)
 					}
 					return ac
 				}
@@ -2022,28 +2022,28 @@ func getAmalBaseCard(card *Card, v *VFile) *Card {
 	return card
 }
 
-func checkEndCards(c *Card, v *VFile) (awakening, amalCard, amalAwakening, rebirth, rebirthAmal *Card) {
-	awakening = c.AwakensTo(v)
-	rebirth = c.RebirthsTo(v)
+func checkEndCards(c *Card) (awakening, amalCard, amalAwakening, rebirth, rebirthAmal *Card) {
+	awakening = c.AwakensTo()
+	rebirth = c.RebirthsTo()
 	if rebirth == nil && awakening != nil {
-		rebirth = awakening.RebirthsTo(v)
+		rebirth = awakening.RebirthsTo()
 	}
 	// check for Amalgamation
-	if c.HasAmalgamation(v.Amalgamations) {
-		amals := c.Amalgamations(v)
+	if c.HasAmalgamation() {
+		amals := c.Amalgamations()
 		for _, amal := range amals {
 			// get the result card
-			tamalCard := CardScan(amal.FusionCardID, v.Cards)
+			tamalCard := CardScan(amal.FusionCardID)
 			if tamalCard != nil && tamalCard.ID != c.ID {
 				os.Stdout.WriteString(fmt.Sprintf("Found amalgamation: %d, Name: '%s', Evo: %d\n", tamalCard.ID, tamalCard.Name, tamalCard.EvolutionRank))
 				if tamalCard.Name == c.Name {
 					amalCard = tamalCard
 					// check for amal awakening
-					amalAwakening = amalCard.AwakensTo(v)
+					amalAwakening = amalCard.AwakensTo()
 					if amalAwakening != nil {
-						rebirthAmal = amalAwakening.RebirthsTo(v)
+						rebirthAmal = amalAwakening.RebirthsTo()
 					} else {
-						rebirthAmal = amalCard.RebirthsTo(v)
+						rebirthAmal = amalCard.RebirthsTo()
 					}
 					return // awakening, amalCard, amalAwakening, rebirth, rebirthAmal
 				}
@@ -2054,26 +2054,25 @@ func checkEndCards(c *Card, v *VFile) (awakening, amalCard, amalAwakening, rebir
 }
 
 // GetEvoImageName gets the nice name of the image for this card's evolution for use on the wiki
-func (c *Card) GetEvoImageName(v *VFile, isIcon bool) string {
-	evos := c.GetEvolutions(v)
+func (c *Card) GetEvoImageName(isIcon bool) string {
+	evos := c.GetEvolutions()
 	thisKey := ""
-	for k, v := range evos {
-		if v.ID == c.ID {
+	for k, e := range evos {
+		if e.ID == c.ID {
 			thisKey = k
 			break
 		}
 	}
 	fileName := c.Name
 	if fileName == "" {
-		fileName = c.Character(v).FirstEvoCard(v).Image()
+		fileName = c.Character().FirstEvoCard().Image()
 	}
 	if thisKey == "0" {
 		if c.Rarity()[0] == 'G' {
 			if isIcon {
 				return fileName + "_G"
-			} else {
-				return fileName + "_H"
 			}
+			return fileName + "_H"
 		}
 		if c.Rarity()[0] == 'H' {
 			return fileName + "_H"
@@ -2095,7 +2094,7 @@ func (c *Card) GetEvoImageName(v *VFile, isIcon bool) string {
 }
 
 // GetEvolutions gets the evolutions for a card including Awakening and same character(by name) amalgamations
-func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
+func (c *Card) GetEvolutions() map[string]*Card {
 	if c._allEvos == nil {
 		ret := make(map[string]*Card)
 
@@ -2110,11 +2109,11 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 		c2 := c
 		// check if this is an rebirth card
 		if len(c2.Rarity()) > 2 && c2.Rarity()[0] == 'X' {
-			tmp := c2.RebirthsFrom(v)
+			tmp := c2.RebirthsFrom()
 			if tmp == nil {
-				ch := c2.Character(v)
-				if ch != nil && ch.Cards(v)[0].Name == c2.Name {
-					c2 = &(ch.Cards(v)[0])
+				ch := c2.Character()
+				if ch != nil && ch.Cards()[0].Name == c2.Name {
+					c2 = &(ch.Cards()[0])
 				}
 				// the name changed, so we'll keep this card
 			} else {
@@ -2123,11 +2122,11 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 		}
 		// check if this is an awoken card
 		if c2.Rarity()[0] == 'G' {
-			tmp := c2.AwakensFrom(v)
+			tmp := c2.AwakensFrom()
 			if tmp == nil {
-				ch := c2.Character(v)
-				if ch != nil && ch.Cards(v)[0].Name == c2.Name {
-					c2 = &(ch.Cards(v)[0])
+				ch := c2.Character()
+				if ch != nil && ch.Cards()[0].Name == c2.Name {
+					c2 = &(ch.Cards()[0])
 				}
 				// the name changed, so we'll keep this card
 			} else {
@@ -2136,16 +2135,16 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 		}
 
 		// get earliest evo
-		for tmp := c2.PrevEvo(v); tmp != nil; tmp = tmp.PrevEvo(v) {
+		for tmp := c2.PrevEvo(); tmp != nil; tmp = tmp.PrevEvo() {
 			c2 = tmp
 			os.Stdout.WriteString(fmt.Sprintf("Looking for earliest Evo for Card: %d, Name: %s, Evo: %d\n", c2.ID, c2.Name, c2.EvolutionRank))
 		}
 
 		// at this point we should have the first card in the evolution path
-		c2 = getAmalBaseCard(c2, v)
+		c2 = getAmalBaseCard(c2)
 
 		// get earliest evo (again...)
-		for tmp := c2.PrevEvo(v); tmp != nil; tmp = tmp.PrevEvo(v) {
+		for tmp := c2.PrevEvo(); tmp != nil; tmp = tmp.PrevEvo() {
 			c2 = tmp
 			os.Stdout.WriteString(fmt.Sprintf("Looking for earliest Evo for Card: %d, Name: %s, Evo: %d\n", c2.ID, c2.Name, c2.EvolutionRank))
 		}
@@ -2154,7 +2153,7 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 
 		// populate the actual evos.
 
-		for nextEvo := c2; nextEvo != nil; nextEvo = nextEvo.NextEvo(v) {
+		for nextEvo := c2; nextEvo != nil; nextEvo = nextEvo.NextEvo() {
 			os.Stdout.WriteString(fmt.Sprintf("Next Evo is Card: %d, Name: '%s', Evo: %d\n", nextEvo.ID, nextEvo.Name, nextEvo.EvolutionRank))
 			if nextEvo.EvolutionRank <= 0 {
 				evoRank := "0"
@@ -2164,7 +2163,7 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 				ret[evoRank] = nextEvo
 				if nextEvo.LastEvolutionRank < 0 {
 					// check for awakening
-					awakening, amalCard, amalAwakening, rebirth, rebirthAmal := checkEndCards(nextEvo, v)
+					awakening, amalCard, amalAwakening, rebirth, rebirthAmal := checkEndCards(nextEvo)
 					if awakening != nil {
 						ret["G"] = awakening
 					}
@@ -2190,7 +2189,7 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 			} else if nextEvo.EvolutionRank == c2.LastEvolutionRank || nextEvo.Rarity()[0] == 'H' || nextEvo.LastEvolutionRank < 0 {
 				ret["H"] = nextEvo
 				// check for awakening
-				awakening, amalCard, amalAwakening, rebirth, rebirthAmal := checkEndCards(nextEvo, v)
+				awakening, amalCard, amalAwakening, rebirth, rebirthAmal := checkEndCards(nextEvo)
 				if awakening != nil {
 					ret["G"] = awakening
 				}
@@ -2249,8 +2248,8 @@ func (c *Card) GetEvolutions(v *VFile) map[string]*Card {
 }
 
 // GetEvolutionCards same as GetEvolutions, but only returns the cards
-func (c *Card) GetEvolutionCards(v *VFile) CardList {
-	evos := c.GetEvolutions(v)
+func (c *Card) GetEvolutionCards() CardList {
+	evos := c.GetEvolutions()
 	cards := make([]Card, 0, len(evos))
 	//os.Stdout.WriteString(fmt.Sprintf("Card: %d, Name: %s, Evos: %d\n", c.ID, c.Name, len(evos)))
 	for _, c := range evos {

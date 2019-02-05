@@ -56,7 +56,7 @@ func DeckBonusHandler(w http.ResponseWriter, r *http.Request) {
 			d.CondType,
 			d.ReqNum,
 			d.DupFlg,
-			d.Conditions(vc.Data),
+			d.Conditions(),
 		)
 	}
 	io.WriteString(w, "</tbody></table></div></body></html>")
@@ -98,7 +98,7 @@ func DeckBonusWikiHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		descMatch := reg.FindStringSubmatch(d.Description)
 
-		dca := d.Conditions(vc.Data)
+		dca := d.Conditions()
 		switch d.CondType {
 		case 2:
 			fmt.Fprintf(w, `|-
