@@ -1,8 +1,10 @@
 package vc
 
 import (
+	"bytes"
 	"fmt"
-	"os"
+	"io/ioutil"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -99,6 +101,44 @@ type CardSpecialCompose struct {
 // Image name of the card
 func (c *Card) Image() string {
 	return fmt.Sprintf("cd_%05d", c.CardNo)
+}
+
+// EvosWithDistinctImages return the list of evos that have distinct images
+func (c *Card) EvosWithDistinctImages(icons bool) []string {
+	ret := make([]string, 0)
+	evos := c.GetEvolutions()
+	images := make(map[string][]byte, 0)
+	for _, evoID := range EvoOrder {
+		if evo, ok := evos[evoID]; ok {
+			file := FilePath + "/card/"
+			if icons {
+				file += "thumb/"
+			} else {
+				file += "md/"
+			}
+			file += evo.Image()
+			data, err := ioutil.ReadFile(file)
+			if err != nil {
+				log.Printf("Error reading image file %s", file)
+				continue
+			}
+
+			if len(images) == 0 || isDistinctImage(&images, &(data)) {
+				images[evoID] = data
+				ret = append(ret, evoID)
+			}
+		}
+	}
+	return ret
+}
+
+func isDistinctImage(m *map[string][]byte, i *[]byte) bool {
+	for _, v := range *m {
+		if bytes.Equal(v, *i) {
+			return false
+		}
+	}
+	return true
 }
 
 // Rarity of the card as a plain string
@@ -370,7 +410,7 @@ func (c *Card) AmalgamationStandard() (atk, def, soldier int) {
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
-		os.Stdout.WriteString(fmt.Sprintf("Calculating Standard Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
+		log.Printf("Calculating Standard Evo for %s Amal Mat: %s\n", c.Name, mat.Name)
 		matAtk, matDef, matSoldier := mat.EvoStandard()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
@@ -408,7 +448,7 @@ func (c *Card) AmalgamationStandardLvl1() (atk, def, soldier int) {
 	def = c.DefaultDefense
 	soldier = c.DefaultFollower
 	for _, mat := range mats {
-		os.Stdout.WriteString(fmt.Sprintf("Calculating Standard Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
+		log.Printf("Calculating Standard Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name)
 		matAtk, matDef, matSoldier := mat.EvoStandard()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
@@ -446,7 +486,7 @@ func (c *Card) Amalgamation6Card() (atk, def, soldier int) {
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
-		os.Stdout.WriteString(fmt.Sprintf("Calculating 6-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
+		log.Printf("Calculating 6-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name)
 		matAtk, matDef, matSoldier := mat.Evo6Card()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
@@ -484,7 +524,7 @@ func (c *Card) Amalgamation6CardLvl1() (atk, def, soldier int) {
 	def = c.DefaultDefense
 	soldier = c.DefaultFollower
 	for _, mat := range mats {
-		os.Stdout.WriteString(fmt.Sprintf("Calculating 6-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
+		log.Printf("Calculating 6-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name)
 		matAtk, matDef, matSoldier := mat.Evo6Card()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
@@ -522,7 +562,7 @@ func (c *Card) Amalgamation9Card() (atk, def, soldier int) {
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
-		os.Stdout.WriteString(fmt.Sprintf("Calculating 9-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
+		log.Printf("Calculating 9-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name)
 		matAtk, matDef, matSoldier := mat.Evo9Card()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
@@ -560,7 +600,7 @@ func (c *Card) Amalgamation9CardLvl1() (atk, def, soldier int) {
 	def = c.DefaultDefense
 	soldier = c.DefaultFollower
 	for _, mat := range mats {
-		os.Stdout.WriteString(fmt.Sprintf("Calculating 9-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
+		log.Printf("Calculating 9-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name)
 		matAtk, matDef, matSoldier := mat.Evo9Card()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
@@ -598,7 +638,7 @@ func (c *Card) AmalgamationPerfect() (atk, def, soldier int) {
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
-		os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
+		log.Printf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name)
 		matAtk, matDef, matSoldier := mat.EvoPerfect()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
@@ -636,7 +676,7 @@ func (c *Card) AmalgamationPerfectLvl1() (atk, def, soldier int) {
 	def = c.DefaultDefense
 	soldier = c.DefaultFollower
 	for _, mat := range mats {
-		os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name))
+		log.Printf("Calculating Perfect Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name)
 		matAtk, matDef, matSoldier := mat.EvoPerfect()
 		atk += int(float64(matAtk) * 0.08)
 		def += int(float64(matDef) * 0.08)
@@ -678,7 +718,7 @@ func (c *Card) AmalgamationLRStaticLvl1() (atk, def, soldier int) {
 	def = c.MaxDefense
 	soldier = c.MaxFollower
 	for _, mat := range mats {
-		os.Stdout.WriteString(fmt.Sprintf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name))
+		log.Printf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name)
 		if strings.HasSuffix(mat.Rarity(), "LR") && mat.Element() == "Special" {
 			matAtk, matDef, matSoldier := mat.AmalgamationLRStaticLvl1()
 			// no 5% bonus for max level
@@ -708,19 +748,19 @@ func (c *Card) AmalgamationLRStaticLvl1() (atk, def, soldier int) {
 // EvoStandard calculates the standard evolution stat but at max level. If this is a 4* card,
 // calculates for 5-card evo
 func (c *Card) EvoStandard() (atk, def, soldier int) {
-	os.Stdout.WriteString(fmt.Sprintf("Calculating Standard Evo for %s: %d\n", c.Name, c.EvolutionRank))
+	log.Printf("Calculating Standard Evo for %s: %d\n", c.Name, c.EvolutionRank)
 	materialCard := c.PrevEvo()
 	rarity := c.CardRarity()
 	if materialCard == nil {
-		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
+		// log.Printf("No previous evo found for card %v\n", c.ID)
 		// check for amalgamation
 		if c.IsAmalgamation() {
 			// assume we collected this card directly (drop)?
 			atk, def, soldier = c.MaxOffense, c.MaxDefense, c.MaxFollower
-			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			log.Printf("Using collected stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 			// calculate the amalgamation stats here
 			// atk, def, soldier = c.AmalgamationStandard()
-			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			// log.Printf("Using Amalgamation stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 		} else {
 			mat := c.RebirthsFrom()
 			if mat != nil {
@@ -729,16 +769,16 @@ func (c *Card) EvoStandard() (atk, def, soldier int) {
 				matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
-				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
 				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
 					matAtk, matDef, matSoldier := mat.EvoStandardLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
-					os.Stdout.WriteString(fmt.Sprintf("Awakening standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+					log.Printf("Awakening standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 				} else {
 					// check for Evo Accident
 					mat = c.EvoAccidentOf()
@@ -749,13 +789,13 @@ func (c *Card) EvoStandard() (atk, def, soldier int) {
 						atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
 						def = calculateEvoAccidentStat(matDef, c.MaxDefense)
 						soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
-						os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+						log.Printf("Using Evo Accident stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 					} else {
 						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
 						atk = c.MaxOffense
 						def = c.MaxDefense
 						soldier = c.MaxFollower
-						os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+						log.Printf("Using base Max stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 					}
 				}
 			}
@@ -777,7 +817,7 @@ func (c *Card) EvoStandard() (atk, def, soldier int) {
 			def = c.calculateEvoStat(matDef, firstEvo.MaxDefense, c.MaxDefense)
 			soldier = c.calculateEvoStat(matSoldier, firstEvo.MaxFollower, c.MaxFollower)
 		}
-		os.Stdout.WriteString(fmt.Sprintf("Using Evo stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+		log.Printf("Using Evo stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 	}
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
@@ -788,7 +828,7 @@ func (c *Card) EvoStandard() (atk, def, soldier int) {
 	if soldier > rarity.LimtMaxFollower {
 		soldier = rarity.LimtMaxFollower
 	}
-	os.Stdout.WriteString(fmt.Sprintf("Final stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+	log.Printf("Final stats for Standard %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 	return
 }
 
@@ -798,15 +838,15 @@ func (c *Card) EvoStandardLvl1() (atk, def, soldier int) {
 	materialCard := c.PrevEvo()
 	rarity := c.CardRarity()
 	if materialCard == nil {
-		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
+		// log.Printf("No previous evo found for card %v\n", c.ID)
 		// check for amalgamation
 		if c.IsAmalgamation() {
 			// assume we collected this card directly (drop)?
 			atk, def, soldier = c.DefaultOffense, c.DefaultDefense, c.DefaultFollower
-			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for StandardLvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			log.Printf("Using collected stats for StandardLvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 			// calculate the amalgamation stats here
 			// atk, def, soldier = c.AmalgamationStandardLvl1()
-			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for StandardLvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			// log.Printf("Using Amalgamation stats for StandardLvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 		} else {
 			mat := c.RebirthsFrom()
 			if mat != nil {
@@ -815,16 +855,16 @@ func (c *Card) EvoStandardLvl1() (atk, def, soldier int) {
 				matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
-				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
 				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
 					matAtk, matDef, matSoldier := mat.EvoStandardLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
-					os.Stdout.WriteString(fmt.Sprintf("Awakening StandardLvl1 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
-						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+					log.Printf("Awakening StandardLvl1 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 				} else {
 					// check for Evo Accident
 					mat = c.EvoAccidentOf()
@@ -877,19 +917,19 @@ func (c *Card) EvoStandardLvl1() (atk, def, soldier int) {
 // EvoMixed calculates the standard evolution for cards with a evo[0] amalgamation it calculates
 // the evo[1] using 1 amalgamated, and one as a "drop"
 func (c *Card) EvoMixed() (atk, def, soldier int) {
-	os.Stdout.WriteString(fmt.Sprintf("Calculating Mixed Evo for %s: %d\n", c.Name, c.EvolutionRank))
+	log.Printf("Calculating Mixed Evo for %s: %d\n", c.Name, c.EvolutionRank)
 	materialCard := c.PrevEvo()
 	rarity := c.CardRarity()
 	if materialCard == nil {
-		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
+		// log.Printf("No previous evo found for card %v\n", c.ID)
 		// check for amalgamation
 		if c.IsAmalgamation() {
 			// assume we collected this card directly (drop)?
 			atk, def, soldier = c.MaxOffense, c.MaxDefense, c.MaxFollower
-			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			log.Printf("Using collected stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 			// calculate the amalgamation stats here
 			// atk, def, soldier = c.AmalgamationStandard()
-			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			// log.Printf("Using Amalgamation stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 		} else {
 			mat := c.RebirthsFrom()
 			if mat != nil {
@@ -898,16 +938,16 @@ func (c *Card) EvoMixed() (atk, def, soldier int) {
 				matAtk, matDef, matSoldier := awakenMat.EvoMixedLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
-				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
 				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
 					matAtk, matDef, matSoldier := mat.EvoMixedLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
-					os.Stdout.WriteString(fmt.Sprintf("Awakening Mixed card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+					log.Printf("Awakening Mixed card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 				} else {
 					// check for Evo Accident
 					mat = c.EvoAccidentOf()
@@ -918,13 +958,13 @@ func (c *Card) EvoMixed() (atk, def, soldier int) {
 						atk = calculateEvoAccidentStat(matAtk, c.MaxOffense)
 						def = calculateEvoAccidentStat(matDef, c.MaxDefense)
 						soldier = calculateEvoAccidentStat(matSoldier, c.MaxFollower)
-						os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+						log.Printf("Using Evo Accident stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 					} else {
 						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
 						atk = c.MaxOffense
 						def = c.MaxDefense
 						soldier = c.MaxFollower
-						os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+						log.Printf("Using base Max stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 					}
 				}
 			}
@@ -952,7 +992,7 @@ func (c *Card) EvoMixed() (atk, def, soldier int) {
 			def = c.calculateEvoStat(matDef, firstEvo.MaxDefense, c.MaxDefense)
 			soldier = c.calculateEvoStat(matSoldier, firstEvo.MaxFollower, c.MaxFollower)
 		}
-		os.Stdout.WriteString(fmt.Sprintf("Using Evo stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+		log.Printf("Using Evo stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 	}
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
@@ -963,26 +1003,26 @@ func (c *Card) EvoMixed() (atk, def, soldier int) {
 	if soldier > rarity.LimtMaxFollower {
 		soldier = rarity.LimtMaxFollower
 	}
-	os.Stdout.WriteString(fmt.Sprintf("Final stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+	log.Printf("Final stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 	return
 }
 
 // EvoMixedLvl1 calculates the standard evolution for cards with a evo[0] amalgamation it calculates
 // the evo[1] using 1 amalgamated, and one as a "drop"
 func (c *Card) EvoMixedLvl1() (atk, def, soldier int) {
-	os.Stdout.WriteString(fmt.Sprintf("Calculating Mixed Evo for Lvl1 %s: %d\n", c.Name, c.EvolutionRank))
+	log.Printf("Calculating Mixed Evo for Lvl1 %s: %d\n", c.Name, c.EvolutionRank)
 	materialCard := c.PrevEvo()
 	rarity := c.CardRarity()
 	if materialCard == nil {
-		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
+		// log.Printf("No previous evo found for card %v\n", c.ID)
 		// check for amalgamation
 		if c.IsAmalgamation() {
 			// assume we collected this card directly (drop)?
 			atk, def, soldier = c.DefaultOffense, c.DefaultDefense, c.DefaultFollower
-			os.Stdout.WriteString(fmt.Sprintf("Using collected stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			log.Printf("Using collected stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 			// calculate the amalgamation stats here
 			// atk, def, soldier = c.AmalgamationStandard()
-			// os.Stdout.WriteString(fmt.Sprintf("Using Amalgamation stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+			// log.Printf("Using Amalgamation stats for Mixed %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 		} else {
 			mat := c.RebirthsFrom()
 			if mat != nil {
@@ -991,16 +1031,16 @@ func (c *Card) EvoMixedLvl1() (atk, def, soldier int) {
 				matAtk, matDef, matSoldier := awakenMat.EvoMixedLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
-				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
 				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
 					matAtk, matDef, matSoldier := mat.EvoMixedLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
-					os.Stdout.WriteString(fmt.Sprintf("Awakening Mixed card Lvl1 %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+					log.Printf("Awakening Mixed card Lvl1 %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 				} else {
 					// check for Evo Accident
 					mat = c.EvoAccidentOf()
@@ -1011,13 +1051,13 @@ func (c *Card) EvoMixedLvl1() (atk, def, soldier int) {
 						atk = calculateEvoAccidentStat(matAtk, c.DefaultOffense)
 						def = calculateEvoAccidentStat(matDef, c.DefaultDefense)
 						soldier = calculateEvoAccidentStat(matSoldier, c.DefaultFollower)
-						os.Stdout.WriteString(fmt.Sprintf("Using Evo Accident stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+						log.Printf("Using Evo Accident stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 					} else {
 						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
 						atk = c.DefaultOffense
 						def = c.DefaultDefense
 						soldier = c.DefaultFollower
-						os.Stdout.WriteString(fmt.Sprintf("Using base Max stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+						log.Printf("Using base Max stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 					}
 				}
 			}
@@ -1045,7 +1085,7 @@ func (c *Card) EvoMixedLvl1() (atk, def, soldier int) {
 			def = c.calculateEvoStat(matDef, firstEvo.MaxDefense, c.DefaultDefense)
 			soldier = c.calculateEvoStat(matSoldier, firstEvo.MaxFollower, c.DefaultFollower)
 		}
-		os.Stdout.WriteString(fmt.Sprintf("Using Evo stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+		log.Printf("Using Evo stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 	}
 	if atk > rarity.LimtOffense {
 		atk = rarity.LimtOffense
@@ -1056,7 +1096,7 @@ func (c *Card) EvoMixedLvl1() (atk, def, soldier int) {
 	if soldier > rarity.LimtMaxFollower {
 		soldier = rarity.LimtMaxFollower
 	}
-	os.Stdout.WriteString(fmt.Sprintf("Final stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier))
+	log.Printf("Final stats for Mixed Lvl1 %s: %d (%d, %d, %d)\n", c.Name, c.EvolutionRank, atk, def, soldier)
 	return
 }
 
@@ -1066,7 +1106,7 @@ func (c *Card) Evo6Card() (atk, def, soldier int) {
 	materialCard := c.PrevEvo()
 	rarity := c.CardRarity()
 	if materialCard == nil {
-		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
+		// log.Printf("No previous evo found for card %v\n", c.ID)
 		// check for amalgamation
 		if c.IsAmalgamation() {
 			// calculate the amalgamation stats here
@@ -1079,16 +1119,16 @@ func (c *Card) Evo6Card() (atk, def, soldier int) {
 				matAtk, matDef, matSoldier := awakenMat.Evo6CardLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
-				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
 				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
 					matAtk, matDef, matSoldier := mat.Evo6CardLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
-					os.Stdout.WriteString(fmt.Sprintf("Awakening 6 card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+					log.Printf("Awakening 6 card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 				} else {
 					// check for Evo Accident
 					mat = c.EvoAccidentOf()
@@ -1151,7 +1191,7 @@ func (c *Card) Evo6CardLvl1() (atk, def, soldier int) {
 	materialCard := c.PrevEvo()
 	rarity := c.CardRarity()
 	if materialCard == nil {
-		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
+		// log.Printf("No previous evo found for card %v\n", c.ID)
 		// check for amalgamation
 		if c.IsAmalgamation() {
 			// calculate the amalgamation stats here
@@ -1164,16 +1204,16 @@ func (c *Card) Evo6CardLvl1() (atk, def, soldier int) {
 				matAtk, matDef, matSoldier := awakenMat.Evo6CardLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
-				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
 				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
 					matAtk, matDef, matSoldier := mat.Evo6CardLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
-					os.Stdout.WriteString(fmt.Sprintf("Awakening 6 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
-						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+					log.Printf("Awakening 6 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 				} else {
 					// check for Evo Accident
 					mat = c.EvoAccidentOf()
@@ -1237,7 +1277,7 @@ func (c *Card) Evo9Card() (atk, def, soldier int) {
 	materialCard := c.PrevEvo()
 	rarity := c.CardRarity()
 	if materialCard == nil {
-		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
+		// log.Printf("No previous evo found for card %v\n", c.ID)
 		// check for amalgamation
 		if c.IsAmalgamation() {
 			// calculate the amalgamation stats here
@@ -1250,16 +1290,16 @@ func (c *Card) Evo9Card() (atk, def, soldier int) {
 				matAtk, matDef, matSoldier := awakenMat.Evo9CardLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
-				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
 				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
 					matAtk, matDef, matSoldier := mat.Evo9CardLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
-					os.Stdout.WriteString(fmt.Sprintf("Awakening 9 card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+					log.Printf("Awakening 9 card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 				} else {
 					// check for Evo Accident
 					mat = c.EvoAccidentOf()
@@ -1329,7 +1369,7 @@ func (c *Card) Evo9CardLvl1() (atk, def, soldier int) {
 	materialCard := c.PrevEvo()
 	rarity := c.CardRarity()
 	if materialCard == nil {
-		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
+		// log.Printf("No previous evo found for card %v\n", c.ID)
 		// check for amalgamation
 		if c.IsAmalgamation() {
 			// calculate the amalgamation stats here
@@ -1342,16 +1382,16 @@ func (c *Card) Evo9CardLvl1() (atk, def, soldier int) {
 				matAtk, matDef, matSoldier := awakenMat.Evo9CardLvl1()
 				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
-				os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
 				mat := c.AwakensFrom()
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
 					matAtk, matDef, matSoldier := mat.Evo9CardLvl1()
 					atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
-					os.Stdout.WriteString(fmt.Sprintf("Awakening 9 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
-						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+					log.Printf("Awakening 9 card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
+						mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 				} else {
 					// check for Evo Accident
 					mat = c.EvoAccidentOf()
@@ -1420,7 +1460,7 @@ func (c *Card) EvoPerfect() (atk, def, soldier int) {
 	materialCard := c.PrevEvo()
 	rarity := c.CardRarity()
 	if materialCard == nil {
-		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
+		// log.Printf("No previous evo found for card %v\n", c.ID)
 		// check for amalgamation
 		if c.IsAmalgamation() {
 			// calculate the amalgamation stats here
@@ -1432,15 +1472,15 @@ func (c *Card) EvoPerfect() (atk, def, soldier int) {
 			matAtk, matDef, matSoldier := awakenMat.EvoPerfectLvl1()
 			aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 			atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
-			os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+			log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 		} else if c.AwakensFrom() != nil {
 			// if this is an awakwening, calculate the max...
 			mat := c.AwakensFrom()
 			matAtk, matDef, matSoldier := mat.EvoPerfectLvl1()
 			atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
-			os.Stdout.WriteString(fmt.Sprintf("Awakening Perfect card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+			log.Printf("Awakening Perfect card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 		} else {
 			// check for Evo Accident
 			turnOver := c.EvoAccidentOf()
@@ -1494,7 +1534,7 @@ func (c *Card) EvoPerfectLvl1() (atk, def, soldier int) {
 	materialCard := c.PrevEvo()
 	rarity := c.CardRarity()
 	if materialCard == nil {
-		// os.Stderr.WriteString(fmt.Sprintf("No previous evo found for card %v\n", c.ID))
+		// log.Printf("No previous evo found for card %v\n", c.ID)
 		// check for amalgamation
 		if c.IsAmalgamation() {
 			// calculate the amalgamation stats here
@@ -1506,15 +1546,15 @@ func (c *Card) EvoPerfectLvl1() (atk, def, soldier int) {
 			matAtk, matDef, matSoldier := awakenMat.EvoPerfectLvl1()
 			aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
 			atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
-			os.Stdout.WriteString(fmt.Sprintf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
-				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+			log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
+				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 		} else if c.AwakensFrom() != nil {
 			// if this is an awakwening, calculate the max...
 			mat := c.AwakensFrom()
 			matAtk, matDef, matSoldier := mat.EvoPerfectLvl1()
 			atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
-			os.Stdout.WriteString(fmt.Sprintf("Awakening Perfect card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
-				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier))
+			log.Printf("Awakening Perfect card %d (%d, %d, %d) -> %d lvl1 (%d, %d, %d)\n",
+				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 		} else {
 			// check for Evo Accident
 			turnOver := c.EvoAccidentOf()
@@ -1955,12 +1995,12 @@ type CardList []Card
 func (d CardList) Earliest() (min *Card) {
 	for idx, card := range d {
 		if min == nil || min.ID > card.ID {
-			// os.Stdout.WriteString(fmt.Sprintf("'Earliest' Card: %d, Name: %s\n", card.ID, card.Name))
+			// log.Printf("'Earliest' Card: %d, Name: %s\n", card.ID, card.Name)
 			min = &(d[idx])
 		}
 	}
 	// if min != nil {
-	// os.Stdout.WriteString(fmt.Sprintf("-Earliest Card: %d, Name: %s\n", min.ID, min.Name))
+	// log.Printf("-Earliest Card: %d, Name: %s\n", min.ID, min.Name)
 	// }
 	return
 }
@@ -1969,19 +2009,19 @@ func (d CardList) Earliest() (min *Card) {
 func (d CardList) Latest() (max *Card) {
 	for idx, card := range d {
 		if max == nil || max.ID < card.ID {
-			// os.Stdout.WriteString(fmt.Sprintf("'Latest' Card: %d, Name: %s\n", card.ID, card.Name))
+			// log.Printf("'Latest' Card: %d, Name: %s\n", card.ID, card.Name)
 			max = &(d[idx])
 		}
 	}
 	// if max != nil {
-	// os.Stdout.WriteString(fmt.Sprintf("-Latest Card: %d, Name: %s\n", max.ID, max.Name))
+	// log.Printf("-Latest Card: %d, Name: %s\n", max.ID, max.Name)
 	// }
 	return
 }
 
 func getAmalBaseCard(card *Card) *Card {
 	if card.IsAmalgamation() {
-		os.Stdout.WriteString(fmt.Sprintf("Checking Amalgamation base for Card: %d, Name: %s, Evo: %d\n", card.ID, card.Name, card.EvolutionRank))
+		log.Printf("Checking Amalgamation base for Card: %d, Name: %s, Evo: %d\n", card.ID, card.Name, card.EvolutionRank)
 		for _, amal := range card.Amalgamations() {
 			if card.ID == amal.FusionCardID {
 				// material 1
@@ -2035,7 +2075,7 @@ func checkEndCards(c *Card) (awakening, amalCard, amalAwakening, rebirth, rebirt
 			// get the result card
 			tamalCard := CardScan(amal.FusionCardID)
 			if tamalCard != nil && tamalCard.ID != c.ID {
-				os.Stdout.WriteString(fmt.Sprintf("Found amalgamation: %d, Name: '%s', Evo: %d\n", tamalCard.ID, tamalCard.Name, tamalCard.EvolutionRank))
+				log.Printf("Found amalgamation: %d, Name: '%s', Evo: %d\n", tamalCard.ID, tamalCard.Name, tamalCard.EvolutionRank)
 				if tamalCard.Name == c.Name {
 					amalCard = tamalCard
 					// check for amal awakening
@@ -2100,7 +2140,7 @@ func (c *Card) GetEvolutions() map[string]*Card {
 
 		// handle cards like Chimrey and Time Traveler (enemy)
 		if c.CardCharaID < 1 {
-			os.Stdout.WriteString(fmt.Sprintf("No character info Card: %d, Name: %s, Evo: %d\n", c.ID, c.Name, c.EvolutionRank))
+			log.Printf("No character info Card: %d, Name: %s, Evo: %d\n", c.ID, c.Name, c.EvolutionRank)
 			ret["0"] = c
 			c._allEvos = ret
 			return ret
@@ -2137,7 +2177,7 @@ func (c *Card) GetEvolutions() map[string]*Card {
 		// get earliest evo
 		for tmp := c2.PrevEvo(); tmp != nil; tmp = tmp.PrevEvo() {
 			c2 = tmp
-			os.Stdout.WriteString(fmt.Sprintf("Looking for earliest Evo for Card: %d, Name: %s, Evo: %d\n", c2.ID, c2.Name, c2.EvolutionRank))
+			log.Printf("Looking for earliest Evo for Card: %d, Name: %s, Evo: %d\n", c2.ID, c2.Name, c2.EvolutionRank)
 		}
 
 		// at this point we should have the first card in the evolution path
@@ -2146,15 +2186,15 @@ func (c *Card) GetEvolutions() map[string]*Card {
 		// get earliest evo (again...)
 		for tmp := c2.PrevEvo(); tmp != nil; tmp = tmp.PrevEvo() {
 			c2 = tmp
-			os.Stdout.WriteString(fmt.Sprintf("Looking for earliest Evo for Card: %d, Name: %s, Evo: %d\n", c2.ID, c2.Name, c2.EvolutionRank))
+			log.Printf("Looking for earliest Evo for Card: %d, Name: %s, Evo: %d\n", c2.ID, c2.Name, c2.EvolutionRank)
 		}
 
-		os.Stdout.WriteString(fmt.Sprintf("Base Card: %d, Name: '%s', Evo: %d\n", c2.ID, c2.Name, c2.EvolutionRank))
+		log.Printf("Base Card: %d, Name: '%s', Evo: %d\n", c2.ID, c2.Name, c2.EvolutionRank)
 
 		// populate the actual evos.
 
 		for nextEvo := c2; nextEvo != nil; nextEvo = nextEvo.NextEvo() {
-			os.Stdout.WriteString(fmt.Sprintf("Next Evo is Card: %d, Name: '%s', Evo: %d\n", nextEvo.ID, nextEvo.Name, nextEvo.EvolutionRank))
+			log.Printf("Next Evo is Card: %d, Name: '%s', Evo: %d\n", nextEvo.ID, nextEvo.Name, nextEvo.EvolutionRank)
 			if nextEvo.EvolutionRank <= 0 {
 				evoRank := "0"
 				if nextEvo.Rarity()[0] == 'H' {
@@ -2235,12 +2275,12 @@ func (c *Card) GetEvolutions() map[string]*Card {
 			}
 		}
 
-		os.Stdout.WriteString("Found Evos: ")
+		log.Printf("Found Evos: ")
 		for key, card := range ret {
 			card._allEvos = ret
-			os.Stdout.WriteString(fmt.Sprintf("(%s: %d) ", key, card.ID))
+			log.Printf("(%s: %d) ", key, card.ID)
 		}
-		os.Stdout.WriteString("\n")
+		log.Printf("\n")
 		c._allEvos = ret
 		return ret
 	}
@@ -2251,14 +2291,14 @@ func (c *Card) GetEvolutions() map[string]*Card {
 func (c *Card) GetEvolutionCards() CardList {
 	evos := c.GetEvolutions()
 	cards := make([]Card, 0, len(evos))
-	//os.Stdout.WriteString(fmt.Sprintf("Card: %d, Name: %s, Evos: %d\n", c.ID, c.Name, len(evos)))
+	//log.Printf("Card: %d, Name: %s, Evos: %d\n", c.ID, c.Name, len(evos))
 	for _, c := range evos {
 		if c == nil {
 			continue
 		}
 		cards = append(cards, *c)
 	}
-	//os.Stdout.WriteString(fmt.Sprintf("Cards: %d\n", len(cards)))
+	//log.Printf("Cards: %d\n", len(cards))
 	return CardList(cards)
 }
 

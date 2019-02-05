@@ -275,7 +275,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 		// aws := bb.Archwitches()
 		// aw := ""
-		//os.Stderr.WriteString(fmt.Sprintf("found %d archwitches on guild battle %d king series id %d\n", len(aws), bb.ID, bb.KingSeriesID))
+		//log.Printf("found %d archwitches on guild battle %d king series id %d\n", len(aws), bb.ID, bb.KingSeriesID)
 		// if len(aws) > 0 {
 		// 	king := aws[0]
 		// 	kingCard := vc.CardScan(king.CardMasterID, )

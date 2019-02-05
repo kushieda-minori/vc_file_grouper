@@ -33,11 +33,11 @@ func CharacterTableHandler(w http.ResponseWriter, r *http.Request) {
 			var s1, s2 bool
 			if skill1 := card.Skill1(); skill1 != nil {
 				s1 = skill1.Name != "" && strings.Contains(strings.ToLower(skill1.Name), strings.ToLower(skillname))
-				//os.Stdout.WriteString(skill1.Name + " " + strconv.FormatBool(s1) + "\n")
+				//log.Printf(skill1.Name + " " + strconv.FormatBool(s1) + "\n")
 			}
 			if skill2 := card.Skill2(); skill2 != nil {
 				s2 = skill2.Name != "" && strings.Contains(strings.ToLower(skill2.Name), strings.ToLower(skillname))
-				//os.Stdout.WriteString(skill2.Name + " " + strconv.FormatBool(s2) + "\n")
+				//log.Printf(skill2.Name + " " + strconv.FormatBool(s2) + "\n")
 			}
 			match = match && (s1 || s2)
 		}
@@ -45,11 +45,11 @@ func CharacterTableHandler(w http.ResponseWriter, r *http.Request) {
 			var s1, s2 bool
 			if skill1 := card.Skill1(); skill1 != nil {
 				s1 = skill1.Fire != "" && strings.Contains(strings.ToLower(skill1.Fire), strings.ToLower(skilldesc))
-				//os.Stdout.WriteString(skill1.Fire + " " + strconv.FormatBool(s1) + "\n")
+				//log.Printf(skill1.Fire + " " + strconv.FormatBool(s1) + "\n")
 			}
 			if skill2 := card.Skill2(); skill2 != nil {
 				s2 = skill2.Fire != "" && strings.Contains(strings.ToLower(skill2.Fire), strings.ToLower(skilldesc))
-				//os.Stdout.WriteString(skill2.Fire + " " + strconv.FormatBool(s2) + "\n")
+				//log.Printf(skill2.Fire + " " + strconv.FormatBool(s2) + "\n")
 			}
 			match = match && (s1 || s2)
 		}

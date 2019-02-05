@@ -6,6 +6,7 @@ import (
 	"html"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -117,10 +118,11 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 			card.Element() == "Special" ||
 			cardRare.Signature == "n" ||
 			cardRare.Signature == "hn" ||
-			cardRare.Signature[0] == 'x' || // ignore normal X and all "Reborn"
-			cardRare.Signature == "r" ||
-			cardRare.Signature == "hr" ||
+			cardRare.Signature == "x" || // ignore normal X
+			//cardRare.Signature == "r" ||
+			//cardRare.Signature == "hr" ||
 			card.AwakensFrom() != nil || // ignore G* cards that are actually awoken
+			card.RebirthsFrom() != nil || // ignore Rebirth cards that are actually reborn
 			card.PrevEvo() != nil || // ignore cards that have a previous evolution
 			strings.Contains(skill1Min, "Battle EXP +5%") {
 			// don't output low rarities or non-final evos
@@ -128,7 +130,7 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 				!card.IsRetired() &&
 				(evosLen == 1 || card.EvolutionRank == 0) &&
 				(card.MainRarity() == "SR" || card.MainRarity() == "UR" || card.MainRarity() == "LR") {
-				os.Stderr.WriteString(fmt.Sprintf("Skipped %s: %s - evo: %d/%d\n", cardRare.Signature, card.Name, card.EvolutionRank, evosLen))
+				log.Printf("Skipped %s: %s - evo: %d/%d\n", cardRare.Signature, card.Name, card.EvolutionRank, evosLen)
 			}
 			continue
 		}
@@ -143,10 +145,12 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return first.ID < second.ID
 	})
 
-	for _, card := range cards {
+	l := len(cards)
+	for i, card := range cards {
 		// to get the image location, we are going to ask Fandom for it:
 		// https://valkyriecrusade.fandom.com/index.php?title=Special:FilePath&file=Image Name.jpg
 		// this URL returns the actual image location in the HTTP Redirect Location header.
+		log.Printf("Adding/Updating Bot Card %s, %d/%d\n", card.Name, i+1, l)
 		nobu.DB.AddOrUpdate(&card)
 	}
 
@@ -163,4 +167,5 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	io.WriteString(w, "</body></html>")
+	log.Println("finished updating Bot Cards")
 }

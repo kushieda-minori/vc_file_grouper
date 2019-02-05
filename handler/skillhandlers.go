@@ -2,8 +2,8 @@ package handler
 
 import (
 	"encoding/csv"
+	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -107,7 +107,7 @@ func SkillCsvHandler(w http.ResponseWriter, r *http.Request) {
 			strings.Replace(string(s.ThorHammerAnimationType[:]), "\"", "", -1),
 		})
 		if err != nil {
-			os.Stderr.WriteString(err.Error() + "\n")
+			log.Printf(err.Error() + "\n")
 		}
 	}
 	cw.Flush()

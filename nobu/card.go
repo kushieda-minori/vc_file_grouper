@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -69,14 +70,14 @@ func NewCard(c *vc.Card) Card {
 	//imgLoc := ""
 	//var err error
 	if err != nil {
-		os.Stderr.WriteString(err.Error() + "\n")
+		log.Printf(err.Error() + "\n")
 	}
 	//imgLoc = strings.Replace(imgLoc, "_G.png", "_H.png", -1)
 	//imgLoc = strings.Replace(imgLoc, "_A.png", "_H.png", -1)
 
 	imgLocs, err := getWikiImageLocations(c)
 	if err != nil {
-		os.Stderr.WriteString(err.Error() + "\n")
+		log.Printf(err.Error() + "\n")
 	}
 	return Card{
 		Name:    c.Name,
@@ -103,7 +104,8 @@ func (n *Db) AddOrUpdate(c *vc.Card) bool {
 	rarity := c.MainRarity()
 	for i, card := range *n {
 		if card.Name == name && card.Element == element && (card.Rarity == rarity || card.Rarity == c.Rarity()) {
-			ref := (*n)[i]
+			log.Printf("Card %s already exists, updating.", c.Name)
+			ref := &((*n)[i])
 			ref.Skills = newSkills(c)
 			if ref.Image == "" {
 				imgLoc, err := getWikiImageLocation(c.GetEvoImageName(false) + ".png")
@@ -111,11 +113,11 @@ func (n *Db) AddOrUpdate(c *vc.Card) bool {
 					ref.Image = imgLoc
 				}
 			}
-			if ref.Images == nil || len(ref.Images) == 0 {
+			if ref.Images == nil || len(ref.Images) == 0 || len(ref.Images) != len(c.EvosWithDistinctImages(false)) {
 				imgLocs, err := getWikiImageLocations(c)
 				if err != nil {
-					ref.Images = imgLocs
 				}
+				ref.Images = imgLocs
 			}
 			newPath := fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
 				url.PathEscape(name),
@@ -127,16 +129,19 @@ func (n *Db) AddOrUpdate(c *vc.Card) bool {
 		}
 	}
 
+	log.Printf("Card %s is new, adding.", c.Name)
 	*n = append(*n, NewCard(c))
 
 	return false
 }
 
 func getWikiImageLocations(c *vc.Card) ([]string, error) {
+	log.Printf("Locating images for Card %s", c.Name)
 	ret := make([]string, 0)
 	errorMsg := ""
 	evos := c.GetEvolutions()
-	for _, evoID := range vc.EvoOrder {
+	evoImages := c.EvosWithDistinctImages(false)
+	for _, evoID := range evoImages {
 		if evo, ok := evos[evoID]; ok {
 			imgName := evo.GetEvoImageName(false) + ".png"
 			imgLoc, err := getWikiImageLocation(imgName)
@@ -148,6 +153,7 @@ func getWikiImageLocations(c *vc.Card) ([]string, error) {
 			}
 		}
 	}
+	log.Printf("Found %d images", len(ret))
 	if errorMsg != "" {
 		return ret, errors.New(errorMsg)
 	}
@@ -177,7 +183,7 @@ func getWikiImageLocation(cardImageName string) (string, error) {
 			return "", fmt.Errorf("Unable to locate image '%s', status: %d", cardImageName, resp.StatusCode)
 		} else if resp.StatusCode >= 500 {
 			// there was a problem with the server, we can retry these.
-			os.Stderr.WriteString(fmt.Sprintf("Warning: Unable to locate image '%s', status: %d; retry: %d\n", cardImageName, resp.StatusCode, i))
+			log.Printf("Warning: Unable to locate image '%s', status: %d; retry: %d\n", cardImageName, resp.StatusCode, i)
 			// in case the problem is rate limiting, slow down for a bit.
 			time.Sleep(2 * time.Second)
 		}

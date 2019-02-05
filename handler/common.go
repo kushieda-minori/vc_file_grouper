@@ -1,8 +1,5 @@
 package handler
 
-// VcFilePath path to the main VC file
-var VcFilePath string
-
 func removeDuplicates(a []string) []string {
 	result := []string{}
 	seen := map[string]string{}

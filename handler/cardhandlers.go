@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -168,8 +169,7 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	var firstEvo, lastEvo *vc.Card
 	var evokeys []string // cache of actual evos for this card
 	for _, k := range vc.EvoOrder {
-		evo, ok := evolutions[k]
-		if ok {
+		if evo, ok := evolutions[k]; ok {
 			evokeys = append(evokeys, k)
 			if firstEvo == nil {
 				firstEvo = evo
@@ -438,6 +438,7 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</textarea></div>")
 	// show images here
 	io.WriteString(w, "<div style=\"float:left\">")
+	iconEvos := card.EvosWithDistinctImages(true)
 	for _, k := range evokeys {
 		evo := evolutions[k]
 		// check if we should force non-H status
@@ -445,14 +446,20 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		if lenEvoKeys == 1 && (evo.EvolutionRank == 1 || evo.EvolutionRank < 0) && r != 'H' && r != 'G' {
 			k = "0"
 		}
+		dupWarn := ""
+		if !contains(iconEvos, k) {
+			dupWarn = "Duplicate Image<br />"
+		}
 		fmt.Fprintf(w,
-			`<div style="float: left; margin: 3px"><a href="/images/cardthumb/%s"><img src="/images/cardthumb/%[1]s"/></a><br />%s : %s☆</div>`,
+			`<div style="float: left; margin: 3px"><a href="/images/cardthumb/%s">%[4]s<img src="/images/cardthumb/%[1]s"/></a><br />%s : %s☆</div>`,
 			evo.Image(),
 			evo.Name,
 			k,
+			dupWarn,
 		)
 	}
 	io.WriteString(w, "<div style=\"clear: both\">")
+	imageEvos := card.EvosWithDistinctImages(false)
 	for _, k := range evokeys {
 		evo := evolutions[k]
 		// check if we should force non-H status
@@ -460,23 +467,27 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		if lenEvoKeys == 1 && (evo.EvolutionRank == 1 || evo.EvolutionRank < 0) && r != 'H' && r != 'G' {
 			k = "0"
 		}
-
-		if _, err := os.Stat(VcFilePath + "/card/hd/" + evo.Image()); err == nil {
-			fmt.Fprintf(w,
-				`<div style="float: left; margin: 3px"><a href="/images/cardHD/%s.png"><img src="/images/cardHD/%[1]s.png"/></a><br />%s : %s☆</div>`,
-				evo.Image(),
-				evo.Name, k)
-		} else if _, err := os.Stat(VcFilePath + "/card/md/" + evo.Image()); err == nil {
-			fmt.Fprintf(w,
-				`<div style="float: left; margin: 3px"><a href="/images/card/%s.png"><img src="/images/card/%[1]s.png"/></a><br />%s : %s☆</div>`,
-				evo.Image(),
-				evo.Name, k)
-		} else {
-			fmt.Fprintf(w,
-				`<div style="float: left; margin: 3px"><a href="/images/cardSD/%s.png"><img src="/images/cardSD/%[1]s.png"/></a><br />%s : %s☆</div>`,
-				evo.Image(),
-				evo.Name, k)
+		dupWarn := ""
+		if !contains(imageEvos, k) {
+			dupWarn = "Duplicate Image<br />"
 		}
+
+		pathPart := ""
+		if _, err := os.Stat(vc.FilePath + "/card/hd/" + evo.Image()); err == nil {
+			pathPart = "cardHD"
+		} else if _, err := os.Stat(vc.FilePath + "/card/md/" + evo.Image()); err == nil {
+			pathPart = "card"
+		} else {
+			pathPart = "cardSD"
+		}
+		fmt.Fprintf(w,
+			`<div style="float: left; margin: 3px"><a href="/images/%[4]s/%[1]s.png">%[5]s<img src="/images/%[4]s/%[1]s.png"/></a><br />%s : %s☆</div>`,
+			evo.Image(),
+			evo.Name,
+			k,
+			pathPart,
+			dupWarn,
+		)
 	}
 	io.WriteString(w, "</div>")
 	io.WriteString(w, "</body></html>")
@@ -505,7 +516,7 @@ func CardCsvHandler(w http.ResponseWriter, r *http.Request) {
 			strconv.Itoa(card.IsClosed),
 		})
 		if err != nil {
-			os.Stderr.WriteString(err.Error() + "\n")
+			log.Printf(err.Error() + "\n")
 		}
 	}
 	cw.Flush()
@@ -562,7 +573,7 @@ func CardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 				strconv.Itoa(cardRare.LimtMaxFollower),
 			})
 			if err != nil {
-				os.Stderr.WriteString(err.Error() + "\n")
+				log.Printf(err.Error() + "\n")
 			}
 		}
 	}
@@ -601,11 +612,11 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 			var s1, s2 bool
 			if skill1 := card.Skill1(); skill1 != nil {
 				s1 = skill1.Name != "" && strings.Contains(strings.ToLower(skill1.Name), strings.ToLower(skillname))
-				//os.Stdout.WriteString(skill1.Name + " " + strconv.FormatBool(s1) + "\n")
+				//log.Printf(skill1.Name + " " + strconv.FormatBool(s1) + "\n")
 			}
 			if skill2 := card.Skill2(); skill2 != nil {
 				s2 = skill2.Name != "" && strings.Contains(strings.ToLower(skill2.Name), strings.ToLower(skillname))
-				//os.Stdout.WriteString(skill2.Name + " " + strconv.FormatBool(s2) + "\n")
+				//log.Printf(skill2.Name + " " + strconv.FormatBool(s2) + "\n")
 			}
 			match = match && (s1 || s2)
 		}
@@ -613,11 +624,11 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 			var s1, s2 bool
 			if skill1 := card.Skill1(); skill1 != nil {
 				s1 = skill1.Fire != "" && strings.Contains(strings.ToLower(skill1.Fire), strings.ToLower(skilldesc))
-				//os.Stdout.WriteString(skill1.Fire + " " + strconv.FormatBool(s1) + "\n")
+				//log.Printf(skill1.Fire + " " + strconv.FormatBool(s1) + "\n")
 			}
 			if skill2 := card.Skill2(); skill2 != nil {
 				s2 = skill2.Fire != "" && strings.Contains(strings.ToLower(skill2.Fire), strings.ToLower(skilldesc))
-				//os.Stdout.WriteString(skill2.Fire + " " + strconv.FormatBool(s2) + "\n")
+				//log.Printf(skill2.Fire + " " + strconv.FormatBool(s2) + "\n")
 			}
 			match = match && (s1 || s2)
 		}
@@ -1168,7 +1179,7 @@ func getAmalgamations(evolutions map[string]*vc.Card) []vc.Amalgamation {
 	amalgamations := make([]vc.Amalgamation, 0)
 	seen := map[vc.Amalgamation]bool{}
 	for idx, evo := range evolutions {
-		os.Stdout.WriteString(fmt.Sprintf("Card: %d, Name: %s, Evo: %s\n", evo.ID, evo.Name, idx))
+		log.Printf("Card: %d, Name: %s, Evo: %s\n", evo.ID, evo.Name, idx)
 		as := evo.Amalgamations()
 		if len(as) > 0 {
 			for _, a := range as {
@@ -1181,4 +1192,13 @@ func getAmalgamations(evolutions map[string]*vc.Card) []vc.Amalgamation {
 	}
 	sort.Sort(vc.ByMaterialCount(amalgamations))
 	return amalgamations
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }

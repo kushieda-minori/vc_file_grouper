@@ -6,8 +6,8 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -144,11 +144,11 @@ func StructureImagesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gardenBin := VcFilePath + "/garden/map_01.bin"
-	os.Stdout.WriteString("reading garden image file\n")
+	gardenBin := vc.FilePath + "/garden/map_01.bin"
+	log.Printf("reading garden image file\n")
 	images, err := vc.ReadBinFileImages(gardenBin)
 	limages := len(images)
-	os.Stdout.WriteString("read garden image file\n")
+	log.Printf("read garden image file\n")
 
 	if err != nil {
 		http.Error(w, "Error "+err.Error(), http.StatusInternalServerError)

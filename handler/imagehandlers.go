@@ -16,32 +16,32 @@ import (
 
 // ImageCardSDHandler show SD card images
 func ImageCardSDHandler(w http.ResponseWriter, r *http.Request) {
-	//VcFilePath+"/card/sd"
-	serveCardImage(VcFilePath+"/card/sd/", "/images/cardSD/", w, r)
+	//vc.FilePath+"/card/sd"
+	serveCardImage(vc.FilePath+"/card/sd/", "/images/cardSD/", w, r)
 }
 
 // ImageCardHandler show MD card images
 func ImageCardHandler(w http.ResponseWriter, r *http.Request) {
-	//VcFilePath+"/card/md"
-	serveCardImage(VcFilePath+"/card/md/", "/images/card/", w, r)
+	//vc.FilePath+"/card/md"
+	serveCardImage(vc.FilePath+"/card/md/", "/images/card/", w, r)
 }
 
 // ImageCardThumbHandler show thumbnail card images
 func ImageCardThumbHandler(w http.ResponseWriter, r *http.Request) {
-	//VcFilePath+"/card/thumb"
-	serveCardImage(VcFilePath+"/card/thumb/", "/images/cardthumb/", w, r)
+	//vc.FilePath+"/card/thumb"
+	serveCardImage(vc.FilePath+"/card/thumb/", "/images/cardthumb/", w, r)
 }
 
 // ImageCardHDHandler show HD card images
 func ImageCardHDHandler(w http.ResponseWriter, r *http.Request) {
-	//VcFilePath+"/card/hd"
-	serveCardImage(VcFilePath+"/card/hd/", "/images/cardHD/", w, r)
+	//vc.FilePath+"/card/hd"
+	serveCardImage(vc.FilePath+"/card/hd/", "/images/cardHD/", w, r)
 }
 
 // ImageHandlerFor handles images under a specified path
 func ImageHandlerFor(urlPath string, imageDir string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		//VcFilePath+"/event"
+		//vc.FilePath+"/event"
 		servImageDir(w, r, urlPath, imageDir)
 	}
 }
@@ -69,7 +69,7 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 			"<br />Relative path modification not allowed", http.StatusNotFound)
 		return
 	}
-	fullpath := path.Join(VcFilePath, root, imgname)
+	fullpath := path.Join(vc.FilePath, root, imgname)
 
 	finfo, err := os.Stat(fullpath)
 	if err != nil {
@@ -150,7 +150,7 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 	if imgname == "" || imgname == "/" || strings.HasPrefix(imgname, "../") {
 		if len(qs) > 0 {
 			if unused := qs.Get("unused"); unused != "" {
-				servImageDir(w, r, strings.TrimPrefix(urlprefix, "/images"), strings.TrimPrefix(imagePath, VcFilePath), checkImageName)
+				servImageDir(w, r, strings.TrimPrefix(urlprefix, "/images"), strings.TrimPrefix(imagePath, vc.FilePath), checkImageName)
 				return
 			}
 		}
@@ -200,7 +200,7 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 	if card != nil {
 		fileName = card.GetEvoImageName(isIcon) + ext
 	} else {
-		//os.Stderr.WriteString("Card info not found for image " + cardID + "\n")
+		//log.Printf("Card info not found for image " + cardID + "\n")
 		if decodeOnFly {
 			fileName = imgname + ext
 		} else {

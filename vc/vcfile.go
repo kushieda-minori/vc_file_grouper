@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"regexp"
 	"runtime/debug"
@@ -16,6 +17,9 @@ import (
 	"strings"
 	"time"
 )
+
+// FilePath path to the main VC file
+var FilePath string
 
 // Data Main data file
 var Data *VFile
@@ -814,7 +818,7 @@ func ReadBinFileImages(filename string) ([]BinImage, error) {
 		}
 		name := string(data[start:end])
 		names = append(names, name)
-		//os.Stdout.WriteString(fmt.Sprintf("found image name '%s', idx: %d-%d\n", name, start, end))
+		//log.Printf("found image name '%s', idx: %d-%d\n", name, start, end)
 		start = end
 	}
 
@@ -842,13 +846,13 @@ func ReadBinFileImages(filename string) ([]BinImage, error) {
 		}
 
 		ret = append(ret, BinImage{ID: i, Name: getImageName(i), Data: data[start:end]})
-		//os.Stdout.WriteString(fmt.Sprintf("found image, idx: %d\n", start))
+		//log.Printf("found image, idx: %d\n", start)
 		start = end
 	}
-	os.Stdout.WriteString(fmt.Sprintf("found %d image names and %d images\n",
+	log.Printf("found %d image names and %d images\n",
 		lnames,
 		len(ret),
-	))
+	)
 
 	return ret, nil
 }

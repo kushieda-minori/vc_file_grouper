@@ -24,7 +24,7 @@ func ConfigHandler(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprintf(w, "<div>%s</div>", err.Error())
 			} else {
 				io.WriteString(w, "<div>Success</div>")
-				VcFilePath = newpath
+				vc.FilePath = newpath
 			}
 		}
 	}
@@ -35,7 +35,7 @@ func ConfigHandler(w http.ResponseWriter, r *http.Request) {
 <button type="submit">Submit</button>
 <p><a href="/">back</a></p>
 </form>`,
-		html.EscapeString(VcFilePath),
+		html.EscapeString(vc.FilePath),
 	)
 	io.WriteString(w, "</body></html>")
 }
