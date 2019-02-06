@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"zetsuboushita.net/vc_file_grouper/vc"
@@ -79,10 +80,14 @@ func NewCard(c *vc.Card) Card {
 	if err != nil {
 		log.Printf(err.Error() + "\n")
 	}
+	rarity := c.MainRarity()
+	if len(c.GetEvolutions()) == 1 {
+		rarity = c.Rarity()
+	}
 	return Card{
 		Name:    c.Name,
 		Element: c.Element(),
-		Rarity:  c.MainRarity(),
+		Rarity:  rarity,
 		Skills:  newSkills(c),
 		Image:   imgLoc,
 		Images:  imgLocs,
@@ -101,11 +106,20 @@ func NewCard(c *vc.Card) Card {
 func (n *Db) AddOrUpdate(c *vc.Card) bool {
 	name := c.Name
 	element := c.Element()
+	mainRarity := c.MainRarity()
 	rarity := c.MainRarity()
+	if len(c.GetEvolutions()) == 1 {
+		rarity = c.Rarity()
+	}
 	for i, card := range *n {
-		if card.Name == name && card.Element == element && (card.Rarity == rarity || card.Rarity == c.Rarity()) {
+		if strings.ToUpper(card.Name) == strings.ToUpper(strings.TrimSpace(name)) &&
+			card.Element == element &&
+			(card.Rarity == mainRarity || card.Rarity == c.Rarity()) {
+
 			log.Printf("Card %s already exists, updating.", c.Name)
 			ref := &((*n)[i])
+			ref.Name = card.Name // ensure any oddities are taken care of
+			ref.Rarity = rarity
 			ref.Skills = newSkills(c)
 			if ref.Image == "" {
 				imgLoc, err := getWikiImageLocation(c.GetEvoImageName(false) + ".png")

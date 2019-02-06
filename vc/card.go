@@ -179,6 +179,27 @@ func (c *Card) CardRarity() *CardRarity {
 	return CardRarityScan(c.CardRareID)
 }
 
+// EvoIsHigh returns true if the Evolution of this card is an Awoken evolution
+func (c *Card) EvoIsHigh() bool {
+	s := c.Rarity()
+	l := len(s)
+	return l >= 2 && s[0] == 'H'
+}
+
+// EvoIsAwoken returns true if the Evolution of this card is an Awoken evolution
+func (c *Card) EvoIsAwoken() bool {
+	s := c.Rarity()
+	l := len(s)
+	return l == 3 && s[0] == 'G'
+}
+
+// EvoIsReborn returns true if the Evolution of this card is a Rebirth evolution
+func (c *Card) EvoIsReborn() bool {
+	s := c.Rarity()
+	l := len(s)
+	return l == 3 && s[0] == 'X'
+}
+
 //CardRarityScan scans for a card rarity by id
 func CardRarityScan(id int) *CardRarity {
 	if id >= 0 {

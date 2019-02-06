@@ -114,21 +114,21 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		if card.IsClosed != 0 ||
 			card.IsRetired() ||
 			//card.EvolutionRank < 0 || // skip any cards with evo rank < 0
-			(evosLen > 1 && card.EvolutionRank > 0) || // skip any card that is not the first evo
+			(evosLen > 1 && card.PrevEvo() != nil) || // skip any card that is not the first evo
 			card.Element() == "Special" ||
 			cardRare.Signature == "n" ||
 			cardRare.Signature == "hn" ||
 			cardRare.Signature == "x" || // ignore normal X
 			//cardRare.Signature == "r" ||
 			//cardRare.Signature == "hr" ||
-			card.AwakensFrom() != nil || // ignore G* cards that are actually awoken
-			card.RebirthsFrom() != nil || // ignore Rebirth cards that are actually reborn
-			card.PrevEvo() != nil || // ignore cards that have a previous evolution
-			strings.Contains(skill1Min, "Battle EXP +5%") {
+			(card.EvoIsAwoken() && card.AwakensFrom() != nil) || // ignore G* cards that are actually awoken
+			(card.EvoIsReborn() && card.RebirthsFrom() != nil) || // ignore Rebirth cards that are actually reborn
+			strings.Contains(skill1Min, "Battle EXP +5%") ||
+			false {
 			// don't output low rarities or non-final evos
 			if card.IsClosed == 0 &&
 				!card.IsRetired() &&
-				(evosLen == 1 || card.EvolutionRank == 0) &&
+				//(evosLen == 1 || card.EvolutionRank == 0) &&
 				(card.MainRarity() == "SR" || card.MainRarity() == "UR" || card.MainRarity() == "LR") {
 				log.Printf("Skipped %s: %s - evo: %d/%d\n", cardRare.Signature, card.Name, card.EvolutionRank, evosLen)
 			}
