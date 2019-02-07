@@ -122,6 +122,14 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		nobu.DB.AddOrUpdate(&card)
 	}
 
+	// sort the cards by VC release IDs
+	sort.Slice(*nobu.DB, func(i, j int) bool {
+		first := (*nobu.DB)[i]
+		second := (*nobu.DB)[j]
+
+		return first.VCID < second.VCID
+	})
+
 	b, err := json.MarshalIndent(nobu.DB, "", " ")
 	if err != nil {
 		fmt.Fprintf(w, "<div>%s</div>", err.Error())

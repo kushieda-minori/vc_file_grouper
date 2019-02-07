@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -17,11 +18,16 @@ func main() {
 
 	cmdLang := flag.String("lang", "en", "The language pack to use. 'en' for English, 'zhs' for Chinese. ")
 	cmdHelp := flag.Bool("help", false, "Show the help message")
+	cmdDbg := flag.Bool("debug", false, "Outputs error message to the standard error console")
 	flag.Parse()
 
 	if *cmdHelp {
 		usage()
 		return
+	}
+
+	if !(*cmdDbg) {
+		log.SetOutput(ioutil.Discard)
 	}
 
 	if cmdLang == nil {
@@ -129,6 +135,7 @@ func usage() {
 	os.Stdout.WriteString(fmt.Sprintf("To use this program you can specify the following command options:\n"+
 		"-help\n\tShow this help message\n"+
 		"-lang\n\tSelect a language pack to use. 'en' is the default\n"+
+		"-debug\n\tOutputs error message to the standard error console\n"+
 		"file1\n\tlocation of the VC master data file\n"+
 		"file2\n\tlocation of the VC bot data file\n\n"+
 		"example usages:\n\t%[1]s -help\n"+
