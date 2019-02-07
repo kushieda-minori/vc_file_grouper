@@ -2,6 +2,7 @@ package nobu
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -34,8 +35,8 @@ func newSkills(c *vc.Card) []Skill {
 			Name: fmt.Sprintf("%s: %s", sPrefix, s.Name), // Skill, Second Skill, Awoken, Awoken Second Skill
 			Value: fmt.Sprintf("Activations: %s\nMin Level Effect: %s\nMax Level Effect: %s",
 				activations,
-				cleanSkillName(s.SkillMin()),
-				cleanSkillName(s.SkillMax()),
+				cleanSkill(s.SkillMin()),
+				cleanSkill(s.SkillMax()),
 			),
 		})
 	}
@@ -55,8 +56,8 @@ func newSkills(c *vc.Card) []Skill {
 			Name: fmt.Sprintf("%s: %s", sPrefix, s.Name), // Skill, Second Skill, Awoken, Awoken Second Skill
 			Value: fmt.Sprintf("Activations: %s\nMin Level Effect: %s\nMax Level Effect: %s",
 				activations,
-				cleanSkillName(s.SkillMin()),
-				cleanSkillName(s.SkillMax()),
+				cleanSkill(s.SkillMin()),
+				cleanSkill(s.SkillMax()),
 			),
 		})
 	}
@@ -85,6 +86,9 @@ func getActivations(s *vc.Skill) string {
 	}
 }
 
-func cleanSkillName(name string) string {
-	return strings.Replace(strings.Replace(name, "{{", "", -1), "}}", "", -1)
+func cleanSkill(name string) string {
+	name = strings.Replace(strings.Replace(name, "{{", "", -1), "}}", "", -1)
+	re := regexp.MustCompile(`\s+[/\\]\s+Max \d+ time(s)?`)
+	name = re.ReplaceAllString(name, "")
+	return name
 }

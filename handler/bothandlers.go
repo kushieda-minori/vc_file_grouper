@@ -26,19 +26,7 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 
 	cards := make([]vc.Card, 0)
 	for _, card := range vc.Data.Cards {
-		cardRare := card.CardRarity()
-		evos := card.GetEvolutions()
-		if card.IsClosed != 0 ||
-			card.IsRetired() ||
-			(len(evos) > 1 && card.EvolutionRank != 0) ||
-			cardRare.Signature == "n" ||
-			cardRare.Signature == "hn" ||
-			cardRare.Signature[0] == 'x' || // ignore normal X and all "Reborn"
-			//cardRare.Signature == "r" ||
-			//cardRare.Signature == "hr" ||
-			card.AwakensFrom() != nil ||
-			card.PrevEvo() != nil {
-			// don't output low rarities or non-final evos
+		if shouldExcludeCard(&card) {
 			continue
 		}
 		cards = append(cards, card)
@@ -103,34 +91,14 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>Update Bot DB</title></head><body>\n")
 	cards := make([]vc.Card, 0)
 	for _, card := range vc.Data.Cards {
-		cardRare := card.CardRarity()
 		evos := card.GetEvolutions()
 		evosLen := len(evos)
-		skill1 := card.Skill1()
-		skill1Min := ""
-		if skill1 != nil {
-			skill1Min = skill1.SkillMin()
-		}
-		if card.IsClosed != 0 ||
-			card.IsRetired() ||
-			//card.EvolutionRank < 0 || // skip any cards with evo rank < 0
-			(evosLen > 1 && card.EvolutionRank > 0) || // skip any card that is not the first evo
-			card.Element() == "Special" ||
-			cardRare.Signature == "n" ||
-			cardRare.Signature == "hn" ||
-			cardRare.Signature == "x" || // ignore normal X
-			//cardRare.Signature == "r" ||
-			//cardRare.Signature == "hr" ||
-			card.AwakensFrom() != nil || // ignore G* cards that are actually awoken
-			card.RebirthsFrom() != nil || // ignore Rebirth cards that are actually reborn
-			card.PrevEvo() != nil || // ignore cards that have a previous evolution
-			strings.Contains(skill1Min, "Battle EXP +5%") {
+		if shouldExcludeCard(&card) {
 			// don't output low rarities or non-final evos
 			if card.IsClosed == 0 &&
 				!card.IsRetired() &&
-				(evosLen == 1 || card.EvolutionRank == 0) &&
 				(card.MainRarity() == "SR" || card.MainRarity() == "UR" || card.MainRarity() == "LR") {
-				log.Printf("Skipped %s: %s - evo: %d/%d\n", cardRare.Signature, card.Name, card.EvolutionRank, evosLen)
+				log.Printf("Skipped %s: %s - evo: %d/%d\n", card.Rarity(), card.Name, card.EvolutionRank, evosLen)
 			}
 			continue
 		}
@@ -154,6 +122,14 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		nobu.DB.AddOrUpdate(&card)
 	}
 
+	// sort the cards by VC release IDs
+	sort.Slice(*nobu.DB, func(i, j int) bool {
+		first := (*nobu.DB)[i]
+		second := (*nobu.DB)[j]
+
+		return first.VCID < second.VCID
+	})
+
 	b, err := json.MarshalIndent(nobu.DB, "", " ")
 	if err != nil {
 		fmt.Fprintf(w, "<div>%s</div>", err.Error())
@@ -168,4 +144,38 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	io.WriteString(w, "</body></html>")
 	log.Println("finished updating Bot Cards")
+}
+
+func shouldExcludeCard(card *vc.Card) bool {
+	cardRare := card.CardRarity()
+	evos := card.GetEvolutions()
+	evosLen := len(evos)
+	// skill1 := card.Skill1()
+	// skill1Min := ""
+	// if skill1 != nil {
+	// 	skill1Min = skill1.SkillMin()
+	// }
+	return card.IsClosed != 0 ||
+		card.IsRetired() ||
+		//card.EvolutionRank < 0 || // skip any cards with evo rank < 0
+		(evosLen > 1 && card.PrevEvo() != nil) || // skip any card that is not the first evo
+		(card.Element() == "Special" && nameNotAllowed(card.Name)) ||
+		cardRare.Signature == "n" ||
+		cardRare.Signature == "hn" ||
+		cardRare.Signature == "x" || // ignore normal X
+		//cardRare.Signature == "r" ||
+		//cardRare.Signature == "hr" ||
+		(card.EvoIsAwoken() && card.AwakensFrom() != nil) || // ignore G* cards that are actually awoken
+		(card.EvoIsReborn() && card.RebirthsFrom() != nil) || // ignore Rebirth cards that are actually reborn
+		//strings.Contains(skill1Min, "Battle EXP +5%") ||
+		false
+}
+
+func nameNotAllowed(name string) bool {
+	name = strings.TrimSpace(strings.ToUpper(name))
+	return !(strings.Contains(name, "SLIME") ||
+		strings.Contains(name, "GOLD GIRL") ||
+		strings.Contains(name, "MEDAL GIRL") ||
+		strings.Contains(name, "MIRROR MAIDEN") ||
+		false)
 }

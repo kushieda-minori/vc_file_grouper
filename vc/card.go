@@ -179,6 +179,27 @@ func (c *Card) CardRarity() *CardRarity {
 	return CardRarityScan(c.CardRareID)
 }
 
+// EvoIsHigh returns true if the Evolution of this card is an Awoken evolution
+func (c *Card) EvoIsHigh() bool {
+	s := c.Rarity()
+	l := len(s)
+	return l >= 2 && s[0] == 'H'
+}
+
+// EvoIsAwoken returns true if the Evolution of this card is an Awoken evolution
+func (c *Card) EvoIsAwoken() bool {
+	s := c.Rarity()
+	l := len(s)
+	return l == 3 && s[0] == 'G'
+}
+
+// EvoIsReborn returns true if the Evolution of this card is a Rebirth evolution
+func (c *Card) EvoIsReborn() bool {
+	s := c.Rarity()
+	l := len(s)
+	return l == 3 && s[0] == 'X'
+}
+
 //CardRarityScan scans for a card rarity by id
 func CardRarityScan(id int) *CardRarity {
 	if id >= 0 {
@@ -1651,6 +1672,9 @@ func (c *Card) Amalgamations() []Amalgamation {
 // you want the awoken card and aren't sure if this is the direct material.
 func (c *Card) AwakensTo() *Card {
 	for _, val := range Data.Awakenings {
+		if val.IsClosed != 0 {
+			continue
+		}
 		if c.ID == val.BaseCardID {
 			return CardScan(val.ResultCardID)
 		}
@@ -1661,6 +1685,9 @@ func (c *Card) AwakensTo() *Card {
 // AwakensFrom gets the source card of this awoken card
 func (c *Card) AwakensFrom() *Card {
 	for _, val := range Data.Awakenings {
+		if val.IsClosed != 0 {
+			continue
+		}
 		if c.ID == val.ResultCardID {
 			return CardScan(val.BaseCardID)
 		}
@@ -1671,6 +1698,9 @@ func (c *Card) AwakensFrom() *Card {
 // HasRebirth Gets the card this card rebirths to.
 func (c *Card) HasRebirth() bool {
 	for _, val := range Data.Rebirths {
+		if val.IsClosed != 0 {
+			continue
+		}
 		if c.ID == val.BaseCardID {
 			return true
 		}
@@ -1683,6 +1713,9 @@ func (c *Card) HasRebirth() bool {
 // material.
 func (c *Card) RebirthsTo() *Card {
 	for _, val := range Data.Rebirths {
+		if val.IsClosed != 0 {
+			continue
+		}
 		if c.ID == val.BaseCardID {
 			return CardScan(val.ResultCardID)
 		}
@@ -1693,6 +1726,9 @@ func (c *Card) RebirthsTo() *Card {
 // RebirthsFrom gets the source card of this rebirth card
 func (c *Card) RebirthsFrom() *Card {
 	for _, val := range Data.Rebirths {
+		if val.IsClosed != 0 {
+			continue
+		}
 		if c.ID == val.ResultCardID {
 			return CardScan(val.BaseCardID)
 		}
@@ -2148,7 +2184,7 @@ func (c *Card) GetEvolutions() map[string]*Card {
 
 		c2 := c
 		// check if this is an rebirth card
-		if len(c2.Rarity()) > 2 && c2.Rarity()[0] == 'X' {
+		if c2.EvoIsReborn() {
 			tmp := c2.RebirthsFrom()
 			if tmp == nil {
 				ch := c2.Character()
@@ -2161,7 +2197,7 @@ func (c *Card) GetEvolutions() map[string]*Card {
 			}
 		}
 		// check if this is an awoken card
-		if c2.Rarity()[0] == 'G' {
+		if c2.EvoIsAwoken() {
 			tmp := c2.AwakensFrom()
 			if tmp == nil {
 				ch := c2.Character()
