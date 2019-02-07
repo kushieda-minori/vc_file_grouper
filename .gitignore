@@ -3,3 +3,4 @@ vc_file_grouper*
 launch.json
 .vscode
 debug
+*.log

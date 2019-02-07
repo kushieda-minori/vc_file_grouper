@@ -115,6 +115,7 @@ var newCards = []int{
 	4711, 4712, // Diana
 }
 
+// ID is the character ID, not the card ID
 var characterNameOverride = map[int]string{
 	62:   "Kung-Fu Master",            // Kung Fu Master
 	181:  "Ariel (Light)",             // Ariel
@@ -125,10 +126,19 @@ var characterNameOverride = map[int]string{
 	495:  "Snowman MK II",             // Snowman MKⅡ
 	1319: "Jack-O'-Sisters",           // Jack-o'-Sisters (older card with newer name format)
 	1173: "Al-mi'raj",                 // Al-Mi'Raj
+	1536: "Valiant Bellona (Bronze)",  // Valiant Bellona
+	1537: "Valiant Bellona (Silver)",  // Valiant Bellona
+	1538: "Valiant Bellona (Gold)",    // Valiant Bellona
+	1816: "Gold Girl (SR)",            // Gold Girl
+	1846: "Medal Girl (SR)",           // Medal Girl
 	1869: "Super Chimry (Passion)",    // Super Chimry
 	1870: "Super Chimry (Cool)",       // Super Chimry
 	1871: "Super Chimry (Light)",      // Super Chimry
 	1872: "Super Chimry (Dark)",       // Super Chimry
+	1874: "Hyper Chimry (Passion)",    // Hyper Chimry
+	1875: "Hyper Chimry (Cool)",       // Hyper Chimry
+	1876: "Hyper Chimry (Light)",      // Hyper Chimry
+	1877: "Hyper Chimry (Dark)",       // Hyper Chimry
 	2024: "Playful Hades (Red)",       // Playful Hades
 	2025: "Playful Hades (Green)",     // Playful Hades
 	2026: "Playful Hades (Blue)",      // Playful Hades

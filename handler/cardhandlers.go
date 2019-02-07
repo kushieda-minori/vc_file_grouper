@@ -163,18 +163,38 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid card id "+pathParts[2], http.StatusNotFound)
 		return
 	}
+
+	log.Printf("Found Card %s: (%d)", card.Name, card.ID)
 	evolutions := card.GetEvolutions()
 	amalgamations := getAmalgamations(evolutions)
 
+	log.Printf("Card %s: (%d) has %d Evos and %d Amalgamations",
+		card.Name,
+		card.ID,
+		len(evolutions),
+		len(amalgamations),
+	)
 	var firstEvo, lastEvo *vc.Card
 	var evokeys []string // cache of actual evos for this card
 	for _, k := range vc.EvoOrder {
 		if evo, ok := evolutions[k]; ok {
 			evokeys = append(evokeys, k)
 			if firstEvo == nil {
+				log.Printf("Found Card %s: (%d) First Evo: %s: (%d)",
+					card.Name,
+					card.ID,
+					evo.Name,
+					evo.ID,
+				)
 				firstEvo = evo
 			}
 			if k == "H" {
+				log.Printf("Found Card %s: (%d) Last Evo: %s: (%d)",
+					card.Name,
+					card.ID,
+					evo.Name,
+					evo.ID,
+				)
 				lastEvo = evo
 			}
 		}
