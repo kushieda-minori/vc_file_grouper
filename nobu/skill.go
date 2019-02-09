@@ -22,7 +22,6 @@ func newSkills(c *vc.Card) []Skill {
 	// skill 1
 	s := c.Skill1()
 	if s != nil {
-		activations := getActivations(s)
 		sPrefix := "Skill"
 		if len(c.Rarity()) == 3 {
 			if c.Rarity()[0] == 'G' {
@@ -31,19 +30,11 @@ func newSkills(c *vc.Card) []Skill {
 				sPrefix = "Reborn"
 			}
 		}
-		skills = append(skills, Skill{
-			Name: fmt.Sprintf("%s: %s", sPrefix, s.Name), // Skill, Second Skill, Awoken, Awoken Second Skill
-			Value: fmt.Sprintf("Activations: %s\nMin Level Effect: %s\nMax Level Effect: %s",
-				activations,
-				cleanSkill(s.SkillMin()),
-				cleanSkill(s.SkillMax()),
-			),
-		})
+		skills = append(skills, newSkill(sPrefix, s))
 	}
 	// skill 2
 	s = c.Skill2()
 	if s != nil && !s.Expires() {
-		activations := getActivations(s)
 		sPrefix := "Second Skill"
 		if len(c.Rarity()) == 3 {
 			if c.Rarity()[0] == 'G' {
@@ -52,14 +43,7 @@ func newSkills(c *vc.Card) []Skill {
 				sPrefix = "Reborn " + sPrefix
 			}
 		}
-		skills = append(skills, Skill{
-			Name: fmt.Sprintf("%s: %s", sPrefix, s.Name), // Skill, Second Skill, Awoken, Awoken Second Skill
-			Value: fmt.Sprintf("Activations: %s\nMin Level Effect: %s\nMax Level Effect: %s",
-				activations,
-				cleanSkill(s.SkillMin()),
-				cleanSkill(s.SkillMax()),
-			),
-		})
+		skills = append(skills, newSkill(sPrefix, s))
 	}
 
 	if a := c.LastEvo().AwakensTo(); a != nil {
@@ -74,6 +58,26 @@ func newSkills(c *vc.Card) []Skill {
 	}
 
 	return skills
+}
+
+func newSkill(sPrefix string, s *vc.Skill) Skill {
+	activations := getActivations(s)
+	sMin := cleanSkill(s.SkillMin())
+	sMax := cleanSkill(s.SkillMax())
+	skill := ""
+	if sMin == sMax {
+		skill = fmt.Sprintf("Activations: %s\nEffect: %s", activations, sMin)
+	} else {
+		skill = fmt.Sprintf("Activations: %s\nMin Level Effect: %s\nMax Level Effect: %s",
+			activations,
+			sMin,
+			sMax,
+		)
+	}
+	return Skill{
+		Name:  fmt.Sprintf("%s: %s", sPrefix, s.Name), // Skill, Second Skill, Awoken, Awoken Second Skill
+		Value: skill,
+	}
 }
 
 func getActivations(s *vc.Skill) string {
