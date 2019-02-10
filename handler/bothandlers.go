@@ -89,38 +89,22 @@ func BotConfigHandler(w http.ResponseWriter, r *http.Request) {
 // BotUpdateHandler Updates the existing bot DB with new/missing card info
 func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>Update Bot DB</title></head><body>\n")
-	cards := make([]vc.Card, 0)
-	for _, card := range vc.Data.Cards {
-		evos := card.GetEvolutions()
-		evosLen := len(evos)
-		if shouldExcludeCard(&card) {
-			// don't output low rarities or non-final evos
-			if card.IsClosed == 0 &&
-				!card.IsRetired() &&
-				(card.MainRarity() == "SR" || card.MainRarity() == "UR" || card.MainRarity() == "LR") {
-				log.Printf("Skipped %s: %s - evo: %d/%d\n", card.Rarity(), card.Name, card.EvolutionRank, evosLen)
-			}
-			continue
+	namesOfCards := vc.CardsByName()
+
+	bl := len(*nobu.DB)
+	lNames := len(namesOfCards)
+	i := 0
+	for name, cards := range namesOfCards {
+		i++
+		card := firstCard(&cards)
+		if card == nil {
+			log.Printf("%d/%d ***********Skipping %d Cards with name %s\n", i, lNames, len(cards), name)
+		} else {
+			log.Printf("%d/%d Adding/Updating Bot Card %s\n", i, lNames, name)
+			nobu.DB.AddOrUpdate(card)
 		}
-		cards = append(cards, card)
 	}
-
-	// sort by ID
-	sort.Slice(cards, func(i, j int) bool {
-		first := cards[i]
-		second := cards[j]
-
-		return first.ID < second.ID
-	})
-
-	l := len(cards)
-	for i, card := range cards {
-		// to get the image location, we are going to ask Fandom for it:
-		// https://valkyriecrusade.fandom.com/index.php?title=Special:FilePath&file=Image Name.jpg
-		// this URL returns the actual image location in the HTTP Redirect Location header.
-		log.Printf("Adding/Updating Bot Card %s, %d/%d\n", card.Name, i+1, l)
-		nobu.DB.AddOrUpdate(&card)
-	}
+	log.Printf("Bot DB changed from %d records to %d", bl, len(*nobu.DB))
 
 	// sort the cards by VC release IDs
 	sort.Slice(*nobu.DB, func(i, j int) bool {
@@ -144,6 +128,23 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	io.WriteString(w, "</body></html>")
 	log.Println("finished updating Bot Cards")
+}
+
+func firstCard(cards *[]vc.Card) *vc.Card {
+	sort.Slice(*cards, func(a, b int) bool {
+		evoCmp := (*cards)[a].EvolutionRank == (*cards)[b].EvolutionRank
+		if evoCmp {
+			return (*cards)[a].ID < (*cards)[b].ID
+		}
+		return (*cards)[a].EvolutionRank < (*cards)[b].EvolutionRank
+	})
+	for i := range *cards {
+		card := &((*cards)[i])
+		if !shouldExcludeCard(card) {
+			return card
+		}
+	}
+	return nil
 }
 
 func shouldExcludeCard(card *vc.Card) bool {

@@ -67,34 +67,30 @@ func LoadDb() error {
 }
 
 // NewCard Converts a VC card to a Nobu DB card
-func NewCard(c *vc.Card) Card {
-	imgLoc, err := getWikiImageLocation(c.GetEvoImageName(false) + ".png")
-	//imgLoc := ""
-	//var err error
+func NewCard(vcCard *vc.Card) Card {
+	imgLoc, err := getWikiImageLocation(vcCard.GetEvoImageName(false) + ".png")
 	if err != nil {
 		log.Printf(err.Error() + "\n")
 	}
-	//imgLoc = strings.Replace(imgLoc, "_G.png", "_H.png", -1)
-	//imgLoc = strings.Replace(imgLoc, "_A.png", "_H.png", -1)
 
-	imgLocs, err := getWikiImageLocations(c)
+	imgLocs, err := getWikiImageLocations(vcCard)
 	if err != nil {
 		log.Printf(err.Error() + "\n")
 	}
-	rarity := c.MainRarity()
-	if len(c.GetEvolutions()) == 1 {
-		rarity = c.Rarity()
+	rarity := vcCard.MainRarity()
+	if len(vcCard.GetEvolutions()) == 1 {
+		rarity = vcCard.Rarity()
 	}
 	return Card{
-		VCID:    c.ID,
-		Name:    c.Name,
-		Element: c.Element(),
+		VCID:    vcCard.ID,
+		Name:    vcCard.Name,
+		Element: vcCard.Element(),
 		Rarity:  rarity,
-		Skills:  newSkills(c),
+		Skills:  newSkills(vcCard),
 		Image:   imgLoc,
 		Images:  imgLocs,
 		Link: fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
-			url.PathEscape(c.Name),
+			url.PathEscape(vcCard.Name),
 		),
 	}
 }
@@ -105,35 +101,34 @@ func NewCard(c *vc.Card) Card {
 // Since the "DB" is not indexed, this call is O(N) scanning the "DB"
 // for every add/updated.
 // If the card is found, true is returned, if a new card is added, false is returned.
-func (n *Db) AddOrUpdate(c *vc.Card) bool {
-	name := c.Name
-	element := c.Element()
-	mainRarity := c.MainRarity()
-	rarity := c.MainRarity()
-	if len(c.GetEvolutions()) == 1 {
-		rarity = c.Rarity()
+func (botDB *Db) AddOrUpdate(vcCard *vc.Card) bool {
+	name := vcCard.Name
+	element := vcCard.Element()
+	mainRarity := vcCard.MainRarity()
+	rarity := vcCard.MainRarity()
+	if len(vcCard.GetEvolutions()) == 1 {
+		rarity = vcCard.Rarity()
 	}
-	for i, card := range *n {
-		if card.VCID == c.ID || (card.VCID == 0 &&
-			strings.ToUpper(strings.TrimSpace(card.Name)) == strings.ToUpper(name) &&
-			card.Element == element &&
-			(card.Rarity == mainRarity || card.Rarity == c.Rarity())) {
+	for i, botCard := range *botDB {
+		if botCard.VCID == vcCard.ID || (strings.ToUpper(strings.TrimSpace(botCard.Name)) == strings.ToUpper(name) &&
+			botCard.Element == element &&
+			(botCard.Rarity == mainRarity || botCard.Rarity == vcCard.Rarity())) {
 
-			log.Printf("Card %s already exists, updating.", c.Name)
-			ref := &((*n)[i]) // get a reference we can update
+			log.Printf("Card %s already exists, updating.", vcCard.Name)
+			ref := &((*botDB)[i]) // get a reference we can update
 
-			ref.VCID = c.ID
-			ref.Name = c.Name // ensure any oddities are taken care of
+			ref.VCID = vcCard.ID
+			ref.Name = vcCard.Name // ensure any oddities are taken care of
 			ref.Rarity = rarity
-			ref.Skills = newSkills(c)
+			ref.Skills = newSkills(vcCard)
 			if ref.Image == "" {
-				imgLoc, err := getWikiImageLocation(c.GetEvoImageName(false) + ".png")
-				if err != nil {
+				imgLoc, err := getWikiImageLocation(vcCard.GetEvoImageName(false) + ".png")
+				if err != nil && imgLoc != "" {
 					ref.Image = imgLoc
 				}
 			}
-			if ref.Images == nil || len(ref.Images) == 0 || len(ref.Images) != len(c.EvosWithDistinctImages(false)) {
-				imgLocs, err := getWikiImageLocations(c)
+			if ref.Images == nil || len(ref.Images) == 0 || len(ref.Images) != len(vcCard.EvosWithDistinctImages(false)) {
+				imgLocs, err := getWikiImageLocations(vcCard)
 				if err != nil {
 				}
 				ref.Images = imgLocs
@@ -148,18 +143,18 @@ func (n *Db) AddOrUpdate(c *vc.Card) bool {
 		}
 	}
 
-	log.Printf("Card %s is new, adding.", c.Name)
-	*n = append(*n, NewCard(c))
+	log.Printf("***** Card %s is new, adding. *****", vcCard.Name)
+	*botDB = append(*botDB, NewCard(vcCard))
 
 	return false
 }
 
-func getWikiImageLocations(c *vc.Card) ([]string, error) {
-	log.Printf("Locating images for Card %s", c.Name)
+func getWikiImageLocations(vcCard *vc.Card) ([]string, error) {
+	log.Printf("Locating images for Card %s", vcCard.Name)
 	ret := make([]string, 0)
 	errorMsg := ""
-	evos := c.GetEvolutions()
-	evoImages := c.EvosWithDistinctImages(false)
+	evos := vcCard.GetEvolutions()
+	evoImages := vcCard.EvosWithDistinctImages(false)
 	for _, evoID := range evoImages {
 		if evo, ok := evos[evoID]; ok {
 			imgName := evo.GetEvoImageName(false) + ".png"
@@ -184,6 +179,9 @@ func getWikiImageLocations(c *vc.Card) ([]string, error) {
 // }
 
 func getWikiImageLocation(cardImageName string) (string, error) {
+	// to get the image location, we are going to ask Fandom for it:
+	// https://valkyriecrusade.fandom.com/index.php?title=Special:FilePath&file=Image Name.jpg
+	// this URL returns the actual image location in the HTTP Redirect Location header.
 	myURL := "https://valkyriecrusade.fandom.com/index.php?title=Special:FilePath&file=" + url.QueryEscape(cardImageName)
 	nextURL := myURL
 	var i int
