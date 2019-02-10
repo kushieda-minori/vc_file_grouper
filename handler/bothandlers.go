@@ -169,6 +169,7 @@ func shouldExcludeCard(card *vc.Card) bool {
 		(card.EvoIsAwoken() && card.AwakensFrom() != nil) || // ignore G* cards that are actually awoken
 		(card.EvoIsReborn() && card.RebirthsFrom() != nil) || // ignore Rebirth cards that are actually reborn
 		//strings.Contains(skill1Min, "Battle EXP +5%") ||
+		cardIsOnlyAmalMaterial(card) ||
 		false
 }
 
@@ -179,4 +180,12 @@ func nameNotAllowed(name string) bool {
 		strings.Contains(name, "MEDAL GIRL") ||
 		strings.Contains(name, "MIRROR MAIDEN") ||
 		false)
+}
+
+func cardIsOnlyAmalMaterial(card *vc.Card) bool {
+	return card.HasAmalgamation() &&
+		((card.DefaultDefense == card.MaxDefense &&
+			card.DefaultOffense == card.MaxOffense &&
+			card.DefaultFollower == card.MaxFollower) ||
+			(card.SkillMin() == card.SkillMax() && strings.Contains(card.SkillMin(), "Battle EXP +5%")))
 }
