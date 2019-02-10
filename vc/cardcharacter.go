@@ -1,5 +1,7 @@
 package vc
 
+import "sort"
+
 // CardCharacter info from master_data field "card_character"
 // These match up with all the MsgChara*_en.strb files
 type CardCharacter struct {
@@ -36,6 +38,9 @@ func (c *CardCharacter) Cards() []Card {
 				c._cards = append(c._cards, val)
 			}
 		}
+		sort.Slice(c._cards, func(a, b int) bool {
+			return c._cards[a].EvolutionRank < c._cards[b].EvolutionRank
+		})
 	}
 	return c._cards
 }
