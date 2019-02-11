@@ -94,17 +94,25 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	bl := len(*nobu.DB)
 	lNames := len(namesOfCards)
 	i := 0
+	skipped := 0
+	added := 0
+	updated := 0
 	for name, cards := range namesOfCards {
 		i++
 		card := firstCard(&cards)
 		if card == nil {
+			skipped++
 			log.Printf("%d/%d ***********Skipping %d Cards with name %s\n", i, lNames, len(cards), name)
 		} else {
 			log.Printf("%d/%d Adding/Updating Bot Card %s\n", i, lNames, name)
-			nobu.DB.AddOrUpdate(card)
+			if nobu.DB.AddOrUpdate(card) {
+				updated++
+			} else {
+				added++
+			}
 		}
 	}
-	log.Printf("Bot DB changed from %d records to %d", bl, len(*nobu.DB))
+	log.Printf("Bot DB changed from %d records to %d. Added: %d, Updated:%d, Skipped: %d", bl, len(*nobu.DB), added, updated, skipped)
 
 	// sort the cards by VC release IDs
 	sort.Slice(*nobu.DB, func(i, j int) bool {
@@ -178,14 +186,20 @@ func nameNotAllowed(name string) bool {
 	return !(strings.Contains(name, "SLIME") ||
 		strings.Contains(name, "GOLD GIRL") ||
 		strings.Contains(name, "MEDAL GIRL") ||
-		strings.Contains(name, "MIRROR MAIDEN") ||
+		(strings.Contains(name, "MIRROR MAIDEN") && !strings.Contains(name, "SHARD")) ||
+		strings.Contains(name, "CHIMRY") ||
 		false)
 }
 
 func cardIsOnlyAmalMaterial(card *vc.Card) bool {
-	return card.HasAmalgamation() &&
+	ret := card.HasAmalgamation() &&
+		nameNotAllowed(card.Name) &&
 		((card.DefaultDefense == card.MaxDefense &&
 			card.DefaultOffense == card.MaxOffense &&
 			card.DefaultFollower == card.MaxFollower) ||
 			(card.SkillMin() == card.SkillMax() && strings.Contains(card.SkillMin(), "Battle EXP +5%")))
+	if ret {
+		log.Printf("********** Card %d: %s Is flagged as AMALGAMATION ONLY *********", card.ID, card.Name)
+	}
+	return ret
 }
