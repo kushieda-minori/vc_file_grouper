@@ -29,6 +29,7 @@ type GardenDebris struct { // garden_debris
 	Coin         int `json:"coin"`
 	Iron         int `json:"iron"`
 	Ether        int `json:"ether"`
+	Gem          int `json:"elixir"`
 	Cash         int `json:"cash"`
 	Exp          int `json:"exp"`
 }
@@ -61,41 +62,58 @@ type Structure struct { // structures
 	_levels         []StructureLevel
 	_numCosts       []StructureCost
 	_castleBonus    []CastleLevel
+	_debris         *GardenDebris
 }
 
 // "event_structures" lists any structures available in the current event
 
 // StructureLevel structure_level lists the level for the available structures
 type StructureLevel struct { // structure_level
-	ID           int            `json:"_id"`
-	StructureID  int            `json:"structure_id"`
-	Level        int            `json:"level"`
-	TexID        int            `json:"tex_id"`
-	LevelCap     int            `json:"level_cap"`
-	UnlockAreaID int            `json:"unlock_area_id"`
-	Time         int            `json:"time"`
-	BeginnerTime int            `json:"beginner_time"`
-	Coin         int            `json:"coin"`
-	Iron         int            `json:"iron"`
-	Ether        int            `json:"ether"`
-	Cash         int            `json:"cash"`
-	Elixir       int            `json:"elixir"`
-	Price        int            `json:"price"`
-	Exp          int            `json:"exp"`
-	Resource     *ResourceLevel `json:"-"`
-	Bank         *BankLevel     `json:"-"`
+	ID            int            `json:"_id"`
+	StructureID   int            `json:"structure_id"`
+	Level         int            `json:"level"`
+	TexID         int            `json:"tex_id"` // texture image id?
+	LevelCap      int            `json:"level_cap"`
+	UnlockAreaID  int            `json:"unlock_area_id"`
+	Time          int            `json:"time"`
+	BeginnerTime  int            `json:"beginner_time"`
+	Coin          int            `json:"coin"`
+	Iron          int            `json:"iron"`
+	Ether         int            `json:"ether"`
+	Cash          int            `json:"cash"`
+	Gem           int            `json:"elixir"`
+	BeginnerCoin  int            `json:"beginner_coin"`
+	BeginnerIron  int            `json:"beginner_iron"`
+	BeginnerEther int            `json:"beginner_ether"`
+	BeginnerCash  int            `json:"beginner_cash"`
+	BeginnerGem   int            `json:"beginner_elixir"`
+	Price         int            `json:"price"`
+	Exp           int            `json:"exp"`
+	ItemID1       int            `json:"item_id_1"`
+	ItemNum1      int            `json:"item_num_1"`
+	ItemID2       int            `json:"item_id_2"`
+	ItemNum2      int            `json:"item_num_2"`
+	ItemID3       int            `json:"item_id_3"`
+	ItemNum3      int            `json:"item_num_3"`
+	Resource      *ResourceLevel `json:"-"`
+	Bank          *BankLevel     `json:"-"`
 }
 
 // StructureCost cost to build a structure
 type StructureCost struct { // structure_num_cost
-	ID          int `json:"_id"`
-	Num         int `json:"num"`
-	StructureID int `json:"structure_id"`
-	Coin        int `json:"coin"`
-	Iron        int `json:"iron"`
-	Ether       int `json:"ether"`
-	Cash        int `json:"cash"`
-	Elixir      int `json:"elixir"`
+	ID            int `json:"_id"`
+	Num           int `json:"num"`
+	StructureID   int `json:"structure_id"`
+	Coin          int `json:"coin"`
+	Iron          int `json:"iron"`
+	Ether         int `json:"ether"`
+	Cash          int `json:"cash"`
+	Gem           int `json:"elixir"`
+	BeginnerCoin  int `json:"beginner_coin"`
+	BeginnerIron  int `json:"beginner_iron"`
+	BeginnerEther int `json:"beginner_ether"`
+	BeginnerCash  int `json:"beginner_cash"`
+	BeginnerGem   int `json:"beginner_elixir"`
 }
 
 // ResourceLevel amount of resources needed to level up a structure
@@ -115,9 +133,9 @@ type BankLevel struct { //bank_level
 	ID          int `json:"_id"`
 	StructureID int `json:"structure_id"`
 	Level       int `json:"level"`
-	LowTexID    int `json:"low_tex_id"`
-	MidTexID    int `json:"mid_tex_id"`
-	HiTexID     int `json:"hi_tex_id"`
+	LowTexID    int `json:"low_tex_id"` // low level texture image ID
+	MidTexID    int `json:"mid_tex_id"` // mid level texture image ID
+	HiTexID     int `json:"hi_tex_id"`  // high level texture image ID
 	ResourceID  int `json:"resource_id"`
 	Value       int `json:"value"`
 }
@@ -130,6 +148,39 @@ type CastleLevel struct { //castle_level
 	StructureID       int `json:"structure_id"`
 	BaseAdd           int `json:"base_add"`
 	Max               int `json:"max"`
+}
+
+// DecoWarehouse Deco Warehouse info
+type DecoWarehouse struct { //deco_warehouse
+	ID        int `json:"_id"`
+	Level     int `json:"level"`
+	StockSize int `json:"stock_size"`
+}
+
+// DecoResource Deco Warehouse info
+type DecoResource struct { //deco_resource
+	ID           int `json:"_id"`
+	StructureID  int `json:"structure_id"`
+	Level        int `json:"level"`
+	IntervalTime int `json:"interval_time"`
+	ResourceID   int `json:"resource_id"`
+	Income       int `json:"income"`
+	Coefficient  int `json:"coefficient"`
+	Base         int `json:"base"`
+	Max          int `json:"max"`
+	CollectTime  int `json:"collect_time"`
+}
+
+//SpecialEffect special effect definitions of structures
+type SpecialEffect struct { // special_effect
+	ID              int `json:"_id"`
+	StructureID     int `json:"structure_id"`
+	Level           int `json:"level"`
+	SpecialEffectID int `json:"special_effect_id"`
+	Param1          int `json:"param1"`
+	Param2          int `json:"param2"`
+	Param3          int `json:"param3"`
+	Param4          int `json:"param4"`
 }
 
 // Levels of a structure
