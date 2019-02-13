@@ -518,31 +518,7 @@ func getWikiItem(item *vc.Item) (r string) {
 		}
 		if itemName == "" {
 			// check rebirth items
-			element := ""
-			if strings.Contains(item.NameEng, "Stellar") {
-				element = "Light"
-			} else if strings.Contains(item.NameEng, "Flame") {
-				element = "Passion"
-			} else if strings.Contains(item.NameEng, "Frost") {
-				element = "Cool"
-			} else if strings.Contains(item.NameEng, "Crescent") {
-				element = "Dark"
-			}
-			itype := ""
-			if strings.Contains(item.NameEng, "Bud") {
-				itype = "Bud"
-			} else if strings.Contains(item.NameEng, "Bloom") {
-				itype = "Bloom"
-			} else if strings.Contains(item.NameEng, "Flora") {
-				itype = "Flora"
-			} else if strings.Contains(item.NameEng, "Secret Elixir") {
-				itype = "Secret Elixir"
-			} else if strings.Contains(item.NameEng, "Medicinal Herb") {
-				itype = "Medicinal Herb"
-			} else if strings.Contains(item.NameEng, "Zera") {
-				itype = "Zera"
-			}
-			r = fmt.Sprintf("{{Flower|%s|%s}}", element, itype)
+			r = fmt.Sprintf("{{Flower|%s}}", item.NameEng)
 		} else {
 			r = fmt.Sprintf("{{Stone|%s}}", itemName)
 		}

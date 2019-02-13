@@ -1107,21 +1107,8 @@ func printRebirthMaterial(w http.ResponseWriter, matNum int, item *vc.Item, coun
 	if item == nil || count <= 0 {
 		return
 	}
-	if strings.Contains(item.NameEng, "Bud") {
-		fmt.Fprintf(w, "|rebirth bud = %d\n", count)
-	} else if strings.Contains(item.NameEng, "Bloom") {
-		fmt.Fprintf(w, "|rebirth bloom = %d\n", count)
-	} else if strings.Contains(item.NameEng, "Flora") {
-		fmt.Fprintf(w, "|rebirth flora = %d\n", count)
-	} else if strings.Contains(item.NameEng, "Secret Elixir") {
-		fmt.Fprintf(w, "|rebirth elixir = %d\n", count)
-	} else if strings.Contains(item.NameEng, "Medicinal Herb") {
-		fmt.Fprintf(w, "|rebirth herb = %d\n", count)
-	} else if strings.Contains(item.NameEng, "Zera") {
-		fmt.Fprintf(w, "|rebirth zera = %d\n", count)
-	} else {
-		fmt.Fprintf(w, "*******Unknown Rebirth item: %s\n", item.NameEng)
-	}
+	fmt.Fprintf(w, "|rebirth item %d = %s\n", matNum, item.NameEng)
+	fmt.Fprintf(w, "|rebirth item %d count = %d\n", matNum, count)
 }
 
 func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
