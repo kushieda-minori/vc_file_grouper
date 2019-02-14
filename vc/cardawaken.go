@@ -61,3 +61,52 @@ func (ca *CardAwaken) Item(i int) *Item {
 	}
 	return nil
 }
+
+// AwakenItem awaken Item
+type AwakenItem struct {
+	Awakens *CardAwaken
+	Item    *Item
+	Count   int
+}
+
+// ItemCounts List of items and counts for this awakening
+func (ca *CardAwaken) ItemCounts() (items []AwakenItem) {
+	items = make([]AwakenItem, 0, 5)
+
+	if mat := ItemScan(ca.Material1Item); mat != nil && ca.Material1Count > 0 {
+		items = append(items, AwakenItem{
+			Awakens: ca,
+			Item:    mat,
+			Count:   ca.Material1Count,
+		})
+	}
+	if mat := ItemScan(ca.Material2Item); mat != nil && ca.Material2Count > 0 {
+		items = append(items, AwakenItem{
+			Awakens: ca,
+			Item:    mat,
+			Count:   ca.Material2Count,
+		})
+	}
+	if mat := ItemScan(ca.Material3Item); mat != nil && ca.Material3Count > 0 {
+		items = append(items, AwakenItem{
+			Awakens: ca,
+			Item:    mat,
+			Count:   ca.Material3Count,
+		})
+	}
+	if mat := ItemScan(ca.Material4Item); mat != nil && ca.Material4Count > 0 {
+		items = append(items, AwakenItem{
+			Awakens: ca,
+			Item:    mat,
+			Count:   ca.Material4Count,
+		})
+	}
+	if mat := ItemScan(ca.Material5Item); mat != nil && ca.Material5Count > 0 {
+		items = append(items, AwakenItem{
+			Awakens: ca,
+			Item:    mat,
+			Count:   ca.Material5Count,
+		})
+	}
+	return
+}

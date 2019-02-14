@@ -29,7 +29,12 @@ func (a *Amalgamation) MaterialCount() int {
 
 // Materials material used in the amalgamation including the result
 func (a *Amalgamation) Materials() []*Card {
-	return append(a.MaterialsOnly(), CardScan(a.FusionCardID))
+	return append(a.MaterialsOnly(), a.Result())
+}
+
+// Result result card from the amalgamation
+func (a *Amalgamation) Result() *Card {
+	return CardScan(a.FusionCardID)
 }
 
 // MaterialsOnly material used in the amalgamation excluding the result
