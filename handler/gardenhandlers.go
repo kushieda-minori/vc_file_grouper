@@ -86,17 +86,25 @@ func StructureDetailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	structure := vc.StructureScan(structureID, vc.Data)
+	structure := vc.StructureScan(structureID)
 	if structure == nil {
 		http.Error(w, "Structure not found with id "+pathParts[3], http.StatusNotFound)
 		return
 	}
 
-	fmt.Fprintf(w, "<html><head><title>Structure %d: %s</title></head><body>\n",
+	fmt.Fprintf(w, "<html><head><title>Structure %d: %s</title>"+
+		"<style>\n"+
+		".nav {display:flex;flex-direction:row;flex-wrap:wrap;}\n"+
+		".nav a {padding: 5px;}\n"+
+		".images{display:flex;flex-direction:row;flex-wrap:wrap;}\n"+
+		".image-wrapper{align-self:flex-end;text-align:center;padding:2px;border:1px solid black;}\n"+
+		"</style>"+
+		"</head><body>\n<h1>%[2]s</h1>%s<hr />\n",
 		structure.ID,
 		structure.Name,
+		structure.Description,
 	)
-	pc := structure.PurchaseCosts(vc.Data)
+	pc := structure.PurchaseCosts()
 	if len(pc) > 0 {
 		io.WriteString(w, "\nPurchase Costs<br/><textarea rows=\"25\" cols=\"80\">")
 		io.WriteString(w, `{| class="article-table"
@@ -110,7 +118,7 @@ func StructureDetailHandler(w http.ResponseWriter, r *http.Request) {
 				p.Coin,
 				p.Iron,
 				p.Ether,
-				p.Elixir,
+				p.Gem,
 				p.Cash,
 			)
 		}
@@ -121,10 +129,27 @@ func StructureDetailHandler(w http.ResponseWriter, r *http.Request) {
 	} else if structure.IsBank() {
 		printBank(w, structure)
 	} else {
-		io.WriteString(w, "Not ready yet.")
+		io.WriteString(w, "No details...")
 	}
 
-	io.WriteString(w, "</body></html>")
+	gardenBin := vc.FilePath + "/garden/map_01.bin"
+	texIds := structure.TextureIDs()
+	images, err := vc.GetBinFileImages(gardenBin, texIds...)
+
+	log.Printf("Found %d images for structure %d: %s", len(images), structure.ID, structure.Name)
+
+	io.WriteString(w, "<div class=\"images\">")
+	for idx, image := range images {
+		io.WriteString(
+			w,
+			inlineImageTag(
+				fmt.Sprintf("%s_%d.png", structure.Name, idx+1),
+				&image.Data,
+			),
+		)
+	}
+
+	io.WriteString(w, "</div>\n</body></html>")
 }
 
 // StructureImagesHandler show structure images
@@ -238,14 +263,23 @@ func StructureImagesHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</div>\n<div class=\"images\">")
 	for i := 0; i < limages; i++ {
 		image := images[i]
-		fmt.Fprintf(w,
-			"<div class=\"image-wrapper\"><a download=\"%[1]s\" href=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\"><img src=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\" /><br/>%[1]s</a></div>\n",
-			image.Name,
-			base64.StdEncoding.EncodeToString(image.Data),
+		io.WriteString(w,
+			inlineImageTag(
+				image.Name,
+				&image.Data,
+			),
 		)
 	}
 
 	io.WriteString(w, "</div></body></html>")
+}
+
+func inlineImageTag(imageName string, data *[]byte) string {
+	return fmt.Sprintf(
+		"<div class=\"image-wrapper\"><a download=\"%[1]s\" href=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\"><img src=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\" /><br/>%[1]s</a></div>\n",
+		imageName,
+		base64.StdEncoding.EncodeToString(*data),
+	)
 }
 
 func printResource(w http.ResponseWriter, structure *vc.Structure) {
@@ -275,7 +309,7 @@ Max quantity: %d
 		structure.Description,
 		structure.SizeX,
 		structure.SizeY,
-		structure.MaxQty(vc.Data),
+		structure.MaxQty(),
 	)
 	castleReq := ""
 	if structure.UnlockCastleLv > 0 {
@@ -292,7 +326,7 @@ Max quantity: %d
 		areaReq = fmt.Sprintf("<br />Clear Area %s", vc.Data.Areas[structure.UnlockAreaID].Name)
 	}
 	io.WriteString(w, lvlHeader)
-	levels := structure.Levels(vc.Data)
+	levels := structure.Levels()
 	expTot, goldTot, ethTot, ironTot := 0, 0, 0, 0
 	for _, l := range levels {
 		buildTime := time.Duration(l.Time) * time.Second
@@ -356,7 +390,7 @@ Max quantity: %d
 		structure.Description,
 		structure.SizeX,
 		structure.SizeY,
-		structure.MaxQty(vc.Data),
+		structure.MaxQty(),
 	)
 	castleReq := ""
 	if structure.UnlockCastleLv > 0 {
@@ -373,7 +407,7 @@ Max quantity: %d
 		areaReq = fmt.Sprintf("<br />Clear Area %s", vc.Data.Areas[structure.UnlockAreaID].Name)
 	}
 	io.WriteString(w, lvlHeader)
-	levels := structure.Levels(vc.Data)
+	levels := structure.Levels()
 	expTot, goldTot, ethTot, ironTot := 0, 0, 0, 0
 	for _, l := range levels {
 		buildTime := time.Duration(l.Time) * time.Second

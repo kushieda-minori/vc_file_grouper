@@ -1,6 +1,7 @@
 package vc
 
 import (
+	"log"
 	"time"
 )
 
@@ -63,6 +64,47 @@ type Structure struct { // structures
 	_numCosts       []StructureCost
 	_castleBonus    []CastleLevel
 	_debris         *GardenDebris
+}
+
+// TextureIDs gets the texture IDs for this structure
+func (s *Structure) TextureIDs() []int {
+	levels := s.Levels()
+	ret := make([]int, 0)
+	seen := make(map[int]struct{}, 0)
+	for _, level := range levels {
+		if _, ok := seen[level.TexID]; !ok {
+			ret = append(ret, level.TexID)
+			seen[level.TexID] = struct{}{}
+		}
+		if level.Bank != nil {
+			b := level.Bank
+			if _, ok := seen[b.LowTexID]; !ok && b.LowTexID > 0 {
+				ret = append(ret, b.LowTexID)
+				seen[b.LowTexID] = struct{}{}
+			}
+			if _, ok := seen[b.MidTexID]; !ok && b.MidTexID > 0 {
+				ret = append(ret, b.MidTexID)
+				seen[b.MidTexID] = struct{}{}
+			}
+			if _, ok := seen[b.HiTexID]; !ok && b.HiTexID > 0 {
+				ret = append(ret, b.HiTexID)
+				seen[b.HiTexID] = struct{}{}
+			}
+		}
+		if level.Resource != nil {
+			r := level.Resource
+			if _, ok := seen[r.JobTexID]; !ok && r.JobTexID > 0 {
+				ret = append(ret, r.JobTexID)
+				seen[r.JobTexID] = struct{}{}
+			}
+			if _, ok := seen[r.FixTexID]; !ok && r.FixTexID > 0 {
+				ret = append(ret, r.FixTexID)
+				seen[r.FixTexID] = struct{}{}
+			}
+		}
+	}
+	log.Printf("Tex IDs: %v", ret)
+	return ret
 }
 
 // "event_structures" lists any structures available in the current event
@@ -184,13 +226,13 @@ type SpecialEffect struct { // special_effect
 }
 
 // Levels of a structure
-func (s *Structure) Levels(v *VFile) []StructureLevel {
+func (s *Structure) Levels() []StructureLevel {
 	if s._levels == nil {
 		s._levels = make([]StructureLevel, 0)
-		for _, l := range v.StructureLevels {
+		for _, l := range Data.StructureLevels {
 			if l.StructureID == s.ID {
-				l.cacheResource(v) // cache off the resource level for later
-				l.cacheBank(v)     // cache off the bank level for later
+				l.cacheResource() // cache off the resource level for later
+				l.cacheBank()     // cache off the bank level for later
 				s._levels = append(s._levels, l)
 			}
 		}
@@ -199,10 +241,10 @@ func (s *Structure) Levels(v *VFile) []StructureLevel {
 }
 
 // PurchaseCosts costs of purchasing the structure
-func (s *Structure) PurchaseCosts(v *VFile) []StructureCost {
+func (s *Structure) PurchaseCosts() []StructureCost {
 	if s._numCosts == nil {
 		s._numCosts = make([]StructureCost, 0)
-		for _, p := range v.StructureNumCosts {
+		for _, p := range Data.StructureNumCosts {
 			if p.StructureID == s.ID {
 				s._numCosts = append(s._numCosts, p)
 			}
@@ -213,25 +255,29 @@ func (s *Structure) PurchaseCosts(v *VFile) []StructureCost {
 
 // IsResource returns true if the building is a resource building
 func (s *Structure) IsResource() bool {
-	return s.StructureTypeID == 1 ||
-		s.StructureTypeID == 2 ||
-		s.StructureTypeID == 3 ||
-		s.StructureTypeID == 20
+	for _, l := range s.Levels() {
+		if l.Resource != nil {
+			return true
+		}
+	}
+	return false
 }
 
 // IsBank returns true if the structure is a resource bank
 func (s *Structure) IsBank() bool {
-	return s.StructureTypeID == 4 ||
-		s.StructureTypeID == 5 ||
-		s.StructureTypeID == 6 ||
-		s.StructureTypeID == 21
+	for _, l := range s.Levels() {
+		if l.Bank != nil {
+			return true
+		}
+	}
+	return false
 }
 
 // CastleBonuses bonuses obtained by leveling up the castle
-func (s *Structure) CastleBonuses(v *VFile) []CastleLevel {
+func (s *Structure) CastleBonuses() []CastleLevel {
 	if s._castleBonus == nil {
 		s._castleBonus = make([]CastleLevel, 0)
-		for _, cl := range v.CastleLevels {
+		for _, cl := range Data.CastleLevels {
 			if cl.StructureID == s.ID {
 				s._castleBonus = append(s._castleBonus, cl)
 			}
@@ -241,9 +287,9 @@ func (s *Structure) CastleBonuses(v *VFile) []CastleLevel {
 }
 
 // MaxQty Number a player can own
-func (s *Structure) MaxQty(v *VFile) int {
+func (s *Structure) MaxQty() int {
 	maxCLB := 0
-	clbs := s.CastleBonuses(v)
+	clbs := s.CastleBonuses()
 	for i, clb := range clbs {
 		if clb.Level > clbs[maxCLB].Level {
 			maxCLB = i
@@ -252,21 +298,21 @@ func (s *Structure) MaxQty(v *VFile) int {
 	return clbs[maxCLB].Max
 }
 
-func (l *StructureLevel) cacheResource(v *VFile) {
+func (l *StructureLevel) cacheResource() {
 	if l.Resource == nil {
-		for i, sr := range v.ResourceLevels {
+		for i, sr := range Data.ResourceLevels {
 			if sr.StructureID == l.StructureID && sr.Level == l.Level {
-				l.Resource = &v.ResourceLevels[i]
+				l.Resource = &(Data.ResourceLevels[i])
 				break
 			}
 		}
 	}
 }
-func (l *StructureLevel) cacheBank(v *VFile) {
+func (l *StructureLevel) cacheBank() {
 	if l.Bank == nil {
-		for i, br := range v.BankLevels {
+		for i, br := range Data.BankLevels {
 			if br.StructureID == l.StructureID && br.Level == l.Level {
-				l.Bank = &v.BankLevels[i]
+				l.Bank = &(Data.BankLevels[i])
 				break
 			}
 		}
@@ -284,16 +330,43 @@ func (sr *ResourceLevel) FillTime() time.Duration {
 }
 
 // StructureScan searches for a structure by ID
-func StructureScan(id int, v *VFile) *Structure {
+func StructureScan(id int) *Structure {
 	if id > 0 {
-		if id < len(v.Structures) && v.Structures[id-1].ID == id {
-			return &v.Structures[id-1]
+		if id < len(Data.Structures) && Data.Structures[id-1].ID == id {
+			return &Data.Structures[id-1]
 		}
-		for k, val := range v.Structures {
+		for k, val := range Data.Structures {
 			if val.ID == id {
-				return &v.Structures[k]
+				return &(Data.Structures[k])
 			}
 		}
 	}
 	return nil
+}
+
+// StructureType types of structures
+var StructureType = []string{
+	"",                    // 0
+	"Farm",                // 1
+	"Iron Works",          // 2
+	"Ether Furnace",       // 3
+	"Gold Storehouse",     // 4
+	"Iron Storehouse",     // 5
+	"Ether Storehouse",    // 6
+	"Workshop",            // 7
+	"Castle",              // 8
+	"Market",              // 9
+	"Decorations",         // 10
+	"Player Improvements", // 11
+	"Alliance",            // 12
+	"Deco Storage",        // 13
+	"Amusement",           // 14
+	"Ward",                // 15
+	"Debris",              // 16
+	"Kingdom Gate",        // 17
+	"Resort Hotel",        // 18
+	"Awakening Lab",       // 19
+	"Gem Mine",            // 20
+	"Gem Storage",         // 21
+	"Treasure Hunt",       // 22
 }

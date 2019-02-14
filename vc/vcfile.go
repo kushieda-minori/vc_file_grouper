@@ -903,6 +903,25 @@ func cleanCardName(name string, card *Card) string {
 	return ret
 }
 
+// GetBinFileImages gets a subset of images from the bin index. 1-based index.
+func GetBinFileImages(filename string, idxs ...int) ([]BinImage, error) {
+	if len(idxs) == 0 {
+		return nil, errors.New("Index out of bounds")
+	}
+	images, err := ReadBinFileImages(filename)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]BinImage, 0, len(idxs))
+	for _, idx := range idxs {
+		if idx < 1 || idx > len(images) {
+			return nil, errors.New("Index out of bounds")
+		}
+		ret = append(ret, images[idx-1])
+	}
+	return ret, nil
+}
+
 //Use this to do common string replacements in the VC data files
 func filter(s string) string {
 	if s == "null" {
