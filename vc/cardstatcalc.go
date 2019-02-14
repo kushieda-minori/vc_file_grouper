@@ -468,10 +468,8 @@ func (c *Card) EvoStandard() (atk, def, soldier int) {
 			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom()
-				matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1()
-				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
-				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
+				matAtk, matDef, matSoldier := mat.EvoStandardLvl1()
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
@@ -554,10 +552,8 @@ func (c *Card) EvoStandardLvl1() (atk, def, soldier int) {
 			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom()
-				matAtk, matDef, matSoldier := awakenMat.EvoStandardLvl1()
-				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
-				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
+				matAtk, matDef, matSoldier := mat.EvoStandardLvl1()
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
 				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
@@ -637,10 +633,8 @@ func (c *Card) EvoMixed() (atk, def, soldier int) {
 			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom()
-				matAtk, matDef, matSoldier := awakenMat.EvoMixedLvl1()
-				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
-				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
+				matAtk, matDef, matSoldier := mat.EvoMixedLvl1()
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
@@ -730,10 +724,8 @@ func (c *Card) EvoMixedLvl1() (atk, def, soldier int) {
 			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom()
-				matAtk, matDef, matSoldier := awakenMat.EvoMixedLvl1()
-				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
-				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
+				matAtk, matDef, matSoldier := mat.EvoMixedLvl1()
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
 				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
@@ -818,10 +810,8 @@ func (c *Card) Evo6Card() (atk, def, soldier int) {
 			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom()
-				matAtk, matDef, matSoldier := awakenMat.Evo6CardLvl1()
-				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
-				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
+				matAtk, matDef, matSoldier := mat.Evo6CardLvl1()
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
@@ -903,10 +893,8 @@ func (c *Card) Evo6CardLvl1() (atk, def, soldier int) {
 			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom()
-				matAtk, matDef, matSoldier := awakenMat.Evo6CardLvl1()
-				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
-				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
+				matAtk, matDef, matSoldier := mat.Evo6CardLvl1()
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
 				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
@@ -989,10 +977,8 @@ func (c *Card) Evo9Card() (atk, def, soldier int) {
 			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom()
-				matAtk, matDef, matSoldier := awakenMat.Evo9CardLvl1()
-				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
-				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
+				matAtk, matDef, matSoldier := mat.Evo9CardLvl1()
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
@@ -1081,10 +1067,8 @@ func (c *Card) Evo9CardLvl1() (atk, def, soldier int) {
 			mat := c.RebirthsFrom()
 			if mat != nil {
 				// if this is an rebirth, calculate the max...
-				awakenMat := mat.AwakensFrom()
-				matAtk, matDef, matSoldier := awakenMat.Evo9CardLvl1()
-				aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
-				atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
+				matAtk, matDef, matSoldier := mat.Evo9CardLvl1()
+				atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
 				log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 					mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 			} else {
@@ -1171,10 +1155,8 @@ func (c *Card) EvoPerfect() (atk, def, soldier int) {
 		} else if c.RebirthsFrom() != nil {
 			mat := c.RebirthsFrom()
 			// if this is an rebirth, calculate the max...
-			awakenMat := mat.AwakensFrom()
-			matAtk, matDef, matSoldier := awakenMat.EvoPerfectLvl1()
-			aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
-			atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, false)
+			matAtk, matDef, matSoldier := mat.EvoPerfectLvl1()
+			atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, false)
 			log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 		} else if c.AwakensFrom() != nil {
@@ -1245,10 +1227,8 @@ func (c *Card) EvoPerfectLvl1() (atk, def, soldier int) {
 		} else if c.RebirthsFrom() != nil {
 			mat := c.RebirthsFrom()
 			// if this is an rebirth, calculate the max...
-			awakenMat := mat.AwakensFrom()
-			matAtk, matDef, matSoldier := awakenMat.EvoPerfectLvl1()
-			aatk, adef, asoldier := mat.calculateAwakeningStat(awakenMat, matAtk, matDef, matSoldier, true)
-			atk, def, soldier = c.calculateAwakeningStat(mat, aatk, adef, asoldier, true)
+			matAtk, matDef, matSoldier := mat.EvoPerfectLvl1()
+			atk, def, soldier = c.calculateAwakeningStat(mat, matAtk, matDef, matSoldier, true)
 			log.Printf("Rebirth standard card %d (%d, %d, %d) -> %d (%d, %d, %d)\n",
 				mat.ID, matAtk, matDef, matSoldier, c.ID, atk, def, soldier)
 		} else if c.AwakensFrom() != nil {

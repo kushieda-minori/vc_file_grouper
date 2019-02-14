@@ -249,7 +249,7 @@ func (c *Card) NextEvo() *Card {
 		return nil
 	}
 	if c.nextEvo == nil {
-		if c.CardCharaID <= 0 || c.EvolutionCardID <= 0 || c.Rarity()[0] == 'H' {
+		if c.CardCharaID <= 0 || c.EvolutionCardID <= 0 || c.EvoIsHigh() {
 			return nil
 		}
 
@@ -816,10 +816,9 @@ func checkEndCards(c *Card) (awakening, amalCard, amalAwakening, rebirth, rebirt
 					amalCard = tamalCard
 					// check for amal awakening
 					amalAwakening = amalCard.AwakensTo()
-					if amalAwakening != nil {
+					rebirthAmal = amalCard.RebirthsTo()
+					if rebirthAmal == nil && amalAwakening != nil {
 						rebirthAmal = amalAwakening.RebirthsTo()
-					} else {
-						rebirthAmal = amalCard.RebirthsTo()
 					}
 					return // awakening, amalCard, amalAwakening, rebirth, rebirthAmal
 				}
@@ -883,30 +882,36 @@ func (c *Card) GetEvolutions() map[string]*Card {
 		}
 
 		c2 := c
-		// check if this is an rebirth card
+		// check if this is a rebirth card
 		if c2.EvoIsReborn() {
+			log.Printf("Card %d:%s is reborn, finding it's source", c2.ID, c2.Name)
 			tmp := c2.RebirthsFrom()
 			if tmp == nil {
 				ch := c2.Character()
 				if ch != nil && ch.Cards()[0].Name == c2.Name {
 					c2 = &(ch.Cards()[0])
+					log.Printf("Found card %d:%s", c2.ID, c2.Name)
 				}
 				// the name changed, so we'll keep this card
 			} else {
 				c2 = tmp
+				log.Printf("Found card %d:%s", c2.ID, c2.Name)
 			}
 		}
 		// check if this is an awoken card
 		if c2.EvoIsAwoken() {
+			log.Printf("Card %d:%s is awoken, finding it's source", c2.ID, c2.Name)
 			tmp := c2.AwakensFrom()
 			if tmp == nil {
 				ch := c2.Character()
 				if ch != nil && ch.Cards()[0].Name == c2.Name {
 					c2 = &(ch.Cards()[0])
+					log.Printf("Found card %d:%s", c2.ID, c2.Name)
 				}
 				// the name changed, so we'll keep this card
 			} else {
 				c2 = tmp
+				log.Printf("Found card %d:%s", c2.ID, c2.Name)
 			}
 		}
 
@@ -927,8 +932,28 @@ func (c *Card) GetEvolutions() map[string]*Card {
 
 		log.Printf("Base Card: %d, Name: '%s', Evo: %d\n", c2.ID, c2.Name, c2.EvolutionRank)
 
-		// populate the actual evos.
+		// assigns evolutions found
+		assignLastEvos := func(awakening, amalCard, amalAwakening, rebirth, rebirthAmal *Card) {
+			if awakening != nil {
+				ret["G"] = awakening
+			}
+			if amalCard != nil {
+				ret["A"] = amalCard
+			}
+			if amalAwakening != nil {
+				ret["GA"] = amalAwakening
+			}
+			if rebirth != nil {
+				ret["X"] = rebirth
+				if rebirthAmal != nil {
+					ret["XA"] = rebirthAmal
+				}
+			} else if rebirthAmal != nil {
+				ret["X"] = rebirthAmal
+			}
+		}
 
+		// populate the actual evos.
 		for nextEvo := c2; nextEvo != nil; nextEvo = nextEvo.NextEvo() {
 			log.Printf("Next Evo is Card: %d, Name: '%s', Evo: %d\n", nextEvo.ID, nextEvo.Name, nextEvo.EvolutionRank)
 			if nextEvo.EvolutionRank <= 0 {
@@ -940,49 +965,27 @@ func (c *Card) GetEvolutions() map[string]*Card {
 				if nextEvo.LastEvolutionRank < 0 {
 					// check for awakening
 					awakening, amalCard, amalAwakening, rebirth, rebirthAmal := checkEndCards(nextEvo)
-					if awakening != nil {
-						ret["G"] = awakening
-					}
-					if amalCard != nil {
-						ret["A"] = amalCard
-					}
-					if amalAwakening != nil {
-						ret["GA"] = amalAwakening
-					}
-					if rebirth != nil {
-						ret["X"] = rebirth
-						if rebirthAmal != nil {
-							ret["XA"] = rebirthAmal
-						}
-					} else if rebirthAmal != nil {
-						ret["X"] = rebirthAmal
-					}
+					assignLastEvos(awakening, amalCard, amalAwakening, rebirth, rebirthAmal)
 				}
-			} else if nextEvo.Rarity()[0] == 'G' {
+			} else if nextEvo.EvoIsReborn() {
+				// for some reason we hit a X during Evo traversal. Probably a X originating
+				// from amalgamation
+
+				// check for awakening/rebirth
+				_, rebirthAmal, _, _, _ := checkEndCards(nextEvo)
+				assignLastEvos(nil, nil, nil, nextEvo, rebirthAmal)
+			} else if nextEvo.EvoIsAwoken() {
 				// for some reason we hit a G during Evo traversal. Probably a G originating
 				// from amalgamation
-				ret["G"] = nextEvo
-			} else if nextEvo.EvolutionRank == c2.LastEvolutionRank || nextEvo.Rarity()[0] == 'H' || nextEvo.LastEvolutionRank < 0 {
+
+				// check for awakening/rebirth
+				_, amalCard, amalAwakening, rebirth, rebirthAmal := checkEndCards(nextEvo)
+				assignLastEvos(nextEvo, amalCard, amalAwakening, rebirth, rebirthAmal)
+			} else if nextEvo.EvolutionRank == c2.LastEvolutionRank || nextEvo.EvoIsHigh() || nextEvo.LastEvolutionRank < 0 {
 				ret["H"] = nextEvo
 				// check for awakening
 				awakening, amalCard, amalAwakening, rebirth, rebirthAmal := checkEndCards(nextEvo)
-				if awakening != nil {
-					ret["G"] = awakening
-				}
-				if amalCard != nil {
-					ret["A"] = amalCard
-				}
-				if amalAwakening != nil {
-					ret["GA"] = amalAwakening
-				}
-				if rebirth != nil {
-					ret["X"] = rebirth
-					if rebirthAmal != nil {
-						ret["XA"] = rebirthAmal
-					}
-				} else if rebirthAmal != nil {
-					ret["X"] = rebirthAmal
-				}
+				assignLastEvos(awakening, amalCard, amalAwakening, rebirth, rebirthAmal)
 			} else {
 				// not the last evo. These never awaken or have amalgamations
 				ret[strconv.Itoa(nextEvo.EvolutionRank)] = nextEvo
@@ -1028,11 +1031,12 @@ func (c *Card) GetEvolutionCards() CardList {
 	evos := c.GetEvolutions()
 	cards := make([]Card, 0, len(evos))
 	//log.Printf("Card: %d, Name: %s, Evos: %d\n", c.ID, c.Name, len(evos))
-	for _, c := range evos {
-		if c == nil {
+	for _, ek := range EvoOrder {
+		evo := evos[ek]
+		if evo == nil {
 			continue
 		}
-		cards = append(cards, *c)
+		cards = append(cards, *evo)
 	}
 	//log.Printf("Cards: %d\n", len(cards))
 	return CardList(cards)
