@@ -2,6 +2,7 @@ package nobu
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -17,11 +18,13 @@ type Skill struct {
 
 // NewSkills generates a skill array for a given card
 func newSkills(c *vc.Card) []Skill {
+	log.Printf("looking for skills on card %d:%s", c.ID, c.Name)
 	skills := make([]Skill, 0)
 
 	// skill 1
 	s := c.Skill1()
 	if s != nil {
+		log.Printf("Found skill-1 on card %d:%s", c.ID, c.Name)
 		sPrefix := "Skill"
 		if len(c.Rarity()) == 3 {
 			if c.Rarity()[0] == 'G' {
@@ -35,6 +38,7 @@ func newSkills(c *vc.Card) []Skill {
 	// skill 2
 	s = c.Skill2()
 	if s != nil && !s.Expires() {
+		log.Printf("Found skill-2 on card %d:%s", c.ID, c.Name)
 		sPrefix := "Second Skill"
 		if len(c.Rarity()) == 3 {
 			if c.Rarity()[0] == 'G' {
@@ -47,16 +51,19 @@ func newSkills(c *vc.Card) []Skill {
 	}
 
 	if a := c.LastEvo().AwakensTo(); a != nil {
+		log.Printf("Found awakening on card %d:%s -> %d:%s", c.ID, c.Name, a.ID, a.Name)
 		tmp := newSkills(a)
 		skills = append(skills, tmp...)
 		// the recursion will catch any rebirths
 	}
 	// will only pick up rebirths if we are looking at the awoken card.
 	if r := c.RebirthsTo(); r != nil {
+		log.Printf("Found rebirth on card %d:%s -> %d:%s", c.ID, c.Name, r.ID, r.Name)
 		tmp := newSkills(r)
 		skills = append(skills, tmp...)
 	}
 
+	log.Printf("Found %d skills total on card %d:%s", len(skills), c.ID, c.Name)
 	return skills
 }
 

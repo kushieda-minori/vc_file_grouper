@@ -3,20 +3,9 @@ package handler
 import (
 	"strings"
 
+	"zetsuboushita.net/vc_file_grouper/util"
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
-
-func removeDuplicates(a []string) []string {
-	result := []string{}
-	seen := map[string]string{}
-	for _, val := range a {
-		if _, ok := seen[val]; !ok {
-			result = append(result, val)
-			seen[val] = val
-		}
-	}
-	return result
-}
 
 func cleanCustomSkillRecipe(name string) string {
 	ret := ""
@@ -99,17 +88,8 @@ func cleanArcanaName(name string) string {
 	return ret
 }
 
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
-
 func isChecked(values []string, e string) string {
-	if contains(values, e) {
+	if util.Contains(values, e) {
 		return "checked"
 	}
 	return ""

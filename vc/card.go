@@ -8,6 +8,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"zetsuboushita.net/vc_file_grouper/util"
 )
 
 //HD Images are located at the following URL Pattern:
@@ -308,7 +310,7 @@ func (c *Card) PrevEvo() *Card {
 // FirstEvo Gets the first evolution for the card
 func (c *Card) FirstEvo() *Card {
 	t := c
-	for t.PrevEvo() != nil {
+	for t.PrevEvo() != nil && t.PrevEvo().ID != t.ID {
 		t = t.PrevEvo()
 	}
 	return t
@@ -317,7 +319,7 @@ func (c *Card) FirstEvo() *Card {
 // LastEvo Gets the last evolution for the card
 func (c *Card) LastEvo() *Card {
 	t := c
-	for t.NextEvo() != nil {
+	for t.NextEvo() != nil && t.NextEvo().ID != t.ID {
 		t = t.NextEvo()
 	}
 	return t
@@ -755,6 +757,20 @@ func (d CardList) Latest() (max *Card) {
 	return
 }
 
+//MinimumEvolutionRank gets the lowest evolution rank in the set
+func (d CardList) MinimumEvolutionRank() (min string) {
+	var minRare *CardRarity
+	for idx, card := range d {
+		if minRare == nil || minRare.ID > card.CardRareID {
+			// log.Printf("'Latest' Card: %d, Name: %s\n", card.ID, card.Name)
+			minRare = d[idx].CardRarity()
+			min = d[idx].Rarity()
+		}
+	}
+
+	return min
+}
+
 func getAmalBaseCard(card *Card) *Card {
 	if card.IsAmalgamation() {
 		log.Printf("Checking Amalgamation base for Card: %d, Name: %s, Evo: %d\n", card.ID, card.Name, card.EvolutionRank)
@@ -843,22 +859,28 @@ func (c *Card) GetEvoImageName(isIcon bool) string {
 		fileName = c.Character().FirstEvoCard().Image()
 	}
 	if thisKey == "0" {
-		if c.Rarity()[0] == 'G' {
+		if c.EvoIsAwoken() {
 			if isIcon {
 				return fileName + "_G"
 			}
 			return fileName + "_H"
 		}
-		if c.Rarity()[0] == 'H' {
+		if c.EvoIsHigh() {
 			return fileName + "_H"
 		}
 		return fileName
 	}
 	if !isIcon {
-		if len(evos) == 1 && thisKey == "G" {
-			return fileName + "_H"
-		}
-		if thisKey == "A" {
+		if thisKey[0] == 'G' {
+			if _, ok := evos["H"]; ok {
+				evoImages := c.EvosWithDistinctImages(isIcon)
+				if !util.Contains(evoImages, thisKey) {
+					return fileName + "_H"
+				}
+			} else {
+				return fileName + "_H"
+			}
+		} else if thisKey == "A" {
 			return fileName + "_H"
 		}
 	}

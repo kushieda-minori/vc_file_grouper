@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"zetsuboushita.net/vc_file_grouper/util"
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -113,7 +114,7 @@ func DeckBonusWikiHandler(w http.ResponseWriter, r *http.Request) {
 			for i, dc := range dca {
 				strs[i] = fmt.Sprintf("[[%s]]", dc.RefName)
 			}
-			strs = removeDuplicates(strs)
+			strs = util.RemoveDuplicates(strs)
 			sort.Strings(strs)
 			io.WriteString(w, strings.Join(strs, ", "))
 		case 3, 8:

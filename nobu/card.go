@@ -77,10 +77,7 @@ func NewCard(vcCard *vc.Card) Card {
 	if err != nil {
 		log.Printf(err.Error() + "\n")
 	}
-	rarity := vcCard.MainRarity()
-	if len(vcCard.GetEvolutions()) == 1 {
-		rarity = vcCard.Rarity()
-	}
+	rarity := vcCard.GetEvolutionCards().MinimumEvolutionRank()
 	return Card{
 		VCID:    vcCard.ID,
 		Name:    vcCard.Name,
@@ -105,10 +102,7 @@ func (botDB *Db) AddOrUpdate(vcCard *vc.Card) bool {
 	name := vcCard.Name
 	element := vcCard.Element()
 	mainRarity := vcCard.MainRarity()
-	rarity := vcCard.MainRarity()
-	if len(vcCard.GetEvolutions()) == 1 {
-		rarity = vcCard.Rarity()
-	}
+	rarity := vcCard.GetEvolutionCards().MinimumEvolutionRank()
 	for i, botCard := range *botDB {
 		if botCard.VCID == vcCard.ID || (strings.ToUpper(strings.TrimSpace(botCard.Name)) == strings.ToUpper(name) &&
 			botCard.Element == element &&
@@ -155,15 +149,20 @@ func getWikiImageLocations(vcCard *vc.Card) ([]string, error) {
 	errorMsg := ""
 	evos := vcCard.GetEvolutions()
 	evoImages := vcCard.EvosWithDistinctImages(false)
+	imageNamesSeen := make(map[string]struct{})
+	log.Printf("Looking up images for %d evolutions on card %d:%s", len(evoImages), vcCard.ID, vcCard.Name)
 	for _, evoID := range evoImages {
 		if evo, ok := evos[evoID]; ok {
 			imgName := evo.GetEvoImageName(false) + ".png"
-			imgLoc, err := getWikiImageLocation(imgName)
-			if err != nil {
-				errorMsg += "|" + err.Error()
-			}
-			if imgLoc != "" {
-				ret = append(ret, imgLoc)
+			if _, seen := imageNamesSeen[imgName]; !seen {
+				imageNamesSeen[imgName] = struct{}{}
+				imgLoc, err := getWikiImageLocation(imgName)
+				if err != nil {
+					errorMsg += "|" + err.Error()
+				}
+				if imgLoc != "" {
+					ret = append(ret, imgLoc)
+				}
 			}
 		}
 	}
@@ -182,6 +181,7 @@ func getWikiImageLocation(cardImageName string) (string, error) {
 	// to get the image location, we are going to ask Fandom for it:
 	// https://valkyriecrusade.fandom.com/index.php?title=Special:FilePath&file=Image Name.jpg
 	// this URL returns the actual image location in the HTTP Redirect Location header.
+	log.Printf("Looking up image %s", cardImageName)
 	myURL := "https://valkyriecrusade.fandom.com/index.php?title=Special:FilePath&file=" + url.QueryEscape(cardImageName)
 	nextURL := myURL
 	var i int

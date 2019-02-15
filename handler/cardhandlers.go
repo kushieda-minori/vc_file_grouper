@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"zetsuboushita.net/vc_file_grouper/util"
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -467,7 +468,7 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			k = "0"
 		}
 		dupWarn := ""
-		if !contains(iconEvos, k) {
+		if !util.Contains(iconEvos, k) {
 			dupWarn = "Duplicate Image<br />"
 		}
 		fmt.Fprintf(w,
@@ -488,7 +489,7 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			k = "0"
 		}
 		dupWarn := ""
-		if !contains(imageEvos, k) {
+		if !util.Contains(imageEvos, k) {
 			dupWarn = "Duplicate Image<br />"
 		}
 
