@@ -29,7 +29,6 @@ type Card struct {
 	Element string   `json:"element"`
 	Rarity  string   `json:"rarity"`
 	Skills  []Skill  `json:"skill"`
-	Image   string   `json:"image"`  // will be phased out
 	Images  []string `json:"images"` // contains all images (not icons)
 	Link    string   `json:"link"`
 }
@@ -68,11 +67,6 @@ func LoadDb() error {
 
 // NewCard Converts a VC card to a Nobu DB card
 func NewCard(vcCard *vc.Card) Card {
-	imgLoc, err := getWikiImageLocation(vcCard.GetEvoImageName(false) + ".png")
-	if err != nil {
-		log.Printf(err.Error() + "\n")
-	}
-
 	imgLocs, err := getWikiImageLocations(vcCard)
 	if err != nil {
 		log.Printf(err.Error() + "\n")
@@ -84,7 +78,6 @@ func NewCard(vcCard *vc.Card) Card {
 		Element: vcCard.Element(),
 		Rarity:  rarity,
 		Skills:  newSkills(vcCard),
-		Image:   imgLoc,
 		Images:  imgLocs,
 		Link: fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
 			url.PathEscape(vcCard.Name),
@@ -115,12 +108,6 @@ func (botDB *Db) AddOrUpdate(vcCard *vc.Card) bool {
 			ref.Name = vcCard.Name // ensure any oddities are taken care of
 			ref.Rarity = rarity
 			ref.Skills = newSkills(vcCard)
-			if ref.Image == "" {
-				imgLoc, err := getWikiImageLocation(vcCard.GetEvoImageName(false) + ".png")
-				if err != nil && imgLoc != "" {
-					ref.Image = imgLoc
-				}
-			}
 			if ref.Images == nil || len(ref.Images) == 0 || len(ref.Images) != len(vcCard.EvosWithDistinctImages(false)) {
 				imgLocs, err := getWikiImageLocations(vcCard)
 				if err != nil {
