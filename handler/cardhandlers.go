@@ -268,24 +268,11 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		skillEvoMod = ""
 	}
 
-	skillMap[skillEvoMod] = printWikiSkill(firstEvo.Skill1(), nil, skillEvoMod)
-
-	skill2 := firstEvo.Skill2()
-	if skill2 != nil {
-		// look for skills that improve due to evolution
-		if lastEvo == nil {
-			skillMap[skillEvoMod+"2"] = printWikiSkill(skill2, nil, skillEvoMod+"2")
-		} else {
-			skillMap[skillEvoMod+"2"] = printWikiSkill(skill2, lastEvo.Skill2(), skillEvoMod+"2")
-		}
-		// print skill 3 if it exists
-		skillMap[skillEvoMod+"3"] = printWikiSkill(firstEvo.Skill3(), nil, skillEvoMod+"3")
-	} else if lastEvo != nil && lastEvo.ID > 0 {
-		skillMap[skillEvoMod+"2"] = printWikiSkill(lastEvo.Skill2(), nil, skillEvoMod+"2")
-		// print skill 3 if it exists
-		skillMap[skillEvoMod+"3"] = printWikiSkill(lastEvo.Skill3(), nil, skillEvoMod+"3")
-		skillMap[skillEvoMod+"t"] = printWikiSkill(lastEvo.ThorSkill1(), nil, skillEvoMod+"t")
-	}
+	skillMap[skillEvoMod] = printWikiSkill(firstEvo.Skill1(), lastEvo.Skill1(), skillEvoMod)
+	skillMap[skillEvoMod+"2"] = printWikiSkill(firstEvo.Skill2(), lastEvo.Skill2(), skillEvoMod+"2")
+	skillMap[skillEvoMod+"3"] = printWikiSkill(firstEvo.Skill3(), lastEvo.Skill3(), skillEvoMod+"3")
+	skillMap[skillEvoMod+"3"] = printWikiSkill(firstEvo.Skill3(), lastEvo.Skill3(), skillEvoMod+"3")
+	skillMap[skillEvoMod+"t"] = printWikiSkill(firstEvo.ThorSkill1(), lastEvo.ThorSkill1(), skillEvoMod+"t")
 
 	// add amal skills as long as the first evo wasn't the amal
 	if evo, ok := evolutions["A"]; ok && firstEvo.ID != evo.ID {
@@ -1124,7 +1111,7 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 
 	lv10 := ""
 	skillLvl10 := ""
-
+	sName := s.Name
 	if ls == nil || ls.ID == s.ID {
 		// 1st skills only have lvl10, skill 2, 3, and thor do not.
 		if len(s.Levels()) == 10 {
@@ -1136,6 +1123,7 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 		}
 	} else {
 		// handles Great DMG skills where the last evo is the max skill
+		sName = ls.Name
 		skillLvl10 = html.EscapeString(strings.Replace(ls.SkillMax(), "\n", "<br />", -1))
 		lv10 = fmt.Sprintf("\n|skill %slv10 = %s",
 			evoMod,
@@ -1160,7 +1148,7 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 |procs %[1]s= %[5]d
 `,
 		evoMod,
-		html.EscapeString(s.Name),
+		html.EscapeString(sName),
 		skillLvl1,
 		lv10,
 		s.MaxCount,

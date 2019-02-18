@@ -465,6 +465,9 @@ func (c *Card) IsAmalgamation() bool {
 
 // Skill1 of the card
 func (c *Card) Skill1() *Skill {
+	if c == nil {
+		return nil
+	}
 	if c.skill1 == nil && c.SkillID1 > 0 {
 		c.skill1 = SkillScan(c.SkillID1)
 	}
@@ -473,6 +476,9 @@ func (c *Card) Skill1() *Skill {
 
 // Skill2 of the card
 func (c *Card) Skill2() *Skill {
+	if c == nil {
+		return nil
+	}
 	if c.skill2 == nil && c.SkillID2 > 0 {
 		c.skill2 = SkillScan(c.SkillID2)
 	}
@@ -481,6 +487,9 @@ func (c *Card) Skill2() *Skill {
 
 // Skill3 of the card
 func (c *Card) Skill3() *Skill {
+	if c == nil {
+		return nil
+	}
 	if c.skill3 == nil && c.SkillID3 > 0 {
 		c.skill3 = SkillScan(c.SkillID3)
 	}
@@ -489,6 +498,9 @@ func (c *Card) Skill3() *Skill {
 
 // SpecialSkill1 of the card
 func (c *Card) SpecialSkill1() *Skill {
+	if c == nil {
+		return nil
+	}
 	if c.specialSkill1 == nil && c.SpecialSkillID1 > 0 {
 		c.specialSkill1 = SkillScan(c.SpecialSkillID1)
 	}
@@ -497,6 +509,9 @@ func (c *Card) SpecialSkill1() *Skill {
 
 // ThorSkill1 of the card
 func (c *Card) ThorSkill1() *Skill {
+	if c == nil {
+		return nil
+	}
 	if c.thorSkill1 == nil && c.ThorSkillID1 > 0 {
 		c.thorSkill1 = SkillScan(c.ThorSkillID1)
 	}
