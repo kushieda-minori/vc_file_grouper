@@ -271,6 +271,10 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		//finalRewardList := rr.FinalRewards()
 		//finalrewards := genWikiAWRewards(finalRewardList, "Ranking")
 		gb := event.GuildBattle()
+		if gb == nil {
+			fmt.Fprintf(w, "No Event Information yet.")
+			break
+		}
 		bb := gb.BingoBattle()
 
 		// aws := bb.Archwitches()
