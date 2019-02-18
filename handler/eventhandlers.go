@@ -300,6 +300,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"",    // RR 2
 			"",    // Individual Card 1
 			"",    // Individual Card 2
+			"",    // Individual Card 3
 			"",    // Booster 1
 			"",    // Booster 2
 			"#th", // Guild Battle Number spelled out (first, second, third, etc)
@@ -584,14 +585,15 @@ func getEventTemplate(eventType int) string {
 | %s |Rank Reward
 | %s |Individual Point Reward<br />Ring Exchange
 | %s |Individual Point Reward<br />Ring Exchange
+| %s |Individual Point Reward
 | Mirror Maiden (LR) |Ring Exchange
 | Mirror Maiden (UR) |Ring Exchange
 | Mirror Maiden (SR) |Ring Exchange
 | Mirror Maiden (R) |Ring Exchange
 | Slime Queen |Ring Exchange
 | Mirror Maiden Shard | Ring Exchange
-| %s |Alliance Battle Point Booster<br>+60%%/150%%
-| %s |Alliance Battle Point Booster<br>+20%%/50%%
+| %s |Alliance Battle Point Booster<br />+60%%/150%%
+| %s |Alliance Battle Point Booster<br />+20%%/50%%
 }}
 :''The %s [[Alliance Bingo Battle]] was held during the [[%s]] event.''
 
