@@ -108,6 +108,9 @@ type GuildBingoPointCampaign struct {
 
 // BingoBattle Bingo battle information
 func (g *GuildBattle) BingoBattle() *GuildBingoBattle {
+	if g == nil {
+		return nil
+	}
 	if g.GuildBingoID > 0 {
 		l := len(Data.GuildBingoBattles)
 		i := sort.Search(l, func(i int) bool { return Data.GuildBingoBattles[i].ID >= g.GuildBingoID })
@@ -134,6 +137,9 @@ func (g *GuildBingoBattle) Archwitches() []Archwitch {
 // ExchangeRewards rewards for item exchanges for this battle
 func (g *GuildBingoBattle) ExchangeRewards() []GuildBingoExchangeReward {
 	set := make([]GuildBingoExchangeReward, 0)
+	if g == nil {
+		return nil
+	}
 	if g.ExchangeRewardGroupID > 0 {
 		for _, val := range Data.GuildBingoExchangeRewards {
 			if val.GroupID == g.ExchangeRewardGroupID {
@@ -160,6 +166,9 @@ func (g *GuildBingoBattle) Campaigns() []GuildBingoPointCampaign {
 
 // IndividualRewards individual rewards for this event
 func (g *GuildBattle) IndividualRewards() []RankRewardSheet {
+	if g == nil {
+		return []RankRewardSheet{}
+	}
 	if g.individualRewards == nil {
 		g.individualRewards = make([]RankRewardSheet, 0)
 		rewards := g.rewards()
@@ -174,6 +183,9 @@ func (g *GuildBattle) IndividualRewards() []RankRewardSheet {
 
 // RankRewards for this event
 func (g *GuildBattle) RankRewards() []RankRewardSheet {
+	if g == nil {
+		return []RankRewardSheet{}
+	}
 	if g.rankRewards == nil {
 		g.rankRewards = make([]RankRewardSheet, 0)
 		rewards := g.rewards()
