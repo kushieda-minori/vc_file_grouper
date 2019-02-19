@@ -14,12 +14,12 @@ import (
 // AwakeningsTableHandler displays awakening data as a table
 func AwakeningsTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>All Awakenings</title></head><body>\n")
-	io.WriteString(w, "<table><thead><tr><th>From Card</th><th>To Card</th><th>Chance</th><th>Crystals</th><th>Orb</th><th>Large</th><th>Medium</th><th>Small</th></tr></thead><tbody>\n")
+	io.WriteString(w, "<table><thead><tr><th>From Card</th><th>To Card</th><th>Chance</th><th>Crystals</th><th>Orb</th><th>Large</th><th>Medium</th><th>Small</th><th>closed</th></tr></thead><tbody>\n")
 	for _, value := range vc.Data.Awakenings {
 		baseCard := vc.CardScan(value.BaseCardID)
 		resultCard := vc.CardScan(value.ResultCardID)
 		fmt.Fprintf(w,
-			"<tr><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td>%d%%</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>",
+			"<tr><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td><img src=\"/images/cardthumb/%s\"/><br /><a href=\"/cards/detail/%d\">%s</a></td><td>%d%%</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%v</td></tr>",
 			baseCard.Image(),
 			baseCard.ID,
 			baseCard.Name,
@@ -32,6 +32,7 @@ func AwakeningsTableHandler(w http.ResponseWriter, r *http.Request) {
 			value.Material2Count,
 			value.Material3Count,
 			value.Material4Count,
+			value.IsClosed,
 		)
 	}
 	io.WriteString(w, "</tbody></table>\n")
