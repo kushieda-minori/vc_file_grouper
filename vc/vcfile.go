@@ -195,7 +195,7 @@ type VFile struct {
 	} `json:"defs_tune"`
 	ShortcutURL                 string                      `json:"shortcut_url"`
 	Version                     int                         `json:"version"`
-	Cards                       []Card                      `json:"cards"`
+	Cards                       CardList                    `json:"cards"`
 	Skills                      []Skill                     `json:"skills"`
 	SkillLevels                 []SkillLevel                `json:"skill_level"`
 	CustomSkillLevels           []CustomSkillLevel          `json:"custom_skill_level"`
@@ -309,11 +309,11 @@ func Read(root string) ([]byte, error) {
 			"Character Names", len(Data.Cards), len(names))
 	}
 	for key := range Data.Cards {
-		Data.Cards[key].Name = cleanCardName(names[key], &(Data.Cards[key]))
+		Data.Cards[key].Name = cleanCardName(names[key], Data.Cards[key])
 	}
 	// initialize the evolutions
 	for key := range Data.Cards {
-		card := &(Data.Cards[key])
+		card := Data.Cards[key]
 		// the name 'Goddess Crystal Shard' is reused, so we use a naming convention for it.
 		if card.Name == "Goddess Crystal Shard" {
 			for _, a := range card.Amalgamations() {

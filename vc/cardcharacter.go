@@ -35,7 +35,7 @@ func (c *CardCharacter) Cards() CardList {
 		for _, val := range Data.Cards {
 			//return the first one we find.
 			if val.CardCharaID == c.ID {
-				c._cards = append(c._cards, &val)
+				c._cards = append(c._cards, val)
 			}
 		}
 		sort.Slice(c._cards, func(a, b int) bool {

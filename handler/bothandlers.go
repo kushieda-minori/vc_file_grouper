@@ -24,9 +24,9 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "filename=\"vcData-nobu-bot-cards-"+strconv.Itoa(vc.Data.Version)+"_"+vc.Data.Common.UnixTime.Format(time.RFC3339)+".json\"")
 	w.Header().Set("Content-Type", "application/json")
 
-	cards := make([]vc.Card, 0)
+	cards := make(vc.CardList, 0)
 	for _, card := range vc.Data.Cards {
-		if shouldExcludeCard(&card) {
+		if shouldExcludeCard(card) {
 			continue
 		}
 		cards = append(cards, card)
@@ -45,7 +45,7 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 		// to get the image location, we are going to ask Fandom for it:
 		// https://valkyriecrusade.fandom.com/index.php?title=Special:FilePath&file=Image Name.jpg
 		// this URL returns the actual image location in the HTTP Redirect Location header.
-		nobuCards = append(nobuCards, nobu.NewCard(&card))
+		nobuCards = append(nobuCards, nobu.NewCard(card))
 	}
 	b, err := json.MarshalIndent(nobuCards, "", " ")
 

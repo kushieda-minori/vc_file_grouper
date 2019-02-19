@@ -548,8 +548,7 @@ func CardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 		"Max Rarity Sold",
 	})
 
-	cards := make([]vc.Card, len(vc.Data.Cards))
-	copy(cards, vc.Data.Cards)
+	cards := vc.Data.Cards.Copy()
 
 	// sort by name A-Z
 	sort.Slice(cards, func(i, j int) bool {
@@ -560,7 +559,7 @@ func CardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	for _, card := range cards {
-		if card.Rarity() == "GLR" || (len(card.Rarity()) == 3 && card.Rarity()[0] == 'X') {
+		if card.Rarity() == "GLR" || card.EvoIsReborn() {
 			cardRare := card.CardRarity()
 			maxLevel := float64(cardRare.MaxCardLevel - 1)
 			atkGain := card.MaxOffense - card.DefaultOffense
@@ -721,7 +720,7 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 	)
 	for i := len(vc.Data.Cards) - 1; i >= 0; i-- {
 		card := vc.Data.Cards[i]
-		if !filter(&card) {
+		if !filter(card) {
 			continue
 		}
 		skill1 := card.Skill1()
@@ -841,7 +840,7 @@ func getNext(card *vc.Card) (next *vc.Card, nextName string) {
 		return nil, ""
 	}
 	maxID := card.GetEvolutionCards().Latest().ID + 1
-	lastID := vc.NewCardList(vc.Data.Cards).Latest().ID
+	lastID := vc.Data.Cards.Latest().ID
 	for next = vc.CardScan(maxID); next == nil && maxID < lastID; next = vc.CardScan(maxID) {
 		maxID++
 	}

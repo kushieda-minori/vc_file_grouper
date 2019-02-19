@@ -348,7 +348,7 @@ func (c *Card) EvoAccident() *Card {
 func (c *Card) EvoAccidentOf() *Card {
 	for key, val := range Data.Cards {
 		if val.TransCardID == c.ID {
-			return &(Data.Cards[key])
+			return Data.Cards[key]
 		}
 	}
 	return nil
@@ -526,7 +526,7 @@ func CardScan(id int) *Card {
 	l := len(Data.Cards)
 	i := sort.Search(l, func(i int) bool { return Data.Cards[i].ID >= id })
 	if i >= 0 && i < l && Data.Cards[i].ID == id {
-		return &(Data.Cards[i])
+		return Data.Cards[i]
 	}
 	return nil
 }
@@ -537,7 +537,7 @@ func CardScanCharacter(charID int) *Card {
 		for k, val := range Data.Cards {
 			//return the first one we find.
 			if val.CardCharaID == charID {
-				return &(Data.Cards[k])
+				return Data.Cards[k]
 			}
 		}
 	}
@@ -553,7 +553,7 @@ func CardScanImage(cardID string) *Card {
 		}
 		for k, val := range Data.Cards {
 			if val.CardNo == i {
-				return &(Data.Cards[k])
+				return Data.Cards[k]
 			}
 		}
 	}
@@ -744,15 +744,6 @@ func (c *Card) RebirthEvent() string {
 // CardList helper interface for looking at lists of cards
 type CardList []*Card
 
-//NewCardList make a new card list from a slice/array of cards
-func NewCardList(cards []Card) (ret CardList) {
-	ret = make(CardList, 0, len(cards))
-	for _, card := range cards {
-		ret = append(ret, &card)
-	}
-	return ret
-}
-
 // Earliest gets the ealiest released card from a list of cards. Determined by ID
 func (d CardList) Earliest() (min *Card) {
 	for idx, card := range d {
@@ -779,6 +770,13 @@ func (d CardList) Latest() (max *Card) {
 	// log.Printf("-Latest Card: %d, Name: %s\n", max.ID, max.Name)
 	// }
 	return
+}
+
+//Copy returns a copy of this list. Useful for local sorting
+func (d CardList) Copy() CardList {
+	ret := make(CardList, 0, len(d))
+	copy(ret, d)
+	return ret
 }
 
 //MinimumEvolutionRank gets the lowest evolution rank in the set
@@ -1096,7 +1094,7 @@ func CardsByName() map[string]CardList {
 		if _, ok := ret[card.Name]; !ok {
 			ret[card.Name] = make(CardList, 0)
 		}
-		ret[card.Name] = append(ret[card.Name], &card)
+		ret[card.Name] = append(ret[card.Name], card)
 	}
 
 	return ret
