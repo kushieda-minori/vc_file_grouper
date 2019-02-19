@@ -611,7 +611,7 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 ==Local ABB Times==
 {{AUBLocalTime|start jst = %[2]s|consecutive=1}}
 
-{{NavEvent|%[15]s|%s}}
+{{NavEvent|%[16]s|%s}}
 `
 	case 18: // Tower Events
 		return `{{Event|eventType = %d

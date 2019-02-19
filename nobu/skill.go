@@ -105,7 +105,7 @@ func cleanSkill(name string) string {
 	//'<:Dark:534375884279382016>'
 	//'<:Special:534375884493291530>'
 	name = strings.Replace(name, "{{Passion}}", "<:Passion:534375884480577536>", -1)
-	name = strings.Replace(name, "{{Cool}}", "<:Cool:534375884598018049", -1)
+	name = strings.Replace(name, "{{Cool}}", "<:Cool:534375884598018049>", -1)
 	name = strings.Replace(name, "{{Light}}", "<:Light:534375885541998602>", -1)
 	name = strings.Replace(name, "{{Dark}}", "<:Dark:534375884279382016>", -1)
 	name = strings.Replace(name, "{{Special}}", "<:Special:534375884493291530>", -1)
