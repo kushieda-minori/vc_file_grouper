@@ -259,7 +259,7 @@ func (c *Card) NextEvo() *Card {
 		character := c.Character()
 		for i, cd := range character.Cards() {
 			if cd.ID == c.EvolutionCardID {
-				tmp = &(character._cards[i])
+				tmp = character._cards[i]
 			}
 		}
 
@@ -289,7 +289,7 @@ func (c *Card) PrevEvo() *Card {
 		var tmp *Card
 		for i, cd := range c.Character().Cards() {
 			if c.ID == cd.EvolutionCardID {
-				tmp = &(c.Character()._cards[i])
+				tmp = c.Character()._cards[i]
 			}
 		}
 
@@ -742,14 +742,23 @@ func (c *Card) RebirthEvent() string {
 }
 
 // CardList helper interface for looking at lists of cards
-type CardList []Card
+type CardList []*Card
+
+//NewCardList make a new card list from a slice/array of cards
+func NewCardList(cards []Card) (ret CardList) {
+	ret = make(CardList, 0, len(cards))
+	for _, card := range cards {
+		ret = append(ret, &card)
+	}
+	return ret
+}
 
 // Earliest gets the ealiest released card from a list of cards. Determined by ID
 func (d CardList) Earliest() (min *Card) {
 	for idx, card := range d {
 		if min == nil || min.ID > card.ID {
 			// log.Printf("'Earliest' Card: %d, Name: %s\n", card.ID, card.Name)
-			min = &(d[idx])
+			min = d[idx]
 		}
 	}
 	// if min != nil {
@@ -763,7 +772,7 @@ func (d CardList) Latest() (max *Card) {
 	for idx, card := range d {
 		if max == nil || max.ID < card.ID {
 			// log.Printf("'Latest' Card: %d, Name: %s\n", card.ID, card.Name)
-			max = &(d[idx])
+			max = d[idx]
 		}
 	}
 	// if max != nil {
@@ -926,7 +935,7 @@ func (c *Card) GetEvolutions() map[string]*Card {
 			if tmp == nil {
 				ch := c2.Character()
 				if ch != nil && ch.Cards()[0].Name == c2.Name {
-					c2 = &(ch.Cards()[0])
+					c2 = ch.Cards()[0]
 					log.Printf("Found card %d:%s", c2.ID, c2.Name)
 				}
 				// the name changed, so we'll keep this card
@@ -942,7 +951,7 @@ func (c *Card) GetEvolutions() map[string]*Card {
 			if tmp == nil {
 				ch := c2.Character()
 				if ch != nil && ch.Cards()[0].Name == c2.Name {
-					c2 = &(ch.Cards()[0])
+					c2 = ch.Cards()[0]
 					log.Printf("Found card %d:%s", c2.ID, c2.Name)
 				}
 				// the name changed, so we'll keep this card
@@ -1066,30 +1075,51 @@ func (c *Card) GetEvolutions() map[string]*Card {
 // GetEvolutionCards same as GetEvolutions, but only returns the cards
 func (c *Card) GetEvolutionCards() CardList {
 	evos := c.GetEvolutions()
-	cards := make([]Card, 0, len(evos))
+	cards := make(CardList, 0, len(evos))
 	//log.Printf("Card: %d, Name: %s, Evos: %d\n", c.ID, c.Name, len(evos))
 	for _, ek := range EvoOrder {
 		evo := evos[ek]
 		if evo == nil {
 			continue
 		}
-		cards = append(cards, *evo)
+		cards = append(cards, evo)
 	}
 	//log.Printf("Cards: %d\n", len(cards))
-	return CardList(cards)
+	return cards
 }
 
 //CardsByName gets the cards by name. If multiple cards have the same name, they are groupped together
-func CardsByName() map[string][]Card {
-	ret := make(map[string][]Card, 0)
+func CardsByName() map[string]CardList {
+	ret := make(map[string]CardList, 0)
 
 	for _, card := range Data.Cards {
 		if _, ok := ret[card.Name]; !ok {
-			ret[card.Name] = make([]Card, 0)
+			ret[card.Name] = make(CardList, 0)
 		}
-		ret[card.Name] = append(ret[card.Name], card)
+		ret[card.Name] = append(ret[card.Name], &card)
 	}
 
+	return ret
+}
+
+//CardsByNameByLowestID gets the CardsByName then sorts them by lowest ID first.
+func CardsByNameByLowestID(asc bool) []CardList {
+	byName := CardsByName()
+	ret := make([]CardList, 0, len(byName))
+	for _, cl := range byName {
+		ret = append(ret, cl)
+	}
+	if asc {
+		// newest card last by original release order
+		sort.Slice(ret, func(a, b int) bool {
+			return ret[a].Earliest().ID < ret[b].Earliest().ID
+		})
+	} else {
+		// newest cards first by original release order
+		sort.Slice(ret, func(a, b int) bool {
+			return ret[a].Earliest().ID > ret[b].Earliest().ID
+		})
+	}
 	return ret
 }
 

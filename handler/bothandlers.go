@@ -138,7 +138,7 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("finished updating Bot Cards")
 }
 
-func firstCard(cards *[]vc.Card) *vc.Card {
+func firstCard(cards *vc.CardList) *vc.Card {
 	sort.Slice(*cards, func(a, b int) bool {
 		evoCmp := (*cards)[a].EvolutionRank == (*cards)[b].EvolutionRank
 		if evoCmp {
@@ -147,7 +147,7 @@ func firstCard(cards *[]vc.Card) *vc.Card {
 		return (*cards)[a].EvolutionRank < (*cards)[b].EvolutionRank
 	})
 	for i := range *cards {
-		card := &((*cards)[i])
+		card := (*cards)[i]
 		if !shouldExcludeCard(card) {
 			return card
 		}

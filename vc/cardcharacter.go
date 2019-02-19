@@ -25,17 +25,17 @@ type CardCharacter struct {
 	FriendshipMax   string `json:"-"` // MsgCharaFriendshipMax_en.strb
 	FriendshipEvent string `json:"-"` // MsgCharaBonds_en.strb
 	Rebirth         string `json:"-"` // MsgCharaSuperAwaken_en.strb
-	_cards          []Card
+	_cards          CardList
 }
 
 // Cards that are under this character
-func (c *CardCharacter) Cards() []Card {
+func (c *CardCharacter) Cards() CardList {
 	if c._cards == nil || len(c._cards) == 0 {
-		c._cards = make([]Card, 0)
+		c._cards = make(CardList, 0)
 		for _, val := range Data.Cards {
 			//return the first one we find.
 			if val.CardCharaID == c.ID {
-				c._cards = append(c._cards, val)
+				c._cards = append(c._cards, &val)
 			}
 		}
 		sort.Slice(c._cards, func(a, b int) bool {
@@ -50,7 +50,7 @@ func (c *CardCharacter) FirstEvoCard() (card *Card) {
 	card = nil
 	for i, cd := range c.Cards() {
 		if card == nil || cd.EvolutionRank <= card.EvolutionRank {
-			card = &(c._cards[i])
+			card = c._cards[i]
 		}
 	}
 	return

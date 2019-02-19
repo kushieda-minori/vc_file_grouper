@@ -841,7 +841,7 @@ func getNext(card *vc.Card) (next *vc.Card, nextName string) {
 		return nil, ""
 	}
 	maxID := card.GetEvolutionCards().Latest().ID + 1
-	lastID := vc.CardList(vc.Data.Cards).Latest().ID
+	lastID := vc.NewCardList(vc.Data.Cards).Latest().ID
 	for next = vc.CardScan(maxID); next == nil && maxID < lastID; next = vc.CardScan(maxID) {
 		maxID++
 	}
