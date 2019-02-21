@@ -549,7 +549,7 @@ func CardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	cards := vc.Data.Cards.Copy()
-
+	log.Printf("Total card count: %d", len(cards))
 	// sort by name A-Z
 	sort.Slice(cards, func(i, j int) bool {
 		first := cards[i]
@@ -560,6 +560,7 @@ func CardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 
 	for _, card := range cards {
 		if card.Rarity() == "GLR" || card.EvoIsReborn() {
+			log.Printf("found GLR or Reborn card %d:%s - %s", card.ID, card.Name, card.Rarity())
 			cardRare := card.CardRarity()
 			maxLevel := float64(cardRare.MaxCardLevel - 1)
 			atkGain := card.MaxOffense - card.DefaultOffense

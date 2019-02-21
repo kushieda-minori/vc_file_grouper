@@ -774,7 +774,7 @@ func (d CardList) Latest() (max *Card) {
 
 //Copy returns a copy of this list. Useful for local sorting
 func (d CardList) Copy() CardList {
-	ret := make(CardList, 0, len(d))
+	ret := make(CardList, len(d), len(d))
 	copy(ret, d)
 	return ret
 }
