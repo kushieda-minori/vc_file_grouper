@@ -35,7 +35,7 @@ func (s Stats) Subtract(o Stats) Stats {
 	}
 }
 
-// Subtract Subtracts another stat set from this one and returns the result.
+// Multiply Multiplies another stat set with this one and returns the result.
 func (s Stats) Multiply(m float64) Stats {
 	return Stats{
 		Attack:   int(float64(s.Attack) * m),
@@ -44,7 +44,17 @@ func (s Stats) Multiply(m float64) Stats {
 	}
 }
 
-func (s *Stats) ensureMaxCap(rarity *CardRarity) {
+//Equals returns true if this stat equals another
+func (s Stats) Equals(o Stats) bool {
+	return s.Attack == o.Attack && s.Defense == o.Defense && s.Soldiers == o.Soldiers
+}
+
+//NotEquals returns true if this stat equals another
+func (s Stats) NotEquals(o Stats) bool {
+	return s.Attack != o.Attack || s.Defense != o.Defense || s.Soldiers != o.Soldiers
+}
+
+func (s Stats) ensureMaxCap(rarity *CardRarity) {
 	if s.Attack > rarity.LimtOffense {
 		s.Attack = rarity.LimtOffense
 	}
@@ -56,25 +66,21 @@ func (s *Stats) ensureMaxCap(rarity *CardRarity) {
 	}
 }
 
-func (s *Stats) applyAmal(material Stats) {
-	*s = material.Multiply(0.08).Add(*s)
-}
-
-func (s *Stats) applyAmalLvl1(material Stats) {
-	*s = material.Multiply(0.03).Add(*s)
+func applyAmal(material, baseStats Stats, maxLevel bool) Stats {
+	maxLevelBonus := 0.00
+	if maxLevel {
+		maxLevelBonus = 0.05
+	}
+	return material.Multiply(0.03 + maxLevelBonus).Add(baseStats)
 }
 
 // calculateEvoAccidentStat calculated the stats if an evo accident happens
-func (s *Stats) calculateEvoAccidentStat(materialStat, baseStat Stats) {
-	*s = materialStat.Multiply(0.15).Multiply(2).Add(baseStat)
+func calculateEvoAccidentStat(materialStat, baseStat Stats) Stats {
+	return materialStat.Multiply(0.15).Multiply(2).Add(baseStat)
 }
 
-func (s *Stats) calculateTransferRate(transferRate float64, baseStat Stats) {
-	*s = baseStat.Multiply(transferRate)
-}
-
-func (s *Stats) applyTransferRate(transferRate float64, material1Stat, material2Stat Stats) {
-	*s = material1Stat.Multiply(transferRate).Add(material2Stat.Multiply(transferRate)).Add(*s)
+func applyTransferRate(transferRate float64, material1Stat, material2Stat, baseStats Stats) Stats {
+	return material1Stat.Multiply(transferRate).Add(material2Stat.Multiply(transferRate)).Add(baseStats)
 }
 
 func maxStats(c *Card) Stats {
@@ -131,22 +137,22 @@ func (c *Card) calculateEvoStats(material1Stat, material2Stat, resultMax Stats) 
 		// 4* evo bonus for final stage
 		if c.CardCharaID == 250 || c.CardCharaID == 315 {
 			// queen of ice, strategist
-			ret.calculateTransferRate(1.209, resultMax)
+			ret = resultMax.Multiply(1.209)
 		} else {
 			// all other N-SR (UR and LR? ATM, there are no UR 4*)
-			ret.calculateTransferRate(1.1, resultMax)
+			ret = resultMax.Multiply(1.1)
 		}
 	} else {
 		//4* evo bonus for intermediate stage
 		if c.CardCharaID == 250 || c.CardCharaID == 315 {
 			// queen of ice, strategist
-			ret.calculateTransferRate(1.155, resultMax)
+			ret = resultMax.Multiply(1.155)
 		} else {
 			// all other N-SR (UR and LR? ATM, there are no UR 4*)
-			ret.calculateTransferRate(1.05, resultMax)
+			ret = resultMax.Multiply(1.05)
 		}
 	}
-	ret.applyTransferRate(0.15, material1Stat, material2Stat)
+	ret = applyTransferRate(0.15, material1Stat, material2Stat, ret)
 
 	return
 }
@@ -189,7 +195,7 @@ func (c *Card) AmalgamationStandard() (stats Stats) {
 	for _, mat := range mats {
 		log.Printf("Calculating Standard Evo for %s Amal Mat: %s\n", c.Name, mat.Name)
 		matStats := mat.EvoStandard()
-		stats.applyAmal(matStats)
+		stats = applyAmal(matStats, stats, true)
 	}
 	stats.ensureMaxCap(c.CardRarity())
 	return
@@ -214,7 +220,7 @@ func (c *Card) AmalgamationStandardLvl1() (stats Stats) {
 	for _, mat := range mats {
 		log.Printf("Calculating Standard Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name)
 		matStats := mat.EvoStandard()
-		stats.applyAmal(matStats)
+		stats = applyAmal(matStats, stats, true)
 	}
 	stats.ensureMaxCap(c.CardRarity())
 	return
@@ -239,7 +245,7 @@ func (c *Card) Amalgamation6Card() (stats Stats) {
 	for _, mat := range mats {
 		log.Printf("Calculating 6-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name)
 		matStats := mat.Evo6Card()
-		stats.applyAmal(matStats)
+		stats = applyAmal(matStats, stats, true)
 	}
 	stats.ensureMaxCap(c.CardRarity())
 	return
@@ -264,7 +270,7 @@ func (c *Card) Amalgamation6CardLvl1() (stats Stats) {
 	for _, mat := range mats {
 		log.Printf("Calculating 6-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name)
 		matStats := mat.Evo6Card()
-		stats.applyAmal(matStats)
+		stats = applyAmal(matStats, stats, true)
 	}
 	stats.ensureMaxCap(c.CardRarity())
 	return
@@ -289,7 +295,7 @@ func (c *Card) Amalgamation9Card() (stats Stats) {
 	for _, mat := range mats {
 		log.Printf("Calculating 9-card Evo for %s Amal Mat: %s\n", c.Name, mat.Name)
 		matStats := mat.Evo9Card()
-		stats.applyAmal(matStats)
+		stats = applyAmal(matStats, stats, true)
 	}
 	stats.ensureMaxCap(c.CardRarity())
 	return
@@ -314,7 +320,7 @@ func (c *Card) Amalgamation9CardLvl1() (stats Stats) {
 	for _, mat := range mats {
 		log.Printf("Calculating 9-card Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name)
 		matStats := mat.Evo9Card()
-		stats.applyAmal(matStats)
+		stats = applyAmal(matStats, stats, true)
 	}
 	stats.ensureMaxCap(c.CardRarity())
 	return
@@ -339,7 +345,7 @@ func (c *Card) AmalgamationPerfect() (stats Stats) {
 	for _, mat := range mats {
 		log.Printf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name)
 		matStats := mat.EvoPerfect()
-		stats.applyAmal(matStats)
+		stats = applyAmal(matStats, stats, true)
 	}
 	stats.ensureMaxCap(c.CardRarity())
 	return
@@ -364,7 +370,7 @@ func (c *Card) AmalgamationPerfectLvl1() (stats Stats) {
 	for _, mat := range mats {
 		log.Printf("Calculating Perfect Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name)
 		matStats := mat.EvoPerfect()
-		stats.applyAmal(matStats)
+		stats = applyAmal(matStats, stats, true)
 	}
 	stats.ensureMaxCap(c.CardRarity())
 	return
@@ -395,10 +401,10 @@ func (c *Card) AmalgamationLRStaticLvl1() (stats Stats) {
 		if strings.HasSuffix(mat.Rarity(), "LR") && mat.Element() == "Special" {
 			matStats := mat.AmalgamationLRStaticLvl1()
 			// no 5% bonus for max level
-			stats.applyAmalLvl1(matStats)
+			stats = applyAmal(matStats, stats, false)
 		} else {
 			matStats := mat.AmalgamationLRStaticLvl1()
-			stats.applyAmal(matStats)
+			stats = applyAmal(matStats, stats, true)
 		}
 	}
 	stats.ensureMaxCap(c.CardRarity())
@@ -444,7 +450,7 @@ func (c *Card) EvoStandard() (stats Stats) {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
 						matStats := mat.EvoStandard()
-						stats.calculateEvoAccidentStat(matStats, maxStats(c))
+						stats = calculateEvoAccidentStat(matStats, maxStats(c))
 						log.Printf("Using Evo Accident stats for Standard %s: %d (%s)\n", c.Name, c.EvolutionRank, stats)
 					} else {
 						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
@@ -512,7 +518,7 @@ func (c *Card) EvoStandardLvl1() (stats Stats) {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
 						matStats := mat.EvoStandard()
-						stats.calculateEvoAccidentStat(matStats, maxStats(c))
+						stats = calculateEvoAccidentStat(matStats, maxStats(c))
 					} else {
 						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
 						stats = baseStats(c)
@@ -581,7 +587,7 @@ func (c *Card) EvoMixed() (stats Stats) {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
 						matStats := mat.EvoStandard()
-						stats.calculateEvoAccidentStat(matStats, maxStats(c))
+						stats = calculateEvoAccidentStat(matStats, maxStats(c))
 						log.Printf("Using Evo Accident stats for Mixed %s: %d (%s)\n", c.Name, c.EvolutionRank, stats)
 					} else {
 						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
@@ -656,7 +662,7 @@ func (c *Card) EvoMixedLvl1() (stats Stats) {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
 						matStats := mat.EvoStandard()
-						stats.calculateEvoAccidentStat(matStats, baseStats(c))
+						stats = calculateEvoAccidentStat(matStats, baseStats(c))
 						log.Printf("Using Evo Accident stats for Mixed Lvl1 %s: %d (%s)\n", c.Name, c.EvolutionRank, stats)
 					} else {
 						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
@@ -726,7 +732,7 @@ func (c *Card) Evo6Card() (stats Stats) {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
 						matStats := mat.Evo6Card()
-						stats.calculateEvoAccidentStat(matStats, maxStats(c))
+						stats = calculateEvoAccidentStat(matStats, maxStats(c))
 					} else {
 						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
 						stats = maxStats(c)
@@ -793,7 +799,7 @@ func (c *Card) Evo6CardLvl1() (stats Stats) {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
 						matStats := mat.Evo6Card()
-						stats.calculateEvoAccidentStat(matStats, baseStats(c))
+						stats = calculateEvoAccidentStat(matStats, baseStats(c))
 					} else {
 						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
 						stats = baseStats(c)
@@ -861,7 +867,7 @@ func (c *Card) Evo9Card() (stats Stats) {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
 						matStats := mat.Evo9Card()
-						stats.calculateEvoAccidentStat(matStats, maxStats(c))
+						stats = calculateEvoAccidentStat(matStats, maxStats(c))
 					} else {
 						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
 						stats = maxStats(c)
@@ -935,7 +941,7 @@ func (c *Card) Evo9CardLvl1() (stats Stats) {
 						// calculate the transfered stats of the 2 material cards
 						// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
 						matStats := mat.Evo9Card()
-						stats.calculateEvoAccidentStat(matStats, baseStats(c))
+						stats = calculateEvoAccidentStat(matStats, baseStats(c))
 					} else {
 						// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
 						stats = baseStats(c)
@@ -1009,7 +1015,7 @@ func (c *Card) EvoPerfect() (stats Stats) {
 				// calculate the transfered stats of the 2 material cards
 				// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
 				matStats := turnOver.EvoPerfect()
-				stats.calculateEvoAccidentStat(matStats, maxStats(c))
+				stats = calculateEvoAccidentStat(matStats, maxStats(c))
 			} else {
 				// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
 				stats = maxStats(c)
@@ -1065,7 +1071,7 @@ func (c *Card) EvoPerfectLvl1() (stats Stats) {
 				// calculate the transfered stats of the 2 material cards
 				// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk)
 				matStats := turnOver.EvoPerfect()
-				stats.calculateEvoAccidentStat(matStats, baseStats(c))
+				stats = calculateEvoAccidentStat(matStats, baseStats(c))
 			} else {
 				// if not an amalgamation or awoken card, use the default MAX (this should be evo 0*)
 				stats = baseStats(c)
