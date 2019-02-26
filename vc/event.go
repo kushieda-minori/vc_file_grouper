@@ -55,7 +55,7 @@ type Event struct {
 	Name                  string          `json:"name"`        // MsgEventName_en.strb
 	Description           string          `json:"description"` // MsgEventDesc_en.strb
 	_map                  *Map
-	_archwitches          []Archwitch
+	_archwitches          ArchwitchList
 }
 
 // EventBook event book
@@ -151,25 +151,25 @@ func (e *Event) Thor() *ThorEvent {
 }
 
 // Archwitches for this event.
-func (e *Event) Archwitches() []Archwitch {
+func (e *Event) Archwitches() ArchwitchList {
 	if e.KingSeriesID > 0 {
 		if e._archwitches == nil {
 
 			// picks only unique Cards for the event
-			set := make(map[int]Archwitch)
+			set := make(map[int]*Archwitch)
 			for _, a := range Data.Archwitches {
 				if e.KingSeriesID == a.KingSeriesID {
 					set[a.CardMasterID] = a
 				}
 			}
 
-			e._archwitches = make([]Archwitch, 0)
+			e._archwitches = make(ArchwitchList, 0)
 			for _, a := range set {
 				e._archwitches = append(e._archwitches, a)
 			}
 		}
 	} else if e._archwitches == nil {
-		e._archwitches = make([]Archwitch, 0)
+		e._archwitches = make(ArchwitchList, 0)
 	}
 	return e._archwitches
 }

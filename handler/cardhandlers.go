@@ -400,14 +400,19 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var aw *vc.Archwitch
+	awl := make(vc.ArchwitchList, 0)
 	for _, evo := range evolutions {
-		if nil != evo.Archwitch() {
-			aw = evo.Archwitch()
-			break
+		aws := evo.ArchwitchesWithLikeabilityQuotes()
+		log.Printf("Evo AW records: %v", aws)
+		if len(aws) > 0 {
+			awl = append(awl, aws...)
+			log.Printf("Found %d AW records found for %s", len(awl), card.Name)
 		}
 	}
-	if aw != nil {
+	log.Printf("AW records: %v", awl)
+	if len(awl) > 0 {
+		aw := awl.Earliest()
+		log.Printf("AW %d found for card %s", aw.ID, card.Name)
 		for _, like := range aw.Likeability() {
 			fmt.Fprintf(w, "|likeability %d = %s\n",
 				like.Friendship,

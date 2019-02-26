@@ -49,8 +49,8 @@ type Card struct {
 	Name                      string `json:"name"`                                     // name from the strings file
 
 	//Character Link
-	character *CardCharacter
-	archwitch *Archwitch
+	character   *CardCharacter
+	archwitches ArchwitchList
 	//Skill Links
 	skill1        *Skill
 	skill2        *Skill
@@ -62,6 +62,9 @@ type Card struct {
 	nextEvo  *Card
 	_allEvos map[string]*Card
 }
+
+// CardList helper interface for looking at lists of cards
+type CardList []*Card
 
 // FollowerKind for soldier replenishment on cards
 //these come from master file field "follower_kinds"
@@ -325,18 +328,46 @@ func (c *Card) LastEvo() *Card {
 	return t
 }
 
-// Archwitch If this card was used as an AW, get the AW information.
-// This can be used to get Likability information.
-func (c *Card) Archwitch() *Archwitch {
-	if c.archwitch == nil {
+// Archwitches If this card was used as an AW, get the AW information.
+// This can be used to get Likability information. If a card was used
+// as an Achwitch in multiple events, multiple items can be returned here.
+func (c *Card) Archwitches() ArchwitchList {
+	if c == nil {
+		return ArchwitchList{}
+	}
+	if c.archwitches == nil {
+		c.archwitches = make(ArchwitchList, 0)
 		for _, aw := range Data.Archwitches {
-			if c.ID == aw.CardMasterID {
-				c.archwitch = &aw
-				break
+			if c.ID == aw.CardMasterID && !c.archwitches.Contains(aw) {
+				c.archwitches = append(c.archwitches, aw)
 			}
 		}
+		sort.Slice(c.archwitches, func(a, b int) bool {
+			awa := c.archwitches[a]
+			awb := c.archwitches[b]
+			if awa.KingSeriesID == awb.KingSeriesID {
+				return awa.ID < awb.ID
+			}
+			return awa.KingSeriesID < awb.KingSeriesID
+		})
 	}
-	return c.archwitch
+	log.Printf("Found %d Archwitch records for card %d:%s", len(c.archwitches), c.ID, c.Name)
+	return c.archwitches
+}
+
+// ArchwitchesWithLikeabilityQuotes If this card was used as an AW, get the AW information.
+// This can be used to get Likability information. If a card was used
+// as an Achwitch in multiple events, multiple items can be returned here.
+func (c *Card) ArchwitchesWithLikeabilityQuotes() ArchwitchList {
+	aws := c.Archwitches()
+	ret := make(ArchwitchList, 0)
+	for _, aw := range aws {
+		if len(aw.Likeability()) > 0 {
+			ret = append(ret, aw)
+		}
+	}
+	log.Printf("Found %d Archwitch records with likeability quotes for card %d:%s", len(ret), c.ID, c.Name)
+	return ret
 }
 
 // EvoAccident If this card can produce an evolution accident, get the result card.
@@ -740,9 +771,6 @@ func (c *Card) RebirthEvent() string {
 	}
 	return ch.Rebirth
 }
-
-// CardList helper interface for looking at lists of cards
-type CardList []*Card
 
 // Earliest gets the ealiest released card from a list of cards. Determined by ID
 func (d CardList) Earliest() (min *Card) {

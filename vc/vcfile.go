@@ -218,7 +218,7 @@ type VFile struct {
 	LevelXLRResources           []LevelResource             `json:"card_compose_resource_xlr"`
 	DeckBonuses                 []DeckBonus                 `json:"deck_bonus"`
 	DeckBonusConditions         []DeckBonusCond             `json:"deck_bonus_cond"`
-	Archwitches                 []Archwitch                 `json:"kings"`
+	Archwitches                 ArchwitchList               `json:"kings"`
 	ArchwitchSeries             []ArchwitchSeries           `json:"king_series"`
 	ArchwitchFriendships        []ArchwitchFriendship       `json:"king_friendship"`
 	Events                      []Event                     `json:"mst_event"`

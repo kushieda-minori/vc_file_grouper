@@ -1,5 +1,10 @@
 package vc
 
+import (
+	"fmt"
+	"sort"
+)
+
 // Archwitch represents the "kings" istructure in the data file
 type Archwitch struct {
 	ID            int    `json:"_id"`
@@ -22,6 +27,9 @@ type Archwitch struct {
 	likeability   []ArchwitchFriendship
 }
 
+// ArchwitchList helper interface for looking at lists of Archwitches
+type ArchwitchList []*Archwitch
+
 // ArchwitchSeries is "king_series" in the data file and is the
 // list of AW events and the RR prizes Indicates what "event"
 // the archwitch was a part of.
@@ -33,7 +41,7 @@ type ArchwitchSeries struct {
 	ReceiveLimitDatetime Timestamp `json:"receive_limit_datetime"`
 	IsBeginnerKing       int       `json:"is_beginner_king"`
 	Description          string    `json:"-"`
-	archwitches          []Archwitch
+	archwitches          ArchwitchList
 }
 
 //ArchwitchFriendship is "king_friendship" in the data file.
@@ -72,6 +80,9 @@ type Limited struct {
 
 // Likeability information for the AW
 func (a *Archwitch) Likeability() []ArchwitchFriendship {
+	if a == nil {
+		return []ArchwitchFriendship{}
+	}
 	if a.likeability == nil {
 		a.likeability = make([]ArchwitchFriendship, 0)
 		for _, af := range Data.ArchwitchFriendships {
@@ -79,6 +90,9 @@ func (a *Archwitch) Likeability() []ArchwitchFriendship {
 				a.likeability = append(a.likeability, af)
 			}
 		}
+		sort.Slice(a.likeability, func(l1, l2 int) bool {
+			return a.likeability[l1].Friendship < a.likeability[l2].Friendship
+		})
 	}
 	return a.likeability
 }
@@ -99,14 +113,69 @@ func (a *Archwitch) IsAW() bool {
 }
 
 // Archwitches in this AW Series
-func (as *ArchwitchSeries) Archwitches() []Archwitch {
+func (as *ArchwitchSeries) Archwitches() ArchwitchList {
 	if as.archwitches == nil {
-		as.archwitches = make([]Archwitch, 0)
+		as.archwitches = make(ArchwitchList, 0)
 		for _, a := range Data.Archwitches {
 			if as.ID == a.KingSeriesID {
 				as.archwitches = append(as.archwitches, a)
 			}
 		}
+		sort.Slice(as.archwitches, func(a, b int) bool {
+			awa := as.archwitches[a]
+			awb := as.archwitches[b]
+			return awa.ID < awb.ID
+		})
 	}
 	return as.archwitches
+}
+
+// Earliest gets the earliest AW from the list
+func (awl ArchwitchList) Earliest() (first *Archwitch) {
+	l := len(awl)
+	if l == 0 {
+		return
+	}
+
+	for _, aw := range awl {
+		if first == nil || first.ID > aw.ID {
+			first = aw
+		}
+	}
+	return
+}
+
+// Latest gets the latest AW from the list
+func (awl ArchwitchList) Latest() (last *Archwitch) {
+	l := len(awl)
+	if l == 0 {
+		return
+	}
+
+	for _, aw := range awl {
+		if last == nil || last.ID < aw.ID {
+			last = aw
+		}
+	}
+	return
+}
+
+//Contains checks if the test item exists in the list
+func (awl ArchwitchList) Contains(test *Archwitch) bool {
+	for _, aw := range awl {
+		if aw == test {
+			return true
+		}
+		if aw != nil && test != nil && aw.ID == test.ID {
+			return true
+		}
+	}
+	return false
+}
+
+func (awl ArchwitchList) String() (ret string) {
+	for _, aw := range awl {
+		ret += fmt.Sprintf("{id: %d}", aw.ID)
+	}
+	return
 }

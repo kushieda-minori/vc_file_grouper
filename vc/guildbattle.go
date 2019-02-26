@@ -121,25 +121,12 @@ func (g *GuildBattle) BingoBattle() *GuildBingoBattle {
 	return nil
 }
 
-// Archwitches AW information. this is different than the AW even AW list.
-func (g *GuildBingoBattle) Archwitches() []Archwitch {
-	if g.archwitches == nil {
-		g.archwitches = make([]Archwitch, 0)
-		for _, a := range Data.Archwitches {
-			if g.KingSeriesID == a.KingSeriesID {
-				g.archwitches = append(g.archwitches, a)
-			}
-		}
-	}
-	return g.archwitches
-}
-
 // ExchangeRewards rewards for item exchanges for this battle
 func (g *GuildBingoBattle) ExchangeRewards() []GuildBingoExchangeReward {
-	set := make([]GuildBingoExchangeReward, 0)
 	if g == nil {
-		return nil
+		return []GuildBingoExchangeReward{}
 	}
+	set := make([]GuildBingoExchangeReward, 0)
 	if g.ExchangeRewardGroupID > 0 {
 		for _, val := range Data.GuildBingoExchangeRewards {
 			if val.GroupID == g.ExchangeRewardGroupID {
@@ -153,6 +140,9 @@ func (g *GuildBingoBattle) ExchangeRewards() []GuildBingoExchangeReward {
 
 // Campaigns extra point campaigns for this ABB
 func (g *GuildBingoBattle) Campaigns() []GuildBingoPointCampaign {
+	if g == nil {
+		return []GuildBingoPointCampaign{}
+	}
 	if g._campaigns == nil {
 		g._campaigns = make([]GuildBingoPointCampaign, 0)
 		for _, a := range Data.GuildBingoPointCampaigns {
@@ -199,6 +189,9 @@ func (g *GuildBattle) RankRewards() []RankRewardSheet {
 }
 
 func (g *GuildBattle) rewards() *GuildBattleRewardRef {
+	if g == nil {
+		return nil
+	}
 	for _, rref := range Data.GuildBattleRewardRefs {
 		if g.ID == rref.EventID {
 			return &rref

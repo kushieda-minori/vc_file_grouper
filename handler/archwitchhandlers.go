@@ -62,7 +62,7 @@ func ArchwitchHandler(w http.ResponseWriter, r *http.Request) {
 				aw.WeatherID,
 				aw.ModelName,
 				aw.ChainRatio2,
-				printFriendship(&aw),
+				printFriendship(aw),
 			)
 		}
 		io.WriteString(w, "</tr></tbody></table>\n")
@@ -93,7 +93,7 @@ func printSkill(skill *vc.Skill) string {
 func printFriendship(aw *vc.Archwitch) string {
 	s := "<ol>"
 	for _, af := range aw.Likeability() {
-		s = s + fmt.Sprintf("<li>%d%% chance to the next heart</li>\n", af.UpRate)
+		s = s + fmt.Sprintf("<li>%d%%: \"%s\"</li>\n", af.UpRate, af.Likability)
 	}
 	return s + "</ol>"
 }
