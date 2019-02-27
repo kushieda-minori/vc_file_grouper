@@ -1,6 +1,7 @@
 package wiki
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sort"
@@ -16,22 +17,28 @@ type Card struct {
 	Element            string
 	Rarity             string
 	Description        string
-	Friendship         string
-	Login              string
-	Meet               string
-	BattleStart        string
-	BattleEnd          string
-	FriendshipMax      string
-	FriendshipEvent    string
-	Rebirth            string
-	TurnoverFrom       string
-	TurnoverTo         string
-	LikabilityQuotes   []string
+	Quotes             CardQuotes
 	Evolutions         []EvolutionDetails
-	Amalgamations      []Amalgamation
 	AwakeningMaterials []AwakenMaterial
 	RebirthMaterials   []RebirthMaterial
+	TurnoverFrom       string
+	TurnoverTo         string
 	Availability       string
+	Amalgamations      []Amalgamation
+}
+
+// CardQuotes Quotes that can appear on the cards
+type CardQuotes struct {
+	Friendship       string
+	Login            string
+	Meet             string
+	BattleStart      string
+	BattleEnd        string
+	FriendshipMax    string
+	FriendshipEvent  string
+	Rebirth          string
+	Miscellaneous    []string
+	LikabilityQuotes []string
 }
 
 //EvolutionDetails Indivicual evolution specific information
@@ -101,21 +108,23 @@ func (Card) From(c *vc.Card) Card {
 	}
 	skillsSeen := make(tmpSkillsSeen)
 	tc := Card{
-		IsUnReleased:       c.IsClosed != 0,
-		Element:            c.Element(),
-		Rarity:             c.MainRarity(),
-		Description:        c.Description(),
-		Friendship:         c.Friendship(),
-		Login:              c.Login(),
-		Meet:               c.Meet(),
-		BattleStart:        c.BattleStart(),
-		BattleEnd:          c.BattleEnd(),
-		FriendshipMax:      c.FriendshipMax(),
-		FriendshipEvent:    c.FriendshipEvent(),
-		Rebirth:            c.RebirthEvent(),
+		IsUnReleased: c.IsClosed != 0,
+		Element:      c.Element(),
+		Rarity:       c.MainRarity(),
+		Description:  c.Description(),
+		Quotes: CardQuotes{
+			Friendship:       c.Friendship(),
+			Login:            c.Login(),
+			Meet:             c.Meet(),
+			BattleStart:      c.BattleStart(),
+			BattleEnd:        c.BattleEnd(),
+			FriendshipMax:    c.FriendshipMax(),
+			FriendshipEvent:  c.FriendshipEvent(),
+			Rebirth:          c.RebirthEvent(),
+			LikabilityQuotes: getLikabilityQuotes(c),
+		},
 		TurnoverFrom:       getTurnoverFrom(c),
 		TurnoverTo:         getTurnoverTo(c),
-		LikabilityQuotes:   getLikabilityQuotes(c),
 		Evolutions:         getEvolutions(c, &skillsSeen),
 		Amalgamations:      getAmalgamations(c),
 		AwakeningMaterials: getAwakeningMaterials(c),
@@ -144,20 +153,17 @@ func getLikabilityQuotes(c *vc.Card) (ret []string) {
 	exists := make(map[string]struct{}, 0)
 	evolutions := c.GetEvolutionCards()
 	for _, evo := range evolutions {
-		aw := evo.Archwitch()
-		if aw != nil {
+		aws := evo.ArchwitchesWithLikeabilityQuotes()
+		for _, aw := range aws {
 			for _, like := range aw.Likeability() {
 				if _, ok := exists[like.Likability]; !ok {
 					ret = append(ret, like.Likability)
 					exists[like.Likability] = struct{}{}
 				}
 			}
-			if len(ret) > 0 {
-				// if the AW record had quotes, don't look for more
-				return
-			}
 		}
 	}
+	log.Printf("Found %d likeability Quotes for card %d:%s", len(ret), c.ID, c.Name)
 	return
 }
 
@@ -193,103 +199,103 @@ func getStats(evo *vc.Card) (atk, def, sol string) {
 		// only X cards have a max level of 1 and they don't evo
 		// only possible amalgamations like Philosopher's Stones
 		if evo.IsAmalgamation() {
-			atkStat, defStat, solStat := evo.AmalgamationPerfect()
-			atk = fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", atkStat)
-			def = fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", defStat)
-			sol = fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", solStat)
+			s := evo.AmalgamationPerfect()
+			atk = fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", s.Attack)
+			def = fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", s.Defense)
+			sol = fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", s.Soldiers)
 		}
 		return
 	}
 	if evo.IsAmalgamation() {
-		atkStat, defStat, solStat := evo.EvoStandard()
-		atk = " / " + strconv.Itoa(atkStat)
-		def = " / " + strconv.Itoa(defStat)
-		sol = " / " + strconv.Itoa(solStat)
+		s := evo.EvoStandard()
+		atk = " / " + strconv.Itoa(s.Attack)
+		def = " / " + strconv.Itoa(s.Defense)
+		sol = " / " + strconv.Itoa(s.Soldiers)
 		if strings.HasSuffix(evo.Rarity(), "LR") {
 			// print LR level1 static material amal
-			atkPStat, defPStat, solPStat := evo.AmalgamationPerfect()
-			if atkStat != atkPStat || defStat != defPStat || solStat != solPStat {
+			pStat := evo.AmalgamationPerfect()
+			if s.NotEquals(pStat) {
 				if evo.PossibleMixedEvo() {
-					atkMStat, defMStat, solMStat := evo.EvoMixed()
-					if atkStat != atkMStat || defStat != defMStat || solStat != solMStat {
-						atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", atkMStat)
-						def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", defMStat)
-						sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", solMStat)
+					mStat := evo.EvoMixed()
+					if s.NotEquals(mStat) {
+						atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStat.Attack)
+						def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStat.Defense)
+						sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStat.Soldiers)
 					}
 				}
-				atkLRStat, defLRStat, solLRStat := evo.AmalgamationLRStaticLvl1()
-				if atkLRStat != atkPStat || defLRStat != defPStat || solLRStat != solPStat {
-					atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", atkLRStat)
-					def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", defLRStat)
-					sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", solLRStat)
+				lrStat1 := evo.AmalgamationLRStaticLvl1()
+				if lrStat1.NotEquals(pStat) {
+					atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStat1.Attack)
+					def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStat1.Defense)
+					sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStat1.Soldiers)
 				}
-				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", atkPStat)
-				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", defPStat)
-				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", solPStat)
+				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStat.Attack)
+				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStat.Defense)
+				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStat.Soldiers)
 			}
 		} else {
-			atkPStat, defPStat, solPStat := evo.AmalgamationPerfect()
-			if atkStat != atkPStat || defStat != defPStat || solStat != solPStat {
-				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", atkPStat)
-				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", defPStat)
-				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", solPStat)
+			pStat := evo.AmalgamationPerfect()
+			if s.NotEquals(pStat) {
+				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStat.Attack)
+				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStat.Defense)
+				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStat.Soldiers)
 			}
 		}
 	} else if evo.EvolutionRank < 2 {
 		// not an amalgamation.
-		atkStat, defStat, solStat := evo.EvoStandard()
-		atk = " / " + strconv.Itoa(atkStat)
-		def = " / " + strconv.Itoa(defStat)
-		sol = " / " + strconv.Itoa(solStat)
-		atkPStat, defPStat, solPStat := evo.EvoPerfect()
-		if atkStat != atkPStat || defStat != defPStat || solStat != solPStat {
+		s := evo.EvoStandard()
+		atk = " / " + strconv.Itoa(s.Attack)
+		def = " / " + strconv.Itoa(s.Defense)
+		sol = " / " + strconv.Itoa(s.Soldiers)
+		pStat := evo.EvoPerfect()
+		if s.NotEquals(pStat) {
 			var evoType string
 			if evo.PossibleMixedEvo() {
 				evoType = "Amalgamation"
-				atkMStat, defMStat, solMStat := evo.EvoMixed()
-				if atkStat != atkMStat || defStat != defMStat || solStat != solMStat {
-					atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", atkMStat)
-					def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", defMStat)
-					sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", solMStat)
+				mStat := evo.EvoMixed()
+				if s.NotEquals(mStat) {
+					atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStat.Attack)
+					def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStat.Defense)
+					sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStat.Soldiers)
 				}
 			} else {
 				evoType = "Evolution"
 			}
-			atk += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", atkPStat, evoType)
-			def += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", defPStat, evoType)
-			sol += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", solPStat, evoType)
+			atk += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", pStat.Attack, evoType)
+			def += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", pStat.Defense, evoType)
+			sol += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", pStat.Soldiers, evoType)
 		}
 	} else {
 		// not an amalgamation, Evo Rank >=2 (Awoken cards or 4* evos).
-		atkStat, defStat, solStat := evo.EvoStandard()
-		atk = " / " + strconv.Itoa(atkStat)
-		def = " / " + strconv.Itoa(defStat)
-		sol = " / " + strconv.Itoa(solStat)
+		s := evo.EvoStandard()
+		atk = " / " + strconv.Itoa(s.Attack)
+		def = " / " + strconv.Itoa(s.Defense)
+		sol = " / " + strconv.Itoa(s.Soldiers)
 		printedMixed := false
 		printedPerfect := false
 		if strings.HasSuffix(evo.Rarity(), "LR") {
 			// print LR level1 static material amal
 			if evo.PossibleMixedEvo() {
-				atkMStat, defMStat, solMStat := evo.EvoMixed()
-				if atkStat != atkMStat || defStat != defMStat || solStat != solMStat {
+				mStat := evo.EvoMixed()
+				if s.NotEquals(mStat) {
 					printedMixed = true
-					atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", atkMStat)
-					def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", defMStat)
-					sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", solMStat)
+					atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStat.Attack)
+					def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStat.Defense)
+					sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStat.Soldiers)
 				}
 			}
-			atkPStat, defPStat, solPStat := evo.AmalgamationPerfect()
-			if atkStat != atkPStat || defStat != defPStat || solStat != solPStat {
-				atkLRStat, defLRStat, solLRStat := evo.AmalgamationLRStaticLvl1()
-				if atkLRStat != atkPStat || defLRStat != defPStat || solLRStat != solPStat {
-					atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", atkLRStat)
-					def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", defLRStat)
-					sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", solLRStat)
+			pStat := evo.AmalgamationPerfect()
+			if s.NotEquals(pStat) {
+				lrStat1 := evo.AmalgamationLRStaticLvl1()
+				if lrStat1.NotEquals(pStat) {
+					atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStat1.Attack)
+					def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStat1.Defense)
+					sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStat1.Soldiers)
 				}
 				printedPerfect = true
-				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", atkPStat)
-				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", defPStat)
-				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", solPStat)
+				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStat.Attack)
+				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStat.Defense)
+				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStat.Soldiers)
 			}
 		}
 
@@ -299,20 +305,20 @@ func getStats(evo *vc.Card) (atk, def, sol string) {
 			// may need different options depending on the type of card.
 			if evo.EvolutionRank == 4 {
 				//If 4* card, calculate 6 card evo stats
-				atkStat, defStat, solStat := evo.Evo6Card()
-				atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 6)
-				def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 6)
-				sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 6)
+				s6 := evo.Evo6Card()
+				atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s6.Attack, 6)
+				def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s6.Defense, 6)
+				sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s6.Soldiers, 6)
 				if evo.Rarity() != "GLR" {
 					//If SR card, calculate 9 card evo stats
-					atkStat, defStat, solStat = evo.Evo9Card()
-					atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 9)
-					def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 9)
-					sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 9)
+					s9 := evo.Evo9Card()
+					atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s9.Attack, 9)
+					def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s9.Defense, 9)
+					sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s9.Soldiers, 9)
 				}
 			}
 			//If 4* card, calculate 16 card evo stats
-			atkStat, defStat, solStat := evo.EvoPerfect()
+			pStat := evo.EvoPerfect()
 			var cards int
 			switch evo.EvolutionRank {
 			case 1:
@@ -324,30 +330,30 @@ func getStats(evo *vc.Card) (atk, def, sol string) {
 			case 4:
 				cards = 16
 			}
-			atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, cards)
-			def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, cards)
-			sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, cards)
+			atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", pStat.Attack, cards)
+			def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", pStat.Defense, cards)
+			sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", pStat.Soldiers, cards)
 		}
 		if evo.Rarity()[0] == 'G' || evo.Rarity()[0] == 'X' {
 			evo.EvoStandardLvl1() // just to print out the level 1 G stats
-			atkPStat, defPStat, solPStat := evo.EvoPerfect()
-			if atkStat != atkPStat || defStat != defPStat || solStat != solPStat {
+			pStat := evo.EvoPerfect()
+			if s.NotEquals(pStat) {
 				var evoType string
 				if !printedMixed && evo.PossibleMixedEvo() {
 					evoType = "Amalgamation"
-					atkMStat, defMStat, solMStat := evo.EvoMixed()
-					if atkStat != atkMStat || defStat != defMStat || solStat != solMStat {
-						atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", atkMStat)
-						def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", defMStat)
-						sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", solMStat)
+					mStat := evo.EvoMixed()
+					if s.NotEquals(mStat) {
+						atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStat.Attack)
+						def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStat.Defense)
+						sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStat.Soldiers)
 					}
 				} else {
 					evoType = "Evolution"
 				}
 				if !printedPerfect {
-					atk += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", atkPStat, evoType)
-					def += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", defPStat, evoType)
-					sol += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", solPStat, evoType)
+					atk += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", pStat.Attack, evoType)
+					def += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", pStat.Defense, evoType)
+					sol += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", pStat.Soldiers, evoType)
 				}
 			}
 			awakensFrom := evo.AwakensFrom()
@@ -356,20 +362,20 @@ func getStats(evo *vc.Card) (atk, def, sol string) {
 			}
 			if awakensFrom != nil && awakensFrom.LastEvolutionRank == 4 {
 				//If 4* card, calculate 6 card evo stats
-				atkStat, defStat, solStat := evo.Evo6Card()
-				atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 6)
-				def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 6)
-				sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 6)
+				s := evo.Evo6Card()
+				atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s.Attack, 6)
+				def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s.Defense, 6)
+				sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s.Soldiers, 6)
 				if evo.Rarity() != "GLR" {
 					//If SR card, calculate 9 and 16 card evo stats
-					atkStat, defStat, solStat = evo.Evo9Card()
-					atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 9)
-					def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 9)
-					sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 9)
-					atkStat, defStat, solStat = evo.EvoPerfect()
-					atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", atkStat, 16)
-					def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", defStat, 16)
-					sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", solStat, 16)
+					s = evo.Evo9Card()
+					atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s.Attack, 9)
+					def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s.Defense, 9)
+					sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s.Soldiers, 9)
+					s = evo.EvoPerfect()
+					atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s.Attack, 16)
+					def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s.Defense, 16)
+					sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", s.Soldiers, 16)
 				}
 			}
 		}
@@ -500,4 +506,24 @@ func getRebirthMaterials(c *vc.Card) []RebirthMaterial {
 		}
 	}
 	return ret
+}
+
+//String converts the card data to a wiki string
+func (c Card) String() (ret string) {
+	if c.IsUnReleased {
+		ret += "{{Unreleased}}"
+	}
+	data, err := json.MarshalIndent(c, "", " ")
+	if err == nil {
+		ret += fmt.Sprintf(`{{#invoke:Card|detail
+|<nowiki>%s</nowiki>
+|availability=%s
+}}`,
+			string(data),
+			c.Availability,
+		)
+	} else {
+		ret = err.Error()
+	}
+	return
 }
