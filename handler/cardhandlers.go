@@ -302,7 +302,7 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		skillMap["xt"] = printWikiSkill(evo.ThorSkill1(), nil, "xt")
 	}
 	// order that we want to print the skills
-	skillEvos := []string{"", "2", "3", "a", "t", "g", "g2", "g3", "ga", "gt", "x", "x2", "x3", "xa", "xt"}
+	skillEvos := []string{"", "2", "3", "a", "g", "g2", "g3", "ga", "x", "x2", "x3", "xa", "t", "gt", "xt"}
 
 	// actually print the skills now...
 	for _, skillEvo := range skillEvos {
