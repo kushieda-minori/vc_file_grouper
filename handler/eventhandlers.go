@@ -345,7 +345,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				event.StartDatetime.Format(wikiFmt),
 				event.EndDatetime.Format(wikiFmt),
 				shield,
-				html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
+				html.EscapeString(event.Description),
 				genWikiAWRewards(realm.ArrivalRewards(), "Point Rewards", "Floor"), // RR 1
 				genWikiAWRewards(realm.RankRewards(), "Rank Rewards", "Rank"),      // RR 2
 				genWikiRankTrend(event, nil, time.Unix(0, 0), ranks, true),         // rank trend
@@ -355,7 +355,14 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	case 11: // special campaign (Abyssal AW and others)
 		// may just do the THOR event seprately and leave this as just news
-		fallthrough
+		fmt.Fprintf(w,
+			getEventTemplate(event.EventTypeID), event.EventTypeID,
+			event.StartDatetime.Format(wikiFmt), // start
+			event.EndDatetime.Format(wikiFmt),   // end
+			html.EscapeString(event.Description),
+			prevEventName,
+			nextEventName,
+		)
 	case 13: //Alliance Ultimate Battle
 		fallthrough
 	case 12: // Alliance Duel
