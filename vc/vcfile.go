@@ -119,6 +119,7 @@ var newCards = []int{
 var characterNameOverride = map[int]string{
 	62:   "Kung-Fu Master",            // Kung Fu Master
 	181:  "Ariel (Light)",             // Ariel
+	254:  "Duckling Look-a-Like",      //Duckling Look-A-Like
 	352:  "Ariel (Dark)",              // Ariel
 	452:  "Joker",                     // Joker
 	465:  "Joker (Cane)",              // Joker
@@ -142,6 +143,7 @@ var characterNameOverride = map[int]string{
 	2024: "Playful Hades (Red)",       // Playful Hades
 	2025: "Playful Hades (Green)",     // Playful Hades
 	2026: "Playful Hades (Blue)",      // Playful Hades
+	2080: "Eunice",                    // X Eunice = Yunice? Why Mynet...
 	2397: "PM Demise",                 // Pm Demise
 	2479: "DIY Ninja",                 // Diy Ninja
 	2549: "Thunder Stone Shard (L)",   // Thunderstone Shard (L)

@@ -169,8 +169,8 @@ func shouldExcludeCard(card *vc.Card) bool {
 		//card.EvolutionRank < 0 || // skip any cards with evo rank < 0
 		(evosLen > 1 && card.PrevEvo() != nil) || // skip any card that is not the first evo
 		(card.Element() == "Special" && nameNotAllowed(card.Name)) ||
-		cardRare.Signature == "n" ||
-		cardRare.Signature == "hn" ||
+		//cardRare.Signature == "n" ||
+		//cardRare.Signature == "hn" ||
 		cardRare.Signature == "x" || // ignore normal X
 		//cardRare.Signature == "r" ||
 		//cardRare.Signature == "hr" ||
