@@ -16,12 +16,12 @@ type AmalgamationRecipe struct {
 	Result    AmalgamationItem   `json:"result"`
 }
 
-func newRecipe(a *vc.Amalgamation) AmalgamationRecipe {
+func newRecipe(a vc.Amalgamation) AmalgamationRecipe {
 	mats := a.Materials()
 	l := len(mats)
 	materials := make([]AmalgamationItem, 0, l-1)
 	res := mats[l-1]
-	for _, mat := range mats[0 : l-2] {
+	for _, mat := range mats[0 : l-1] {
 		materials = append(materials, AmalgamationItem{
 			Name:   mat.Name,
 			Rarity: mat.Rarity(),

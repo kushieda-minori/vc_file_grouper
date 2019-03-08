@@ -31,7 +31,7 @@ type Card struct {
 	EvoAccidentFrom string               `json:"evoAccidentFrom"`
 	EvoAccidentTo   string               `json:"evoAccidentTo"`
 	Skills          []Skill              `json:"skill"`
-	Amalgamations   []AmalgamationRecipe `json:"-"`
+	Amalgamations   []AmalgamationRecipe `json:"amalgamations"`
 	Link            string               `json:"link"`
 	Images          []string             `json:"images"` // contains all images (not icons)
 }
@@ -85,6 +85,7 @@ func NewCard(vcCard *vc.Card) Card {
 		EvoAccidentFrom: turnoverFrom,
 		EvoAccidentTo:   turnoverTo,
 		Skills:          newSkills(vcCard),
+		Amalgamations:   getAmals(evos),
 		Link: fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
 			url.PathEscape(vcCard.Name),
 		),
@@ -106,13 +107,19 @@ func getTurnOver(evos vc.CardList) (turnoverFrom, turnoverTo string) {
 	return
 }
 
-// func getAmals(evos vc.CardList) ([]AmalgamationRecipe]) {
-// 	ret:=make([]AmalgamationRecipe,0)
-// 	for _, evo := range evos {
-
-// 	}
-// 	return return ret
-// }
+func getAmals(evos vc.CardList) []AmalgamationRecipe {
+	ret := make([]AmalgamationRecipe, 0)
+	for _, evo := range evos {
+		amals := evo.Amalgamations()
+		l := len(amals)
+		if l > 0 {
+			for _, amal := range amals {
+				ret = append(ret, newRecipe(amal))
+			}
+		}
+	}
+	return ret
+}
 
 // AddOrUpdate Checks if the card exists in the DB or is not yet there.
 // If the card exists, then the skill information is updated.
@@ -141,6 +148,7 @@ func (botDB *Db) AddOrUpdate(vcCard *vc.Card) bool {
 			ref.EvoAccidentFrom = turnoverFrom
 			ref.EvoAccidentTo = turnoverTo
 			ref.Skills = newSkills(vcCard)
+			ref.Amalgamations = getAmals(evos)
 			newPath := fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
 				url.PathEscape(name),
 			)
