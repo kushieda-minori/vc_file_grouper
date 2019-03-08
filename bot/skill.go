@@ -1,4 +1,4 @@
-package nobu
+package bot
 
 import (
 	"fmt"

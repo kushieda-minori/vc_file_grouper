@@ -1,4 +1,4 @@
-package nobu
+package bot
 
 import (
 	"encoding/json"
@@ -24,13 +24,16 @@ var DB *Db
 
 // Card card as known by Nobu Bot
 type Card struct {
-	VCID    int      `json:"vcID"`
-	Name    string   `json:"name"`
-	Element string   `json:"element"`
-	Rarity  string   `json:"rarity"`
-	Skills  []Skill  `json:"skill"`
-	Images  []string `json:"images"` // contains all images (not icons)
-	Link    string   `json:"link"`
+	VCID            int                  `json:"vcID"`
+	Name            string               `json:"name"`
+	Element         string               `json:"element"`
+	Rarity          string               `json:"rarity"`
+	EvoAccidentFrom string               `json:"evoAccidentFrom"`
+	EvoAccidentTo   string               `json:"evoAccidentTo"`
+	Skills          []Skill              `json:"skill"`
+	Amalgamations   []AmalgamationRecipe `json:"-"`
+	Link            string               `json:"link"`
+	Images          []string             `json:"images"` // contains all images (not icons)
 }
 
 // Db list of cards Nobu-bot knows about
@@ -71,19 +74,45 @@ func NewCard(vcCard *vc.Card) Card {
 	if err != nil {
 		log.Printf(err.Error() + "\n")
 	}
-	rarity := vcCard.GetEvolutionCards().MinimumEvolutionRank()
+	evos := vcCard.GetEvolutionCards()
+	turnoverFrom, turnoverTo := getTurnOver(evos)
+	rarity := evos.MinimumEvolutionRank()
 	return Card{
-		VCID:    vcCard.ID,
-		Name:    vcCard.Name,
-		Element: vcCard.Element(),
-		Rarity:  rarity,
-		Skills:  newSkills(vcCard),
-		Images:  imgLocs,
+		VCID:            vcCard.ID,
+		Name:            vcCard.Name,
+		Element:         vcCard.Element(),
+		Rarity:          rarity,
+		EvoAccidentFrom: turnoverFrom,
+		EvoAccidentTo:   turnoverTo,
+		Skills:          newSkills(vcCard),
 		Link: fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
 			url.PathEscape(vcCard.Name),
 		),
+		Images: imgLocs,
 	}
 }
+
+func getTurnOver(evos vc.CardList) (turnoverFrom, turnoverTo string) {
+	for _, evo := range evos {
+		accTo := evo.EvoAccident()
+		accFrom := evo.EvoAccidentOf()
+		if accFrom != nil && turnoverFrom == "" {
+			turnoverFrom = accFrom.Name
+		}
+		if accTo != nil && turnoverTo == "" {
+			turnoverTo = accTo.Name
+		}
+	}
+	return
+}
+
+// func getAmals(evos vc.CardList) ([]AmalgamationRecipe]) {
+// 	ret:=make([]AmalgamationRecipe,0)
+// 	for _, evo := range evos {
+
+// 	}
+// 	return return ret
+// }
 
 // AddOrUpdate Checks if the card exists in the DB or is not yet there.
 // If the card exists, then the skill information is updated.
@@ -95,7 +124,9 @@ func (botDB *Db) AddOrUpdate(vcCard *vc.Card) bool {
 	name := vcCard.Name
 	element := vcCard.Element()
 	mainRarity := vcCard.MainRarity()
-	rarity := vcCard.GetEvolutionCards().MinimumEvolutionRank()
+	evos := vcCard.GetEvolutionCards()
+	turnoverFrom, turnoverTo := getTurnOver(evos)
+	rarity := evos.MinimumEvolutionRank()
 	for i, botCard := range *botDB {
 		if botCard.VCID == vcCard.ID || (strings.ToUpper(strings.TrimSpace(botCard.Name)) == strings.ToUpper(name) &&
 			botCard.Element == element &&
@@ -107,18 +138,20 @@ func (botDB *Db) AddOrUpdate(vcCard *vc.Card) bool {
 			ref.VCID = vcCard.ID
 			ref.Name = vcCard.Name // ensure any oddities are taken care of
 			ref.Rarity = rarity
+			ref.EvoAccidentFrom = turnoverFrom
+			ref.EvoAccidentTo = turnoverTo
 			ref.Skills = newSkills(vcCard)
-			if ref.Images == nil || len(ref.Images) == 0 || len(ref.Images) != len(vcCard.EvosWithDistinctImages(false)) {
-				imgLocs, err := getWikiImageLocations(vcCard)
-				if err != nil {
-				}
-				ref.Images = imgLocs
-			}
 			newPath := fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
 				url.PathEscape(name),
 			)
 			if ref.Link != newPath {
 				ref.Link = newPath
+			}
+			if ref.Images == nil || len(ref.Images) == 0 || len(ref.Images) != len(vcCard.EvosWithDistinctImages(false)) {
+				imgLocs, err := getWikiImageLocations(vcCard)
+				if err != nil {
+				}
+				ref.Images = imgLocs
 			}
 			return true
 		}

@@ -14,14 +14,14 @@ import (
 	"strings"
 	"time"
 
-	"zetsuboushita.net/vc_file_grouper/nobu"
+	"zetsuboushita.net/vc_file_grouper/bot"
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
 // BotHandler Generates a new Bot database
 func BotHandler(w http.ResponseWriter, r *http.Request) {
 	// File header
-	w.Header().Set("Content-Disposition", "filename=\"vcData-nobu-bot-cards-"+strconv.Itoa(vc.Data.Version)+"_"+vc.Data.Common.UnixTime.Format(time.RFC3339)+".json\"")
+	w.Header().Set("Content-Disposition", "filename=\"vcData-bot-cards-"+strconv.Itoa(vc.Data.Version)+"_"+vc.Data.Common.UnixTime.Format(time.RFC3339)+".json\"")
 	w.Header().Set("Content-Type", "application/json")
 
 	cards := make(vc.CardList, 0)
@@ -40,12 +40,12 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 		return first.ID < second.ID
 	})
 
-	nobuCards := make([]nobu.Card, 0)
+	nobuCards := make([]bot.Card, 0)
 	for _, card := range cards {
 		// to get the image location, we are going to ask Fandom for it:
 		// https://valkyriecrusade.fandom.com/index.php?title=Special:FilePath&file=Image Name.jpg
 		// this URL returns the actual image location in the HTTP Redirect Location header.
-		nobuCards = append(nobuCards, nobu.NewCard(card))
+		nobuCards = append(nobuCards, bot.NewCard(card))
 	}
 	b, err := json.MarshalIndent(nobuCards, "", " ")
 
@@ -66,8 +66,8 @@ func BotConfigHandler(w http.ResponseWriter, r *http.Request) {
 		if _, err := os.Stat(newpath); os.IsNotExist(err) {
 			io.WriteString(w, "<div>Invalid new path specified</div>")
 		} else {
-			nobu.DbFileLocation = newpath
-			if err = nobu.LoadDb(); err != nil {
+			bot.DbFileLocation = newpath
+			if err = bot.LoadDb(); err != nil {
 				fmt.Fprintf(w, "<div>%s</div>", err.Error())
 			} else {
 				io.WriteString(w, "<div>Success</div>")
@@ -81,7 +81,7 @@ func BotConfigHandler(w http.ResponseWriter, r *http.Request) {
 <button type="submit">Submit</button>
 <p><a href="/">back</a></p>
 </form>`,
-		html.EscapeString(nobu.DbFileLocation),
+		html.EscapeString(bot.DbFileLocation),
 	)
 	io.WriteString(w, "</body></html>")
 }
@@ -91,7 +91,7 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>Update Bot DB</title></head><body>\n")
 	namesOfCards := vc.CardsByName()
 
-	bl := len(*nobu.DB)
+	bl := len(*bot.DB)
 	lNames := len(namesOfCards)
 	i := 0
 	skipped := 0
@@ -105,29 +105,29 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("%d/%d ***********Skipping %d Cards with name %s\n", i, lNames, len(cards), name)
 		} else {
 			log.Printf("%d/%d Adding/Updating Bot Card %s\n", i, lNames, name)
-			if nobu.DB.AddOrUpdate(card) {
+			if bot.DB.AddOrUpdate(card) {
 				updated++
 			} else {
 				added++
 			}
 		}
 	}
-	log.Printf("Bot DB changed from %d records to %d. Added: %d, Updated:%d, Skipped: %d", bl, len(*nobu.DB), added, updated, skipped)
+	log.Printf("Bot DB changed from %d records to %d. Added: %d, Updated:%d, Skipped: %d", bl, len(*bot.DB), added, updated, skipped)
 
 	// sort the cards by VC release IDs
-	sort.Slice(*nobu.DB, func(i, j int) bool {
-		first := (*nobu.DB)[i]
-		second := (*nobu.DB)[j]
+	sort.Slice(*bot.DB, func(i, j int) bool {
+		first := (*bot.DB)[i]
+		second := (*bot.DB)[j]
 
 		return first.VCID < second.VCID
 	})
 
-	b, err := json.MarshalIndent(nobu.DB, "", " ")
+	b, err := json.MarshalIndent(bot.DB, "", " ")
 	if err != nil {
 		fmt.Fprintf(w, "<div>%s</div>", err.Error())
 	} else {
 		// overwrite the old file
-		err = ioutil.WriteFile(nobu.DbFileLocation, b, os.FileMode(0655))
+		err = ioutil.WriteFile(bot.DbFileLocation, b, os.FileMode(0655))
 		if err != nil {
 			fmt.Fprintf(w, "<div>%s</div>", err.Error())
 		} else {

@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"os"
 
+	"zetsuboushita.net/vc_file_grouper/bot"
 	"zetsuboushita.net/vc_file_grouper/handler"
-	"zetsuboushita.net/vc_file_grouper/nobu"
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
@@ -41,7 +41,7 @@ func main() {
 	} else {
 		vc.FilePath = flag.Args()[0]
 		if len(flag.Args()) > 1 {
-			nobu.DbFileLocation = flag.Args()[1]
+			bot.DbFileLocation = flag.Args()[1]
 		}
 	}
 
@@ -52,8 +52,8 @@ func main() {
 	} else {
 		vc.ReadMasterData(vc.FilePath)
 	}
-	if nobu.DbFileLocation != "" {
-		if err := nobu.LoadDb(); err != nil {
+	if bot.DbFileLocation != "" {
+		if err := bot.LoadDb(); err != nil {
 			log.Printf("Error loading Bot DB: " + err.Error())
 		}
 
