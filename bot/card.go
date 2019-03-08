@@ -24,16 +24,21 @@ var DB *Db
 
 // Card card as known by Nobu Bot
 type Card struct {
-	VCID            int                  `json:"vcID"`
-	Name            string               `json:"name"`
-	Element         string               `json:"element"`
-	Rarity          string               `json:"rarity"`
-	EvoAccidentFrom string               `json:"evoAccidentFrom"`
-	EvoAccidentTo   string               `json:"evoAccidentTo"`
-	Skills          []Skill              `json:"skill"`
-	Amalgamations   []AmalgamationRecipe `json:"amalgamations"`
-	Link            string               `json:"link"`
-	Images          []string             `json:"images"` // contains all images (not icons)
+	VCID          int          `json:"vcID"`
+	Name          string       `json:"name"`
+	Element       string       `json:"element"`
+	Rarity        string       `json:"rarity"`
+	Skills        []Skill      `json:"skill"`
+	EvoAccident   EvoAccident  `json:"evoAcc,omitempty"`
+	Amalgamations Amagamations `json:"amal,omitempty"`
+	Link          string       `json:"link"`
+	Images        []string     `json:"images"` // contains all images (not icons)
+}
+
+// EvoAccident Evo Accident information
+type EvoAccident struct {
+	To   string `json:"to,omitempty"`
+	From string `json:"from,omitempty"`
 }
 
 // Db list of cards Nobu-bot knows about
@@ -75,17 +80,15 @@ func NewCard(vcCard *vc.Card) Card {
 		log.Printf(err.Error() + "\n")
 	}
 	evos := vcCard.GetEvolutionCards()
-	turnoverFrom, turnoverTo := getTurnOver(evos)
 	rarity := evos.MinimumEvolutionRank()
 	return Card{
-		VCID:            vcCard.ID,
-		Name:            vcCard.Name,
-		Element:         vcCard.Element(),
-		Rarity:          rarity,
-		EvoAccidentFrom: turnoverFrom,
-		EvoAccidentTo:   turnoverTo,
-		Skills:          newSkills(vcCard),
-		Amalgamations:   getAmals(evos),
+		VCID:          vcCard.ID,
+		Name:          vcCard.Name,
+		Element:       vcCard.Element(),
+		Rarity:        rarity,
+		Skills:        newSkills(vcCard),
+		EvoAccident:   getTurnOver(evos),
+		Amalgamations: getAmals(evos),
 		Link: fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
 			url.PathEscape(vcCard.Name),
 		),
@@ -93,7 +96,9 @@ func NewCard(vcCard *vc.Card) Card {
 	}
 }
 
-func getTurnOver(evos vc.CardList) (turnoverFrom, turnoverTo string) {
+func getTurnOver(evos vc.CardList) EvoAccident {
+	turnoverFrom := ""
+	turnoverTo := ""
 	for _, evo := range evos {
 		accTo := evo.EvoAccident()
 		accFrom := evo.EvoAccidentOf()
@@ -104,21 +109,40 @@ func getTurnOver(evos vc.CardList) (turnoverFrom, turnoverTo string) {
 			turnoverTo = accTo.Name
 		}
 	}
-	return
+	return EvoAccident{
+		From: turnoverFrom,
+		To:   turnoverTo,
+	}
 }
 
-func getAmals(evos vc.CardList) []AmalgamationRecipe {
-	ret := make([]AmalgamationRecipe, 0)
+func getAmals(evos vc.CardList) Amagamations {
+	asMat := make(AmalgamationRecipes, 0)
+	asRes := make(AmalgamationRecipes, 0)
+	isResult := func(resCardId int) bool {
+		for _, c := range evos {
+			if resCardId == c.ID {
+				return true
+			}
+		}
+		return false
+	}
 	for _, evo := range evos {
 		amals := evo.Amalgamations()
 		l := len(amals)
 		if l > 0 {
 			for _, amal := range amals {
-				ret = append(ret, newRecipe(amal))
+				if isResult(amal.FusionCardID) {
+					asRes.addNewRecipe(newRecipe(amal))
+				} else {
+					asMat.addNewRecipe(newRecipe(amal))
+				}
 			}
 		}
 	}
-	return ret
+	return Amagamations{
+		AsMaterial: asMat,
+		AsResult:   asRes,
+	}
 }
 
 // AddOrUpdate Checks if the card exists in the DB or is not yet there.
@@ -132,7 +156,6 @@ func (botDB *Db) AddOrUpdate(vcCard *vc.Card) bool {
 	element := vcCard.Element()
 	mainRarity := vcCard.MainRarity()
 	evos := vcCard.GetEvolutionCards()
-	turnoverFrom, turnoverTo := getTurnOver(evos)
 	rarity := evos.MinimumEvolutionRank()
 	for i, botCard := range *botDB {
 		if botCard.VCID == vcCard.ID || (strings.ToUpper(strings.TrimSpace(botCard.Name)) == strings.ToUpper(name) &&
@@ -145,9 +168,8 @@ func (botDB *Db) AddOrUpdate(vcCard *vc.Card) bool {
 			ref.VCID = vcCard.ID
 			ref.Name = vcCard.Name // ensure any oddities are taken care of
 			ref.Rarity = rarity
-			ref.EvoAccidentFrom = turnoverFrom
-			ref.EvoAccidentTo = turnoverTo
 			ref.Skills = newSkills(vcCard)
+			ref.EvoAccident = getTurnOver(evos)
 			ref.Amalgamations = getAmals(evos)
 			newPath := fmt.Sprintf("https://valkyriecrusade.fandom.com/wiki/%s",
 				url.PathEscape(name),
