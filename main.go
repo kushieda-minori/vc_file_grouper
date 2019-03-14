@@ -61,7 +61,7 @@ func main() {
 
 	//main page
 	http.HandleFunc("/", handler.MasterDataHandler)
-	http.HandleFunc("/css/", cssHandler)
+	http.HandleFunc("/css/", handler.CssHandler)
 	//image locations
 	http.HandleFunc("/images/card/", handler.ImageCardHandler)
 	http.HandleFunc("/images/cardthumb/", handler.ImageCardThumbHandler)

@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"io"
@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func cssHandler(w http.ResponseWriter, r *http.Request) {
+func CssHandler(w http.ResponseWriter, r *http.Request) {
 	key := "css"
 	e := `"` + key + `"`
 	w.Header().Set("Etag", e)
