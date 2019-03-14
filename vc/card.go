@@ -184,6 +184,20 @@ func (c *Card) CardRarity() *CardRarity {
 	return CardRarityScan(c.CardRareID)
 }
 
+// EvoIsFirst returns true if the Evolution of this card is the first for this card
+func (c *Card) EvoIsFirst() bool {
+	evos := c.GetEvolutionCards()
+	return c.ID == evos[0].ID
+	//return c.PrevEvo() == nil && c.RebirthsFrom() == nil && c.AwakensFrom() == nil
+}
+
+// EvoIsMidOf4 returns true if the Evolution of this card is a middle evolution for this card.
+// This means it would be a 1*, 2* or 3* card.
+func (c *Card) EvoIsMidOf4() bool {
+	return c.LastEvolutionRank == 4 && c.EvolutionRank > 0 && c.EvolutionRank < 4
+	//return c.PrevEvo() == nil && c.RebirthsFrom() == nil && c.AwakensFrom() == nil
+}
+
 // EvoIsHigh returns true if the Evolution of this card is an Awoken evolution
 func (c *Card) EvoIsHigh() bool {
 	s := c.Rarity()
@@ -310,19 +324,19 @@ func (c *Card) PrevEvo() *Card {
 	return c.prevEvo
 }
 
-// FirstEvo Gets the first evolution for the card
+// FirstEvo Gets the first evolution for the card excluding pre-awakening/amalgamations
 func (c *Card) FirstEvo() *Card {
 	t := c
-	for t.PrevEvo() != nil && t.PrevEvo().ID != t.ID {
+	for t.PrevEvo() != nil {
 		t = t.PrevEvo()
 	}
 	return t
 }
 
-// LastEvo Gets the last evolution for the card
+// LastEvo Gets the last evolution for the card excluding awakening/amalgamations
 func (c *Card) LastEvo() *Card {
 	t := c
-	for t.NextEvo() != nil && t.NextEvo().ID != t.ID {
+	for t.NextEvo() != nil {
 		t = t.NextEvo()
 	}
 	return t
@@ -527,7 +541,7 @@ func (c *Card) Skill3() *Skill {
 	return c.skill3
 }
 
-// SpecialSkill1 of the card
+// SpecialSkill1 of the card (Awoken Burst)
 func (c *Card) SpecialSkill1() *Skill {
 	if c == nil {
 		return nil

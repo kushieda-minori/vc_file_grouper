@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+	"net/http"
 	"strings"
 
 	"zetsuboushita.net/vc_file_grouper/util"
@@ -93,4 +95,31 @@ func isChecked(values []string, e string) string {
 		return "checked"
 	}
 	return ""
+}
+
+func printHTMLTable(w http.ResponseWriter, headers []string, bodyRows [][]interface{}) {
+	fmt.Fprintf(w, "<table>")
+	printHTMLTableHeader(w, headers...)
+
+	fmt.Fprintf(w, "<tbody>\n")
+	for _, row := range bodyRows {
+		printHTMLTableRow(w, row)
+	}
+	fmt.Fprintf(w, "\n</tbody>")
+	fmt.Fprintf(w, "\n</table>")
+}
+
+func printHTMLTableHeader(w http.ResponseWriter, headers ...string) {
+	fmt.Fprintf(w, "<thead>\n<tr>\n")
+	for _, header := range headers {
+		fmt.Fprintf(w, "<th>%s</th>", header)
+	}
+	fmt.Fprintf(w, "\n</tr>\n</thead>\n")
+}
+func printHTMLTableRow(w http.ResponseWriter, columns ...interface{}) {
+	fmt.Fprintf(w, "<tr>\n")
+	for _, col := range columns {
+		fmt.Fprintf(w, "<td>%v</td>", col)
+	}
+	fmt.Fprintf(w, "\n</tr>\n")
 }
