@@ -701,8 +701,13 @@ func Read(root string) ([]byte, error) {
 	return data, nil
 }
 
-//ReadStringFile Reads a binary string file
+//ReadStringFile Reads a binary string file filtering common issues out
 func ReadStringFile(fname string) ([]string, error) {
+	return ReadStringFileFilter(fname, true)
+}
+
+//ReadStringFileFilter Reads a binary string file with the strings optionally filtered
+func ReadStringFileFilter(fname string, filtered bool) ([]string, error) {
 	filename := strings.Replace(fname, "_en.strb", "_"+LangPack+".strb", 1)
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		debug.PrintStack()
@@ -748,7 +753,11 @@ func ReadStringFile(fname string) ([]string, error) {
 			return nil, errors.New("Error reading the file " + filename)
 		}
 		// remove the null terminator
-		ret = append(ret, filter(string(line[:len(line)-1])))
+		if filtered {
+			ret = append(ret, filter(string(line[:len(line)-1])))
+		} else {
+			ret = append(ret, string(line[:len(line)-1]))
+		}
 	}
 	return ret, nil
 }

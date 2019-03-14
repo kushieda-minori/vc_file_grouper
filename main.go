@@ -101,6 +101,7 @@ func main() {
 
 	http.HandleFunc("/events/", handler.EventHandler)
 	http.HandleFunc("/events/detail/", handler.EventDetailHandler)
+	http.HandleFunc("/events/dungeonScenario/", handler.DungeonScenarioHandler)
 
 	http.HandleFunc("/thor/", handler.ThorHandler)
 
