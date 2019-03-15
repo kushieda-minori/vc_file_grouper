@@ -946,7 +946,7 @@ func filter(s string) string {
 	ret = strings.ReplaceAll(ret, "＞", ">")
 	ret = strings.ReplaceAll(ret, "・", " • ")
 	// game controls that aren't needed for fandom
-	ret = strings.ReplaceAll(ret, "<i><break>", "\n")
+	ret = strings.ReplaceAll(ret, "<i><break>", " ")
 	// remove duplicate newlines
 	for strings.Contains(ret, "\n\n") {
 		ret = strings.ReplaceAll(ret, "\n\n", "\n")

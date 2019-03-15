@@ -160,7 +160,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	prevEventName := ""
 	if prevEvent != nil {
-		prevEventName = strings.ReplaceAll(prevEvent.Name, "【New Event】", "")
+		prevEventName = cleanEventName(prevEvent.Name)
 	}
 
 	for i := event.ID + 1; i <= vc.MaxEventID(vc.Data.Events); i++ {
@@ -173,10 +173,12 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	nextEventName := ""
 	if nextEvent != nil {
-		nextEventName = strings.ReplaceAll(nextEvent.Name, "【New Event】", "")
+		nextEventName = cleanEventName(nextEvent.Name)
 	}
 
-	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", event.Name)
+	eventName := cleanEventName(event.Name)
+
+	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", eventName)
 	if event.BannerID > 0 {
 		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Banner"/></a><br />`, event.BannerID, url.QueryEscape(event.Name))
 	}
@@ -192,7 +194,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if nextEventName != "" {
 		fmt.Fprintf(w, "<div style=\"float:right\"><a href=\"%d\">%s</a>\n</div>", nextEvent.ID, nextEventName)
 	}
-	fmt.Fprintf(w, "<div style=\"clear:both;float:left\">Edit on the <a href=\"https://valkyriecrusade.fandom.com/wiki/%s?action=edit\">fandom</a>\n<br />", strings.ReplaceAll(event.Name, "【New Event】", ""))
+	fmt.Fprintf(w, "<div style=\"clear:both;float:left\">Edit on the <a href=\"https://valkyriecrusade.fandom.com/wiki/%s?action=edit\">fandom</a>\n<br />", eventName)
 	if event.MapID > 0 {
 		fmt.Fprintf(w, "<a href=\"/maps/%d\">Map Information</a>\n<br />", event.MapID)
 	}
@@ -383,6 +385,12 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	io.WriteString(w, "</body></html>")
 
+}
+
+func cleanEventName(name string) string {
+	name = strings.ReplaceAll(name, "【New Event】", "")
+	name = strings.ReplaceAll(name, "[Updated] ", "")
+	return name
 }
 
 func genWikiAWRewards(rewards []vc.RankRewardSheet, caption string, rankTitle string) string {
