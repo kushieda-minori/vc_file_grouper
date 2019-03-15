@@ -104,7 +104,7 @@ func SkillCsvHandler(w http.ResponseWriter, r *http.Request) {
 			s.TargetLogic(),
 			strconv.Itoa(s.TargetParam),
 			strconv.Itoa(s.AnimationID),
-			strings.Replace(string(s.ThorHammerAnimationType[:]), "\"", "", -1),
+			strings.ReplaceAll(string(s.ThorHammerAnimationType[:]), "\"", ""),
 		})
 		if err != nil {
 			log.Printf(err.Error() + "\n")

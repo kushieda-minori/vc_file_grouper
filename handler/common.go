@@ -59,31 +59,31 @@ func cleanCustomSkillRecipe(name string) string {
 
 func cleanTicketName(name string) string {
 	ret := strings.ToLower(name)
-	ret = strings.Replace(ret, "ticket", "", -1)
-	ret = strings.Replace(ret, "summon", "", -1)
-	ret = strings.Replace(ret, "guaranteed", "", -1)
-	ret = strings.Replace(ret, "★★★", "3star", -1)
-	ret = strings.Replace(ret, "★★", "2star", -1)
-	ret = strings.Replace(ret, "★", "1star", -1)
+	ret = strings.ReplaceAll(ret, "ticket", "")
+	ret = strings.ReplaceAll(ret, "summon", "")
+	ret = strings.ReplaceAll(ret, "guaranteed", "")
+	ret = strings.ReplaceAll(ret, "★★★", "3star")
+	ret = strings.ReplaceAll(ret, "★★", "2star")
+	ret = strings.ReplaceAll(ret, "★", "1star")
 	ret = strings.TrimSpace(ret)
 	return ret
 }
 
 func cleanItemName(name string) string {
 	ret := strings.ToLower(name)
-	ret = strings.Replace(ret, "valkyrie", "", -1)
-	ret = strings.Replace(ret, " ", "", -1)
+	ret = strings.ReplaceAll(ret, "valkyrie", "")
+	ret = strings.ReplaceAll(ret, " ", "")
 	ret = strings.TrimSpace(ret)
 	return ret
 }
 
 func cleanArcanaName(name string) string {
 	ret := strings.ToLower(name)
-	ret = strings.Replace(ret, "arcana's", "", -1)
-	ret = strings.Replace(ret, "arcana", "", -1)
-	ret = strings.Replace(ret, "%", "", -1)
-	ret = strings.Replace(ret, "+", "", -1)
-	ret = strings.Replace(ret, " ", "", -1)
+	ret = strings.ReplaceAll(ret, "arcana's", "")
+	ret = strings.ReplaceAll(ret, "arcana", "")
+	ret = strings.ReplaceAll(ret, "%", "")
+	ret = strings.ReplaceAll(ret, "+", "")
+	ret = strings.ReplaceAll(ret, " ", "")
 	ret = strings.Replace(ret, "forced", "", 1)
 	ret = strings.Replace(ret, "strongdef", "def", 1)
 	ret = strings.TrimSpace(ret)

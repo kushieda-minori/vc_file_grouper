@@ -50,19 +50,19 @@ func ItemScan(id int) *Item {
 // CleanCustomSkillNoImage cleans VC images and replaces with the element name
 func CleanCustomSkillNoImage(name string) string {
 	ret := name
-	ret = strings.Replace(ret, "<img=24>", "PASSION", -1)
-	ret = strings.Replace(ret, "<img=25>", "COOL", -1)
-	ret = strings.Replace(ret, "<img=26>", "DARK", -1)
-	ret = strings.Replace(ret, "<img=27>", "LIGHT", -1)
+	ret = strings.ReplaceAll(ret, "<img=24>", "PASSION")
+	ret = strings.ReplaceAll(ret, "<img=25>", "COOL")
+	ret = strings.ReplaceAll(ret, "<img=26>", "DARK")
+	ret = strings.ReplaceAll(ret, "<img=27>", "LIGHT")
 	return ret
 }
 
 // CleanCustomSkillImage cleans the VC images and replaces with Wiki tempaltes
 func CleanCustomSkillImage(name string) string {
 	ret := name
-	ret = strings.Replace(ret, "<img=24>", "{{Passion}}", -1)
-	ret = strings.Replace(ret, "<img=25>", "{{Cool}}", -1)
-	ret = strings.Replace(ret, "<img=26>", "{{Dark}}", -1)
-	ret = strings.Replace(ret, "<img=27>", "{{Light}}", -1)
+	ret = strings.ReplaceAll(ret, "<img=24>", "{{Passion}}")
+	ret = strings.ReplaceAll(ret, "<img=25>", "{{Cool}}")
+	ret = strings.ReplaceAll(ret, "<img=26>", "{{Dark}}")
+	ret = strings.ReplaceAll(ret, "<img=27>", "{{Light}}")
 	return ret
 }

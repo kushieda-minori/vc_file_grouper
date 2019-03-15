@@ -423,7 +423,7 @@ func Read(root string) ([]byte, error) {
 	}
 
 	for key := range Data.CardCharacters {
-		Data.CardCharacters[key].Description = strings.Replace(description[key], "\n", " ", -1)
+		Data.CardCharacters[key].Description = strings.ReplaceAll(description[key], "\n", " ")
 		Data.CardCharacters[key].Friendship = friendship[key]
 		if key < len(login) {
 			Data.CardCharacters[key].Login = login[key]
@@ -884,21 +884,21 @@ func cleanCardName(name string, card *Card) string {
 		// use an overridden hard-coded name
 		ret = newName
 	} else {
-		ret = strings.Replace(strings.Title(strings.ToLower(name)), "'S", "'s", -1)
-		ret = strings.Replace(ret, "(Sr)", "(SR)", -1)
-		ret = strings.Replace(ret, "(Ur)", "(UR)", -1)
-		ret = strings.Replace(ret, "(Lr)", "(LR)", -1)
+		ret = strings.ReplaceAll(strings.Title(strings.ToLower(name)), "'S", "'s")
+		ret = strings.ReplaceAll(ret, "(Sr)", "(SR)")
+		ret = strings.ReplaceAll(ret, "(Ur)", "(UR)")
+		ret = strings.ReplaceAll(ret, "(Lr)", "(LR)")
 		if card.CardCharaID < 1450 {
 			// use lowecase prepositions and articles as these are cards in the wiki before this program.
-			ret = strings.Replace(ret, " Of ", " of ", -1)
-			ret = strings.Replace(ret, "-Of-", "-of-", -1)
-			ret = strings.Replace(ret, " The ", " the ", -1)
-			ret = strings.Replace(ret, "-The-", "-the-", -1)
-			ret = strings.Replace(ret, " In ", " in ", -1)
-			ret = strings.Replace(ret, "-In-", "-in-", -1)
-			ret = strings.Replace(ret, " O'", " o'", -1)
-			ret = strings.Replace(ret, "-O'", "-o'", -1)
-			ret = strings.Replace(ret, " Du ", " du ", -1) // french "of"
+			ret = strings.ReplaceAll(ret, " Of ", " of ")
+			ret = strings.ReplaceAll(ret, "-Of-", "-of-")
+			ret = strings.ReplaceAll(ret, " The ", " the ")
+			ret = strings.ReplaceAll(ret, "-The-", "-the-")
+			ret = strings.ReplaceAll(ret, " In ", " in ")
+			ret = strings.ReplaceAll(ret, "-In-", "-in-")
+			ret = strings.ReplaceAll(ret, " O'", " o'")
+			ret = strings.ReplaceAll(ret, "-O'", "-o'")
+			ret = strings.ReplaceAll(ret, " Du ", " du ") // french "of"
 		}
 	}
 	// old cards
@@ -940,32 +940,32 @@ func filter(s string) string {
 	}
 	ret := strings.TrimSpace(s)
 	// standardize utf enocoded symbols
-	ret = strings.Replace(ret, "％", "%", -1)
-	ret = strings.Replace(ret, "　", " ", -1)
-	ret = strings.Replace(ret, "／", "/", -1)
-	ret = strings.Replace(ret, "＞", ">", -1)
-	ret = strings.Replace(ret, "・", " • ", -1)
+	ret = strings.ReplaceAll(ret, "％", "%")
+	ret = strings.ReplaceAll(ret, "　", " ")
+	ret = strings.ReplaceAll(ret, "／", "/")
+	ret = strings.ReplaceAll(ret, "＞", ">")
+	ret = strings.ReplaceAll(ret, "・", " • ")
 	// game controls that aren't needed for fandom
-	ret = strings.Replace(ret, "<i><break>", "\n", -1)
+	ret = strings.ReplaceAll(ret, "<i><break>", "\n")
 	// remove duplicate newlines
 	for strings.Contains(ret, "\n\n") {
-		ret = strings.Replace(ret, "\n\n", "\n", -1)
+		ret = strings.ReplaceAll(ret, "\n\n", "\n")
 	}
 	//remove duplicate spaces
 	for strings.Contains(ret, "  ") {
-		ret = strings.Replace(ret, "  ", " ", -1)
+		ret = strings.ReplaceAll(ret, "  ", " ")
 	}
-	//ret = strings.Replace(ret, "\n", "<br />", -1)
+	//ret = strings.ReplaceAll(ret, "\n", "<br />")
 
-	ret = strings.Replace(ret, "<img=1>Gold", "{{Icon|gold}}", -1)
-	ret = strings.Replace(ret, "<img=4>Iron", "{{Icon|iron}}", -1)
-	ret = strings.Replace(ret, "<img=3>Ether", "{{Icon|ether}}", -1)
-	ret = strings.Replace(ret, "<img=56>Gem", "{{Icon|gem}}", -1)
-	ret = strings.Replace(ret, "<img=1>", "{{Icon|gold}}", -1)
-	ret = strings.Replace(ret, "<img=4>", "{{Icon|iron}}", -1)
-	ret = strings.Replace(ret, "<img=3>", "{{Icon|ether}}", -1)
-	ret = strings.Replace(ret, "<img=56>", "{{Icon|gem}}", -1)
-	ret = strings.Replace(ret, "<img=5>", "{{Icon|jewel}}", -1)
+	ret = strings.ReplaceAll(ret, "<img=1>Gold", "{{Icon|gold}}")
+	ret = strings.ReplaceAll(ret, "<img=4>Iron", "{{Icon|iron}}")
+	ret = strings.ReplaceAll(ret, "<img=3>Ether", "{{Icon|ether}}")
+	ret = strings.ReplaceAll(ret, "<img=56>Gem", "{{Icon|gem}}")
+	ret = strings.ReplaceAll(ret, "<img=1>", "{{Icon|gold}}")
+	ret = strings.ReplaceAll(ret, "<img=4>", "{{Icon|iron}}")
+	ret = strings.ReplaceAll(ret, "<img=3>", "{{Icon|ether}}")
+	ret = strings.ReplaceAll(ret, "<img=56>", "{{Icon|gem}}")
+	ret = strings.ReplaceAll(ret, "<img=5>", "{{Icon|jewel}}")
 
 	return ret
 }
@@ -973,10 +973,10 @@ func filter(s string) string {
 func filterElementImages(s string) string {
 	ret := strings.TrimSpace(s)
 	//element icons
-	ret = strings.Replace(ret, "<img=24>", "{{Passion}}", -1)
-	ret = strings.Replace(ret, "<img=25>", "{{Cool}}", -1)
-	ret = strings.Replace(ret, "<img=26>", "{{Dark}}", -1)
-	ret = strings.Replace(ret, "<img=27>", "{{Light}}", -1)
+	ret = strings.ReplaceAll(ret, "<img=24>", "{{Passion}}")
+	ret = strings.ReplaceAll(ret, "<img=25>", "{{Cool}}")
+	ret = strings.ReplaceAll(ret, "<img=26>", "{{Dark}}")
+	ret = strings.ReplaceAll(ret, "<img=27>", "{{Light}}")
 	return ret
 }
 
@@ -986,14 +986,14 @@ func filterSkill(s string) string {
 	ret := filterElementImages(s)
 
 	//atk def icons
-	ret = strings.Replace(ret, "<img=48>", "{{Atk}}", -1)
-	ret = strings.Replace(ret, "<img=51>", "{{Atkdef}}", -1)
+	ret = strings.ReplaceAll(ret, "<img=48>", "{{Atk}}")
+	ret = strings.ReplaceAll(ret, "<img=51>", "{{Atkdef}}")
 
 	// clean up '/' spacing
 	ret = regexpSlash.ReplaceAllString(ret, " / ")
 	// make counter attack consistent
-	ret = strings.Replace(ret, "% Counter", "%\nCounter", -1)
-	ret = strings.Replace(ret, "%, Counter", "%\nCounter", -1)
+	ret = strings.ReplaceAll(ret, "% Counter", "%\nCounter")
+	ret = strings.ReplaceAll(ret, "%, Counter", "%\nCounter")
 	return ret
 }
 
@@ -1005,7 +1005,7 @@ func filterColors(s string) string {
 	rc, _ = regexp.Compile("<colrgb=(.+?)>\\n*")
 	ret = rc.ReplaceAllString(ret, "<span style=\"color:rgb($1);\">")
 
-	ret = strings.Replace(ret, "</col>", "</span>", -1)
+	ret = strings.ReplaceAll(ret, "</col>", "</span>")
 
 	// strip all size commands out
 	rs, _ := regexp.Compile("<(/?)size(=.+?)?>")

@@ -151,13 +151,13 @@ func formatSkill(descr string, effect, ratio int) (s string) {
 	eff := strconv.Itoa(effect)
 	r := strconv.Itoa(ratio)
 
-	s = strings.Replace(descr, "{1:x}", eff, -1)
-	s = strings.Replace(s, "{1:}", eff, -1)
-	s = strings.Replace(s, "{1}", eff, -1)
+	s = strings.ReplaceAll(descr, "{1:x}", eff)
+	s = strings.ReplaceAll(s, "{1:}", eff)
+	s = strings.ReplaceAll(s, "{1}", eff)
 
-	s = strings.Replace(s, "{2:}", r, -1)
-	s = strings.Replace(s, "{2:x}", r, -1)
-	s = strings.Replace(s, "{2}", r, -1)
+	s = strings.ReplaceAll(s, "{2:}", r)
+	s = strings.ReplaceAll(s, "{2:x}", r)
+	s = strings.ReplaceAll(s, "{2}", r)
 	return s
 }
 

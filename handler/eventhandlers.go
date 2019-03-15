@@ -160,7 +160,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	prevEventName := ""
 	if prevEvent != nil {
-		prevEventName = strings.Replace(prevEvent.Name, "【New Event】", "", -1)
+		prevEventName = strings.ReplaceAll(prevEvent.Name, "【New Event】", "")
 	}
 
 	for i := event.ID + 1; i <= vc.MaxEventID(vc.Data.Events); i++ {
@@ -173,7 +173,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	nextEventName := ""
 	if nextEvent != nil {
-		nextEventName = strings.Replace(nextEvent.Name, "【New Event】", "", -1)
+		nextEventName = strings.ReplaceAll(nextEvent.Name, "【New Event】", "")
 	}
 
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", event.Name)
@@ -192,7 +192,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if nextEventName != "" {
 		fmt.Fprintf(w, "<div style=\"float:right\"><a href=\"%d\">%s</a>\n</div>", nextEvent.ID, nextEventName)
 	}
-	fmt.Fprintf(w, "<div style=\"clear:both;float:left\">Edit on the <a href=\"https://valkyriecrusade.fandom.com/wiki/%s?action=edit\">fandom</a>\n<br />", strings.Replace(event.Name, "【New Event】", "", -1))
+	fmt.Fprintf(w, "<div style=\"clear:both;float:left\">Edit on the <a href=\"https://valkyriecrusade.fandom.com/wiki/%s?action=edit\">fandom</a>\n<br />", strings.ReplaceAll(event.Name, "【New Event】", ""))
 	if event.MapID > 0 {
 		fmt.Fprintf(w, "<a href=\"/maps/%d\">Map Information</a>\n<br />", event.MapID)
 	}
@@ -258,7 +258,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			legendary,                           // legendary archwitch
 			faws,                                // Fantasy Archwitch
 			aws,                                 // Regular Archwitch
-			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
+			html.EscapeString(strings.ReplaceAll(event.Description, "\n", "\n\n")),
 			(midrewards + finalrewards),                                    //rewards
 			genWikiRankTrend(event, eventMap, midRewardTime, ranks, false), // Rank trend
 			"",            // sub event (Alliance Battle)
@@ -305,7 +305,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			"",    // Booster 2
 			"#th", // Guild Battle Number spelled out (first, second, third, etc)
 			"",    // Overlap AW Event
-			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
+			html.EscapeString(strings.ReplaceAll(event.Description, "\n", "\n\n")),
 			genWikiExchange(bb.ExchangeRewards()), // Ring Exchange
 			rankRewards,                           // Rewards (combined)
 			prevEventName,
@@ -324,7 +324,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				event.StartDatetime.Format(wikiFmt),
 				event.EndDatetime.Format(wikiFmt),
 				towerShield,
-				html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
+				html.EscapeString(strings.ReplaceAll(event.Description, "\n", "\n\n")),
 				genWikiAWRewards(tower.ArrivalRewards(), "Floor Arrival Rewards", "Floor"), // RR 1
 				genWikiAWRewards(tower.RankRewards(), "Rank Rewards", "Rank"),              // RR 2
 				genWikiRankTrend(event, nil, time.Unix(0, 0), ranks, true),                 // rank trend
@@ -374,7 +374,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			getEventTemplate(event.EventTypeID), event.EventTypeID,
 			event.StartDatetime.Format(wikiFmt), // start
 			event.EndDatetime.Format(wikiFmt),   // end
-			html.EscapeString(strings.Replace(event.Description, "\n", "\n\n", -1)),
+			html.EscapeString(strings.ReplaceAll(event.Description, "\n", "\n\n")),
 			prevEventName,
 			nextEventName,
 		)
@@ -777,7 +777,7 @@ func genWikiExchange(exchanges []vc.GuildBingoExchangeReward) (ret string) {
 		switch exchange.RewardType {
 		case 1: // card
 			card := vc.CardScan(exchange.RewardID)
-			itemSortCode += fmt.Sprintf("%02d-%s", card.CardRareID, strings.Replace(card.Name, " ", "_", -1))
+			itemSortCode += fmt.Sprintf("%02d-%s", card.CardRareID, strings.ReplaceAll(card.Name, " ", "_"))
 			ret += fmt.Sprintf("\n|-\n|data-sort-value=\"%s\"| {{Card Icon|%s}} ||data-sort-value=%d| x%[3]d",
 				itemSortCode,
 				card.Name,
@@ -794,7 +794,7 @@ func genWikiExchange(exchanges []vc.GuildBingoExchangeReward) (ret string) {
 			} else {
 				itemSortCode += fmt.Sprintf("%03d-%s",
 					item.GroupID,
-					strings.Replace(item.NameEng, " ", "_", -1),
+					strings.ReplaceAll(item.NameEng, " ", "_"),
 				)
 				ret += fmt.Sprintf("\n|-\n|data-sort-value=\"%s\"| %s ||data-sort-value=%d| x%[3]d",
 					itemSortCode,

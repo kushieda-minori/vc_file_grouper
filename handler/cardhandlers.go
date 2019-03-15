@@ -352,18 +352,18 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "|description = %s\n|friendship = %s\n",
-		html.EscapeString(card.Description()), html.EscapeString(strings.Replace(card.Friendship(), "\n", "<br />", -1)))
+		html.EscapeString(card.Description()), html.EscapeString(strings.ReplaceAll(card.Friendship(), "\n", "<br />")))
 	login := card.Login()
 	if len(strings.TrimSpace(login)) > 0 {
-		fmt.Fprintf(w, "|login = %s\n", html.EscapeString(strings.Replace(login, "\n", "<br />", -1)))
+		fmt.Fprintf(w, "|login = %s\n", html.EscapeString(strings.ReplaceAll(login, "\n", "<br />")))
 	}
 	fmt.Fprintf(w, "|meet = %s\n|battle start = %s\n|battle end = %s\n|friendship max = %s\n|friendship event = %s\n|rebirth = %s\n",
-		html.EscapeString(strings.Replace(card.Meet(), "\n", "<br />", -1)),
-		html.EscapeString(strings.Replace(card.BattleStart(), "\n", "<br />", -1)),
-		html.EscapeString(strings.Replace(card.BattleEnd(), "\n", "<br />", -1)),
-		html.EscapeString(strings.Replace(card.FriendshipMax(), "\n", "<br />", -1)),
-		html.EscapeString(strings.Replace(card.FriendshipEvent(), "\n", "<br />", -1)),
-		html.EscapeString(strings.Replace(card.RebirthEvent(), "\n", "<br />", -1)),
+		html.EscapeString(strings.ReplaceAll(card.Meet(), "\n", "<br />")),
+		html.EscapeString(strings.ReplaceAll(card.BattleStart(), "\n", "<br />")),
+		html.EscapeString(strings.ReplaceAll(card.BattleEnd(), "\n", "<br />")),
+		html.EscapeString(strings.ReplaceAll(card.FriendshipMax(), "\n", "<br />")),
+		html.EscapeString(strings.ReplaceAll(card.FriendshipEvent(), "\n", "<br />")),
+		html.EscapeString(strings.ReplaceAll(card.RebirthEvent(), "\n", "<br />")),
 	)
 
 	gevo, ok := evolutions["G"]
@@ -416,7 +416,7 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		for _, like := range aw.Likeability() {
 			fmt.Fprintf(w, "|likeability %d = %s\n",
 				like.Friendship,
-				html.EscapeString(strings.Replace(like.Likability, "\n", "<br />", -1)),
+				html.EscapeString(strings.ReplaceAll(like.Likability, "\n", "<br />")),
 			)
 		}
 	}
@@ -1104,7 +1104,7 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 	if ls == nil || ls.ID == s.ID {
 		// 1st skills only have lvl10, skill 2, 3, and thor do not.
 		if len(s.Levels()) == 10 {
-			skillLvl10 = html.EscapeString(strings.Replace(s.SkillMax(), "\n", "<br />", -1))
+			skillLvl10 = html.EscapeString(strings.ReplaceAll(s.SkillMax(), "\n", "<br />"))
 			lv10 = fmt.Sprintf("\n|skill %slv10 = %s",
 				evoMod,
 				skillLvl10,
@@ -1113,7 +1113,7 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 	} else {
 		// handles Great DMG skills where the last evo is the max skill
 		sName = ls.Name
-		skillLvl10 = html.EscapeString(strings.Replace(ls.SkillMax(), "\n", "<br />", -1))
+		skillLvl10 = html.EscapeString(strings.ReplaceAll(ls.SkillMax(), "\n", "<br />"))
 		lv10 = fmt.Sprintf("\n|skill %slv10 = %s",
 			evoMod,
 			skillLvl10,
@@ -1126,7 +1126,7 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 	} else {
 		skillLvl1 = s.SkillMin()
 	}
-	skillLvl1 = html.EscapeString(strings.Replace(skillLvl1, "\n", "<br />", -1))
+	skillLvl1 = html.EscapeString(strings.ReplaceAll(skillLvl1, "\n", "<br />"))
 
 	if skillLvl1 == skillLvl10 {
 		lv10 = ""

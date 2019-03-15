@@ -117,7 +117,7 @@ BattleBG %d.png
 	)
 
 	if m.StartMsg != "" {
-		fmt.Fprintf(w, "|-\n| align=\"center\" |%s\n|%s\n", m.Name, html.EscapeString(strings.Replace(m.StartMsg, "\n", " ", -1)))
+		fmt.Fprintf(w, "|-\n| align=\"center\" |%s\n|%s\n", m.Name, html.EscapeString(strings.ReplaceAll(m.StartMsg, "\n", " ")))
 	}
 
 	for _, e := range m.Areas(vc.Data) {
@@ -125,7 +125,7 @@ BattleBG %d.png
 			fmt.Fprintf(w, "|-\n| align=\"center\" |%s\n|\n", e.LongName)
 
 			if e.Story != "" {
-				fmt.Fprintf(w, "; Prologue\n: %s\n", html.EscapeString(strings.Replace(e.Story, "\n", " ", -1)))
+				fmt.Fprintf(w, "; Prologue\n: %s\n", html.EscapeString(strings.ReplaceAll(e.Story, "\n", " ")))
 				if e.Start != "" || e.End != "" || e.BossStart != "" || e.BossEnd != "" {
 					io.WriteString(w, "----\n\n")
 				}
@@ -135,14 +135,14 @@ BattleBG %d.png
 				io.WriteString(w, "; Guide Dialogue")
 				if e.Start != "" {
 					fmt.Fprintf(w, "\n: ''%s''",
-						html.EscapeString(strings.Replace(e.Start, "\n", " ", -1)))
+						html.EscapeString(strings.ReplaceAll(e.Start, "\n", " ")))
 					if e.End != "" {
 						io.WriteString(w, "<br />&amp;nbsp;<br />")
 					}
 				}
 				if e.End != "" {
 					fmt.Fprintf(w, "\n: ''%s''\n",
-						html.EscapeString(strings.Replace(e.End, "\n", " ", -1)))
+						html.EscapeString(strings.ReplaceAll(e.End, "\n", " ")))
 				} else {
 					io.WriteString(w, "\n")
 				}
@@ -155,14 +155,14 @@ BattleBG %d.png
 				fmt.Fprintf(w, "; Boss Dialogue")
 				if e.BossStart != "" {
 					fmt.Fprintf(w, "\n: %s",
-						html.EscapeString(strings.Replace(e.BossStart, "\n", " ", -1)))
+						html.EscapeString(strings.ReplaceAll(e.BossStart, "\n", " ")))
 					if e.BossEnd != "" {
 						io.WriteString(w, "<br />&amp;nbsp;<br />")
 					}
 				}
 				if e.BossEnd != "" {
 					fmt.Fprintf(w, "\n: %s\n",
-						html.EscapeString(strings.Replace(e.BossEnd, "\n", " ", -1)))
+						html.EscapeString(strings.ReplaceAll(e.BossEnd, "\n", " ")))
 				} else {
 					io.WriteString(w, "\n")
 				}

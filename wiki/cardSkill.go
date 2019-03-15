@@ -116,7 +116,7 @@ func (s CardSkill) String() string {
 	if s.MinEffect != s.MaxEffect && s.MaxEffect != "" {
 		lvl10 = fmt.Sprintf("\n|skill %slv10 = %s",
 			evoMod,
-			html.EscapeString(strings.Replace(s.MaxEffect, "\n", "<br />", -1)),
+			html.EscapeString(strings.ReplaceAll(s.MaxEffect, "\n", "<br />")),
 		)
 	}
 
@@ -126,7 +126,7 @@ func (s CardSkill) String() string {
 `,
 		evoMod,
 		html.EscapeString(s.Name),
-		html.EscapeString(strings.Replace(s.MinEffect, "\n", "<br />", -1)),
+		html.EscapeString(strings.ReplaceAll(s.MinEffect, "\n", "<br />")),
 		lvl10,
 		s.Activations,
 	)
@@ -135,7 +135,7 @@ func (s CardSkill) String() string {
 		ret += fmt.Sprintf("|random %s%d = %s \n",
 			evoMod,
 			k+1,
-			html.EscapeString(strings.Replace(v, "\n", "<br />", -1)),
+			html.EscapeString(strings.ReplaceAll(v, "\n", "<br />")),
 		)
 	}
 
