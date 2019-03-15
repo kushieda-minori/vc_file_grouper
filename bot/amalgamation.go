@@ -30,16 +30,16 @@ type Amagamations struct {
 }
 
 func newRecipe(a vc.Amalgamation) AmalgamationRecipe {
-	mats := a.Materials()
+	mats := a.MaterialsOnly()
 	l := len(mats)
 	materials := make(AmalgamationItems, 0, l-1)
-	res := mats[l-1]
-	for _, mat := range mats[0 : l-1] {
+	for _, mat := range mats {
 		materials = append(materials, AmalgamationItem{
 			Name:   mat.Name,
 			Rarity: mat.Rarity(),
 		})
 	}
+	res := a.Result()
 	return AmalgamationRecipe{
 		recipeID:  a.ID,
 		Materials: materials,

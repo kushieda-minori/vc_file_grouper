@@ -28,7 +28,7 @@ func (a *Amalgamation) MaterialCount() int {
 }
 
 // Materials material used in the amalgamation including the result
-func (a *Amalgamation) Materials() []*Card {
+func (a *Amalgamation) Materials() CardList {
 	return append(a.MaterialsOnly(), a.Result())
 }
 
@@ -38,8 +38,8 @@ func (a *Amalgamation) Result() *Card {
 }
 
 // MaterialsOnly material used in the amalgamation excluding the result
-func (a *Amalgamation) MaterialsOnly() []*Card {
-	ret := make([]*Card, 0)
+func (a *Amalgamation) MaterialsOnly() CardList {
+	ret := make(CardList, 0)
 	ret = append(ret, CardScan(a.Material1))
 	ret = append(ret, CardScan(a.Material2))
 	if a.Material3 > 0 {
