@@ -550,7 +550,23 @@ func CardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 		"Max Level",
 		"Max Rarity Atk",
 		"Max Rarity Def",
-		"Max Rarity Sold",
+		"Max Rarity Sol",
+		"Rebirth base Atk",
+		"Rebirth base Def",
+		"Rebirth base Sol",
+		"Rebirth max Atk",
+		"Rebirth max Def",
+		"Rebirth max Sol",
+		"Rebirth gain Atk",
+		"Rebirth gain Def",
+		"Rebirth gain Sol",
+		"Rebirth gain/lvl Atk",
+		"Rebirth gain/lvl Def",
+		"Rebirth gain/lvl Sol",
+		"Rebirth Max Rarity Atk",
+		"Rebirth Max Rarity Def",
+		"Rebirth Max Rarity Sol",
+		"Rebirth Max Level",
 	})
 
 	cards := vc.Data.Cards.Copy()
@@ -560,7 +576,7 @@ func CardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 		first := cards[i]
 		second := cards[j]
 
-		return first.Name < second.Name
+		return first.Name < second.Name || (first.Name == second.Name && first.CardRareID < second.CardRareID)
 	})
 
 	for _, card := range cards {
@@ -573,6 +589,38 @@ func CardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 			solGain := card.MaxFollower - card.DefaultFollower
 			minStat := card.EvoPerfectLvl1()
 			maxStat := card.EvoPerfect()
+
+			var RebirthbaseAtk, RebirthbaseDef, RebirthbaseSol,
+				RebirthmaxAtk, RebirthmaxDef, RebirthmaxSol,
+				RebirthgainAtk, RebirthgainDef, RebirthgainSol,
+				RebirthgainlvlAtk, RebirthgainlvlDef, RebirthgainlvlSol,
+				RebirthMaxRarityAtk, RebirthMaxRarityDef, RebirthMaxRaritySol,
+				RebirthMaxLevel string
+			if rb := card.RebirthsTo(); rb != nil {
+				rbRare := rb.CardRarity()
+				rmaxLevel := float64(rbRare.MaxCardLevel - 1)
+				ratkGain := rb.MaxOffense - rb.DefaultOffense
+				rdefGain := rb.MaxDefense - rb.DefaultDefense
+				rsolGain := rb.MaxFollower - rb.DefaultFollower
+
+				RebirthbaseAtk = strconv.Itoa(rb.DefaultOffense)
+				RebirthbaseDef = strconv.Itoa(rb.DefaultDefense)
+				RebirthbaseSol = strconv.Itoa(rb.DefaultFollower)
+				RebirthmaxAtk = strconv.Itoa(rb.MaxOffense)
+				RebirthmaxDef = strconv.Itoa(rb.MaxDefense)
+				RebirthmaxSol = strconv.Itoa(rb.MaxFollower)
+				RebirthgainAtk = strconv.Itoa(ratkGain)
+				RebirthgainDef = strconv.Itoa(rdefGain)
+				RebirthgainSol = strconv.Itoa(rsolGain)
+				RebirthgainlvlAtk = fmt.Sprintf("%.4f", float64(ratkGain)/rmaxLevel)
+				RebirthgainlvlDef = fmt.Sprintf("%.4f", float64(rdefGain)/rmaxLevel)
+				RebirthgainlvlSol = fmt.Sprintf("%.4f", float64(rsolGain)/rmaxLevel)
+				RebirthMaxRarityAtk = strconv.Itoa(rbRare.LimtOffense)
+				RebirthMaxRarityDef = strconv.Itoa(rbRare.LimtDefense)
+				RebirthMaxRaritySol = strconv.Itoa(rbRare.LimtMaxFollower)
+				RebirthMaxLevel = strconv.Itoa(rbRare.MaxCardLevel)
+			}
+
 			err := cw.Write([]string{strconv.Itoa(card.ID), card.Name, card.Name + " - " + card.Rarity(), card.Element(), card.Rarity(),
 				strconv.Itoa(card.DefaultOffense), strconv.Itoa(card.DefaultDefense), strconv.Itoa(card.DefaultFollower),
 				strconv.Itoa(card.MaxOffense), strconv.Itoa(card.MaxDefense), strconv.Itoa(card.MaxFollower),
@@ -585,6 +633,22 @@ func CardCsvGLRHandler(w http.ResponseWriter, r *http.Request) {
 				strconv.Itoa(cardRare.LimtOffense),
 				strconv.Itoa(cardRare.LimtDefense),
 				strconv.Itoa(cardRare.LimtMaxFollower),
+				RebirthbaseAtk,
+				RebirthbaseDef,
+				RebirthbaseSol,
+				RebirthmaxAtk,
+				RebirthmaxDef,
+				RebirthmaxSol,
+				RebirthgainAtk,
+				RebirthgainDef,
+				RebirthgainSol,
+				RebirthgainlvlAtk,
+				RebirthgainlvlDef,
+				RebirthgainlvlSol,
+				RebirthMaxRarityAtk,
+				RebirthMaxRarityDef,
+				RebirthMaxRaritySol,
+				RebirthMaxLevel,
 			})
 			if err != nil {
 				log.Printf(err.Error() + "\n")
