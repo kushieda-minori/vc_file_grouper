@@ -24,30 +24,32 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "filename=\"vcData-bot-cards-"+strconv.Itoa(vc.Data.Version)+"_"+vc.Data.Common.UnixTime.Format(time.RFC3339)+".json\"")
 	w.Header().Set("Content-Type", "application/json")
 
-	cards := make(vc.CardList, 0)
-	for _, card := range vc.Data.Cards {
-		if shouldExcludeCard(card) {
-			continue
+	namesOfCards := vc.CardsByName()
+
+	botCards := make([]bot.Card, 0)
+	lNames := len(namesOfCards)
+	i := 0
+	skipped := 0
+	for name, cards := range namesOfCards {
+		i++
+		card := firstCard(cards)
+		if card == nil {
+			skipped++
+			log.Printf("%d/%d ***********Skipping %d Cards with name %s\n", i, lNames, len(cards), name)
+		} else {
+			log.Printf("%d/%d Adding Bot Card %s\n", i, lNames, name)
+			botCards = append(botCards, bot.NewCard(card))
 		}
-		cards = append(cards, card)
 	}
 
-	// sort by ID
-	sort.Slice(cards, func(i, j int) bool {
-		first := cards[i]
-		second := cards[j]
+	sort.Slice(botCards, func(i, j int) bool {
+		first := botCards[i]
+		second := botCards[j]
 
-		return first.ID < second.ID
+		return first.VCID < second.VCID
 	})
 
-	nobuCards := make([]bot.Card, 0)
-	for _, card := range cards {
-		// to get the image location, we are going to ask Fandom for it:
-		// https://valkyriecrusade.fandom.com/index.php?title=Special:FilePath&file=Image Name.jpg
-		// this URL returns the actual image location in the HTTP Redirect Location header.
-		nobuCards = append(nobuCards, bot.NewCard(card))
-	}
-	b, err := json.MarshalIndent(nobuCards, "", " ")
+	b, err := json.MarshalIndent(botCards, "", " ")
 
 	if err != nil {
 		io.WriteString(w, err.Error())
@@ -99,7 +101,7 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	updated := 0
 	for name, cards := range namesOfCards {
 		i++
-		card := firstCard(&cards)
+		card := firstCard(cards)
 		if card == nil {
 			skipped++
 			log.Printf("%d/%d ***********Skipping %d Cards with name %s\n", i, lNames, len(cards), name)
@@ -138,16 +140,16 @@ func BotUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("finished updating Bot Cards")
 }
 
-func firstCard(cards *vc.CardList) *vc.Card {
-	sort.Slice(*cards, func(a, b int) bool {
-		evoCmp := (*cards)[a].EvolutionRank == (*cards)[b].EvolutionRank
+func firstCard(cards vc.CardList) *vc.Card {
+	sort.Slice(cards, func(a, b int) bool {
+		evoCmp := cards[a].EvolutionRank == cards[b].EvolutionRank
 		if evoCmp {
-			return (*cards)[a].ID < (*cards)[b].ID
+			return cards[a].ID < cards[b].ID
 		}
-		return (*cards)[a].EvolutionRank < (*cards)[b].EvolutionRank
+		return cards[a].EvolutionRank < cards[b].EvolutionRank
 	})
-	for i := range *cards {
-		card := (*cards)[i]
+	for i := range cards {
+		card := cards[i]
 		if !shouldExcludeCard(card) {
 			return card
 		}

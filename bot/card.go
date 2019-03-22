@@ -109,6 +109,10 @@ func getTurnOver(evos vc.CardList) EvoAccident {
 			turnoverTo = accTo.Name
 		}
 	}
+	if turnoverFrom == "" && turnoverTo == "" {
+		//return nil
+		return EvoAccident{}
+	}
 	return EvoAccident{
 		From: turnoverFrom,
 		To:   turnoverTo,
@@ -138,6 +142,10 @@ func getAmals(evos vc.CardList) Amagamations {
 				}
 			}
 		}
+	}
+	if len(asMat) == 0 && len(asRes) == 0 {
+		//return nil
+		return Amagamations{}
 	}
 	return Amagamations{
 		AsMaterial: asMat,
@@ -240,7 +248,7 @@ func getWikiImageLocation(cardImageName string) (string, error) {
 			return http.ErrUseLastResponse
 		}}
 	for i < 10 {
-		resp, err := client.Get(nextURL)
+		resp, err := client.Head(nextURL)
 
 		if err != nil {
 			return "", err
