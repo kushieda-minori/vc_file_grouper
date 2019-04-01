@@ -26,12 +26,10 @@ func newSkills(c *vc.Card) []Skill {
 	if s != nil {
 		log.Printf("Found skill-1 on card %d:%s", c.ID, c.Name)
 		sPrefix := "Skill"
-		if len(c.Rarity()) == 3 {
-			if c.Rarity()[0] == 'G' {
-				sPrefix = "Awoken"
-			} else if c.Rarity()[0] == 'X' {
-				sPrefix = "Reborn"
-			}
+		if c.EvoIsAwoken() {
+			sPrefix = "Awoken"
+		} else if c.EvoIsReborn() {
+			sPrefix = "Reborn"
 		}
 		skills = append(skills, newSkill(sPrefix, s))
 	}
@@ -40,22 +38,28 @@ func newSkills(c *vc.Card) []Skill {
 	if s != nil && !s.Expires() {
 		log.Printf("Found skill-2 on card %d:%s", c.ID, c.Name)
 		sPrefix := "Second Skill"
-		if len(c.Rarity()) == 3 {
-			if c.Rarity()[0] == 'G' {
-				sPrefix = "Awoken " + sPrefix
-			} else if c.Rarity()[0] == 'X' {
-				sPrefix = "Reborn " + sPrefix
-			}
+		if c.EvoIsAwoken() {
+			sPrefix = "Awoken " + sPrefix
+		} else if c.EvoIsReborn() {
+			sPrefix = "Reborn " + sPrefix
 		}
 		skills = append(skills, newSkill(sPrefix, s))
 	}
 
 	if a := c.LastEvo().AwakensTo(); a != nil {
+		// awakening for 99% of awoken cards
+		log.Printf("Found awakening on card %d:%s -> %d:%s", c.ID, c.Name, a.ID, a.Name)
+		tmp := newSkills(a)
+		skills = append(skills, tmp...)
+		// the recursion will catch any rebirths
+	} else if a, ok := c.GetEvolutions()["G"]; ok && a.ID != c.ID && !c.EvoIsReborn() {
+		// this should find awakenings for amal cards (like towers)
 		log.Printf("Found awakening on card %d:%s -> %d:%s", c.ID, c.Name, a.ID, a.Name)
 		tmp := newSkills(a)
 		skills = append(skills, tmp...)
 		// the recursion will catch any rebirths
 	}
+
 	// will only pick up rebirths if we are looking at the awoken card.
 	if r := c.RebirthsTo(); r != nil {
 		log.Printf("Found rebirth on card %d:%s -> %d:%s", c.ID, c.Name, r.ID, r.Name)
