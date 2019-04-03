@@ -237,6 +237,7 @@ type VFile struct {
 	ResourceLevels              []ResourceLevel             `json:"resource"`
 	BankLevels                  []BankLevel                 `json:"bank_level"`
 	CastleLevels                []CastleLevel               `json:"castle_level"`
+	SpecialEffects              []SpecialEffect             `json:"special_effect"`
 	ThorEvents                  []ThorEvent                 `json:"mst_thorhammer"`
 	ThorKings                   []ThorKing                  `json:"mst_thorhammer_king"`
 	ThorKingCosts               []ThorKingCost              `json:"mst_thorhammer_king_cost"`

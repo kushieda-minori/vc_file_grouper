@@ -139,6 +139,7 @@ type StructureLevel struct { // structure_level
 	ItemNum3      int            `json:"item_num_3"`
 	Resource      *ResourceLevel `json:"-"`
 	Bank          *BankLevel     `json:"-"`
+	SpecialEffect *SpecialEffect `json:"-"`
 }
 
 // StructureCost cost to build a structure
@@ -231,8 +232,9 @@ func (s *Structure) Levels() []StructureLevel {
 		s._levels = make([]StructureLevel, 0)
 		for _, l := range Data.StructureLevels {
 			if l.StructureID == s.ID {
-				l.cacheResource() // cache off the resource level for later
-				l.cacheBank()     // cache off the bank level for later
+				l.cacheResource()      // cache off the resource level for later
+				l.cacheBank()          // cache off the bank level for later
+				l.cacheSpecialEffect() // cache off the bank level for later
 				s._levels = append(s._levels, l)
 			}
 		}
@@ -288,14 +290,17 @@ func (s *Structure) CastleBonuses() []CastleLevel {
 
 // MaxQty Number a player can own
 func (s *Structure) MaxQty() int {
-	maxCLB := 0
 	clbs := s.CastleBonuses()
-	for i, clb := range clbs {
-		if clb.Level > clbs[maxCLB].Level {
-			maxCLB = i
+	if len(clbs) > 0 {
+		maxCLB := 0
+		for i, clb := range clbs {
+			if clb.Level > clbs[maxCLB].Level {
+				maxCLB = i
+			}
 		}
+		return clbs[maxCLB].Max
 	}
-	return clbs[maxCLB].Max
+	return 1
 }
 
 func (l *StructureLevel) cacheResource() {
@@ -313,6 +318,16 @@ func (l *StructureLevel) cacheBank() {
 		for i, br := range Data.BankLevels {
 			if br.StructureID == l.StructureID && br.Level == l.Level {
 				l.Bank = &(Data.BankLevels[i])
+				break
+			}
+		}
+	}
+}
+func (l *StructureLevel) cacheSpecialEffect() {
+	if l.SpecialEffect == nil {
+		for i, br := range Data.SpecialEffects {
+			if br.StructureID == l.StructureID && br.Level == l.Level {
+				l.SpecialEffect = &(Data.SpecialEffects[i])
 				break
 			}
 		}

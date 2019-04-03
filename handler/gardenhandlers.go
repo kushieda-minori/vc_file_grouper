@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net/http"
 	"sort"
 	"strconv"
@@ -128,6 +129,8 @@ func StructureDetailHandler(w http.ResponseWriter, r *http.Request) {
 		printResource(w, structure)
 	} else if structure.IsBank() {
 		printBank(w, structure)
+	} else if structure.MaxLv > 1 {
+		printGenericStructureLevel(w, structure)
 	} else {
 		io.WriteString(w, "No details...")
 	}
@@ -292,6 +295,7 @@ func printResource(w http.ResponseWriter, structure *vc.Structure) {
 !Gold Cost
 !Ether Cost
 !Iron Cost
+!Jewel Cost
 !Build Time
 !Stock Fill Time
 !Exp`
@@ -327,12 +331,12 @@ Max quantity: %d
 	}
 	io.WriteString(w, lvlHeader)
 	levels := structure.Levels()
-	expTot, goldTot, ethTot, ironTot := 0, 0, 0, 0
+	expTot, goldTot, ethTot, ironTot, gemTot, jewelTot := 0, 0, 0, 0, 0, 0
 	for _, l := range levels {
 		buildTime := time.Duration(l.Time) * time.Second
 		fmt.Fprintf(w, `
 |-
-| %d || Level %d%s%s || %d || %d/min || %d || %d || %d || %s || %s || %d`,
+| %d || Level %d%s%s || %d || %d/min || %d || %d || %d || %d || %s || %s || %d`,
 			l.Level,
 			l.LevelCap,
 			castleReq,
@@ -342,6 +346,7 @@ Max quantity: %d
 			l.Coin,
 			l.Ether,
 			l.Iron,
+			l.Cash,
 			buildTime,
 			l.Resource.FillTime(),
 			l.Exp,
@@ -349,6 +354,8 @@ Max quantity: %d
 		goldTot += l.Coin
 		ethTot += l.Ether
 		ironTot += l.Iron
+		gemTot += l.Gem
+		jewelTot += l.Cash
 		expTot += l.Exp
 	}
 	// summary line
@@ -356,10 +363,11 @@ Max quantity: %d
 |-
 !Total
 !colspan=3|
-!%d !!%d !!%d !! !! !!%d`,
+!%d !!%d !!%d !!%d !! !! !!%d`,
 		goldTot,
 		ethTot,
 		ironTot,
+		jewelTot,
 		expTot,
 	)
 	io.WriteString(w, "\n|}\n</textarea>")
@@ -408,7 +416,7 @@ Max quantity: %d
 	}
 	io.WriteString(w, lvlHeader)
 	levels := structure.Levels()
-	expTot, goldTot, ethTot, ironTot := 0, 0, 0, 0
+	expTot, goldTot, ethTot, ironTot, gemTot, jewelTot := 0, 0, 0, 0, 0, 0
 	for _, l := range levels {
 		buildTime := time.Duration(l.Time) * time.Second
 		fmt.Fprintf(w, `
@@ -429,6 +437,157 @@ Max quantity: %d
 		ethTot += l.Ether
 		ironTot += l.Iron
 		expTot += l.Exp
+		gemTot += l.Gem
+		jewelTot += l.Cash
+	}
+	// summary line
+	fmt.Fprintf(w, `
+|-
+!Total
+!colspan=2|
+!%d !!%d !!%d !! !!%d`,
+		goldTot,
+		ethTot,
+		ironTot,
+		expTot,
+	)
+	io.WriteString(w, "\n|}\n</textarea>")
+}
+
+func printGenericStructureLevel(w http.ResponseWriter, structure *vc.Structure) {
+	levels := structure.Levels()
+	if levels == nil || len(levels) == 0 {
+		return
+	}
+
+	expTot, goldTot, ethTot, ironTot, gemTot, jewelTot, maxEffectParams := 0, 0, 0, 0, 0, 0, 0
+	buildTot := time.Duration(0)
+	hasSpecialEffect := false
+	for _, l := range levels {
+		buildTime := time.Duration(l.Time) * time.Second
+		buildTot = buildTot + buildTime
+		goldTot += l.Coin
+		ethTot += l.Ether
+		ironTot += l.Iron
+		expTot += l.Exp
+		gemTot += l.Gem
+		jewelTot += l.Cash
+		hasSpecialEffect = hasSpecialEffect || l.SpecialEffect != nil
+		effect := l.SpecialEffect
+		if effect != nil {
+			for i, p := range []int{effect.Param1, effect.Param2, effect.Param3, effect.Param4} {
+				if p > 0 {
+					maxEffectParams = int(math.Max(float64(i), float64(maxEffectParams)))
+				}
+			}
+		}
+	}
+
+	lvlHeader := `{| class="mw-collapsible mw-collapsed article-table" style="min-width:677px"
+|-
+!Lvl !!Requirement`
+	if hasSpecialEffect {
+		lvlHeader += ` !!Effect`
+	}
+	if goldTot > 0 {
+		lvlHeader += ` !!Gold Cost`
+	}
+	if ethTot > 0 {
+		lvlHeader += ` !!Ether Cost`
+	}
+	if ironTot > 0 {
+		lvlHeader += ` !!Iron Cost`
+	}
+	if gemTot > 0 {
+		lvlHeader += ` !!Gem Cost`
+	}
+	if jewelTot > 0 {
+		lvlHeader += ` !!Jewel Cost`
+	}
+	lvlHeader += ` !!Build Time !!Exp`
+
+	io.WriteString(w, "\n<br />Levels<br/><textarea rows=\"25\" cols=\"80\">")
+	fmt.Fprintf(w, `=== %s ===
+[[File:%[1]s.png|thumb|right]]
+%[2]s
+
+Size: %dx%d
+
+Max quantity: %d
+`,
+		structure.Name,
+		structure.Description,
+		structure.SizeX,
+		structure.SizeY,
+		structure.MaxQty(),
+	)
+	castleReq := ""
+	if structure.UnlockCastleLv > 0 {
+		if structure.UnlockCastleID == 7 { // main castle
+			castleReq = fmt.Sprintf("<br />Castle lvl %d", structure.UnlockCastleLv)
+		} else if structure.UnlockCastleID == 66 { // ward
+			castleReq = fmt.Sprintf("<br />Ward lvl %d", structure.UnlockCastleLv)
+		} else {
+			castleReq = ""
+		}
+	}
+	areaReq := ""
+	if structure.UnlockAreaID > 0 {
+		areaReq = fmt.Sprintf("<br />Clear Area %s", vc.Data.Areas[structure.UnlockAreaID].Name)
+	}
+	io.WriteString(w, lvlHeader)
+	for _, l := range levels {
+		if l.Level > structure.MaxLv {
+			break
+		}
+		buildTime := time.Duration(l.Time) * time.Second
+
+		resources := ""
+		if hasSpecialEffect {
+			effect := l.SpecialEffect
+			for i, p := range []int{effect.Param1, effect.Param2, effect.Param3, effect.Param4} {
+				if i <= maxEffectParams {
+					resources += fmt.Sprintf(" || %d", p)
+				}
+			}
+		}
+		if goldTot > 0 {
+			resources += fmt.Sprintf(" || %d",
+				l.Coin,
+			)
+		}
+		if ethTot > 0 {
+			resources += fmt.Sprintf(" || %d",
+				l.Ether,
+			)
+		}
+		if ironTot > 0 {
+			resources += fmt.Sprintf(" || %d",
+				l.Iron,
+			)
+		}
+		if gemTot > 0 {
+			resources += fmt.Sprintf(" || %d",
+				l.Gem,
+			)
+		}
+		if jewelTot > 0 {
+			resources += fmt.Sprintf(" || %d",
+				l.Cash,
+			)
+		}
+
+		fmt.Fprintf(w, `
+|-
+| %d || Level %d%s%s%s || %s || %d`,
+			l.Level,
+			l.LevelCap,
+			castleReq,
+			areaReq,
+			resources,
+			buildTime,
+			l.Exp,
+		)
 	}
 	// summary line
 	fmt.Fprintf(w, `
