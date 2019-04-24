@@ -418,39 +418,57 @@ func (c *Card) Amalgamations() []Amalgamation {
 // AwakensTo Gets the card this card awakens to. Call LastEvo first if
 // you want the awoken card and aren't sure if this is the direct material.
 func (c *Card) AwakensTo() *Card {
-	for _, val := range Data.Awakenings {
+	var mostRecentclosed *CardAwaken
+	for i, val := range Data.Awakenings {
 		if val.IsClosed != 0 {
-			continue
-		}
-		if c.ID == val.BaseCardID {
+			if c.ID == val.BaseCardID {
+				mostRecentclosed = &(Data.Awakenings[i])
+			}
+		} else if c.ID == val.BaseCardID {
 			return CardScan(val.ResultCardID)
 		}
+	}
+	// only used the closed awakening/rebirth info if the card is also closed
+	if c.IsClosed != 0 && mostRecentclosed != nil {
+		return CardScan(mostRecentclosed.ResultCardID)
 	}
 	return nil
 }
 
 // AwakensFrom gets the source card of this awoken card
 func (c *Card) AwakensFrom() *Card {
-	for _, val := range Data.Awakenings {
+	var mostRecentclosed *CardAwaken
+	for i, val := range Data.Awakenings {
 		if val.IsClosed != 0 {
-			continue
-		}
-		if c.ID == val.ResultCardID {
+			if c.ID == val.ResultCardID {
+				mostRecentclosed = &(Data.Awakenings[i])
+			}
+		} else if c.ID == val.ResultCardID {
 			return CardScan(val.BaseCardID)
 		}
+	}
+	// only used the closed awakening/rebirth info if the card is also closed
+	if c.IsClosed != 0 && mostRecentclosed != nil {
+		return CardScan(mostRecentclosed.BaseCardID)
 	}
 	return nil
 }
 
 // HasRebirth Gets the card this card rebirths to.
 func (c *Card) HasRebirth() bool {
-	for _, val := range Data.Rebirths {
+	var mostRecentclosed *CardAwaken
+	for i, val := range Data.Rebirths {
 		if val.IsClosed != 0 {
-			continue
-		}
-		if c.ID == val.BaseCardID {
+			if c.ID == val.BaseCardID {
+				mostRecentclosed = &(Data.Rebirths[i])
+			}
+		} else if c.ID == val.BaseCardID {
 			return true
 		}
+	}
+	// only used the closed awakening/rebirth info if the card is also closed
+	if c.IsClosed != 0 && mostRecentclosed != nil {
+		return true
 	}
 	return false
 }
@@ -459,26 +477,38 @@ func (c *Card) HasRebirth() bool {
 // first if you want the rebith card and aren't sure if this is the direct
 // material.
 func (c *Card) RebirthsTo() *Card {
-	for _, val := range Data.Rebirths {
+	var mostRecentclosed *CardAwaken
+	for i, val := range Data.Rebirths {
 		if val.IsClosed != 0 {
-			continue
-		}
-		if c.ID == val.BaseCardID {
+			if c.ID == val.BaseCardID {
+				mostRecentclosed = &(Data.Rebirths[i])
+			}
+		} else if c.ID == val.BaseCardID {
 			return CardScan(val.ResultCardID)
 		}
+	}
+	// only used the closed awakening/rebirth info if the card is also closed
+	if c.IsClosed != 0 && mostRecentclosed != nil {
+		return CardScan(mostRecentclosed.ResultCardID)
 	}
 	return nil
 }
 
 // RebirthsFrom gets the source card of this rebirth card
 func (c *Card) RebirthsFrom() *Card {
-	for _, val := range Data.Rebirths {
+	var mostRecentclosed *CardAwaken
+	for i, val := range Data.Rebirths {
 		if val.IsClosed != 0 {
-			continue
-		}
-		if c.ID == val.ResultCardID {
+			if c.ID == val.ResultCardID {
+				mostRecentclosed = &(Data.Rebirths[i])
+			}
+		} else if c.ID == val.ResultCardID {
 			return CardScan(val.BaseCardID)
 		}
+	}
+	// only used the closed awakening/rebirth info if the card is also closed
+	if c.IsClosed != 0 && mostRecentclosed != nil {
+		return CardScan(mostRecentclosed.BaseCardID)
 	}
 	return nil
 }
