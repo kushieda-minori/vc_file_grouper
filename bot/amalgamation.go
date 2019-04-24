@@ -29,6 +29,13 @@ type Amagamations struct {
 	AsResult   AmalgamationRecipes `json:"asResult,omitempty"`
 }
 
+func cleanHXAmal(rarity string) string {
+	if rarity == "HX" {
+		return "X"
+	}
+	return rarity
+}
+
 func newRecipe(a vc.Amalgamation) AmalgamationRecipe {
 	mats := a.MaterialsOnly()
 	l := len(mats)
@@ -36,7 +43,7 @@ func newRecipe(a vc.Amalgamation) AmalgamationRecipe {
 	for _, mat := range mats {
 		materials = append(materials, AmalgamationItem{
 			Name:   mat.Name,
-			Rarity: mat.Rarity(),
+			Rarity: cleanHXAmal(mat.Rarity()),
 		})
 	}
 	res := a.Result()
@@ -45,7 +52,7 @@ func newRecipe(a vc.Amalgamation) AmalgamationRecipe {
 		Materials: materials,
 		Result: AmalgamationItem{
 			Name:   res.Name,
-			Rarity: res.Rarity(),
+			Rarity: cleanHXAmal(res.Rarity()),
 		},
 	}
 }
