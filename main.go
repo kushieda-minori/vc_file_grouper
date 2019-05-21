@@ -66,6 +66,7 @@ func main() {
 	http.HandleFunc("/images/card/", handler.ImageCardHandler)
 	http.HandleFunc("/images/cardthumb/", handler.ImageCardThumbHandler)
 	http.HandleFunc("/images/cardHD/", handler.ImageCardHDHandler)
+	http.HandleFunc("/images/cardSD/", handler.ImageCardSDHandler)
 	http.HandleFunc("/images/event/", handler.ImageHandlerFor("/event/", "/event/"))
 	http.HandleFunc("/images/battle/", handler.ImageHandlerFor("/battle/", "/battle/"))
 	http.HandleFunc("/images/garden/", handler.ImageHandlerFor("/garden/", "/garden/"))
