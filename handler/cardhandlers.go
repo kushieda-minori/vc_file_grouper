@@ -929,17 +929,17 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 		if strings.HasSuffix(evo.Rarity(), "LR") {
 			// print LR level1 static material amal
 			pStats := evo.AmalgamationPerfect()
-			if stats.Attack != pStats.Attack || stats.Defense != pStats.Defense || stats.Soldiers != pStats.Soldiers {
+			if stats.NotEquals(pStats) {
 				if evo.PossibleMixedEvo() {
 					mStats := evo.EvoMixed()
-					if stats.Attack != mStats.Attack || stats.Defense != mStats.Defense || stats.Soldiers != mStats.Soldiers {
+					if stats.NotEquals(mStats) {
 						atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Attack)
 						def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Defense)
 						sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Soldiers)
 					}
 				}
 				lrStats := evo.AmalgamationLRStaticLvl1()
-				if lrStats.Attack != pStats.Attack || lrStats.Defense != pStats.Defense || lrStats.Soldiers != pStats.Soldiers {
+				if lrStats.NotEquals(pStats) {
 					atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStats.Attack)
 					def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStats.Defense)
 					sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStats.Soldiers)
@@ -950,7 +950,7 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 			}
 		} else {
 			pStats := evo.AmalgamationPerfect()
-			if stats.Attack != pStats.Attack || stats.Defense != pStats.Defense || stats.Soldiers != pStats.Soldiers {
+			if stats.NotEquals(pStats) {
 				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStats.Attack)
 				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStats.Defense)
 				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStats.Soldiers)
@@ -963,12 +963,12 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 		def = " / " + strconv.Itoa(stats.Defense)
 		sol = " / " + strconv.Itoa(stats.Soldiers)
 		pStats := evo.EvoPerfect()
-		if stats.Attack != pStats.Attack || stats.Defense != pStats.Defense || stats.Soldiers != pStats.Soldiers {
+		if stats.NotEquals(pStats) {
 			var evoType string
 			if evo.PossibleMixedEvo() {
 				evoType = "Amalgamation"
 				mStats := evo.EvoMixed()
-				if stats.Attack != mStats.Attack || stats.Defense != mStats.Defense || stats.Soldiers != mStats.Soldiers {
+				if stats.NotEquals(mStats) {
 					atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Attack)
 					def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Defense)
 					sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Soldiers)
@@ -992,7 +992,7 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 			// print LR level1 static material amal
 			if evo.PossibleMixedEvo() {
 				mStats := evo.EvoMixed()
-				if stats.Attack != mStats.Attack || stats.Defense != mStats.Defense || stats.Soldiers != mStats.Soldiers {
+				if stats.NotEquals(mStats) {
 					printedMixed = true
 					atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Attack)
 					def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Defense)
@@ -1000,9 +1000,9 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 				}
 			}
 			pStats := evo.AmalgamationPerfect()
-			if stats.Attack != pStats.Attack || stats.Defense != pStats.Defense || stats.Soldiers != pStats.Soldiers {
+			if stats.NotEquals(pStats) {
 				lrStats := evo.AmalgamationLRStaticLvl1()
-				if lrStats.Attack != pStats.Attack || lrStats.Defense != pStats.Defense || lrStats.Soldiers != pStats.Soldiers {
+				if lrStats.NotEquals(pStats) {
 					atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStats.Attack)
 					def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStats.Defense)
 					sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStats.Soldiers)
@@ -1049,15 +1049,15 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 			def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Defense, cards)
 			sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Soldiers, cards)
 		}
-		if evo.Rarity()[0] == 'G' || evo.Rarity()[0] == 'X' {
+		if evo.EvoIsAwoken() || evo.EvoIsReborn() {
 			evo.EvoStandardLvl1() // just to print out the level 1 G stats
 			pStats := evo.EvoPerfect()
-			if stats.Attack != pStats.Attack || stats.Defense != pStats.Defense || stats.Soldiers != pStats.Soldiers {
+			if stats.NotEquals(pStats) {
 				var evoType string
 				if !printedMixed && evo.PossibleMixedEvo() {
 					evoType = "Amalgamation"
 					mStats := evo.EvoMixed()
-					if stats.Attack != mStats.Attack || stats.Defense != mStats.Defense || stats.Soldiers != mStats.Soldiers {
+					if stats.NotEquals(mStats) {
 						atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Attack)
 						def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Defense)
 						sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Soldiers)
@@ -1081,7 +1081,7 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 				atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Attack, 6)
 				def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Defense, 6)
 				sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Soldiers, 6)
-				if evo.Rarity() != "GLR" {
+				if evo.MainRarity() != "LR" {
 					//If SR card, calculate 9 and 16 card evo stats
 					stats = evo.Evo9Card()
 					atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Attack, 9)
