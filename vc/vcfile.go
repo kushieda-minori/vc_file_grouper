@@ -946,6 +946,8 @@ func filter(s string) string {
 	ret = strings.ReplaceAll(ret, "／", "/")
 	ret = strings.ReplaceAll(ret, "＞", ">")
 	ret = strings.ReplaceAll(ret, "・", " • ")
+	ret = strings.ReplaceAll(ret, "（", " (")
+	ret = strings.ReplaceAll(ret, "）", ") ")
 	// game controls that aren't needed for fandom
 	ret = strings.ReplaceAll(ret, "<i><break>", " ")
 	// remove duplicate newlines
@@ -968,7 +970,7 @@ func filter(s string) string {
 	ret = strings.ReplaceAll(ret, "<img=56>", "{{Icon|gem}}")
 	ret = strings.ReplaceAll(ret, "<img=5>", "{{Icon|jewel}}")
 
-	return ret
+	return strings.TrimSpace(ret)
 }
 
 func filterElementImages(s string) string {
