@@ -153,7 +153,7 @@ func (c *Card) calculateEvoStats(material1Stat, material2Stat, resultMax Stats) 
 		}
 	}
 	ret = applyTransferRate(0.15, material1Stat, material2Stat, ret)
-
+	ret.ensureMaxCap(c.CardRarity())
 	return
 }
 
@@ -173,6 +173,7 @@ func (c *Card) calculateAwakeningStat(materialStatGain Stats, atLevel1 bool) (st
 	} else {
 		stats = maxStats(c).Add(materialStatGain)
 	}
+	stats.ensureMaxCap(c.CardRarity())
 	return
 }
 
@@ -565,9 +566,7 @@ func (c *Card) EvoMixed() (stats Stats) {
 			if mat != nil {
 				log.Printf("%d:%s is a Rebirth evo. Calculating the rebirth stats", c.ID, c.Name)
 				// if this is an rebirth, calculate the max...
-				matStats := mat.EvoMixedLvl1()
-				log.Printf("Material Stats at lvl1: %s", matStats)
-				matStats = matStats.Subtract(baseStats(mat))
+				matStats := mat.EvoMixedLvl1().Subtract(baseStats(mat))
 				log.Printf("Material Stats Gains: %s, Rebirth Base Stats: %s / %s", matStats, baseStats(c), maxStats(c))
 				stats = c.calculateAwakeningStat(matStats, false)
 				log.Printf("Rebirth Mixed card %d (%s) -> %d (%s)\n",
@@ -652,7 +651,7 @@ func (c *Card) EvoMixedLvl1() (stats Stats) {
 				if mat != nil {
 					// if this is an awakwening, calculate the max...
 					matStats := mat.EvoMixedLvl1().Subtract(baseStats(mat))
-					stats = c.calculateAwakeningStat(matStats, false)
+					stats = c.calculateAwakeningStat(matStats, true)
 					log.Printf("Awakening Mixed card Lvl1 %d (%s) -> %d (%s)\n",
 						mat.ID, matStats, c.ID, stats)
 				} else {
