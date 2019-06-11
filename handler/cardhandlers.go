@@ -1196,6 +1196,11 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 		lv10 = ""
 	}
 
+	procs := s.MaxCount
+	if strings.Contains(strings.ToLower(skillLvl1), "battle start") {
+		procs = 1
+	}
+
 	ret = fmt.Sprintf(`|skill %[1]s= %[2]s
 |skill %[1]slv1 = %[3]s%[4]s
 |procs %[1]s= %[5]d
@@ -1204,7 +1209,7 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 		html.EscapeString(sName),
 		skillLvl1,
 		lv10,
-		s.MaxCount,
+		procs,
 	)
 
 	if s.EffectID == 36 {

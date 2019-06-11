@@ -93,6 +93,9 @@ func newSkill(sPrefix string, s *vc.Skill) Skill {
 
 func getActivations(s *vc.Skill) string {
 	if s.MaxCount > 0 {
+		if strings.Contains(strings.ToLower(s.SkillMin()), "battle start") {
+			return "1"
+		}
 		return strconv.Itoa(s.MaxCount)
 	} else if strings.Contains(s.SkillMin(), "【Autoskill】") {
 		return "Always On"
