@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"zetsuboushita.net/vc_file_grouper/vc"
@@ -72,7 +71,7 @@ func newSkills(c *vc.Card) []Skill {
 }
 
 func newSkill(sPrefix string, s *vc.Skill) Skill {
-	activations := getActivations(s)
+	activations := s.ActivationString()
 	sMin := cleanSkill(s.SkillMin())
 	sMax := cleanSkill(s.SkillMax())
 	skill := ""
@@ -88,19 +87,6 @@ func newSkill(sPrefix string, s *vc.Skill) Skill {
 	return Skill{
 		Name:  fmt.Sprintf("%s: %s", sPrefix, s.Name), // Skill, Second Skill, Awoken, Awoken Second Skill
 		Value: skill,
-	}
-}
-
-func getActivations(s *vc.Skill) string {
-	if s.MaxCount > 0 {
-		if strings.Contains(strings.ToLower(s.SkillMin()), "battle start") {
-			return "1"
-		}
-		return strconv.Itoa(s.MaxCount)
-	} else if strings.Contains(s.SkillMin(), "【Autoskill】") {
-		return "Always On"
-	} else {
-		return "Infinite"
 	}
 }
 

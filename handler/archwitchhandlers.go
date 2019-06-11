@@ -87,7 +87,7 @@ func printSkill(skill *vc.Skill) string {
 	if skill == nil {
 		return ""
 	}
-	return fmt.Sprintf("<b>%s</b><br />%s<br /> Procs: %d<br /> Chance: %d%% - %d%%", skill.Name, skill.FireMin(), skill.MaxCount, skill.DefaultRatio, skill.MaxRatio)
+	return fmt.Sprintf("<b>%s</b><br />%s<br /> Procs: %d<br /> Chance: %d%% - %d%%", skill.Name, skill.FireMin(), skill.Activations(), skill.DefaultRatio, skill.MaxRatio)
 }
 
 func printFriendship(aw *vc.Archwitch) string {

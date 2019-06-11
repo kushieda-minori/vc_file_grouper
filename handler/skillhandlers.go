@@ -79,7 +79,7 @@ func SkillCsvHandler(w http.ResponseWriter, r *http.Request) {
 			strconv.Itoa(s.LevelType),
 			strconv.Itoa(s.Type),
 			strconv.Itoa(s.TimingID),
-			strconv.Itoa(s.MaxCount),
+			strconv.Itoa(s.Activations()),
 			strconv.Itoa(s.CondSceneID),
 			strconv.Itoa(s.CondSideID),
 			strconv.Itoa(s.CondID),

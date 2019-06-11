@@ -8,7 +8,8 @@ import (
 	"time"
 )
 
-func CssHandler(w http.ResponseWriter, r *http.Request) {
+// CSSHandler handle CSS requests
+func CSSHandler(w http.ResponseWriter, r *http.Request) {
 	key := "css"
 	e := `"` + key + `"`
 	w.Header().Set("Etag", e)

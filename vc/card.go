@@ -665,16 +665,7 @@ func (c *Card) SkillMax() string {
 // SkillProcs rturns the number of times a skill can activate.
 // a negative number indicates infinite procs
 func (c *Card) SkillProcs() string {
-	s := c.Skill1()
-	if s == nil {
-		return ""
-	}
-	// battle start skills seem to have random Max Count values. Force it to 1
-	// since they can only proc once anyway
-	if strings.Contains(strings.ToLower(c.SkillMin()), "battle start") {
-		return "1"
-	}
-	return strconv.Itoa(s.MaxCount)
+	return c.Skill1().ActivationString()
 }
 
 // SkillTarget gets the target scope of the skill

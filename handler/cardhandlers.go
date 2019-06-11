@@ -701,11 +701,15 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 		if skilldesc := qs.Get("skilldesc"); skilldesc != "" && match {
 			var s1, s2 bool
 			if skill1 := card.Skill1(); skill1 != nil {
-				s1 = skill1.Fire != "" && strings.Contains(strings.ToLower(skill1.Fire), strings.ToLower(skilldesc))
+				s1 = skill1.Fire != "" &&
+					(strings.Contains(strings.ToLower(skill1.Fire), strings.ToLower(skilldesc)) ||
+						strings.Contains(strings.ToLower(skill1.SkillMin()), strings.ToLower(skilldesc)))
 				//log.Printf(skill1.Fire + " " + strconv.FormatBool(s1) + "\n")
 			}
 			if skill2 := card.Skill2(); skill2 != nil {
-				s2 = skill2.Fire != "" && strings.Contains(strings.ToLower(skill2.Fire), strings.ToLower(skilldesc))
+				s2 = skill2.Fire != "" &&
+					(strings.Contains(strings.ToLower(skill2.Fire), strings.ToLower(skilldesc)) ||
+						strings.Contains(strings.ToLower(skill2.SkillMin()), strings.ToLower(skilldesc)))
 				//log.Printf(skill2.Fire + " " + strconv.FormatBool(s2) + "\n")
 			}
 			match = match && (s1 || s2)
@@ -1196,11 +1200,6 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 		lv10 = ""
 	}
 
-	procs := s.MaxCount
-	if strings.Contains(strings.ToLower(skillLvl1), "battle start") {
-		procs = 1
-	}
-
 	ret = fmt.Sprintf(`|skill %[1]s= %[2]s
 |skill %[1]slv1 = %[3]s%[4]s
 |procs %[1]s= %[5]d
@@ -1209,7 +1208,7 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 		html.EscapeString(sName),
 		skillLvl1,
 		lv10,
-		procs,
+		s.Activations(),
 	)
 
 	if s.EffectID == 36 {

@@ -72,7 +72,7 @@ func getSkills(c *vc.Card, evoKey string, tSkillsSeen *tmpSkillsSeen) []CardSkil
 			EvoID:        evoKey,
 			IDMod:        mod,
 			Name:         s.Name,
-			Activations:  s.MaxCount,
+			Activations:  s.Activations(),
 			MinEffect:    min,
 			MaxEffect:    max,
 			RandomSkills: make([]string, 0, 5),

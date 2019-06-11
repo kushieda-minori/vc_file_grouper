@@ -86,6 +86,32 @@ func (s *Skill) Effect() string {
 	return "New/Unknown"
 }
 
+// Activations returns the number of times a skill can activate.
+// a negative number indicates infinite procs
+func (s *Skill) Activations() int {
+	if s.MaxCount > 0 {
+		// battle start skills seem to have random Max Count values. Force it to 1
+		// since they can only proc once anyway
+		if strings.Contains(strings.ToLower(s.SkillMin()), "battle start") {
+			return 1
+		}
+		return s.MaxCount
+	}
+	return s.MaxCount
+}
+
+// ActivationString returns the number of times a skill can activate.
+func (s *Skill) ActivationString() string {
+	activations := s.Activations()
+	if activations > 0 {
+		return strconv.Itoa(activations)
+	} else if strings.Contains(s.SkillMin(), "【Autoskill】") {
+		return "Always On"
+	} else {
+		return "Infinite"
+	}
+}
+
 // SkillMin minimum skill ability
 func (s *Skill) SkillMin() string {
 	return formatSkill(s.Description, s.EffectDefaultValue, s.DefaultRatio)
