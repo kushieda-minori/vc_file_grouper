@@ -665,7 +665,11 @@ func (c *Card) SkillMax() string {
 // SkillProcs rturns the number of times a skill can activate.
 // a negative number indicates infinite procs
 func (c *Card) SkillProcs() string {
-	return c.Skill1().ActivationString()
+	s := c.Skill1()
+	if s == nil {
+		return ""
+	}
+	return s.ActivationString()
 }
 
 // SkillTarget gets the target scope of the skill
