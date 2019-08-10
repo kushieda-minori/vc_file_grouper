@@ -93,9 +93,6 @@ func WeaponDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	weaponName := weapon.MaxRarityName()
 
-	nextWeapon = weapon
-	nextWeaponName = weaponName
-
 	fmt.Fprintf(w, `<html>
 <head>
 	<title>%s</title>
@@ -308,13 +305,29 @@ func printWeaponImages(w io.Writer, weapon *vc.Weapon) {
 func writeWeaponWiki(w io.Writer, weapon *vc.Weapon) {
 	fmt.Fprintf(w, "<div><a href=\"./%d\">Data View</a></div>\n", weapon.ID)
 	io.WriteString(w, `For the skill codes, a Lua module to parse these nicely would probably be best.
-		If you want to stick with pure wiki templates, then using the array options like Template:Card_Release_Log`)
+		If you want to stick with pure wiki templates, then using the array options like Template:Card_Release_Log
+		should work, but would probably be quite cumbersome.
+		<br/><br/>"skill types" refers to the Type of the weapon skill like Burst unleach, or KO Gauge boost, etc.
+		 I used the numbers here because I didn't see any test in the game files for actual names of these.
+		<br/><br/>"skill ranks" are the weapon ranks that the skill becomes available.
+		<br/><br/>"skill levels" are the weapon levels that the skill is at. The game only activates the highest
+		 level of a single type at a time.
+		<br/><br/>"skill params" refers to the value of the skill modification. These are standard to the
+		 skill-type/skill-level combination, and not set uniquely per-card. These could probably be ignored as far
+		 as templeting goes and just hard code the values according to they type/level combination.
+		 <br/><br/>For the status/rarity/rank options, these dictate the stats/levels of the cards and how soon rarity-up happens.
+		  Most likely MyNet will use the same rarity and rank groups for the lifetime of the game, but the status value
+		  controls the weapon attack/defense/soldier. Current status IDs map to: 1-Balanced, 2-Attack, 3-Defense, 4-Soldier.
+		  <br/><br/>The rarity group could probably be copied to each Weapon's main view as the data is relatively small,
+		   but the Rank data tables should just be referenced on separate pages like the Card Leveling pages.
+`)
 	io.WriteString(w, "<textarea style=\"width:90%;height:760px\">")
 	eventNames := weapon.EventNames()
 	availability := ""
 	if len(eventNames) > 0 {
 		availability = "[[" + strings.Join(eventNames, "]]<br />[[") + "]]"
 	}
+
 	skills := weapon.SkillUnlocks()
 	fmt.Fprintf(w, `{{Weapon
 |status = %d
@@ -329,7 +342,7 @@ func writeWeaponWiki(w io.Writer, weapon *vc.Weapon) {
 |skill params = %s
 <!-- events the weapon appeared in -->
 |availability = %s
-}
+}}
 `,
 		weapon.StatusID,
 		weapon.RarityGroupID,
