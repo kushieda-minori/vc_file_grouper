@@ -722,19 +722,19 @@ func Read(root string) ([]byte, error) {
 		}
 		lwn := len(weaponName)
 		lwd := len(weaponDesc)
+		ridx := 0
 		for key := range Data.Weapons {
-			if ((key * 4) + 3) < lwn {
-				Data.Weapons[key].Name[0] = cleanWeaponName(weaponName[(key*4)+0])
-				Data.Weapons[key].Name[1] = cleanWeaponName(weaponName[(key*4)+1])
-				Data.Weapons[key].Name[2] = cleanWeaponName(weaponName[(key*4)+2])
-				Data.Weapons[key].Name[3] = cleanWeaponName(weaponName[(key*4)+3])
+			tmpWeap := Data.Weapons[key]
+			lastridx := ridx + tmpWeap.MaxRarity()
+			for i := ridx; i < lastridx; i++ {
+				if i < lwn {
+					Data.Weapons[key].Names = append(Data.Weapons[key].Names, cleanWeaponName(weaponName[i]))
+				}
+				if i < lwd {
+					Data.Weapons[key].Descriptions = append(Data.Weapons[key].Descriptions, filter(weaponDesc[i]))
+				}
 			}
-			if ((key * 4) + 3) < lwd {
-				Data.Weapons[key].Description[0] = filter(weaponDesc[(key*4)+0])
-				Data.Weapons[key].Description[1] = filter(weaponDesc[(key*4)+1])
-				Data.Weapons[key].Description[2] = filter(weaponDesc[(key*4)+2])
-				Data.Weapons[key].Description[3] = filter(weaponDesc[(key*4)+3])
-			}
+			ridx = lastridx
 		}
 	}
 

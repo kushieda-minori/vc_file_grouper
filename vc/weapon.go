@@ -21,12 +21,12 @@ type WeaponEvent struct {
 
 // Weapon mst_weapon_character
 type Weapon struct {
-	ID            int       `json:"_id"`
-	RarityGroupID int       `json:"rarity_group_id"`
-	RankGroupID   int       `json:"rank_group_id"`
-	StatusID      int       `json:"status_id"`
-	Name          [4]string `json:"-"` // MsgWeaponName_en.strb
-	Description   [4]string `json:"-"` // MsgWeaponDesc_en.strb
+	ID            int      `json:"_id"`
+	RarityGroupID int      `json:"rarity_group_id"`
+	RankGroupID   int      `json:"rank_group_id"`
+	StatusID      int      `json:"status_id"`
+	Names         []string `json:"-"` // MsgWeaponName_en.strb
+	Descriptions  []string `json:"-"` // MsgWeaponDesc_en.strb
 }
 
 // WeaponSkill mst_weapon_skill
@@ -138,6 +138,19 @@ func (w *Weapon) Status() *WeaponStatus {
 	return nil
 }
 
+// StatusDescription Status of the weapon
+func (w *Weapon) StatusDescription() string {
+	if w == nil {
+		return ""
+	}
+
+	if w.StatusID <= len(WeaponStatusTypes) {
+		return WeaponStatusTypes[w.StatusID]
+	}
+
+	return strconv.Itoa(w.StatusID)
+}
+
 // Ranks of the weapon
 func (w *Weapon) Ranks() []WeaponRank {
 	set := make([]WeaponRank, 0)
@@ -152,6 +165,11 @@ func (w *Weapon) Ranks() []WeaponRank {
 	return set
 }
 
+// MaxRank max rank of the weapon
+func (w *Weapon) MaxRank() int {
+	return len(w.Ranks())
+}
+
 // Rarities rarities of the weapon
 func (w *Weapon) Rarities() []WeaponRarity {
 	set := make([]WeaponRarity, 0)
@@ -164,6 +182,23 @@ func (w *Weapon) Rarities() []WeaponRarity {
 		}
 	}
 	return set
+}
+
+// MaxRarity max rank of the weapon
+func (w *Weapon) MaxRarity() int {
+	return len(w.Rarities())
+}
+
+// MaxRarityName Gets the last rarity name
+func (w *Weapon) MaxRarityName() string {
+	if w == nil {
+		return ""
+	}
+	lNames := len(w.Names)
+	if lNames == 0 {
+		return "N/A"
+	}
+	return w.Names[lNames-1]
 }
 
 // Skill that is unlocked for a weapon's rank
@@ -242,3 +277,6 @@ func WeaponScan(id int) *Weapon {
 
 // WeaponSkillTypes types of weapon skills.
 var WeaponSkillTypes = []string{"0", "KO Gauge Skill", "Poison Aid Skill", "Elemental Aid Skill", "Elemental ATK Skill", "Skill Chance Skill", "Burst Chance Skill"}
+
+// WeaponStatusTypes descriptions for weapon statuses
+var WeaponStatusTypes = []string{"", "Balanced", "Attack", "Defense", "Soldier"}

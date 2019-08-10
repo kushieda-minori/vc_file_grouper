@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"net/http"
+	"io"
 	"strconv"
 	"strings"
 
@@ -107,8 +107,11 @@ func isChecked(values []string, e string) string {
 	return ""
 }
 
-func printHTMLTable(w http.ResponseWriter, caption string, headers []string, bodyRows [][]interface{}) {
-	fmt.Fprintf(w, "<table>")
+func printHTMLTable(w io.Writer, style, caption string, headers []string, bodyRows [][]interface{}) {
+	if style != "" {
+		style = "style=\"" + style + "\""
+	}
+	fmt.Fprintf(w, "<table %s>", style)
 	if caption != "" {
 		fmt.Fprintf(w, "<caption>%s</caption>", caption)
 	}
@@ -122,14 +125,14 @@ func printHTMLTable(w http.ResponseWriter, caption string, headers []string, bod
 	fmt.Fprintf(w, "\n</table>")
 }
 
-func printHTMLTableHeader(w http.ResponseWriter, headers ...string) {
+func printHTMLTableHeader(w io.Writer, headers ...string) {
 	fmt.Fprintf(w, "<thead>\n<tr>\n")
 	for _, header := range headers {
 		fmt.Fprintf(w, "<th>%s</th>", header)
 	}
 	fmt.Fprintf(w, "\n</tr>\n</thead>\n")
 }
-func printHTMLTableRow(w http.ResponseWriter, columns ...interface{}) {
+func printHTMLTableRow(w io.Writer, columns ...interface{}) {
 	fmt.Fprintf(w, "<tr>\n")
 	for _, col := range columns {
 		val := fmt.Sprintf("%v", col)
