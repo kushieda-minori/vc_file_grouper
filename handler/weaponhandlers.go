@@ -72,6 +72,11 @@ func WeaponDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	weapon := vc.WeaponScan(weaponID)
 
+	if weapon == nil {
+		http.Error(w, "Invalid weapon id "+pathParts[2], http.StatusNotFound)
+		return
+	}
+
 	var prevWeapon, nextWeapon *vc.Weapon = nil, nil
 
 	prevWeaponName := ""
@@ -88,6 +93,9 @@ func WeaponDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	weaponName := weapon.MaxRarityName()
 
+	nextWeapon = weapon
+	nextWeaponName = weaponName
+
 	fmt.Fprintf(w, `<html>
 <head>
 	<title>%s</title>
@@ -101,59 +109,65 @@ func WeaponDetailHandler(w http.ResponseWriter, r *http.Request) {
 `, weaponName)
 
 	if prevWeaponName != "" {
-		fmt.Fprintf(w, "<div style=\"float:left; width: 33%%;\"><a href=\"%d\">&lt;&lt; %s &lt;&lt;</a></div>\n",
+		fmt.Fprintf(w, "<div style=\"float:left; width: 33%%;\"><a href=\"%[1]d%[3]s\">&lt;&lt; %[2]s &lt;&lt;</a></div>\n",
 			prevWeapon.ID,
 			prevWeaponName,
+			addQueryMark(r.URL.RawQuery),
 		)
 	} else {
 		fmt.Fprint(w, "<div style=\"float:left; width: 33%;\"></div>\n")
 	}
 	fmt.Fprint(w, "<div style=\"float:left; width: 33%;text-align:center;\"><a href=\"../\">All Weapons</a></div>\n")
 	if nextWeaponName != "" {
-		fmt.Fprintf(w, "<div style=\"float:right; width: 33%%;text-align:right;\"><a href=\"%d\">&gt;&gt; %s &gt;&gt;</a></div>\n",
+		fmt.Fprintf(w, "<div style=\"float:right; width: 33%%;text-align:right;\"><a href=\"%[1]d%[3]s\">&gt;&gt; %[2]s &gt;&gt;</a></div>\n",
 			nextWeapon.ID,
 			nextWeaponName,
+			addQueryMark(r.URL.RawQuery),
 		)
 	} else {
 		fmt.Fprint(w, "<div style=\"float:left; width: 33%;\"></div>\n")
 	}
 
-	// stats and stuff
-	io.WriteString(w, "<div style=\"clear:both;\">")
+	qs := r.URL.Query()
+	qWiki := qs.Get("wiki") != ""
+	if qWiki {
+		writeWeaponWiki(w, weapon)
+	} else {
 
-	// Overview
-	printWeaponConfig(w, weapon)
+		fmt.Fprintf(w, "<div><a href=\"./%d?wiki=1\">Wiki View</a></div>\n", weapon.ID)
+		// stats and stuff
+		io.WriteString(w, "<div style=\"clear:both;\">")
 
-	io.WriteString(w, "<div style=\"clear:both;float:left;\">")
+		// Overview
+		printWeaponConfig(w, weapon)
 
-	printWeaponStatus(w, weapon)
+		io.WriteString(w, "<div style=\"clear:both;float:left;\">")
+		printWeaponStatus(w, weapon)
+		printWeaponRarity(w, weapon)
+		io.WriteString(w, "</div>")
 
-	printWeaponRarity(w, weapon)
+		printWeaponSkills(w, weapon)
 
-	io.WriteString(w, "</div>")
+		io.WriteString(w, "</div>")
 
-	printWeaponSkills(w, weapon)
+		// thumbs
+		io.WriteString(w, "<div style=\"clear:both;\">")
+		io.WriteString(w, "<h2>Weapon Image Icons</h2>")
+		printWeaponIcons(w, weapon)
+		io.WriteString(w, "</div>")
 
-	io.WriteString(w, "</div><div style=\"clear:both;\">")
+		// full images
+		io.WriteString(w, "<div style=\"clear:both;\">")
+		io.WriteString(w, "<h2>Weapon Images</h2>")
+		printWeaponImages(w, weapon)
+		io.WriteString(w, "</div>")
 
-	printWeaponUpgradeMaterials(w, weapon)
+		io.WriteString(w, "<div style=\"clear:both;\">")
+		printWeaponUpgradeMaterials(w, weapon)
+		printWeaponRanks(w, weapon)
 
-	printWeaponRanks(w, weapon)
-
-	io.WriteString(w, "</div>")
-
-	// thumbs
-	io.WriteString(w, "<div style=\"clear:both;\">")
-	io.WriteString(w, "<h2>Weapon Image Icons</h2>")
-	printWeaponIcons(w, weapon)
-	io.WriteString(w, "</div>")
-
-	// full images
-	io.WriteString(w, "<div style=\"clear:both;\">")
-	io.WriteString(w, "<h2>Weapon Images</h2>")
-	printWeaponImages(w, weapon)
-	io.WriteString(w, "</div>")
-
+		io.WriteString(w, "</div>")
+	}
 	io.WriteString(w, "</body></html>")
 
 }
@@ -289,4 +303,83 @@ func printWeaponImages(w io.Writer, weapon *vc.Weapon) {
 			pathPart,
 		)
 	}
+}
+
+func writeWeaponWiki(w io.Writer, weapon *vc.Weapon) {
+	fmt.Fprintf(w, "<div><a href=\"./%d\">Data View</a></div>\n", weapon.ID)
+	io.WriteString(w, `For the skill codes, a Lua module to parse these nicely would probably be best.
+		If you want to stick with pure wiki templates, then using the array options like Template:Card_Release_Log`)
+	io.WriteString(w, "<textarea style=\"width:90%;height:760px\">")
+	eventNames := weapon.EventNames()
+	availability := ""
+	if len(eventNames) > 0 {
+		availability = "[[" + strings.Join(eventNames, "]]<br />[[") + "]]"
+	}
+	skills := weapon.SkillUnlocks()
+	fmt.Fprintf(w, `{{Weapon
+|status = %d
+|rarity group = %d
+|rank group = %d
+<!-- descriptions for rarities -->
+%s
+<!-- skill codes -->
+|skill types  = %s
+|skill ranks  = %s
+|skill levels = %s
+|skill params = %s
+<!-- events the weapon appeared in -->
+|availability = %s
+}
+`,
+		weapon.StatusID,
+		weapon.RarityGroupID,
+		weapon.RankGroupID,
+		formatWeaponWikiTemplateDescriptions(weapon.Descriptions), // rarity descriptions
+		formatSkillTypes(skills),                                  // skill type ids
+		formatSkillRanks(skills),                                  // skill ranks
+		formatSkillLevels(skills),                                 // skill level
+		formatSkillValues(skills),                                 // skill param value
+		availability,                                              // weapon event link titles
+	)
+	io.WriteString(w, "</textarea>")
+}
+
+func formatWeaponWikiTemplateDescriptions(descriptions []string) string {
+	ret := ""
+	for i, desc := range descriptions {
+		ret += fmt.Sprintf("|description %d = %s\n", i+1, desc)
+	}
+	return ret
+}
+
+func formatSkillTypes(skills []vc.WeaponSkillUnlockRank) string {
+	tojoin := make([]string, 0, len(skills))
+	for _, skill := range skills {
+		tojoin = append(tojoin, fmt.Sprintf("%5d", skill.SkillType))
+	}
+	return strings.Join(tojoin, ",")
+}
+
+func formatSkillRanks(skills []vc.WeaponSkillUnlockRank) string {
+	tojoin := make([]string, 0, len(skills))
+	for _, skill := range skills {
+		tojoin = append(tojoin, fmt.Sprintf("%5d", skill.UnlockRank))
+	}
+	return strings.Join(tojoin, ",")
+}
+
+func formatSkillLevels(skills []vc.WeaponSkillUnlockRank) string {
+	tojoin := make([]string, 0, len(skills))
+	for _, skill := range skills {
+		tojoin = append(tojoin, fmt.Sprintf("%5d", skill.SkillLevel))
+	}
+	return strings.Join(tojoin, ",")
+}
+
+func formatSkillValues(skills []vc.WeaponSkillUnlockRank) string {
+	tojoin := make([]string, 0, len(skills))
+	for _, skill := range skills {
+		tojoin = append(tojoin, fmt.Sprintf("%5d", skill.Skill().Value))
+	}
+	return strings.Join(tojoin, ",")
 }

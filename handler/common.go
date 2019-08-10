@@ -132,6 +132,7 @@ func printHTMLTableHeader(w io.Writer, headers ...string) {
 	}
 	fmt.Fprintf(w, "\n</tr>\n</thead>\n")
 }
+
 func printHTMLTableRow(w io.Writer, columns ...interface{}) {
 	fmt.Fprintf(w, "<tr>\n")
 	for _, col := range columns {
@@ -139,4 +140,11 @@ func printHTMLTableRow(w io.Writer, columns ...interface{}) {
 		fmt.Fprintf(w, "<td>%s</td>", val)
 	}
 	fmt.Fprintf(w, "\n</tr>\n")
+}
+
+func addQueryMark(query string) string {
+	if query == "" || query[0] == '?' {
+		return query
+	}
+	return "?" + query
 }

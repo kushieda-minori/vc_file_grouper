@@ -100,12 +100,11 @@ type WeaponKiller struct {
 // SkillUnlocks for the weapon
 func (w *Weapon) SkillUnlocks() []WeaponSkillUnlockRank {
 	set := make([]WeaponSkillUnlockRank, 0)
-	if w == nil {
-		return set
-	}
-	for _, val := range Data.WeaponSkillUnlockRanks {
-		if val.WeaponID == w.ID {
-			set = append(set, val)
+	if w != nil {
+		for _, val := range Data.WeaponSkillUnlockRanks {
+			if val.WeaponID == w.ID {
+				set = append(set, val)
+			}
 		}
 	}
 	return set
@@ -114,12 +113,11 @@ func (w *Weapon) SkillUnlocks() []WeaponSkillUnlockRank {
 // UpgradeMaterials of the weapon
 func (w *Weapon) UpgradeMaterials() []WeaponMaterial {
 	set := make([]WeaponMaterial, 0)
-	if w == nil {
-		return set
-	}
-	for _, val := range Data.WeaponMaterials {
-		if val.WeaponID == w.ID {
-			set = append(set, val)
+	if w != nil {
+		for _, val := range Data.WeaponMaterials {
+			if val.WeaponID == w.ID {
+				set = append(set, val)
+			}
 		}
 	}
 	return set
@@ -127,12 +125,11 @@ func (w *Weapon) UpgradeMaterials() []WeaponMaterial {
 
 // Status of the weapon
 func (w *Weapon) Status() *WeaponStatus {
-	if w == nil {
-		return nil
-	}
-	for i, val := range Data.WeaponStatuses {
-		if val.ID == w.StatusID {
-			return &Data.WeaponStatuses[i]
+	if w != nil {
+		for i, val := range Data.WeaponStatuses {
+			if val.ID == w.StatusID {
+				return &Data.WeaponStatuses[i]
+			}
 		}
 	}
 	return nil
@@ -151,15 +148,38 @@ func (w *Weapon) StatusDescription() string {
 	return strconv.Itoa(w.StatusID)
 }
 
+// Events the weapon has appeared in
+func (w *Weapon) Events() []WeaponEvent {
+	set := make([]WeaponEvent, 0)
+	if w != nil {
+		for _, val := range Data.WeaponEvents {
+			if val.WeaponID == w.ID {
+				set = append(set, val)
+			}
+		}
+	}
+	return set
+}
+
+// EventNames names/titles of the events the weapon appeared in
+func (w *Weapon) EventNames() []string {
+	set := make([]string, 0)
+	if w != nil {
+		for _, event := range w.Events() {
+			set = append(set, event.Title)
+		}
+	}
+	return set
+}
+
 // Ranks of the weapon
 func (w *Weapon) Ranks() []WeaponRank {
 	set := make([]WeaponRank, 0)
-	if w == nil {
-		return set
-	}
-	for _, val := range Data.WeaponRanks {
-		if val.GroupID == w.RankGroupID {
-			set = append(set, val)
+	if w != nil {
+		for _, val := range Data.WeaponRanks {
+			if val.GroupID == w.RankGroupID {
+				set = append(set, val)
+			}
 		}
 	}
 	return set
@@ -173,12 +193,11 @@ func (w *Weapon) MaxRank() int {
 // Rarities rarities of the weapon
 func (w *Weapon) Rarities() []WeaponRarity {
 	set := make([]WeaponRarity, 0)
-	if w == nil {
-		return set
-	}
-	for _, val := range Data.WeaponRarities {
-		if val.GroupID == w.RarityGroupID {
-			set = append(set, val)
+	if w != nil {
+		for _, val := range Data.WeaponRarities {
+			if val.GroupID == w.RarityGroupID {
+				set = append(set, val)
+			}
 		}
 	}
 	return set
@@ -203,12 +222,11 @@ func (w *Weapon) MaxRarityName() string {
 
 // Skill that is unlocked for a weapon's rank
 func (w *WeaponSkillUnlockRank) Skill() *WeaponSkill {
-	if w == nil {
-		return nil
-	}
-	for i, val := range Data.WeaponSkills {
-		if w.SkillType == val.SkillType && w.SkillLevel == val.Level {
-			return &Data.WeaponSkills[i]
+	if w != nil {
+		for i, val := range Data.WeaponSkills {
+			if w.SkillType == val.SkillType && w.SkillLevel == val.Level {
+				return &Data.WeaponSkills[i]
+			}
 		}
 	}
 	return nil

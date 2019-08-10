@@ -751,6 +751,19 @@ func Read(root string) ([]byte, error) {
 		}
 	}
 
+	if Data.WeaponEvents != nil {
+		weaponEvent, err := ReadStringFile(root + "/string/MsgWeaponEventTitle_en.strb")
+		if err != nil {
+			debug.PrintStack()
+			return data, err
+		}
+		for key := range Data.WeaponEvents {
+			if key < len(weaponEvent) {
+				Data.WeaponEvents[key].Title = filter(weaponEvent[key])
+			}
+		}
+	}
+
 	return data, nil
 }
 
