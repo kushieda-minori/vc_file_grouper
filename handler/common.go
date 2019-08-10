@@ -3,11 +3,21 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"zetsuboushita.net/vc_file_grouper/util"
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
+
+const (
+	wikiFmt = "15:04 January 2 2006"
+)
+
+func isInt(s string) bool {
+	_, err := strconv.Atoi(s)
+	return err == nil
+}
 
 func cleanCustomSkillRecipe(name string) string {
 	ret := ""
@@ -97,13 +107,16 @@ func isChecked(values []string, e string) string {
 	return ""
 }
 
-func printHTMLTable(w http.ResponseWriter, headers []string, bodyRows [][]interface{}) {
+func printHTMLTable(w http.ResponseWriter, caption string, headers []string, bodyRows [][]interface{}) {
 	fmt.Fprintf(w, "<table>")
+	if caption != "" {
+		fmt.Fprintf(w, "<caption>%s</caption>", caption)
+	}
 	printHTMLTableHeader(w, headers...)
 
 	fmt.Fprintf(w, "<tbody>\n")
 	for _, row := range bodyRows {
-		printHTMLTableRow(w, row)
+		printHTMLTableRow(w, row...)
 	}
 	fmt.Fprintf(w, "\n</tbody>")
 	fmt.Fprintf(w, "\n</table>")
@@ -119,7 +132,8 @@ func printHTMLTableHeader(w http.ResponseWriter, headers ...string) {
 func printHTMLTableRow(w http.ResponseWriter, columns ...interface{}) {
 	fmt.Fprintf(w, "<tr>\n")
 	for _, col := range columns {
-		fmt.Fprintf(w, "<td>%v</td>", col)
+		val := fmt.Sprintf("%v", col)
+		fmt.Fprintf(w, "<td>%s</td>", val)
 	}
 	fmt.Fprintf(w, "\n</tr>\n")
 }

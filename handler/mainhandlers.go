@@ -17,6 +17,7 @@ func MasterDataHandler(w http.ResponseWriter, r *http.Request) {
 <a href="/config">Configure Data Location</a><br />
 <br />
 <a href="/cards/table">Card List as a Table</a><br />
+<a href="/weapons">Weapon List</a><br />
 <a href="/events">Event List</a><br />
 <a href="/events/dungeonScenario/">Dungeon Scenario</a><br />
 <a href="/items">Item List</a><br />
@@ -41,6 +42,8 @@ Images:<br />
 <a href="/images/item/">Items</a><br />
 <a href="/images/treasure/">Sacred Relics</a><br />
 <a href="/images/navi/">Navi</a><br />
+<a href="/images/weapon/">All Weapon Images</a><br />
+<a href="/images/weaponevent/">Weapon Event Images</a><br />
 <br />
 <a href="/cards/csv">Card List as CSV</a><br />
 <a href="/skills/csv">Skill List as CSV</a><br />

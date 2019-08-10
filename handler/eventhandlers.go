@@ -14,15 +14,6 @@ import (
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
 
-const (
-	wikiFmt = "15:04 January 2 2006"
-)
-
-func isInt(s string) bool {
-	_, err := strconv.Atoi(s)
-	return err == nil
-}
-
 // EventHandler handle event information
 func EventHandler(w http.ResponseWriter, r *http.Request) {
 	qs := r.URL.Query()

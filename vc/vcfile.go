@@ -258,6 +258,15 @@ type VFile struct {
 	DungeonAreaTypes            []DungeonAreaType           `json:"mst_dungeon_area_type"`
 	DungeonRewards              []RankRewardSheet           `json:"mst_dungeon_ranking_reward"`
 	DungeonArrivalRewards       []RankRewardSheet           `json:"mst_dungeon_arrival_point_reward"`
+	Weapons                     []Weapon                    `json:"mst_weapon_character"`
+	WeaponEvents                []WeaponEvent               `json:"mst_weapon_event"`
+	WeaponKillers               []WeaponKiller              `json:"mst_weapon_killer"`
+	WeaponMaterials             []WeaponMaterial            `json:"mst_weapon_material"`
+	WeaponRanks                 []WeaponRank                `json:"mst_weapon_rank"`
+	WeaponRarities              []WeaponRarity              `json:"mst_weapon_rarity"`
+	WeaponSkills                []WeaponSkill               `json:"mst_weapon_skill"`
+	WeaponSkillUnlockRanks      []WeaponSkillUnlockRank     `json:"mst_weapon_skill_unlock_rank"`
+	WeaponStatuses              []WeaponStatus              `json:"mst_weapon_status"`
 }
 
 // Read This reads the main data file and all associated files for strings
@@ -699,6 +708,49 @@ func Read(root string) ([]byte, error) {
 			}
 		}
 	}
+
+	if Data.Weapons != nil {
+		weaponName, err := ReadStringFile(root + "/string/MsgWeaponName_en.strb")
+		if err != nil {
+			debug.PrintStack()
+			return data, err
+		}
+		weaponDesc, err := ReadStringFile(root + "/string/MsgWeaponDesc_en.strb")
+		if err != nil {
+			debug.PrintStack()
+			return data, err
+		}
+		lwn := len(weaponName)
+		lwd := len(weaponDesc)
+		for key := range Data.Weapons {
+			if ((key * 4) + 3) < lwn {
+				Data.Weapons[key].Name[0] = cleanWeaponName(weaponName[(key*4)+0])
+				Data.Weapons[key].Name[1] = cleanWeaponName(weaponName[(key*4)+1])
+				Data.Weapons[key].Name[2] = cleanWeaponName(weaponName[(key*4)+2])
+				Data.Weapons[key].Name[3] = cleanWeaponName(weaponName[(key*4)+3])
+			}
+			if ((key * 4) + 3) < lwd {
+				Data.Weapons[key].Description[0] = filter(weaponDesc[(key*4)+0])
+				Data.Weapons[key].Description[1] = filter(weaponDesc[(key*4)+1])
+				Data.Weapons[key].Description[2] = filter(weaponDesc[(key*4)+2])
+				Data.Weapons[key].Description[3] = filter(weaponDesc[(key*4)+3])
+			}
+		}
+	}
+
+	if Data.WeaponSkills != nil {
+		weaponSkill, err := ReadStringFile(root + "/string/MsgWeaponSkillDesc_en.strb")
+		if err != nil {
+			debug.PrintStack()
+			return data, err
+		}
+		for key := range Data.WeaponSkills {
+			if key < len(weaponSkill) {
+				Data.WeaponSkills[key].Description = filter(weaponSkill[key])
+			}
+		}
+	}
+
 	return data, nil
 }
 
@@ -913,6 +965,10 @@ func cleanCardName(name string, card *Card) string {
 		}
 	}
 	return ret
+}
+
+func cleanWeaponName(name string) string {
+	return strings.ReplaceAll(strings.Title(strings.ToLower(name)), "'S", "'s")
 }
 
 // GetBinFileImages gets a subset of images from the bin index. 1-based index.

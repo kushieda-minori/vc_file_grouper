@@ -24,6 +24,7 @@ type Event struct {
 	GuildBattleID         int             `json:"guild_battle_id"`
 	TowerEventID          int             `json:"tower_event_id"`
 	DungeonEventID        int             `json:"dungeon_event_id"`
+	WeaponEventID         int             `json:"weapon_event_id"`
 	SortOrder             int             `json:"sort_order"`
 	KingID1               int             `json:"king_id1"`
 	KingID2               int             `json:"king_id2"`

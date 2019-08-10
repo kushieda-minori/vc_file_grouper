@@ -77,6 +77,8 @@ func main() {
 	http.HandleFunc("/images/item/", handler.ImageHandlerFor("/item/", "/item/"))
 	http.HandleFunc("/images/treasure/", handler.ImageHandlerFor("/treasure/", "/treasure/"))
 	http.HandleFunc("/images/navi/", handler.ImageHandlerFor("/navi/", "/navi/"))
+	http.HandleFunc("/images/weapon/", handler.ImageHandlerFor("/weapon/", "/weapon/"))
+	http.HandleFunc("/images/weaponevent/", handler.ImageHandlerFor("/weaponevent/", "/weaponevent/"))
 
 	// vc master data
 	http.HandleFunc("/config/", handler.ConfigHandler)
@@ -91,6 +93,9 @@ func main() {
 	http.HandleFunc("/characters/", handler.CharacterTableHandler)
 	http.HandleFunc("/characters/detail/", handler.CharacterDetailHandler)
 	// http.HandleFunc("/character/csv/", handler.CharacterCsvHandler)
+
+	http.HandleFunc("/weapons/", handler.WeaponHandler)
+	http.HandleFunc("/weapons/detail/", handler.WeaponDetailHandler)
 
 	http.HandleFunc("/items/", handler.ItemHandler)
 
