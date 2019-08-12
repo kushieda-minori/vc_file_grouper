@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 
-	"zetsuboushita.net/vc_file_grouper/bot"
 	"zetsuboushita.net/vc_file_grouper/handler"
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
@@ -40,9 +39,6 @@ func main() {
 		vc.FilePath = "."
 	} else {
 		vc.FilePath = flag.Args()[0]
-		if len(flag.Args()) > 1 {
-			bot.DbFileLocation = flag.Args()[1]
-		}
 	}
 
 	if _, err := os.Stat(vc.FilePath); os.IsNotExist(err) {
@@ -51,12 +47,6 @@ func main() {
 		//return
 	} else {
 		vc.ReadMasterData(vc.FilePath)
-	}
-	if bot.DbFileLocation != "" {
-		if err := bot.LoadDb(); err != nil {
-			log.Printf("Error loading Bot DB: " + err.Error())
-		}
-
 	}
 
 	//main page
@@ -121,10 +111,6 @@ func main() {
 
 	http.HandleFunc("/decode/", handler.DecodeHandler)
 
-	http.HandleFunc("/bot/", handler.BotHandler)
-	http.HandleFunc("/bot/config", handler.BotConfigHandler)
-	http.HandleFunc("/bot/update", handler.BotUpdateHandler)
-
 	http.HandleFunc("/raw/", handler.RawDataHandler)
 	http.HandleFunc("/raw/KEYS", handler.RawDataKeysHandler)
 
@@ -144,15 +130,12 @@ func usage() {
 		"-lang\n\tSelect a language pack to use. 'en' is the default\n"+
 		"-debug\n\tOutputs error message to the standard error console\n"+
 		"file1\n\tlocation of the VC master data file\n"+
-		"file2\n\tlocation of the VC bot data file\n\n"+
 		"example usages:\n\t%[1]s -help\n"+
 		"\t%[1]s -lang %[2]s\n"+
 		"\t%[1]s \"%[3]s\"\n"+
-		"\t%[1]s \"%[3]s\" \"%[4]s\"\n"+
-		"\t%[1]s -lang %[2]s \"%[3]s\" \"%[4]s\"\n",
+		"\t%[1]s -lang %[2]s \"%[3]s\"\n",
 		os.Args[0],
 		"zhs",
 		"/path/to/vc/data/file",
-		"/path/to/bot/db/file",
 	))
 }

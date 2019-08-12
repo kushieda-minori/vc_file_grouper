@@ -49,10 +49,6 @@ Images:<br />
 <a href="/skills/csv">Skill List as CSV</a><br />
 <a href="/cards/glrcsv">GLR Card List as CSV</a><br />
 <br />
-<a href="/bot">Bot JSON DB (this is slow... it pulls the image locations from the Wiki for every card)</a><br />
-<a href="/bot/config">Set Existing Bot-DB Location</a><br />
-<a href="/bot/update">Update Bot-DB With New/Missing cards</a><br />
-<br />
 <a href="/awakenings">List of Awakenings</a><br />
 <a href="/awakenings/csv">List of Awakenings as CSV</a><br />
 <a href="/raw">Raw data</a><br />
