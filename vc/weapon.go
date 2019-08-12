@@ -47,6 +47,9 @@ type WeaponSkillUnlockRank struct {
 	SkillLevel int `json:"skill_Level"`
 }
 
+// WeaponSkillUnlockRankList list of unlocks
+type WeaponSkillUnlockRankList []WeaponSkillUnlockRank
+
 // WeaponRank mst_weapon_rank
 type WeaponRank struct {
 	ID      int `json:"_id"`
@@ -98,8 +101,8 @@ type WeaponKiller struct {
 }
 
 // SkillUnlocks for the weapon
-func (w *Weapon) SkillUnlocks() []WeaponSkillUnlockRank {
-	set := make([]WeaponSkillUnlockRank, 0)
+func (w *Weapon) SkillUnlocks() WeaponSkillUnlockRankList {
+	set := make(WeaponSkillUnlockRankList, 0)
 	if w != nil {
 		for _, val := range Data.WeaponSkillUnlockRanks {
 			if val.WeaponID == w.ID {
@@ -293,8 +296,15 @@ func WeaponScan(id int) *Weapon {
 	return nil
 }
 
+//Copy returns a copy of this list. Useful for local sorting
+func (d WeaponSkillUnlockRankList) Copy() WeaponSkillUnlockRankList {
+	ret := make(WeaponSkillUnlockRankList, len(d), len(d))
+	copy(ret, d)
+	return ret
+}
+
 // WeaponSkillTypes types of weapon skills.
-var WeaponSkillTypes = []string{"0", "KO Gauge Skill", "Poison Aid Skill", "Elemental Aid Skill", "Elemental ATK Skill", "Skill Chance Skill", "Burst Chance Skill"}
+var WeaponSkillTypes = []string{"0", "KO Gauge", "Poison Aid", "Elemental Aid", "Elemental ATK", "Skill Unleash", "Burst Chance"}
 
 // WeaponStatusTypes descriptions for weapon statuses
 var WeaponStatusTypes = []string{"", "Balanced", "Attack", "Defense", "Soldier"}

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -304,23 +305,10 @@ func printWeaponImages(w io.Writer, weapon *vc.Weapon) {
 
 func writeWeaponWiki(w io.Writer, weapon *vc.Weapon) {
 	fmt.Fprintf(w, "<div><a href=\"./%d\">Data View</a></div>\n", weapon.ID)
-	io.WriteString(w, `For the skill codes, a Lua module to parse these nicely would probably be best.
-		If you want to stick with pure wiki templates, then using the array options like Template:Card_Release_Log
-		should work, but would probably be quite cumbersome.
-		<br/><br/>"skill types" refers to the Type of the weapon skill like Burst unleach, or KO Gauge boost, etc.
-		 I used the numbers here because I didn't see any test in the game files for actual names of these.
-		<br/><br/>"skill ranks" are the weapon ranks that the skill becomes available.
-		<br/><br/>"skill levels" are the weapon levels that the skill is at. The game only activates the highest
-		 level of a single type at a time.
-		<br/><br/>"skill params" refers to the value of the skill modification. These are standard to the
-		 skill-type/skill-level combination, and not set uniquely per-card. These could probably be ignored as far
-		 as templeting goes and just hard code the values according to they type/level combination.
-		 <br/><br/>For the status/rarity/rank options, these dictate the stats/levels of the cards and how soon rarity-up happens.
-		  Most likely MyNet will use the same rarity and rank groups for the lifetime of the game, but the status value
-		  controls the weapon attack/defense/soldier. Current status IDs map to: 1-Balanced, 2-Attack, 3-Defense, 4-Soldier.
-		  <br/><br/>The rarity group could probably be copied to each Weapon's main view as the data is relatively small,
-		   but the Rank data tables should just be referenced on separate pages like the Card Leveling pages.
-`)
+	fmt.Fprintf(w,
+		"<div style=\"clear:both;\">Edit on <a href=\"https://valkyriecrusade.fandom.com/wiki/%s?action=edit\">fandom</a>\n<br /></div>",
+		weapon.MaxRarityName(),
+	)
 	io.WriteString(w, "<textarea style=\"width:90%;height:760px\">")
 	eventNames := weapon.EventNames()
 	availability := ""
@@ -335,11 +323,8 @@ func writeWeaponWiki(w io.Writer, weapon *vc.Weapon) {
 |rank group = %d
 <!-- descriptions for rarities -->
 %s
-<!-- skill codes -->
-|skill types  = %s
-|skill ranks  = %s
-|skill levels = %s
-|skill params = %s
+<!-- skill defs are in the format of SkillType=rank1,rank2,rankX... and each skill is separated by !! -->
+|skill defs = %s
 <!-- events the weapon appeared in -->
 |availability = %s
 }}
@@ -348,11 +333,8 @@ func writeWeaponWiki(w io.Writer, weapon *vc.Weapon) {
 		weapon.RarityGroupID,
 		weapon.RankGroupID,
 		formatWeaponWikiTemplateDescriptions(weapon.Descriptions), // rarity descriptions
-		formatSkillTypes(skills),                                  // skill type ids
-		formatSkillRanks(skills),                                  // skill ranks
-		formatSkillLevels(skills),                                 // skill level
-		formatSkillValues(skills),                                 // skill param value
-		availability,                                              // weapon event link titles
+		formatSkillArray(skills),
+		availability, // weapon event link titles
 	)
 	io.WriteString(w, "</textarea>")
 }
@@ -365,34 +347,58 @@ func formatWeaponWikiTemplateDescriptions(descriptions []string) string {
 	return ret
 }
 
-func formatSkillTypes(skills []vc.WeaponSkillUnlockRank) string {
-	tojoin := make([]string, 0, len(skills))
+func formatSkillArray(skills vc.WeaponSkillUnlockRankList) string {
+	wsg := make(weaponSkillGroup)
+	skillOrder := []int{}
 	for _, skill := range skills {
-		tojoin = append(tojoin, fmt.Sprintf("%5d", skill.SkillType))
+		if list, ok := wsg[skill.SkillType]; ok {
+			wsg[skill.SkillType] = append(list, skill.UnlockRank)
+		} else {
+			newlist := make(weaponSkillInfoList, 1)
+			newlist[0] = skill.UnlockRank
+			wsg[skill.SkillType] = newlist
+			skillOrder = append(skillOrder, skill.SkillType)
+		}
 	}
-	return strings.Join(tojoin, ",")
+	return wsg.String(skillOrder)
 }
 
-func formatSkillRanks(skills []vc.WeaponSkillUnlockRank) string {
-	tojoin := make([]string, 0, len(skills))
-	for _, skill := range skills {
-		tojoin = append(tojoin, fmt.Sprintf("%5d", skill.UnlockRank))
+type weaponSkillGroup map[int]weaponSkillInfoList
+
+type weaponSkillInfoList []int
+
+func (wsg *weaponSkillGroup) String(keyOrder []int) string {
+	if wsg == nil || len(*wsg) == 0 {
+		return ""
 	}
-	return strings.Join(tojoin, ",")
+	ret := ""
+	dlen := len(vc.WeaponSkillTypes)
+	for i, k := range keyOrder {
+		v := (*wsg)[k]
+		sep := ""
+		if i > 0 {
+			sep = " !!"
+		}
+		if k < dlen {
+			ret += fmt.Sprintf("%s%s=%s", sep, vc.WeaponSkillTypes[k], v.String())
+		} else {
+			ret += fmt.Sprintf("%s%d=%s", sep, k, v.String())
+		}
+		i++
+	}
+	return ret
 }
 
-func formatSkillLevels(skills []vc.WeaponSkillUnlockRank) string {
-	tojoin := make([]string, 0, len(skills))
-	for _, skill := range skills {
-		tojoin = append(tojoin, fmt.Sprintf("%5d", skill.SkillLevel))
+func (wsil *weaponSkillInfoList) String() string {
+	if wsil == nil || len(*wsil) == 0 {
+		return ""
 	}
-	return strings.Join(tojoin, ",")
-}
-
-func formatSkillValues(skills []vc.WeaponSkillUnlockRank) string {
-	tojoin := make([]string, 0, len(skills))
-	for _, skill := range skills {
-		tojoin = append(tojoin, fmt.Sprintf("%5d", skill.Skill().Value))
+	l := len(*wsil)
+	asString := make([]string, l, l)
+	// make sure the ranks are in order (although they should be)
+	sort.Ints(*wsil)
+	for i, v := range *wsil {
+		asString[i] = strconv.Itoa(v)
 	}
-	return strings.Join(tojoin, ",")
+	return strings.Join(asString, ",")
 }
