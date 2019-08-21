@@ -1183,6 +1183,20 @@ func CardsByName() map[string]CardList {
 	return ret
 }
 
+//CardsByName returns the current list of cards sorted by name
+func (d CardList) CardsByName() map[string]CardList {
+	ret := make(map[string]CardList, 0)
+
+	for _, card := range d {
+		if _, ok := ret[card.Name]; !ok {
+			ret[card.Name] = make(CardList, 0)
+		}
+		ret[card.Name] = append(ret[card.Name], card)
+	}
+
+	return ret
+}
+
 //CardsByNameByLowestID gets the CardsByName then sorts them by lowest ID first.
 func CardsByNameByLowestID(asc bool) []CardList {
 	byName := CardsByName()
@@ -1200,6 +1214,36 @@ func CardsByNameByLowestID(asc bool) []CardList {
 		sort.Slice(ret, func(a, b int) bool {
 			return ret[a].Earliest().ID > ret[b].Earliest().ID
 		})
+	}
+	return ret
+}
+
+func renameSpecialAmalCardsWithDupNames() {
+	cards := Data.Cards.Filter(func(c Card) bool {
+		return c.Element() == "Special" && c.HasAmalgamation()
+	}).CardsByName()
+
+	for _, val := range cards {
+		if len(val) < 2 {
+			// don't bother with amal cards that don't have duplicate names
+			continue
+		}
+		for _, card := range val {
+			amals := card.AmalgamationsAsMaterial()
+			if len(amals) == 1 {
+				card.Name += " (" + (amals[0].Result().Name) + ")"
+			}
+		}
+	}
+}
+
+// Filter filters the card list returning a new list that matches the filter
+func (d CardList) Filter(f func(Card) bool) CardList {
+	ret := make(CardList, 0)
+	for _, v := range d {
+		if v != nil && f(*v) {
+			ret = append(ret, v)
+		}
 	}
 	return ret
 }

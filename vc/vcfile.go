@@ -323,18 +323,12 @@ func Read(root string) ([]byte, error) {
 	for key := range Data.Cards {
 		Data.Cards[key].Name = cleanCardName(names[key], Data.Cards[key])
 	}
+
+	renameSpecialAmalCardsWithDupNames()
+
 	// initialize the evolutions
 	for key := range Data.Cards {
 		card := Data.Cards[key]
-		// the name 'Goddess Crystal Shard' is reused, so we use a naming convention for it.
-		if card.Name == "Goddess Crystal Shard" {
-			for _, a := range card.Amalgamations() {
-				if a.FusionCardID != card.ID { // this is the material card
-					rCard := CardScan(a.FusionCardID)
-					card.Name += " (" + rCard.Name + ")"
-				}
-			}
-		}
 		card.GetEvolutions()
 	}
 
