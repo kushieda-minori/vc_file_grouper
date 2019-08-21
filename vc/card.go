@@ -415,6 +415,21 @@ func (c *Card) Amalgamations() []Amalgamation {
 	return ret
 }
 
+// AmalgamationsAsMaterial get any amalgamations for this card (material or result)
+func (c *Card) AmalgamationsAsMaterial() []Amalgamation {
+	ret := make([]Amalgamation, 0)
+	for _, a := range Data.Amalgamations {
+		if c.ID == a.Material1 ||
+			c.ID == a.Material2 ||
+			c.ID == a.Material3 ||
+			c.ID == a.Material4 {
+
+			ret = append(ret, a)
+		}
+	}
+	return ret
+}
+
 // AwakensTo Gets the card this card awakens to. Call LastEvo first if
 // you want the awoken card and aren't sure if this is the direct material.
 func (c *Card) AwakensTo() *Card {
@@ -911,7 +926,7 @@ func checkEndCards(c *Card) (awakening, amalCard, amalAwakening, rebirth, rebirt
 	}
 	// check for Amalgamation
 	if c.HasAmalgamation() {
-		amals := c.Amalgamations()
+		amals := c.AmalgamationsAsMaterial()
 		for _, amal := range amals {
 			// get the result card
 			tamalCard := CardScan(amal.FusionCardID)
@@ -1068,12 +1083,13 @@ func (c *Card) GetEvolutions() map[string]*Card {
 		for nextEvo := c2; nextEvo != nil; nextEvo = nextEvo.NextEvo() {
 			log.Printf("Next Evo is Card: %d, Name: '%s', Evo: %d\n", nextEvo.ID, nextEvo.Name, nextEvo.EvolutionRank)
 			if nextEvo.EvolutionRank <= 0 {
+				// first/only evolution
 				evoRank := "0"
 				if nextEvo.Rarity()[0] == 'H' {
 					evoRank = "H"
 				}
 				ret[evoRank] = nextEvo
-				if nextEvo.LastEvolutionRank < 0 {
+				if nextEvo.LastEvolutionRank < 0 || nextEvo.EvolutionCardID < 0 {
 					// check for awakening
 					awakening, amalCard, amalAwakening, rebirth, rebirthAmal := checkEndCards(nextEvo)
 					assignLastEvos(awakening, amalCard, amalAwakening, rebirth, rebirthAmal)
