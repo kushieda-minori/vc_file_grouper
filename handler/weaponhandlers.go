@@ -87,7 +87,7 @@ func WeaponDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	nextWeaponName := ""
-	nextWeapon = vc.WeaponScan(weaponID - 1)
+	nextWeapon = vc.WeaponScan(weaponID + 1)
 	if nextWeapon != nil {
 		nextWeaponName = nextWeapon.MaxRarityName()
 	}
@@ -332,17 +332,22 @@ func writeWeaponWiki(w io.Writer, weapon *vc.Weapon) {
 		weapon.StatusID,
 		weapon.RarityGroupID,
 		weapon.RankGroupID,
-		formatWeaponWikiTemplateDescriptions(weapon.Descriptions), // rarity descriptions
+		formatWeaponWikiTemplateDescriptions(weapon), // rarity descriptions
 		formatSkillArray(skills),
 		availability, // weapon event link titles
 	)
 	io.WriteString(w, "</textarea>")
 }
 
-func formatWeaponWikiTemplateDescriptions(descriptions []string) string {
+func formatWeaponWikiTemplateDescriptions(weapon *vc.Weapon) string {
 	ret := ""
-	for i, desc := range descriptions {
-		ret += fmt.Sprintf("|description %d = %s\n", i+1, desc)
+	rarities := weapon.Rarities()
+	rLen := len(rarities)
+	for i, desc := range weapon.Descriptions {
+		if i < rLen {
+			ret += fmt.Sprintf("|rarity unlock %d = %d\n", rarities[i].Rarity, rarities[i].UnlockRank)
+		}
+		ret += fmt.Sprintf("|desc %d = %s\n", i+1, strings.ReplaceAll(desc, "\n", " "))
 	}
 	return ret
 }
