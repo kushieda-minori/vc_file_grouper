@@ -19,7 +19,9 @@ func MasterDataHandler(w http.ResponseWriter, r *http.Request) {
 <a href="/cards/table">Card List as a Table</a><br />
 <a href="/weapons">Weapon List</a><br />
 <a href="/events">Event List</a><br />
-<a href="/events/dungeonScenario/">Dungeon Scenario</a><br />
+<a href="/events/towerScenario/">Tower Scenarios</a><br />
+<a href="/events/dungeonScenario/">DRV Scenarios</a><br />
+<a href="/events/weaponScenario/">Weapon Scenario</a><br />
 <a href="/items">Item List</a><br />
 <a href="/deckbonus">Deck Bonuses</a><br />
 <a href="/maps">Map List</a><br />

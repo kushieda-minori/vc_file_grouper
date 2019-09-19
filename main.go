@@ -97,7 +97,9 @@ func main() {
 
 	http.HandleFunc("/events/", handler.EventHandler)
 	http.HandleFunc("/events/detail/", handler.EventDetailHandler)
-	http.HandleFunc("/events/dungeonScenario/", handler.DungeonScenarioHandler)
+	http.HandleFunc("/events/dungeonScenario/", handler.ScenarioHandler("dungeon", "DRV"))
+	http.HandleFunc("/events/towerScenario/", handler.ScenarioHandler("tower", "Tower"))
+	http.HandleFunc("/events/weaponScenario/", handler.ScenarioHandler("weapon_event", "Weapon Event"))
 
 	http.HandleFunc("/thor/", handler.ThorHandler)
 
