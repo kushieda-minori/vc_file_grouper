@@ -524,12 +524,10 @@ func getWikiItem(item *vc.Item) (r string) {
 			} else if strings.Contains(item.NameEng, "(S)") {
 				itemName += "S"
 			}
-		}
-		if itemName == "" {
-			// check rebirth items
-			r = fmt.Sprintf("{{Flower|%s}}", item.NameEng)
-		} else {
 			r = fmt.Sprintf("{{Stone|%s}}", itemName)
+		} else {
+			// is a rebirth item
+			r = fmt.Sprintf("{{Flower|%s}}", item.NameEng)
 		}
 	} else if item.GroupID == 32 {
 		// ABB Ring
