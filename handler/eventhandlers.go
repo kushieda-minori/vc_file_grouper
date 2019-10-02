@@ -512,16 +512,18 @@ func getWikiItem(item *vc.Item) (r string) {
 		} else if strings.Contains(item.Name, "DARK") {
 			itemName = "Dark"
 		}
-		if strings.Contains(item.NameEng, "Crystal") {
-			itemName += "C"
-		} else if strings.Contains(item.NameEng, "Orb") {
-			itemName += "O"
-		} else if strings.Contains(item.NameEng, "(L)") {
-			itemName += "L"
-		} else if strings.Contains(item.NameEng, "(M)") {
-			itemName += "M"
-		} else if strings.Contains(item.NameEng, "(S)") {
-			itemName += "S"
+		if itemName != "" {
+			if strings.Contains(item.NameEng, "Crystal") {
+				itemName += "C"
+			} else if strings.Contains(item.NameEng, "Orb") {
+				itemName += "O"
+			} else if strings.Contains(item.NameEng, "(L)") {
+				itemName += "L"
+			} else if strings.Contains(item.NameEng, "(M)") {
+				itemName += "M"
+			} else if strings.Contains(item.NameEng, "(S)") {
+				itemName += "S"
+			}
 		}
 		if itemName == "" {
 			// check rebirth items
