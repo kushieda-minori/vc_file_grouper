@@ -289,6 +289,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, getEventTemplate(event.EventTypeID), event.EventTypeID,
 			event.StartDatetime.Format(wikiFmt),
 			event.EndDatetime.Format(wikiFmt),
+			getGuildDoublePointCampain(bb),
 			"",    // RR 1
 			"",    // RR 2
 			"",    // Individual Card 1
@@ -587,6 +588,7 @@ func getEventTemplate(eventType int) string {
 |image=Banner_{{PAGENAME}}.png
 |start jst=%s
 |end jst=%s
+%s
 | %s |Rank Reward
 | %s |Rank Reward
 | %s |Individual Point Reward<br />Ring Exchange
@@ -823,4 +825,20 @@ func genWikiExchange(exchanges []vc.GuildBingoExchangeReward) (ret string) {
 	}
 	ret += "\n|}"
 	return
+}
+
+func getGuildDoublePointCampain(bb *vc.GuildBingoBattle) string {
+	if bb == nil {
+		return ""
+	}
+	val := ""
+	for i, c := range bb.Campaigns() {
+		val += fmt.Sprintf("|dp day %[1]d start = %[2]s\n|dp day %[1]d end = %[3]s\n|dp day %[1]d multiple = %[4]d\n",
+			i+1,
+			c.StartDatetime.Format(wikiFmt),
+			c.EndDatetime.Format(wikiFmt),
+			c.Multiple,
+		)
+	}
+	return val
 }
