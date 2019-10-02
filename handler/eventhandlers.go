@@ -670,8 +670,8 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 ||Point Rewards
 ||Fantasy Archwitch
 ||Archwitch
-||ATK • DEF 10x<br>Soldiers +50%% / 100%%<br>Demon Core +20%% / 50%%<br>Pts +30%% / 100%%
-||ATK • DEF 10x<br>Soldiers +50%% / 100%%<br>Demon Core +20%% / 50%%<br>Pts +30%% / 100%%
+||ATK • DEF 10x<br>Soldiers +50%% / 100%%<br>Demon Core +50%% / 100%%<br>Pts +200%% / 500%%
+||ATK • DEF 10x<br>Soldiers +50%% / 100%%<br>Demon Core +50%% / 100%%<br>Pts +200%% / 500%%
 ||ATK • DEF 10x<br>Soldiers +50%% / 100%%
 }}
 
