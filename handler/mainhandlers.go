@@ -31,6 +31,13 @@ func MasterDataHandler(w http.ResponseWriter, r *http.Request) {
 <a href="/characters">Character List as a Table</a><br />
 <a href="/thor">Thor Event List</a><br />
 <br />
+Formatted Data:<br />
+<a href="/cards/csv">Card List as CSV</a><br />
+<a href="/skills/csv">Skill List as CSV</a><br />
+<a href="/cards/glrcsv">GLR Card List as CSV</a><br />
+<br />
+<a href="/strb/">Binary String files</a><br />
+<br />
 Images:<br />
 <a href="/images/card/?unused=1">Unused Card Images</a><br />
 <a href="/images/battle/bg/">Battle Backgrounds</a><br />
@@ -47,15 +54,10 @@ Images:<br />
 <a href="/images/weapon/">All Weapon Images</a><br />
 <a href="/images/weaponevent/">Weapon Event Images</a><br />
 <br />
-<a href="/cards/csv">Card List as CSV</a><br />
-<a href="/skills/csv">Skill List as CSV</a><br />
-<a href="/cards/glrcsv">GLR Card List as CSV</a><br />
-<br />
 <a href="/awakenings">List of Awakenings</a><br />
 <a href="/awakenings/csv">List of Awakenings as CSV</a><br />
 <a href="/raw">Raw data</a><br />
 <a href="/raw/KEYS">Raw data Keys</a><br />
-<br />
 <br />
 <a href="/decode">Decode All Files</a><br />
 <br />

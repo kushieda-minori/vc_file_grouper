@@ -105,6 +105,8 @@ func main() {
 
 	http.HandleFunc("/maps/", handler.MapHandler)
 
+	http.HandleFunc("/strb/", handler.StrbHandler)
+
 	http.HandleFunc("/garden/structures/", handler.StructureListHandler)
 	http.HandleFunc("/garden/structures/detail/", handler.StructureDetailHandler)
 
