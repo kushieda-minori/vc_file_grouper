@@ -600,8 +600,8 @@ func getEventTemplate(eventType int) string {
 | Mirror Maiden (R) |Ring Exchange
 | Slime Queen |Ring Exchange
 | Mirror Maiden Shard | Ring Exchange
-| %s |Alliance Battle Point Booster<br />+60%%/150%%
-| %s |Alliance Battle Point Booster<br />+20%%/50%%
+| %s |Alliance Battle Point Booster<br />+120%%/300%%
+| %s |Alliance Battle Point Booster<br />+40%%/100%%
 }}
 :''The %s [[Alliance Bingo Battle]] was held during the [[%s]] event.''
 
@@ -641,8 +641,8 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 ||Ranking Reward<br />Amalgamation Material
 ||Floor Reward<br />Amalgamation Material
 ||Ranking Reward<br />Amalgamation Material
-||Event ATK and DEF 10x <br /> KO Gauge 100%% <br /> Pass 180%% / 460%% UP
-||Event ATK and DEF 10x <br /> KO Gauge 100%% <br /> Pass 180%% / 460%% UP
+||Event ATK and DEF 10x <br /> KO Gauge 100%%/200%% <br /> Pass 230%%/550%% UP <br /> Holy Token 100%%/200%%
+||Event ATK and DEF 10x <br /> KO Gauge 100%%/200%% <br /> Pass 230%%/550%% UP <br /> Holy Token 100%%/200%%
 ||Event ATK and DEF 10x <br /> KO Gauge 100%% UP
 }}
 

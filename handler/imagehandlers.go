@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path"
@@ -86,6 +87,7 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 		if !strings.HasSuffix(strings.ToLower(fName), ".png") {
 			fName += ".png"
 		}
+		log.Printf("sending image {%s} as {%s}", fullpath, fName)
 		writeout(true, fullpath, fName, w, r)
 		return
 	} else if finfo.IsDir() {
@@ -121,6 +123,8 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 			if bytes.Equal(b, []byte("CODE")) {
 				relPath := path[len(fullpath):]
 				fmt.Fprintf(w, `<div><a href="%[1]s"><img src="%[1]s"/></a><br />%[1]s</div>`, relPath)
+			} else {
+				log.Printf("Image is not encoded: %s", fullpath)
 			}
 			return nil
 		})
@@ -130,6 +134,8 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 		}
 		io.WriteString(w, "</body></html>")
 		return
+	} else {
+		log.Printf("Unknown file mode: %v", finfo.Mode())
 	}
 	http.Error(w, "Invalid Image location "+imgname, http.StatusNotFound)
 }
