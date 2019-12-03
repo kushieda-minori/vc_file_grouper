@@ -227,7 +227,7 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	cardName := card.Name
+	cardName := firstEvo.Name
 	if len(cardName) == 0 {
 		cardName = firstEvo.Image()
 	}
