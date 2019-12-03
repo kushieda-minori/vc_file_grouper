@@ -34,7 +34,9 @@ For a list of all command line options, use the `-help` flag.
 ## Unix
 I shouldn't have to tell you. It's basically the same as OSX anyway.
 
+If you are running on a Raspberry PI, use the Linux-ARM builds for your platform. They should work for Raspian releases on Rapberry PI 3+
+
 # Using the program
-The program starts a web-service. You should see a URL print in your terminal/command promt that looks like http://localhost:8585/ . Open this URL up in your favorite broswer (IE, Firefox, Chrome, etc). Once the application opens in your browser, you are set to go.
+The program starts a web-service. You should see a URL print in your terminal/command promt that looks like http://localhost:8585/. Open this URL up in your favorite broswer (IE, Firefox, Chrome, etc). Once the application opens in your browser, you are set to go.
 
 If you didn't specify a datafile location on the command line, or wish to change it, you can do so from within the web-application.
