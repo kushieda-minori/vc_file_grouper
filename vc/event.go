@@ -239,7 +239,7 @@ func EventScan(id int) *Event {
 // EventType information
 var EventType = map[int]string{
 	1:  "Archwitch",
-	2:  "?",
+	2:  "Battle Maiden Training Ground",
 	3:  "?",
 	4:  "Sale",
 	5:  "?",
@@ -257,4 +257,5 @@ var EventType = map[int]string{
 	17: "Collaboration",
 	18: "Tower Event",
 	19: "Demon Realm Voyage Event",
+	20: "Soul Weapon Event",
 }

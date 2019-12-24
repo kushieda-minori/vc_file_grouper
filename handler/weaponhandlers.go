@@ -341,13 +341,15 @@ func writeWeaponWiki(w io.Writer, weapon *vc.Weapon) {
 
 func formatWeaponWikiTemplateDescriptions(weapon *vc.Weapon) string {
 	ret := ""
+	descriptions := weapon.Descriptions
+	dLen := len(descriptions)
 	rarities := weapon.Rarities()
-	rLen := len(rarities)
-	for i, desc := range weapon.Descriptions {
-		if i < rLen {
-			ret += fmt.Sprintf("|rarity unlock %d = %d\n", rarities[i].Rarity, rarities[i].UnlockRank)
+	for _, rarity := range rarities {
+		r := rarity.Rarity
+		ret += fmt.Sprintf("|rarity unlock %d = %d\n", r, rarity.UnlockRank)
+		if r <= dLen {
+			ret += fmt.Sprintf("|desc %d = %s\n", r, strings.ReplaceAll(descriptions[r-1], "\n", " "))
 		}
-		ret += fmt.Sprintf("|desc %d = %s\n", i+1, strings.ReplaceAll(desc, "\n", " "))
 	}
 	return ret
 }

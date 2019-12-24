@@ -357,6 +357,8 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			prevEventName,
 			nextEventName,
 		)
+	case 20: // Soul Weapon
+		fallthrough
 	case 13: //Alliance Ultimate Battle
 		fallthrough
 	case 12: // Alliance Duel

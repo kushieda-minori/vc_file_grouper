@@ -206,9 +206,14 @@ func (w *Weapon) Rarities() []WeaponRarity {
 	return set
 }
 
+// RarityCount max rank of the weapon
+func (w *Weapon) RarityCount() int {
+	return len(w.Rarities())
+}
+
 // MaxRarity max rank of the weapon
 func (w *Weapon) MaxRarity() int {
-	return len(w.Rarities())
+	return w.Rarities()[len(w.Rarities())-1].Rarity
 }
 
 // MaxRarityName Gets the last rarity name
@@ -220,7 +225,11 @@ func (w *Weapon) MaxRarityName() string {
 	if lNames == 0 {
 		return "N/A"
 	}
-	return w.Names[lNames-1]
+	name := w.Names[lNames-1]
+	if firstCardWithName(name) != nil {
+		return name + " (Weapon)"
+	}
+	return name
 }
 
 // Skill that is unlocked for a weapon's rank

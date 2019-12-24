@@ -1248,6 +1248,16 @@ func (d CardList) Filter(f func(Card) bool) CardList {
 	return ret
 }
 
+func firstCardWithName(name string) *Card {
+	for _, card := range Data.Cards {
+		if card.Name == name {
+			return card
+		}
+	}
+
+	return nil
+}
+
 // EvoOrder order of evolutions in the map.
 var EvoOrder = [10]string{"0", "1", "2", "3", "H", "A", "G", "GA", "X", "XA"}
 
