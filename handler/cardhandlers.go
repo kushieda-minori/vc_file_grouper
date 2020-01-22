@@ -154,14 +154,14 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cardID, err := strconv.Atoi(pathParts[2])
-	if err != nil || cardID < 1 || cardID > len(vc.Data.Cards) {
+	if err != nil || cardID < 1 {
 		http.Error(w, "Invalid card id "+pathParts[2], http.StatusNotFound)
 		return
 	}
 
 	card := vc.CardScan(cardID)
 	if card == nil {
-		http.Error(w, "Invalid card id "+pathParts[2], http.StatusNotFound)
+		http.Error(w, "Invalid card id "+pathParts[2]+"\nCard not found.", http.StatusNotFound)
 		return
 	}
 
@@ -437,15 +437,17 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		for _, v := range amalgamations {
 			mats := v.Materials()
 			l := len(mats)
-			fmt.Fprintf(w, "{{Amalgamation|matcount = %d\n|name 1 = %s|rarity 1 = %s\n|name 2 = %s|rarity 2 = %s\n|name 3 = %s|rarity 3 = %s\n",
-				l-1, mats[0].Name, mats[0].Rarity(), mats[1].Name, mats[1].Rarity(), mats[2].Name, mats[2].Rarity())
-			if l > 3 {
-				fmt.Fprintf(w, "|name 4 = %s|rarity 4 = %s\n", mats[3].Name, mats[3].Rarity())
+			if l > 2 {
+				fmt.Fprintf(w, "{{Amalgamation|matcount = %d\n|name 1 = %s|rarity 1 = %s\n|name 2 = %s|rarity 2 = %s\n|name 3 = %s|rarity 3 = %s\n",
+					l-1, mats[0].Name, mats[0].Rarity(), mats[1].Name, mats[1].Rarity(), mats[2].Name, mats[2].Rarity())
+				if l > 3 {
+					fmt.Fprintf(w, "|name 4 = %s|rarity 4 = %s\n", mats[3].Name, mats[3].Rarity())
+					if l > 4 {
+						fmt.Fprintf(w, "|name 5 = %s|rarity 5 = %s\n", mats[4].Name, mats[4].Rarity())
+					}
+				}
+				io.WriteString(w, "}}\n")
 			}
-			if l > 4 {
-				fmt.Fprintf(w, "|name 5 = %s|rarity 5 = %s\n", mats[4].Name, mats[4].Rarity())
-			}
-			io.WriteString(w, "}}\n")
 		}
 	}
 	io.WriteString(w, "</textarea></div>")

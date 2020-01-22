@@ -148,6 +148,9 @@ func isDistinctImage(m *map[string][]byte, i *[]byte) bool {
 
 // Rarity of the card as a plain string
 func (c *Card) Rarity() (ret string) {
+	if c == nil {
+		return
+	}
 	if c.CardRareID >= 0 {
 		ret = Rarity[c.CardRareID-1]
 		// need to handle X cards that have actual Evolutions (Philospher Stone)
@@ -617,6 +620,11 @@ func CardScan(id int) *Card {
 	i := sort.Search(l, func(i int) bool { return Data.Cards[i].ID >= id })
 	if i >= 0 && i < l && Data.Cards[i].ID == id {
 		return Data.Cards[i]
+	}
+	log.Printf("No card found with ID: %d", id)
+	if id > 0 && id <= l {
+		log.Printf("trying to return card at index: %d/%d", id, l)
+		return Data.Cards[id-1]
 	}
 	return nil
 }
@@ -1228,10 +1236,30 @@ func renameSpecialAmalCardsWithDupNames() {
 			// don't bother with amal cards that don't have duplicate names
 			continue
 		}
+		first := val[0]
+		//check for different rarity first
+		otherRare := val.Filter(func(c Card) bool {
+			return c.ID != first.ID && c.Rarity() != first.Rarity()
+		})
+		if len(otherRare) > 0 {
+			for _, card := range val {
+				card.Name += " (" + (card.Rarity()) + ")"
+			}
+			return
+		}
 		for _, card := range val {
 			amals := card.AmalgamationsAsMaterial()
 			if len(amals) == 1 {
-				card.Name += " (" + (amals[0].Result().Name) + ")"
+				var res = amals[0].Result()
+				if res != nil && res.ID != card.ID {
+					if res.Name == card.Name && res.Rarity() != card.Rarity() {
+						card.Name += " (" + (card.Rarity()) + ")"
+					} else {
+						card.Name += " (" + (res.Name) + ")"
+					}
+				} else {
+					log.Printf("Card %s(id: %d) has amalgamation listed, but Result is nil\n", card.Name, card.ID)
+				}
 			}
 		}
 	}
