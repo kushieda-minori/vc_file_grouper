@@ -103,7 +103,7 @@ type RankRewardSheet struct {
 	FragmentID  int `json:"fragment_id"`
 	CardID      int `json:"card_id"`
 	Num         int `json:"num"`
-	Point       int `john:"point"`
+	Point       int `json:"point"`
 }
 
 // Map for an event if one exists (usually just AW events)
@@ -130,6 +130,15 @@ func (e *Event) DemonRealm() *Dungeon {
 	}
 
 	return DungeonScan(e.DungeonEventID)
+}
+
+// DemonRealm information for the event if it's a Demon Realm Voyage event
+func (e *Event) Weapon() *WeaponEvent {
+	if e.WeaponEventID <= 0 {
+		return nil
+	}
+
+	return WeaponEventScan(e.WeaponEventID)
 }
 
 // GuildBattle information if it's an Alliance Battle

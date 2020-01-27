@@ -9,14 +9,19 @@ import (
 
 // WeaponEvent mst_weapon_event
 type WeaponEvent struct {
-	ID                  int       `json:"_id"`
-	WeaponID            int       `json:"weapon_id"`
-	URLSchemeID         int       `json:"url_scheme_id"`
-	EventGachaID        int       `json:"eventgacha_id"`
-	ScenarioID          int       `json:"scenario_id"`
-	PublicStartDatetime Timestamp `json:"public_start_datetime"`
-	PublicEndDatetime   Timestamp `json:"public_end_datetime"`
-	Title               string    `json:"-"` // MsgWeaponEventTitle_en.strb
+	ID                   int       `json:"_id"`
+	WeaponID             int       `json:"weapon_id"`
+	URLSchemeID          int       `json:"url_scheme_id"`
+	EventGachaID         int       `json:"eventgacha_id"`
+	ScenarioID           int       `json:"scenario_id"`
+	PublicStartDatetime  Timestamp `json:"public_start_datetime"`
+	PublicEndDatetime    Timestamp `json:"public_end_datetime"`
+	RankingRewardGroupID int       `json:""`
+	ArrivalRewardGroupID int       `json:""`
+	RankingStart         Timestamp `json:""`
+	RankingEnd           Timestamp `json:""`
+	MaterialRemoval      Timestamp `json:""`
+	Title                string    `json:"-"` // MsgWeaponEventTitle_en.strb
 }
 
 // Weapon mst_weapon_character
@@ -293,6 +298,34 @@ func (wm *WeaponMaterial) Item() *Item {
 	return ItemScan(wm.ItemID)
 }
 
+//ArrivalRewards Arrival rewards for soul weapon events
+func (we *WeaponEvent) ArrivalRewards() []RankRewardSheet {
+	rewards := make([]RankRewardSheet, 0)
+	if we == nil {
+		return rewards
+	}
+	for i, v := range Data.WeaponArrivalRewards {
+		if v.GroupID == we.ArrivalRewardGroupID {
+			rewards = append(rewards, Data.WeaponArrivalRewards[i])
+		}
+	}
+	return rewards
+}
+
+//RankRewards Rank Rewards for soul weapon events
+func (we *WeaponEvent) RankRewards() []RankRewardSheet {
+	rewards := make([]RankRewardSheet, 0)
+	if we == nil {
+		return rewards
+	}
+	for i, v := range Data.WeaponRewards {
+		if v.GroupID == we.RankingRewardGroupID {
+			rewards = append(rewards, Data.WeaponRewards[i])
+		}
+	}
+	return rewards
+}
+
 // WeaponScan searches for a weapon by ID
 func WeaponScan(id int) *Weapon {
 	if id > 0 {
@@ -300,6 +333,18 @@ func WeaponScan(id int) *Weapon {
 		i := sort.Search(l, func(i int) bool { return Data.Weapons[i].ID >= id })
 		if i >= 0 && i < l && Data.Weapons[i].ID == id {
 			return &(Data.Weapons[i])
+		}
+	}
+	return nil
+}
+
+// WeaponEventScan searches for a weapon event by ID
+func WeaponEventScan(id int) *WeaponEvent {
+	if id > 0 {
+		l := len(Data.WeaponEvents)
+		i := sort.Search(l, func(i int) bool { return Data.WeaponEvents[i].ID >= id })
+		if i >= 0 && i < l && Data.WeaponEvents[i].ID == id {
+			return &(Data.WeaponEvents[i])
 		}
 	}
 	return nil

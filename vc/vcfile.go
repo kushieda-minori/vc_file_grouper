@@ -267,6 +267,8 @@ type VFile struct {
 	WeaponSkills                []WeaponSkill               `json:"mst_weapon_skill"`
 	WeaponSkillUnlockRanks      []WeaponSkillUnlockRank     `json:"mst_weapon_skill_unlock_rank"`
 	WeaponStatuses              []WeaponStatus              `json:"mst_weapon_status"`
+	WeaponRewards               []RankRewardSheet           `json:"mst_weapon_ranking_reward"`
+	WeaponArrivalRewards        []RankRewardSheet           `json:"mst_weapon_arrival_point_reward"`
 }
 
 // Read This reads the main data file and all associated files for strings

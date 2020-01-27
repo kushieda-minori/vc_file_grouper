@@ -347,6 +347,25 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				nextEventName,
 			)
 		}
+	case 20: // Soul Weapon
+		we := event.Weapon()
+		if we == nil {
+			fmt.Fprintf(w, "Unable to find weapon event")
+		} else {
+			var ranks = []int{1, 100, 300, 500, 1000, 2000, 3000, 5000}
+			fmt.Fprintf(w,
+				getEventTemplate(event.EventTypeID),
+				event.EventTypeID,
+				event.StartDatetime.Format(wikiFmt),
+				event.EndDatetime.Format(wikiFmt),
+				html.EscapeString(event.Description),
+				genWikiAWRewards(we.ArrivalRewards(), "Point Rewards", "Point"), // RR 1
+				genWikiAWRewards(we.RankRewards(), "Rank Rewards", "Rank"),      // RR 2
+				genWikiRankTrend(event, nil, time.Unix(0, 0), ranks, true),      // rank trend
+				prevEventName,
+				nextEventName,
+			)
+		}
 	case 11: // special campaign (Abyssal AW and others)
 		// may just do the THOR event seprately and leave this as just news
 		fmt.Fprintf(w,
@@ -357,8 +376,6 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			prevEventName,
 			nextEventName,
 		)
-	case 20: // Soul Weapon
-		fallthrough
 	case 13: //Alliance Ultimate Battle
 		fallthrough
 	case 12: // Alliance Duel
@@ -691,6 +708,30 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 |-
 | prize || [[File:Demon Core.png|30px|link=]] xCost || limit
 |}
+
+==Rewards==
+%s%s
+{{clr}}
+
+==Final Ranking==
+%s
+
+{{clr}}
+{{NavEvent|%s|%s}}
+`
+	case 20: // Soul Weapon
+		return `{{Event|eventType = %d
+|start jst = %s
+|end jst = %s
+|story=yes
+|image = Banner {{PAGENAME}}.png
+||Soul Weapon
+||Point Rewards<br/>RankReward
+||Area Completion Reward
+||Event ATK and DEF 15x<br />Upgrade Material +100%%<br />Subjugation Points 100%% UP
+}}
+
+%s
 
 ==Rewards==
 %s%s
