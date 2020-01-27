@@ -584,7 +584,8 @@ func getWikiItem(item *vc.Item) (r string) {
 			vc.CleanCustomSkillNoImage(item.NameEng),
 		)
 	} else if item.GroupID == 52 {
-		r = fmt.Sprintf("[[Items#Memory Core|%s]]", item.NameEng)
+		// Memory Cores
+		r = fmt.Sprintf("[[Soul_Weapon#Upgrading_Soul_Weapon|%s]]", item.NameEng)
 	} else {
 		r = fmt.Sprintf("__UNKNOWN_GROUP:_%d_%s__", item.GroupID, item.NameEng)
 	}
