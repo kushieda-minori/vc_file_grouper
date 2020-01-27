@@ -483,20 +483,42 @@ func getWikiAWRewards(reward vc.RankRewardSheet, newline bool) string {
 		} else {
 			r = fmt.Sprintf("{{Card Icon|%s}}", card.Name)
 		}
-	} else if reward.ItemID > 0 {
+		return fmt.Sprintf(rlist, r, reward.Num)
+	}
+	if reward.ItemID > 0 {
 		item := vc.ItemScan(reward.ItemID)
 		if item == nil {
 			r = fmt.Sprintf("__UNKNOWN_ITEM_ID:%d__", reward.ItemID)
 		} else {
 			r = getWikiItem(item)
 		}
-	} else if reward.Cash > 0 {
-		r = "{{icon|jewel}}"
-	} else {
-		r = "Unknown Reward Type"
+		return fmt.Sprintf(rlist, r, reward.Num)
 	}
 
-	return fmt.Sprintf(rlist, r, reward.Num)
+	if reward.Cash > 0 {
+		r = "{{icon|jewel}}"
+		return fmt.Sprintf(rlist, r, reward.Cash)
+	} else if reward.FriendPoint > 0 {
+		r = "{{icon|friendship}}"
+		return fmt.Sprintf(rlist, r, reward.FriendPoint)
+	} else if reward.Coin > 0 {
+		r = "{{icon|gold}}"
+		return fmt.Sprintf(rlist, r, reward.Coin)
+	} else if reward.Iron > 0 {
+		r = "{{icon|iron}}"
+		return fmt.Sprintf(rlist, r, reward.Iron)
+	} else if reward.Ether > 0 {
+		r = "{{icon|ether}}"
+		return fmt.Sprintf(rlist, r, reward.Ether)
+	} else if reward.Elixir > 0 {
+		r = "{{icon|gem}}"
+		return fmt.Sprintf(rlist, r, reward.Elixir)
+	} else if reward.Exp > 0 {
+		r = "{{icon|exp}}"
+		return fmt.Sprintf(rlist, r, reward.Exp)
+	}
+
+	return fmt.Sprintf(rlist, "Unknown Reward Type", reward.Num)
 }
 
 func getWikiItem(item *vc.Item) (r string) {
@@ -561,6 +583,8 @@ func getWikiItem(item *vc.Item) (r string) {
 			vc.CleanCustomSkillNoImage(item.NameEng),
 			vc.CleanCustomSkillNoImage(item.NameEng),
 		)
+	} else if item.GroupID == 52 {
+		r = fmt.Sprintf("[[Items#Memory Core|%s]]", item.NameEng)
 	} else {
 		r = fmt.Sprintf("__UNKNOWN_GROUP:_%d_%s__", item.GroupID, item.NameEng)
 	}
