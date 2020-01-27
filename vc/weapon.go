@@ -16,11 +16,11 @@ type WeaponEvent struct {
 	ScenarioID           int       `json:"scenario_id"`
 	PublicStartDatetime  Timestamp `json:"public_start_datetime"`
 	PublicEndDatetime    Timestamp `json:"public_end_datetime"`
-	RankingRewardGroupID int       `json:""`
-	ArrivalRewardGroupID int       `json:""`
-	RankingStart         Timestamp `json:""`
-	RankingEnd           Timestamp `json:""`
-	MaterialRemoval      Timestamp `json:""`
+	RankingRewardGroupID int       `json:"ranking_reward_group_id"`
+	ArrivalRewardGroupID int       `json:"arrival_point_reward_group_id"`
+	RankingStart         Timestamp `json:"ranking_start_datetime"`
+	RankingEnd           Timestamp `json:"ranking_end_datetime"`
+	MaterialRemoval      Timestamp `json:"material_removal_date"`
 	Title                string    `json:"-"` // MsgWeaponEventTitle_en.strb
 }
 
