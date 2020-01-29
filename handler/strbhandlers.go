@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -36,12 +35,12 @@ func StrbHandler(w http.ResponseWriter, r *http.Request) {
 	lpathParts := len(pathParts)
 
 	// validate that the file is a valid strb file
-	strbFile := path.Join(pathParts[1 : lpathParts-1]...)
+	strbFile := filepath.Join(pathParts[1 : lpathParts-1]...)
 	if strings.HasPrefix(strbFile, ".") || !strings.HasSuffix(strings.ToLower(strbFile), ".strb") {
 		fmt.Fprintf(w, "Illegal file path: %s", strbFile)
 		return
 	}
-	fullPath := path.Join(vc.FilePath, strbFile)
+	fullPath := filepath.Join(vc.FilePath, strbFile)
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		fmt.Fprintf(w, "File does not exist: %s", strbFile)
 		return
@@ -120,7 +119,8 @@ func StrbTableHandler(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		if bytes.Equal(b, []byte("STRB")) {
-			relPath := fpath[len(fullpath):]
+			relPath, _ := filepath.Rel(fullpath, fpath)
+			relPath = filepath.ToSlash(relPath)
 			fmt.Fprintf(w, "<tr>"+
 				"<td>%[1]s</td>"+
 				"<td><a href=\"/strb/%[2]s/html\">html</a></td>"+

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"zetsuboushita.net/vc_file_grouper/vc"
@@ -13,7 +14,7 @@ import (
 func ScenarioHandler(folder, title string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// string file location vcRoot/scenario/MsgScenarioString_<lang>.strb
-		lines, err := vc.ReadStringFileFilter(vc.FilePath+"/scenario/"+folder+"/MsgScenarioString_"+vc.LangPack+".strb", false)
+		lines, err := vc.ReadStringFileFilter(filepath.Join(vc.FilePath, "scenario", folder, "MsgScenarioString_"+vc.LangPack+".strb"), false)
 		io.WriteString(w, "<html><head><title>"+title+" Scenario</title></head><body>\n")
 		if err != nil {
 			// write out our error...

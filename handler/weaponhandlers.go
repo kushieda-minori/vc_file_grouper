@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -286,9 +287,9 @@ func printWeaponImages(w io.Writer, weapon *vc.Weapon) {
 	for i := 1; i <= rlen; i++ {
 		pathPart := ""
 		imgName := fmt.Sprintf("wp_%05[1]d_%02[2]d", weapon.ID, i)
-		if _, err := os.Stat(vc.FilePath + "weapon/hd/" + imgName); err == nil {
+		if _, err := os.Stat(filepath.Join(vc.FilePath, "weapon", "hd") + imgName); err == nil {
 			pathPart = "hd"
-		} else if _, err := os.Stat(vc.FilePath + "weapon/md/" + imgName); err == nil {
+		} else if _, err := os.Stat(filepath.Join(vc.FilePath, "weapon", "md") + imgName); err == nil {
 			pathPart = "md"
 		} else {
 			pathPart = "sd"

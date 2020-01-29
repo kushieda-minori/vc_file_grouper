@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"zetsuboushita.net/vc_file_grouper/handler"
 	"zetsuboushita.net/vc_file_grouper/vc"
@@ -38,7 +39,7 @@ func main() {
 	if len(flag.Args()) == 0 {
 		vc.FilePath = "."
 	} else {
-		vc.FilePath = flag.Args()[0]
+		vc.FilePath = filepath.Clean(flag.Args()[0])
 	}
 
 	if _, err := os.Stat(vc.FilePath); os.IsNotExist(err) {

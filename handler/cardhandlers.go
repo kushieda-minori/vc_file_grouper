@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -488,9 +489,9 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		pathPart := ""
-		if _, err := os.Stat(vc.FilePath + "/card/hd/" + evo.Image()); err == nil {
+		if _, err := os.Stat(filepath.Join(vc.FilePath, "card", "hd", evo.Image())); err == nil {
 			pathPart = "cardHD"
-		} else if _, err := os.Stat(vc.FilePath + "/card/md/" + evo.Image()); err == nil {
+		} else if _, err := os.Stat(filepath.Join(vc.FilePath, "card", "md", evo.Image())); err == nil {
 			pathPart = "card"
 		} else {
 			pathPart = "cardSD"

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -115,13 +116,13 @@ func (c *Card) EvosWithDistinctImages(icons bool) []string {
 	images := make(map[string][]byte, 0)
 	for _, evoID := range EvoOrder {
 		if evo, ok := evos[evoID]; ok {
-			file := FilePath + "/card/"
+			file := filepath.Join(FilePath, "card")
 			if icons {
-				file += "thumb/"
+				file = filepath.Join(file, "thumb")
 			} else {
-				file += "md/"
+				file = filepath.Join(file, "md")
 			}
-			file += evo.Image()
+			file = filepath.Join(file, evo.Image())
 			data, err := ioutil.ReadFile(file)
 			if err != nil {
 				log.Printf("Error reading image file %s", file)
