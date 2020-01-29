@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"runtime/debug"
 	"sort"
@@ -274,7 +275,7 @@ type VFile struct {
 // Read This reads the main data file and all associated files for strings
 // the data is inserted directly into the struct.
 func Read(root string) ([]byte, error) {
-	filename := root + "/response/master_all"
+	filename := filepath.Join(root, "response", "master_all")
 
 	var data []byte
 	var err error
@@ -310,8 +311,9 @@ func Read(root string) ([]byte, error) {
 		return nil, err
 	}
 
+	strRoot := filepath.Join(root, "string")
 	// card names
-	names, err := ReadStringFile(root + "/string/MsgCardName_en.strb")
+	names, err := ReadStringFile(filepath.Join(strRoot, "MsgCardName_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -334,7 +336,7 @@ func Read(root string) ([]byte, error) {
 		card.GetEvolutions()
 	}
 
-	description, err := ReadStringFile(root + "/string/MsgCharaDesc_en.strb")
+	description, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaDesc_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -345,7 +347,7 @@ func Read(root string) ([]byte, error) {
 			"Character descriptions", len(Data.CardCharacters), len(description))
 	}
 
-	friendship, err := ReadStringFile(root + "/string/MsgCharaFriendship_en.strb")
+	friendship, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaFriendship_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -356,13 +358,13 @@ func Read(root string) ([]byte, error) {
 			"Character friendship", len(Data.CardCharacters), len(friendship))
 	}
 
-	login, err := ReadStringFile(root + "/string/MsgCharaWelcome_en.strb")
+	login, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaWelcome_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
 
-	meet, err := ReadStringFile(root + "/string/MsgCharaMeet_en.strb")
+	meet, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaMeet_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -373,7 +375,7 @@ func Read(root string) ([]byte, error) {
 			"Character meet", len(Data.CardCharacters), len(meet))
 	}
 
-	battleStart, err := ReadStringFile(root + "/string/MsgCharaBtlStart_en.strb")
+	battleStart, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaBtlStart_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -384,7 +386,7 @@ func Read(root string) ([]byte, error) {
 			"Character battle_start", len(Data.CardCharacters), len(battleStart))
 	}
 
-	battleEnd, err := ReadStringFile(root + "/string/MsgCharaBtlEnd_en.strb")
+	battleEnd, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaBtlEnd_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -395,7 +397,7 @@ func Read(root string) ([]byte, error) {
 			"Character battle_end", len(Data.CardCharacters), len(battleEnd))
 	}
 
-	friendshipMax, err := ReadStringFile(root + "/string/MsgCharaFriendshipMax_en.strb")
+	friendshipMax, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaFriendshipMax_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -406,7 +408,7 @@ func Read(root string) ([]byte, error) {
 			"Character friendship_max", len(Data.CardCharacters), len(friendshipMax))
 	}
 
-	friendshipEvent, err := ReadStringFile(root + "/string/MsgCharaBonds_en.strb")
+	friendshipEvent, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaBonds_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -417,7 +419,7 @@ func Read(root string) ([]byte, error) {
 			"Character friendship_event", len(Data.CardCharacters), len(friendshipEvent))
 	}
 
-	rebirthEvent, err := ReadStringFile(root + "/string/MsgCharaSuperAwaken_en.strb")
+	rebirthEvent, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaSuperAwaken_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -451,19 +453,19 @@ func Read(root string) ([]byte, error) {
 	friendshipEvent = nil
 
 	//Read Skill strings
-	names, err = ReadStringFile(root + "/string/MsgSkillName_en.strb")
+	names, err = ReadStringFile(filepath.Join(strRoot, "MsgSkillName_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
 
-	description, err = ReadStringFile(root + "/string/MsgSkillDesc_en.strb")
+	description, err = ReadStringFile(filepath.Join(strRoot, "MsgSkillDesc_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
 
-	fire, err := ReadStringFile(root + "/string/MsgSkillFire_en.strb")
+	fire, err := ReadStringFile(filepath.Join(strRoot, "MsgSkillFire_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -482,12 +484,12 @@ func Read(root string) ([]byte, error) {
 	}
 
 	// event strings
-	evntNames, err := ReadStringFile(root + "/string/MsgEventName_en.strb")
+	evntNames, err := ReadStringFile(filepath.Join(strRoot, "MsgEventName_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	evntDescrs, err := ReadStringFile(root + "/string/MsgEventDesc_en.strb")
+	evntDescrs, err := ReadStringFile(filepath.Join(strRoot, "MsgEventDesc_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -504,13 +506,13 @@ func Read(root string) ([]byte, error) {
 	}
 
 	// map strings
-	mapNames, err := ReadStringFile(root + "/string/MsgNPCMapName_en.strb")
+	mapNames, err := ReadStringFile(filepath.Join(strRoot, "MsgNPCMapName_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
 
-	mapStart, err := ReadStringFile(root + "/string/MsgNPCMapStart_en.strb")
+	mapStart, err := ReadStringFile(filepath.Join(strRoot, "MsgNPCMapStart_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -525,37 +527,37 @@ func Read(root string) ([]byte, error) {
 		}
 	}
 
-	areaName, err := ReadStringFile(root + "/string/MsgNPCAreaName_en.strb")
+	areaName, err := ReadStringFile(filepath.Join(strRoot, "MsgNPCAreaName_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	areaLongName, err := ReadStringFile(root + "/string/MsgNPCAreaLongName_en.strb")
+	areaLongName, err := ReadStringFile(filepath.Join(strRoot, "MsgNPCAreaLongName_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	areaStart, err := ReadStringFile(root + "/string/MsgNPCAreaStart_en.strb")
+	areaStart, err := ReadStringFile(filepath.Join(strRoot, "MsgNPCAreaStart_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	areaEnd, err := ReadStringFile(root + "/string/MsgNPCAreaEnd_en.strb")
+	areaEnd, err := ReadStringFile(filepath.Join(strRoot, "MsgNPCAreaEnd_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	areaStory, err := ReadStringFile(root + "/string/MsgNPCAreaStory_en.strb")
+	areaStory, err := ReadStringFile(filepath.Join(strRoot, "MsgNPCAreaStory_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	bossStart, err := ReadStringFile(root + "/string/MsgNPCBossEnd_en.strb")
+	bossStart, err := ReadStringFile(filepath.Join(strRoot, "MsgNPCBossEnd_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	bossEnd, err := ReadStringFile(root + "/string/MsgNPCBossStart_en.strb")
+	bossEnd, err := ReadStringFile(filepath.Join(strRoot, "MsgNPCBossStart_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -585,7 +587,7 @@ func Read(root string) ([]byte, error) {
 		}
 	}
 
-	awlikeability, err := ReadStringFile(root + "/string/MsgKingFriendshipDesc_en.strb")
+	awlikeability, err := ReadStringFile(filepath.Join(strRoot, "MsgKingFriendshipDesc_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -598,7 +600,7 @@ func Read(root string) ([]byte, error) {
 		}
 	}
 
-	kingDescription, err := ReadStringFile(root + "/string/MsgKingTitle_en.strb")
+	kingDescription, err := ReadStringFile(filepath.Join(strRoot, "MsgKingTitle_en.strb"))
 	// king series descriptions
 	for key := range Data.ArchwitchSeries {
 		if key < len(kingDescription) {
@@ -606,12 +608,12 @@ func Read(root string) ([]byte, error) {
 		}
 	}
 
-	dbonusName, err := ReadStringFile(root + "/string/MsgDeckBonusName_en.strb")
+	dbonusName, err := ReadStringFile(filepath.Join(strRoot, "MsgDeckBonusName_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	dbonusDesc, err := ReadStringFile(root + "/string/MsgDeckBonusDesc_en.strb")
+	dbonusDesc, err := ReadStringFile(filepath.Join(strRoot, "MsgDeckBonusDesc_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -628,27 +630,27 @@ func Read(root string) ([]byte, error) {
 	}
 
 	//Items
-	itemdsc, err := ReadStringFile(root + "/string/MsgShopItemDesc_en.strb")
+	itemdsc, err := ReadStringFile(filepath.Join(strRoot, "MsgShopItemDesc_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	itemdscshp, err := ReadStringFile(root + "/string/MsgShopItemDescInShop_en.strb")
+	itemdscshp, err := ReadStringFile(filepath.Join(strRoot, "MsgShopItemDescInShop_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	itemdscsub, err := ReadStringFile(root + "/string/MsgShopItemDescSub_en.strb")
+	itemdscsub, err := ReadStringFile(filepath.Join(strRoot, "MsgShopItemDescSub_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	itemname, err := ReadStringFile(root + "/string/MsgShopItemName_en.strb")
+	itemname, err := ReadStringFile(filepath.Join(strRoot, "MsgShopItemName_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	itemuse, err := ReadStringFile(root + "/string/MsgShopItemUseResult_en.strb")
+	itemuse, err := ReadStringFile(filepath.Join(strRoot, "MsgShopItemUseResult_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -672,12 +674,12 @@ func Read(root string) ([]byte, error) {
 		}
 	}
 
-	buildname, err := ReadStringFile(root + "/string/MsgBuildingName_en.strb")
+	buildname, err := ReadStringFile(filepath.Join(strRoot, "MsgBuildingName_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	builddesc, err := ReadStringFile(root + "/string/MsgBuildingDesc_en.strb")
+	builddesc, err := ReadStringFile(filepath.Join(strRoot, "MsgBuildingDesc_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
@@ -693,7 +695,7 @@ func Read(root string) ([]byte, error) {
 	}
 
 	if Data.ThorEvents != nil {
-		thorTitle, err := ReadStringFile(root + "/string/MsgThorhammerTitle_en.strb")
+		thorTitle, err := ReadStringFile(filepath.Join(strRoot, "MsgThorhammerTitle_en.strb"))
 		if err != nil {
 			debug.PrintStack()
 			return data, err
@@ -706,12 +708,12 @@ func Read(root string) ([]byte, error) {
 	}
 
 	if Data.Weapons != nil {
-		weaponName, err := ReadStringFile(root + "/string/MsgWeaponName_en.strb")
+		weaponName, err := ReadStringFile(filepath.Join(strRoot, "MsgWeaponName_en.strb"))
 		if err != nil {
 			debug.PrintStack()
 			return data, err
 		}
-		weaponDesc, err := ReadStringFile(root + "/string/MsgWeaponDesc_en.strb")
+		weaponDesc, err := ReadStringFile(filepath.Join(strRoot, "MsgWeaponDesc_en.strb"))
 		if err != nil {
 			debug.PrintStack()
 			return data, err
@@ -735,7 +737,7 @@ func Read(root string) ([]byte, error) {
 	}
 
 	if Data.WeaponSkills != nil {
-		weaponSkill, err := ReadStringFile(root + "/string/MsgWeaponSkillDesc_en.strb")
+		weaponSkill, err := ReadStringFile(filepath.Join(strRoot, "MsgWeaponSkillDesc_en.strb"))
 		if err != nil {
 			debug.PrintStack()
 			return data, err
@@ -748,7 +750,7 @@ func Read(root string) ([]byte, error) {
 	}
 
 	if Data.WeaponEvents != nil {
-		weaponEvent, err := ReadStringFile(root + "/string/MsgWeaponEventTitle_en.strb")
+		weaponEvent, err := ReadStringFile(filepath.Join(strRoot, "MsgWeaponEventTitle_en.strb"))
 		if err != nil {
 			debug.PrintStack()
 			return data, err

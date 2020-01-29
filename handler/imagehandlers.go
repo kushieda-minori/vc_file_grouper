@@ -18,25 +18,25 @@ import (
 // ImageCardSDHandler show SD card images
 func ImageCardSDHandler(w http.ResponseWriter, r *http.Request) {
 	//vc.FilePath+"/card/sd"
-	serveCardImage(vc.FilePath+"/card/sd/", "/images/cardSD/", w, r)
+	serveCardImage(filepath.Join(vc.FilePath, "card", "sd"), "/images/cardSD/", w, r)
 }
 
 // ImageCardHandler show MD card images
 func ImageCardHandler(w http.ResponseWriter, r *http.Request) {
 	//vc.FilePath+"/card/md"
-	serveCardImage(vc.FilePath+"/card/md/", "/images/card/", w, r)
+	serveCardImage(filepath.Join(vc.FilePath, "card", "md"), "/images/card/", w, r)
 }
 
 // ImageCardThumbHandler show thumbnail card images
 func ImageCardThumbHandler(w http.ResponseWriter, r *http.Request) {
 	//vc.FilePath+"/card/thumb"
-	serveCardImage(vc.FilePath+"/card/thumb/", "/images/cardthumb/", w, r)
+	serveCardImage(filepath.Join(vc.FilePath, "card", "thumb"), "/images/cardthumb/", w, r)
 }
 
 // ImageCardHDHandler show HD card images
 func ImageCardHDHandler(w http.ResponseWriter, r *http.Request) {
 	//vc.FilePath+"/card/hd"
-	serveCardImage(vc.FilePath+"/card/hd/", "/images/cardHD/", w, r)
+	serveCardImage(filepath.Join(vc.FilePath, "card", "hd"), "/images/cardHD/", w, r)
 }
 
 // ImageHandlerFor handles images under a specified path
@@ -50,7 +50,11 @@ func ImageHandlerFor(urlPath string, imageDir string) func(http.ResponseWriter, 
 type fileFilterFunc func(os.FileInfo) bool
 
 func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root string, filters ...fileFilterFunc) {
-	imgname := r.URL.Path[len("/images"+urlPath):]
+	imgname := filepath.FromSlash(r.URL.Path)
+	urlRoot := path.Join("/images", urlPath)
+	urlRoot = filepath.FromSlash(urlRoot)
+	imgname, _ = filepath.Rel(urlRoot, imgname)
+	imgname = filepath.ToSlash(imgname)
 	queryValues := r.URL.Query()
 
 	var forceFileName string
@@ -67,14 +71,14 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 	}
 	if strings.Contains(imgname, "../") {
 		http.Error(w, "Invalid Image location "+imgname+
-			"<br />Relative path modification not allowed", http.StatusNotFound)
+			"\nRelative path modification not allowed", http.StatusNotFound)
 		return
 	}
 	fullpath := path.Join(vc.FilePath, root, imgname)
 
 	finfo, err := os.Stat(fullpath)
 	if err != nil {
-		http.Error(w, "Invalid Image location "+imgname+"<br />"+err.Error(), http.StatusNotFound)
+		http.Error(w, "Invalid Image location "+imgname+"\n"+err.Error(), http.StatusNotFound)
 		return
 	}
 	if finfo.Mode().IsRegular() {
@@ -121,7 +125,8 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 				return err
 			}
 			if bytes.Equal(b, []byte("CODE")) {
-				relPath := path[len(fullpath):]
+				relPath, _ := filepath.Rel(fullpath, path)
+				relPath = filepath.ToSlash(relPath)
 				fmt.Fprintf(w, `<div><a href="%[1]s"><img src="%[1]s"/></a><br />%[1]s</div>`, relPath)
 			} else {
 				log.Printf("Image is not encoded: %s", fullpath)
@@ -156,7 +161,8 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 	if imgname == "" || imgname == "/" || strings.HasPrefix(imgname, "../") {
 		if len(qs) > 0 {
 			if unused := qs.Get("unused"); unused != "" {
-				servImageDir(w, r, strings.TrimPrefix(urlprefix, "/images"), strings.TrimPrefix(imagePath, vc.FilePath), checkImageName)
+				relPath, _ := filepath.Rel(vc.FilePath, imagePath)
+				servImageDir(w, r, strings.TrimPrefix(urlprefix, "/images"), relPath, checkImageName)
 				return
 			}
 		}
@@ -165,7 +171,7 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 		return
 	}
 
-	fullpath := imagePath + imgname
+	fullpath := filepath.Join(imagePath, imgname)
 
 	var cardID, fileName string
 	decodeOnFly := false

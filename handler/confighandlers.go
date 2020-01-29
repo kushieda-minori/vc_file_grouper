@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
@@ -17,6 +18,7 @@ func ConfigHandler(w http.ResponseWriter, r *http.Request) {
 	// check form value and update if valid
 	newpath := r.FormValue("path")
 	if newpath != "" {
+		newpath = filepath.Clean(newpath)
 		if _, err := os.Stat(newpath); os.IsNotExist(err) {
 			io.WriteString(w, "<div>Invalid new path specified</div>")
 		} else {

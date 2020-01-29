@@ -9,6 +9,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -135,7 +136,7 @@ func StructureDetailHandler(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "No details...")
 	}
 
-	gardenBin := vc.FilePath + "/garden/map_01.bin"
+	gardenBin := filepath.Join(vc.FilePath, "garden", "map_01.bin")
 	texIds := structure.TextureIDs()
 	images, err := vc.GetBinFileImages(gardenBin, texIds...)
 
@@ -172,7 +173,7 @@ func StructureImagesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gardenBin := vc.FilePath + "/garden/map_01.bin"
+	gardenBin := filepath.Join(vc.FilePath, "garden", "map_01.bin")
 	log.Printf("reading garden image file\n")
 	images, err := vc.ReadBinFileImages(gardenBin)
 	limages := len(images)
@@ -204,9 +205,9 @@ func StructureImagesHandler(w http.ResponseWriter, r *http.Request) {
 			image := images[i]
 			p := ""
 			if withDir {
-				p = image.Name[0:strings.Index(image.Name, "_")] + "/"
+				p = image.Name[0:strings.Index(image.Name, "_")]
 			}
-			f, err := z.Create(p + image.Name)
+			f, err := z.Create(filepath.Join(p, image.Name))
 			if err != nil {
 				http.Error(w, "Error "+err.Error(), http.StatusInternalServerError)
 				return
