@@ -205,7 +205,7 @@ func serveCardImage(imagePath string, urlprefix string, w http.ResponseWriter, r
 	card := vc.CardScanImage(cardID)
 	ext := ".png"
 	isIcon := false
-	if strings.Contains(fullpath, "/thumb/") {
+	if strings.Contains(fullpath, filepath.FromSlash("/thumb/")) {
 		ext = "_icon.png"
 		isIcon = true
 	}
