@@ -18,7 +18,7 @@ func main() {
 
 	cmdLang := flag.String("lang", "en", "The language pack to use. 'en' for English, 'zhs' for Chinese. ")
 	cmdHelp := flag.Bool("help", false, "Show the help message")
-	cmdDbg := flag.Bool("debug", false, "Outputs error message to the standard error console")
+	cmdDbg := flag.Bool("debug", false, "Outputs log messages to the standard console")
 	flag.Parse()
 
 	if *cmdHelp {
