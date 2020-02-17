@@ -6,18 +6,11 @@ import (
 
 // Dungeon mst_dungeon
 type Dungeon struct {
-	ID                    int       `json:"_id"`
-	ElementID             int       `json:"element_id"`
-	RankingRewardGroupID  int       `json:"ranking_reward_group_id"`
-	RankingArrivalGroupID int       `json:"arrival_point_reward_group_id"`
-	ScenarioID            int       `json:"scenario_id"`
-	URLSchemeID           int       `json:"url_scheme_id"`
-	ExchangeItemID        int       `json:"exchange_item_id"`
-	PublicStartDatetime   Timestamp `json:"public_start_datetime"`
-	PublicEndDatetime     Timestamp `json:"public_end_datetime"`
-	RankingStartDatetime  Timestamp `json:"ranking_start_datetime"`
-	RankingEndDatetime    Timestamp `json:"ranking_end_datetime"`
-	Title                 string    `json:"-"` // MsgDungeonTitle_en.strb
+	SubEvent
+	ScenarioID     int    `json:"scenario_id"`
+	ElementID      int    `json:"element_id"`
+	ExchangeItemID int    `json:"exchange_item_id"`
+	Title          string `json:"-"` // MsgDungeonTitle_en.strb
 }
 
 // DungeonAreaType mst_dungeon_area_type
@@ -43,9 +36,12 @@ func (t *Dungeon) RankRewards() []RankRewardSheet {
 // ArrivalRewards rewards for arriving at a certain Dungeon floor
 func (t *Dungeon) ArrivalRewards() []RankRewardSheet {
 	set := make([]RankRewardSheet, 0)
-	if t.RankingArrivalGroupID > 0 {
+	if t == nil {
+		return set
+	}
+	if t.ArrivalRewardGroupID > 0 {
 		for _, val := range Data.DungeonArrivalRewards {
-			if val.GroupID == t.RankingArrivalGroupID {
+			if val.GroupID == t.ArrivalRewardGroupID {
 				set = append(set, val)
 			}
 		}

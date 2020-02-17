@@ -198,6 +198,7 @@ type VFile struct {
 	} `json:"defs_tune"`
 	ShortcutURL                 string                      `json:"shortcut_url"`
 	Version                     int                         `json:"version"`
+	URLSchemes                  []URLScheme                 `json:"url_scheme"`
 	Cards                       CardList                    `json:"cards"`
 	Skills                      []Skill                     `json:"skills"`
 	SkillLevels                 []SkillLevel                `json:"skill_level"`

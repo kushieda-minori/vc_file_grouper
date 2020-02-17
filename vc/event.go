@@ -114,6 +114,35 @@ func (e *Event) Map() *Map {
 	return e._map
 }
 
+//SubEvent get the sub-event info
+func (e *Event) SubEvent() *SubEvent {
+	if e == nil {
+		return nil
+	}
+	if e.TowerEventID > 0 {
+		t := e.Tower()
+		if t == nil {
+			return nil
+		}
+		return &t.SubEvent
+	}
+	if e.DungeonEventID > 0 {
+		d := e.DemonRealm()
+		if d == nil {
+			return nil
+		}
+		return &d.SubEvent
+	}
+	if e.WeaponEventID > 0 {
+		w := e.Weapon()
+		if w == nil {
+			return nil
+		}
+		return &w.SubEvent
+	}
+	return nil
+}
+
 // Tower information for the event if it's a tower event
 func (e *Event) Tower() *Tower {
 	if e.TowerEventID <= 0 {
@@ -132,7 +161,7 @@ func (e *Event) DemonRealm() *Dungeon {
 	return DungeonScan(e.DungeonEventID)
 }
 
-// DemonRealm information for the event if it's a Demon Realm Voyage event
+// Weapon information for the event if it's a Weapon event
 func (e *Event) Weapon() *WeaponEvent {
 	if e.WeaponEventID <= 0 {
 		return nil

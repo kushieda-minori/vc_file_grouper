@@ -82,7 +82,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<button type=\"submit\">Submit</button>\n</form>\n")
 	io.WriteString(w, "<div>\n")
 	io.WriteString(w, "<table><thead><tr>\n")
-	io.WriteString(w, "<th>_id</th><th>Event Name</th><th>Event Type</th><th>Start Date</th><th>End Date</th><th>King Series</th><th>Guild Battle</th><th>Tower Event</th><th>DRV</th>\n")
+	io.WriteString(w, "<th>_id</th><th>Event Name</th><th>Event Type</th><th>Start Date</th><th>End Date</th><th>King Series</th><th>Guild Battle</th><th>Tower Event</th><th>DRV</th><th>Weapon</th>\n")
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
 	for i := len(vc.Data.Events) - 1; i >= 0; i-- {
@@ -100,6 +100,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	<td>%d</td>
 	<td>%d</td>
 	<td>%d</td>
+	<td>%d</td>
 </tr>`,
 			e.ID,
 			e.Name,
@@ -110,6 +111,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 			e.GuildBattleID,
 			e.TowerEventID,
 			e.DungeonEventID,
+			e.WeaponEventID,
 		)
 	}
 	io.WriteString(w, "</tbody></table></div></body></html>")
@@ -188,6 +190,11 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<div style=\"clear:both;float:left\">Edit on the <a href=\"https://valkyriecrusade.fandom.com/wiki/%s?action=edit\">fandom</a>\n<br />", eventName)
 	if event.MapID > 0 {
 		fmt.Fprintf(w, "<a href=\"/maps/%d\">Map Information</a>\n<br />", event.MapID)
+	}
+
+	se := event.SubEvent()
+	if se != nil {
+		fmt.Fprintf(w, "<br />Event Detail URL: <a href=\"%[1]s\">%[1]s</a><br />", se.GetURL())
 	}
 	io.WriteString(w, "<textarea style=\"width:800px;height:760px\">")
 	switch event.EventTypeID {
@@ -393,7 +400,6 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 	io.WriteString(w, "</textarea></div>")
-
 	io.WriteString(w, "</body></html>")
 
 }
