@@ -1,9 +1,4 @@
 #!/bin/bash
-
-#remove extra slashes from GOPATH
-GOPATH=$(echo $GOPATH | tr -s /)
-GOPATH=${GOPATH%/}
-
 GOOS=darwin GOARCH=amd64 go build -trimpath -o vc_file_grouper_OSX
 GOOS=linux GOARCH=amd64 go build -trimpath -o vc_file_grouper_Linux64
 GOOS=linux GOARCH=386 go build -trimpath -o vc_file_grouper_Linux32
