@@ -1,0 +1,119 @@
+version: 2.1
+
+executors:
+  my-executor:
+    docker:
+      - image: circleci/golang:1.13.8
+    working_directory: /go/src/zetsuboushita.net/vc_file_grouper
+
+
+jobs:
+  build:
+    executor: my-executor
+    steps:
+      - checkout
+
+      # specify any bash command here prefixed with `run: `
+      - run: go build -trimpath > build.log 2>&1
+
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - vc_file_grouper
+      - store_artifacts:
+          path: ./vc_file_grouper
+      - store_artifacts:
+          path: ./build.log
+
+  cross-compile:
+    executor: my-executor
+    steps:
+      - checkout
+
+      # specify any bash command here prefixed with `run: `
+      - run: GOOS=darwin GOARCH=amd64 go build -trimpath -o vc_file_grouper_OSX >> build.log 2>&1
+      - run: GOOS=linux GOARCH=amd64 go build -trimpath -o vc_file_grouper_Linux64 >> build.log 2>&1
+      - run: GOOS=linux GOARCH=386 go build -trimpath -o vc_file_grouper_Linux32 >> build.log 2>&1
+      - run: GOOS=linux GOARCH=arm GOARM=7 go build -trimpath -o vc_file_grouper_LinuxArm32v7l >> build.log 2>&1
+      - run: GOOS=linux GOARCH=arm64 GOARM=7 go build -trimpath -o vc_file_grouper_LinuxArm64v7l >> build.log 2>&1
+      - run: GOOS=windows GOARCH=amd64 go build -trimpath -o vc_file_grouper_Win64.exe >> build.log 2>&1
+      - run: GOOS=windows GOARCH=386 go build -trimpath -o vc_file_grouper_Win32.exe >> build.log 2>&1
+      - run: GOOS=freebsd GOARCH=386 go build -trimpath -o vc_file_grouper_freebsd32 >> build.log 2>&1
+      - run: GOOS=freebsd GOARCH=amd64 go build -trimpath -o vc_file_grouper_freebsd64 >> build.log 2>&1
+
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - vc_file_grouper_OSX
+            - vc_file_grouper_Linux64
+            - vc_file_grouper_Linux32
+            - vc_file_grouper_LinuxArm32v7l
+            - vc_file_grouper_LinuxArm64v7l
+            - vc_file_grouper_Win64.exe
+            - vc_file_grouper_Win32.exe
+            - vc_file_grouper_freebsd32
+            - vc_file_grouper_freebsd64
+      - store_artifacts:
+          path: ./vc_file_grouper_OSX
+      - store_artifacts:
+          path: ./vc_file_grouper_Linux64
+      - store_artifacts:
+          path: ./vc_file_grouper_Linux32
+      - store_artifacts:
+          path: ./vc_file_grouper_LinuxArm32v7l
+      - store_artifacts:
+          path: ./vc_file_grouper_LinuxArm64v7l
+      - store_artifacts:
+          path: ./vc_file_grouper_Win64.exe
+      - store_artifacts:
+          path: ./vc_file_grouper_Win32.exe
+      - store_artifacts:
+          path: ./vc_file_grouper_freebsd32
+      - store_artifacts:
+          path: ./vc_file_grouper_freebsd64
+      - store_artifacts:
+          path: ./build.log
+
+
+  publish-release:
+    executor: my-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: ./artifacts
+
+      # specify any bash command here prefixed with `run: `
+      - run:
+          name: Publish To Github
+          command: |
+            go get github.com/itchio/gothub
+            cd artifacts
+            for I in *; do
+              #curl -X POST -H "Authorization: token ${GITHUB_TOKEN}" --data-binary "@${I}" "https://uploads.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/${CIRCLE_TAG}/assets/?name=${I}"
+              gothub upload -R -s "${GITHUB_TOKEN}" --user "${CIRCLE_PROJECT_USERNAME}" --repo "${CIRCLE_PROJECT_REPONAME}" --tag ${CIRCLE_TAG} --name "${I}" -f ${I}
+            done
+workflows:
+  version: 2
+  build-n-test:
+    jobs:
+      - build:
+          filters:
+            tags:
+              ignore: /.*/
+  publish-release:
+    jobs:
+      - cross-compile:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - publish-release:
+          requires:
+            - cross-compile
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
