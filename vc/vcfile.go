@@ -343,8 +343,7 @@ func Read(root string) ([]byte, error) {
 		return nil, err
 	}
 	if len(Data.CardCharacters) > len(description) {
-		debug.PrintStack()
-		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
 			"Character descriptions", len(Data.CardCharacters), len(description))
 	}
 
@@ -354,8 +353,7 @@ func Read(root string) ([]byte, error) {
 		return nil, err
 	}
 	if len(Data.CardCharacters) > len(friendship) {
-		debug.PrintStack()
-		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
 			"Character friendship", len(Data.CardCharacters), len(friendship))
 	}
 
@@ -371,8 +369,7 @@ func Read(root string) ([]byte, error) {
 		return nil, err
 	}
 	if len(Data.CardCharacters) > len(meet) {
-		debug.PrintStack()
-		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
 			"Character meet", len(Data.CardCharacters), len(meet))
 	}
 
@@ -382,8 +379,7 @@ func Read(root string) ([]byte, error) {
 		return nil, err
 	}
 	if len(Data.CardCharacters) > len(battleStart) {
-		debug.PrintStack()
-		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
 			"Character battle_start", len(Data.CardCharacters), len(battleStart))
 	}
 
@@ -393,8 +389,7 @@ func Read(root string) ([]byte, error) {
 		return nil, err
 	}
 	if len(Data.CardCharacters) > len(battleEnd) {
-		debug.PrintStack()
-		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
 			"Character battle_end", len(Data.CardCharacters), len(battleEnd))
 	}
 
@@ -404,8 +399,7 @@ func Read(root string) ([]byte, error) {
 		return nil, err
 	}
 	if len(Data.CardCharacters) > len(friendshipMax) {
-		debug.PrintStack()
-		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
 			"Character friendship_max", len(Data.CardCharacters), len(friendshipMax))
 	}
 
@@ -415,8 +409,7 @@ func Read(root string) ([]byte, error) {
 		return nil, err
 	}
 	if len(Data.CardCharacters) > len(friendshipEvent) {
-		debug.PrintStack()
-		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
+		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
 			"Character friendship_event", len(Data.CardCharacters), len(friendshipEvent))
 	}
 
@@ -426,23 +419,38 @@ func Read(root string) ([]byte, error) {
 		return nil, err
 	}
 	if len(Data.CardCharacters) > len(rebirthEvent) {
-		debug.PrintStack()
-		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character friendship_event", len(Data.CardCharacters), len(rebirthEvent))
+		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
+			"Character rebirth_event", len(Data.CardCharacters), len(rebirthEvent))
 	}
 
 	for key := range Data.CardCharacters {
-		Data.CardCharacters[key].Description = strings.ReplaceAll(description[key], "\n", " ")
-		Data.CardCharacters[key].Friendship = friendship[key]
+		if key < len(description) {
+			Data.CardCharacters[key].Description = strings.ReplaceAll(description[key], "\n", " ")
+		}
+		if key < len(friendship) {
+			Data.CardCharacters[key].Friendship = friendship[key]
+		}
 		if key < len(login) {
 			Data.CardCharacters[key].Login = login[key]
 		}
-		Data.CardCharacters[key].Meet = meet[key]
-		Data.CardCharacters[key].BattleStart = battleStart[key]
-		Data.CardCharacters[key].BattleEnd = battleEnd[key]
-		Data.CardCharacters[key].FriendshipMax = friendshipMax[key]
-		Data.CardCharacters[key].FriendshipEvent = friendshipEvent[key]
-		Data.CardCharacters[key].Rebirth = rebirthEvent[key]
+		if key < len(meet) {
+			Data.CardCharacters[key].Meet = meet[key]
+		}
+		if key < len(battleStart) {
+			Data.CardCharacters[key].BattleStart = battleStart[key]
+		}
+		if key < len(battleEnd) {
+			Data.CardCharacters[key].BattleEnd = battleEnd[key]
+		}
+		if key < len(friendshipMax) {
+			Data.CardCharacters[key].FriendshipMax = friendshipMax[key]
+		}
+		if key < len(friendshipEvent) {
+			Data.CardCharacters[key].FriendshipEvent = friendshipEvent[key]
+		}
+		if key < len(rebirthEvent) {
+			Data.CardCharacters[key].Rebirth = rebirthEvent[key]
+		}
 	}
 	description = nil
 	friendship = nil
