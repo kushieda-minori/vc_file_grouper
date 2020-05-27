@@ -3,7 +3,7 @@ version: 2.1
 executors:
   my-executor:
     docker:
-      - image: circleci/golang:1.13.8
+      - image: circleci/golang:1.14.1
     working_directory: /go/src/zetsuboushita.net/vc_file_grouper
 
 
@@ -87,12 +87,9 @@ jobs:
       - run:
           name: Publish To Github
           command: |
-            #go get github.com/itchio/gothub
             go get github.com/github-release/github-release
             cd artifacts
             for I in *; do
-              #curl -X POST -H "Authorization: token ${GITHUB_TOKEN}" --data-binary "@${I}" "https://uploads.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/${CIRCLE_TAG}/assets/?name=${I}"
-              #gothub upload -R -s "${GITHUB_TOKEN}" --user "${CIRCLE_PROJECT_USERNAME}" --repo "${CIRCLE_PROJECT_REPONAME}" --tag ${CIRCLE_TAG} --name "${I}" -f ${I}
               github-release upload -R -s "${GITHUB_TOKEN}" --user "${CIRCLE_PROJECT_USERNAME}" --repo "${CIRCLE_PROJECT_REPONAME}" --tag ${CIRCLE_TAG} --name "${I}" -f ${I}
             done
 workflows:
