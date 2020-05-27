@@ -674,6 +674,15 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 				card.Rarity() == ("H"+rarity) ||
 				card.Rarity() == ("G"+rarity))
 		}
+		if element := qs.Get("element"); element != "" {
+			match = match && card.Element() == element
+		}
+		if symbols := qs.Get("symbol"); symbols != "" {
+			symbol, err := strconv.Atoi(symbols)
+			if err == nil {
+				match = match && card.CardSymbolID == symbol
+			}
+		}
 		if evos := qs.Get("evos"); evos != "" {
 			evon, err := strconv.Atoi(evos)
 			if err == nil && (evon == 1 || evon == 4) {
@@ -735,6 +744,33 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 <option value="UR">UR</option>
 <option value="LR">LR</option>
 </select>
+<label for="f_element">Element:</label><select id="f_element" name="element" value="%s">
+<option value=""></option>
+<option value="Special">Special</option>
+<option value="Cool">Cool</option>
+<option value="Passion">Passion</option>
+<option value="Light">Light</option>
+<option value="Dark">Dark</option>
+</select>
+<label for="f_symbol">Symbol:</label><select id="f_symbol" name="symbol" value="%s">
+<option value=""></option>
+<option value="1">Sun</option>
+<option value="2">Sea</option>
+<option value="3">Earth</option>
+<option value="4">Air</option>
+<option value="5">Comet</option>
+<option value="6">Butterfly</option>
+<option value="7">Daisy</option>
+<option value="8">Electric/option>
+<option value="9">Sakura</option>
+<option value="10">Leaf</option>
+<option value="11">Ribbon</option>
+<option value="12">Palm</option>
+<option value="13">Ginko</option>
+<option value="14">Clover</option>
+<option value="15">Flower</option>
+<option value="16">Totem</option>
+</select>
 <label for="f_evos">Evo:</label><select id="f_evos" name="evos" value="%s">
 <option value=""></option>
 <option value="1">1★</option>
@@ -749,6 +785,8 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 `,
 		qs.Get("name"),
 		qs.Get("rarity"),
+		qs.Get("element"),
+		qs.Get("symbol"),
 		qs.Get("evos"),
 		qs.Get("skillname"),
 		qs.Get("skilldesc"),
@@ -765,6 +803,7 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 		"Next Evo",
 		"Rarity",
 		"Element",
+		"Symbol",
 		"Character ID",
 		"deck_cost",
 		"default offense",
@@ -818,6 +857,7 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 			card.EvolutionCardID,
 			card.Rarity(),
 			card.Element(),
+			card.CardSymbolID,
 			card.CardCharaID,
 			card.DeckCost,
 			card.DefaultOffense,
