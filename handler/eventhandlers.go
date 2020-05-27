@@ -730,18 +730,17 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 %s
 
 ==Demon Core Exchange==
-{| class="article-table mw-collapsible mw-collapsed" border="1" cellpadding="1" cellspacing="1"
-|-
-! scope="col" |Prize
-! scope="col" |Cost
-! scope="col" |Limit
-
-|-
-| prize || [[File:Demon Core.png|30px|link=]] xCost || limit
-|}
+{{DemonCoreExchange
+|ur 1 = 
+|ur 2 = 
+|ur amal = 
+|old rr = 
+|old rebirth = 
+|element = %[4]s
+}}
 
 ==Rewards==
-%s%s
+%[6]s%s
 {{clr}}
 
 ==Final Ranking==
