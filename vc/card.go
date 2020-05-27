@@ -47,6 +47,7 @@ type Card struct {
 	Price                     int    `json:"price"`                                    // amount of gold can be traded for
 	StunRate                  int    `json:"stun_rate"`                                // ?
 	IsClosed                  int    `json:"is_closed"`                                // is closed
+	CardSymbolID              int    `json:"card_symbol_id"`                           //
 	Name                      string `json:"name"`                                     // name from the strings file
 
 	//Character Link

@@ -255,7 +255,7 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if card.IsClosed != 0 {
 		io.WriteString(w, "{{Unreleased}}")
 	}
-	fmt.Fprintf(w, "{{Card\n|element = %s\n|rarity = %s\n", card.Element(), card.MainRarity())
+	fmt.Fprintf(w, "{{Card\n|element = %s\n|rarity = %s\n|symbol = %d\n", card.Element(), card.MainRarity(), card.CardSymbolID)
 
 	skillMap := make(map[string]string)
 
