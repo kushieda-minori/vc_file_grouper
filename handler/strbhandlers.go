@@ -95,7 +95,7 @@ func StrbTableHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</head><body>\n")
 	io.WriteString(w, "<div>\n")
 	io.WriteString(w, "<table><thead><tr>\n")
-	io.WriteString(w, "<th>File</th><th>&nnsp;</th><th>&nbsp;</th>")
+	io.WriteString(w, "<th>File</th><th>&nbsp;</th><th>&nbsp;</th>")
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
 
