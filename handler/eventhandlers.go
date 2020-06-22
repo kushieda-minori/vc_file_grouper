@@ -176,7 +176,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Banner"/></a><br />`, event.BannerID, url.QueryEscape(event.Name))
 	}
 	if event.TexIDImage > 0 {
-		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Texture Image" /></a>br />`, event.TexIDImage, url.QueryEscape(event.Name))
+		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Texture Image" /></a><br />`, event.TexIDImage, url.QueryEscape(event.Name))
 	}
 	if event.TexIDImage2 > 0 {
 		fmt.Fprintf(w, `<a href="/images/event/largeimage/%[1]d/event_image_en?filename=Banner_%[2]s.png"><img src="/images/event/largeimage/%[1]d/event_image_en" alt="Texture Image 2" /></a><br />`, event.TexIDImage2, url.QueryEscape(event.Name))
@@ -317,6 +317,14 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		if tower == nil {
 			fmt.Fprintf(w, "Unable to find tower event")
 		} else {
+			hasStory := ""
+			if tower.SubEvent.ScenarioID > 0 {
+				hasStory = "yes"
+			}
+			hasEnemySymbol := ""
+			if tower.SubEvent.EnemySymbolID > 0 {
+				hasEnemySymbol = strconv.Itoa(tower.SubEvent.EnemySymbolID)
+			}
 			element := tower.ElementID - 1
 			towerShield := vc.Elements[element]
 			var ranks = []int{1, 100, 300, 500, 1000, 2000, 3000, 5000}
@@ -325,6 +333,8 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				event.StartDatetime.Format(wikiFmt),
 				event.EndDatetime.Format(wikiFmt),
 				towerShield,
+				hasStory,
+				hasEnemySymbol,
 				html.EscapeString(strings.ReplaceAll(event.Description, "\n", "\n\n")),
 				genWikiAWRewards(tower.ArrivalRewards(), "Floor Arrival Rewards", "Floor"), // RR 1
 				genWikiAWRewards(tower.RankRewards(), "Rank Rewards", "Rank"),              // RR 2
@@ -338,6 +348,14 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		if realm == nil {
 			fmt.Fprintf(w, "Unable to find demon realm event")
 		} else {
+			hasStory := ""
+			if realm.SubEvent.ScenarioID > 0 {
+				hasStory = "yes"
+			}
+			hasEnemySymbol := ""
+			if realm.SubEvent.EnemySymbolID > 0 {
+				hasEnemySymbol = strconv.Itoa(realm.SubEvent.EnemySymbolID)
+			}
 			element := realm.ElementID - 1
 			shield := vc.Elements[element]
 			var ranks = []int{1, 100, 300, 500, 1000, 2000, 3000, 5000}
@@ -346,6 +364,8 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 				event.StartDatetime.Format(wikiFmt),
 				event.EndDatetime.Format(wikiFmt),
 				shield,
+				hasStory,
+				hasEnemySymbol,
 				html.EscapeString(event.Description),
 				genWikiAWRewards(realm.ArrivalRewards(), "Point Rewards", "Floor"), // RR 1
 				genWikiAWRewards(realm.RankRewards(), "Rank Rewards", "Rank"),      // RR 2
@@ -359,12 +379,22 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 		if we == nil {
 			fmt.Fprintf(w, "Unable to find weapon event")
 		} else {
+			hasStory := ""
+			if we.SubEvent.ScenarioID > 0 {
+				hasStory = "yes"
+			}
+			hasEnemySymbol := ""
+			if we.SubEvent.EnemySymbolID > 0 {
+				hasEnemySymbol = strconv.Itoa(we.SubEvent.EnemySymbolID)
+			}
 			var ranks = []int{1, 100, 300, 500, 1000, 2000, 3000, 5000}
 			fmt.Fprintf(w,
 				getEventTemplate(event.EventTypeID),
 				event.EventTypeID,
 				event.StartDatetime.Format(wikiFmt),
 				event.EndDatetime.Format(wikiFmt),
+				hasStory,
+				hasEnemySymbol,
 				html.EscapeString(event.Description),
 				genWikiAWRewards(we.ArrivalRewards(), "Point Rewards", "Point"), // RR 1
 				genWikiAWRewards(we.RankRewards(), "Rank Rewards", "Rank"),      // RR 2
@@ -676,6 +706,8 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 |start jst = %s
 |end jst = %s
 |towerShield=%s
+|story=%s
+|enemySymbol=%s
 |image = Banner {{PAGENAME}}.png
 ||Ranking Reward<br />Amalgamation
 ||Floor Reward
@@ -713,7 +745,8 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 |start jst = %s
 |end jst = %s
 |towerShield=%s
-|story=yes
+|story=%s
+|enemySymbol=%s
 |image = Banner {{PAGENAME}}.png
 ||Ranking Reward<br>Amalgmation
 ||Point Rewards
@@ -740,7 +773,7 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 }}
 
 ==Rewards==
-%[6]s%s
+%[8]s%s
 {{clr}}
 
 ==Final Ranking==
@@ -753,7 +786,8 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 		return `{{Event|eventType = %d
 |start jst = %s
 |end jst = %s
-|story=yes
+|story=%s
+|enemySymbol=%s
 |image = Banner {{PAGENAME}}.png
 ||Soul Weapon
 ||Point Rewards<br/>RankReward

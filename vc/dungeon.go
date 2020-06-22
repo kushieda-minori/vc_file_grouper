@@ -7,7 +7,6 @@ import (
 // Dungeon mst_dungeon
 type Dungeon struct {
 	SubEvent
-	ScenarioID     int    `json:"scenario_id"`
 	ElementID      int    `json:"element_id"`
 	ExchangeItemID int    `json:"exchange_item_id"`
 	Title          string `json:"-"` // MsgDungeonTitle_en.strb

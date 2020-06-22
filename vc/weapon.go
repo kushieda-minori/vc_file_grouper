@@ -11,7 +11,6 @@ import (
 type WeaponEvent struct {
 	SubEvent
 	WeaponID        int       `json:"weapon_id"`
-	ScenarioID      int       `json:"scenario_id"`
 	EventGachaID    int       `json:"eventgacha_id"`
 	MaterialRemoval Timestamp `json:"material_removal_date"`
 	Title           string    `json:"-"` // MsgWeaponEventTitle_en.strb
