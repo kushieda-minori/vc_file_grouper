@@ -151,6 +151,9 @@ var characterNameOverride = map[int]string{
 	2550: "Thunder Stone Shard (D)",   // Thunderstone Shard (D)
 	2554: "Lightning Stone Shard (L)", // Lightning Shard (L)
 	2555: "Lightning Stone Shard (D)", // Lightning Shard (D)
+	2978: "Etna & Flonne",             // fix spacing
+	3060: "Xmas Kyulu Kyula",          // remove the slash
+	3167: "Kiyohime (collab)",         // new Kiyo from a collab
 }
 
 func init() {
@@ -325,8 +328,11 @@ func Read(root string) ([]byte, error) {
 		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
 			"Character Names", len(Data.Cards), len(names))
 	}
-	for key := range Data.Cards {
-		Data.Cards[key].Name = cleanCardName(names[key], Data.Cards[key])
+	for key, val := range names {
+		card := CardScan(key + 1)
+		if card != nil {
+			card.Name = cleanCardName(val, card)
+		}
 	}
 
 	renameSpecialAmalCardsWithDupNames()
@@ -342,9 +348,11 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(Data.CardCharacters) > len(description) {
-		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
-			"Character descriptions", len(Data.CardCharacters), len(description))
+	for key, val := range description {
+		charc := CardCharacterScan(key + 1)
+		if charc != nil {
+			charc.Description = strings.ReplaceAll(val, "\n", " ")
+		}
 	}
 
 	friendship, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaFriendship_en.strb"))
@@ -352,9 +360,11 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(Data.CardCharacters) > len(friendship) {
-		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
-			"Character friendship", len(Data.CardCharacters), len(friendship))
+	for key, val := range friendship {
+		charc := CardCharacterScan(key + 1)
+		if charc != nil {
+			charc.Friendship = val
+		}
 	}
 
 	login, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaWelcome_en.strb"))
@@ -362,15 +372,23 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
+	for key, val := range login {
+		charc := CardCharacterScan(key + 1)
+		if charc != nil {
+			charc.Login = val
+		}
+	}
 
 	meet, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaMeet_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(Data.CardCharacters) > len(meet) {
-		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
-			"Character meet", len(Data.CardCharacters), len(meet))
+	for key, val := range meet {
+		charc := CardCharacterScan(key + 1)
+		if charc != nil {
+			charc.Meet = val
+		}
 	}
 
 	battleStart, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaBtlStart_en.strb"))
@@ -378,9 +396,11 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(Data.CardCharacters) > len(battleStart) {
-		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
-			"Character battle_start", len(Data.CardCharacters), len(battleStart))
+	for key, val := range battleStart {
+		charc := CardCharacterScan(key + 1)
+		if charc != nil {
+			charc.BattleStart = val
+		}
 	}
 
 	battleEnd, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaBtlEnd_en.strb"))
@@ -388,9 +408,11 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(Data.CardCharacters) > len(battleEnd) {
-		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
-			"Character battle_end", len(Data.CardCharacters), len(battleEnd))
+	for key, val := range battleEnd {
+		charc := CardCharacterScan(key + 1)
+		if charc != nil {
+			charc.BattleEnd = val
+		}
 	}
 
 	friendshipMax, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaFriendshipMax_en.strb"))
@@ -398,9 +420,11 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(Data.CardCharacters) > len(friendshipMax) {
-		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
-			"Character friendship_max", len(Data.CardCharacters), len(friendshipMax))
+	for key, val := range friendshipMax {
+		charc := CardCharacterScan(key + 1)
+		if charc != nil {
+			charc.FriendshipMax = val
+		}
 	}
 
 	friendshipEvent, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaBonds_en.strb"))
@@ -408,9 +432,11 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(Data.CardCharacters) > len(friendshipEvent) {
-		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
-			"Character friendship_event", len(Data.CardCharacters), len(friendshipEvent))
+	for key, val := range friendshipEvent {
+		charc := CardCharacterScan(key + 1)
+		if charc != nil {
+			charc.FriendshipEvent = val
+		}
 	}
 
 	rebirthEvent, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaSuperAwaken_en.strb"))
@@ -418,48 +444,12 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(Data.CardCharacters) > len(rebirthEvent) {
-		fmt.Printf("WARNING: %s did not match data file. master: %d, strings: %d\n",
-			"Character rebirth_event", len(Data.CardCharacters), len(rebirthEvent))
-	}
-
-	for key := range Data.CardCharacters {
-		if key < len(description) {
-			Data.CardCharacters[key].Description = strings.ReplaceAll(description[key], "\n", " ")
-		}
-		if key < len(friendship) {
-			Data.CardCharacters[key].Friendship = friendship[key]
-		}
-		if key < len(login) {
-			Data.CardCharacters[key].Login = login[key]
-		}
-		if key < len(meet) {
-			Data.CardCharacters[key].Meet = meet[key]
-		}
-		if key < len(battleStart) {
-			Data.CardCharacters[key].BattleStart = battleStart[key]
-		}
-		if key < len(battleEnd) {
-			Data.CardCharacters[key].BattleEnd = battleEnd[key]
-		}
-		if key < len(friendshipMax) {
-			Data.CardCharacters[key].FriendshipMax = friendshipMax[key]
-		}
-		if key < len(friendshipEvent) {
-			Data.CardCharacters[key].FriendshipEvent = friendshipEvent[key]
-		}
-		if key < len(rebirthEvent) {
-			Data.CardCharacters[key].Rebirth = rebirthEvent[key]
+	for key, val := range rebirthEvent {
+		charc := CardCharacterScan(key + 1)
+		if charc != nil {
+			charc.Rebirth = val
 		}
 	}
-	description = nil
-	friendship = nil
-	login = nil
-	meet = nil
-	battleStart = nil
-	battleEnd = nil
-	friendshipMax = nil
-	friendshipEvent = nil
 
 	//Read Skill strings
 	names, err = ReadStringFile(filepath.Join(strRoot, "MsgSkillName_en.strb"))
@@ -479,38 +469,38 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-
 	for key := range Data.Skills {
-		if key < len(names) {
-			Data.Skills[key].Name = filterSkill(names[key])
+		skill := &Data.Skills[key]
+		if skill.ID <= len(names) {
+			skill.Name = filterSkill(names[skill.ID-1])
 		}
-		if key < len(description) {
-			Data.Skills[key].Description = filterSkill(description[key])
+		if skill.ID <= len(description) {
+			skill.Description = filterSkill(description[skill.ID-1])
 		}
-		if key < len(fire) {
-			Data.Skills[key].Fire = filterSkill(fire[key])
+		if skill.ID <= len(fire) {
+			skill.Fire = filterSkill(fire[skill.ID-1])
 		}
 	}
 
 	// event strings
-	evntNames, err := ReadStringFile(filepath.Join(strRoot, "MsgEventName_en.strb"))
-	if err != nil {
-		debug.PrintStack()
-		return nil, err
-	}
-	evntDescrs, err := ReadStringFile(filepath.Join(strRoot, "MsgEventDesc_en.strb"))
+	names, err = ReadStringFile(filepath.Join(strRoot, "MsgEventName_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
 
+	description, err = ReadStringFile(filepath.Join(strRoot, "MsgEventDesc_en.strb"))
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
 	for key := range Data.Events {
-		evntID := Data.Events[key].ID - 1
-		if evntID < len(evntNames) {
-			Data.Events[key].Name = filter(evntNames[evntID])
+		evnt := &Data.Events[key]
+		if evnt.ID <= len(names) {
+			evnt.Name = filter(names[evnt.ID-1])
 		}
-		if evntID < len(evntDescrs) {
-			Data.Events[key].Description = filterElementImages(filter(filterColors(evntDescrs[evntID])))
+		if evnt.ID <= len(description) {
+			evnt.Description = filterElementImages(filter(filterColors(description[evnt.ID-1])))
 		}
 	}
 
@@ -528,11 +518,12 @@ func Read(root string) ([]byte, error) {
 	}
 
 	for key := range Data.Maps {
-		if key < len(mapNames) {
-			Data.Maps[key].Name = mapNames[key]
+		m := &Data.Maps[key]
+		if m.ID <= len(mapNames) {
+			m.Name = mapNames[m.ID-1]
 		}
-		if key < len(mapStart) {
-			Data.Maps[key].StartMsg = filter(filterColors(mapStart[key]))
+		if m.ID <= len(mapStart) {
+			m.StartMsg = filter(filterColors(mapStart[m.ID-1]))
 		}
 	}
 
@@ -573,26 +564,27 @@ func Read(root string) ([]byte, error) {
 	}
 
 	for key := range Data.Areas {
-		if key < len(bossStart) {
-			Data.Areas[key].BossStart = filterColors(bossStart[key])
+		area := &Data.Areas[key]
+		if area.ID <= len(bossStart) {
+			area.BossStart = filterColors(bossStart[area.ID-1])
 		}
-		if key < len(bossEnd) {
-			Data.Areas[key].BossEnd = filterColors(bossEnd[key])
+		if area.ID <= len(bossEnd) {
+			area.BossEnd = filterColors(bossEnd[area.ID-1])
 		}
-		if key < len(areaStart) {
-			Data.Areas[key].Start = filterColors(areaStart[key])
+		if area.ID <= len(areaStart) {
+			area.Start = filterColors(areaStart[area.ID-1])
 		}
-		if key < len(areaEnd) {
-			Data.Areas[key].End = filterColors(areaEnd[key])
+		if area.ID <= len(areaEnd) {
+			area.End = filterColors(areaEnd[area.ID-1])
 		}
-		if key < len(areaName) {
-			Data.Areas[key].Name = filterColors(areaName[key])
+		if area.ID <= len(areaName) {
+			area.Name = filterColors(areaName[area.ID-1])
 		}
-		if key < len(areaLongName) {
-			Data.Areas[key].LongName = filterColors(areaLongName[key])
+		if area.ID <= len(areaLongName) {
+			area.LongName = filterColors(areaLongName[area.ID-1])
 		}
-		if key < len(areaStory) {
-			Data.Areas[key].Story = filterColors(areaStory[key])
+		if area.ID <= len(areaStory) {
+			area.Story = filterColors(areaStory[area.ID-1])
 		}
 	}
 
@@ -604,16 +596,18 @@ func Read(root string) ([]byte, error) {
 
 	// Archwitch Likeability
 	for key := range Data.ArchwitchFriendships {
-		if key < len(awlikeability) {
-			Data.ArchwitchFriendships[key].Likability = filter(awlikeability[key])
+		awf := &Data.ArchwitchFriendships[key]
+		if awf.ID <= len(awlikeability) {
+			awf.Likability = filter(awlikeability[awf.ID-1])
 		}
 	}
 
 	kingDescription, err := ReadStringFile(filepath.Join(strRoot, "MsgKingTitle_en.strb"))
 	// king series descriptions
 	for key := range Data.ArchwitchSeries {
-		if key < len(kingDescription) {
-			Data.ArchwitchSeries[key].Description = filter(kingDescription[key])
+		aws := &Data.ArchwitchSeries[key]
+		if aws.ID <= len(kingDescription) {
+			aws.Description = filter(kingDescription[aws.ID-1])
 		}
 	}
 
@@ -630,11 +624,12 @@ func Read(root string) ([]byte, error) {
 
 	// Deck Bonuses
 	for key := range Data.DeckBonuses {
-		if key < len(dbonusName) {
-			Data.DeckBonuses[key].Name = filter(dbonusName[key])
+		db := &Data.DeckBonuses[key]
+		if db.ID <= len(dbonusName) {
+			db.Name = filter(dbonusName[db.ID-1])
 		}
-		if key < len(dbonusDesc) {
-			Data.DeckBonuses[key].Description = filter(dbonusDesc[key])
+		if db.ID <= len(dbonusDesc) {
+			db.Description = filter(dbonusDesc[db.ID-1])
 		}
 	}
 
@@ -666,20 +661,21 @@ func Read(root string) ([]byte, error) {
 	}
 
 	for key := range Data.Items {
-		if key < len(itemdsc) {
-			Data.Items[key].Description = filter(itemdsc[key])
+		item := &Data.Items[key]
+		if item.ID <= len(itemdsc) {
+			item.Description = filter(itemdsc[item.ID-1])
 		}
-		if key < len(itemdscshp) {
-			Data.Items[key].DescriptionInShop = filter(itemdscshp[key])
+		if item.ID <= len(itemdscshp) {
+			item.DescriptionInShop = filter(itemdscshp[item.ID-1])
 		}
-		if key < len(itemdscsub) {
-			Data.Items[key].DescriptionSub = filter(itemdscsub[key])
+		if item.ID <= len(itemdscsub) {
+			item.DescriptionSub = filter(itemdscsub[item.ID-1])
 		}
-		if key < len(itemname) {
-			Data.Items[key].NameEng = filter(itemname[key])
+		if item.ID <= len(itemname) {
+			item.NameEng = filter(itemname[item.ID-1])
 		}
-		if key < len(itemuse) {
-			Data.Items[key].MsgUse = filter(itemuse[key])
+		if item.ID <= len(itemuse) {
+			item.MsgUse = filter(itemuse[item.ID-1])
 		}
 	}
 
@@ -695,11 +691,12 @@ func Read(root string) ([]byte, error) {
 	}
 
 	for key := range Data.Structures {
-		if key < len(buildname) {
-			Data.Structures[key].Name = filter(buildname[key])
+		s := &Data.Structures[key]
+		if s.ID <= len(buildname) {
+			s.Name = filter(buildname[s.ID-1])
 		}
-		if key < len(builddesc) {
-			Data.Structures[key].Description = filter(builddesc[key])
+		if key <= len(builddesc) {
+			s.Description = filter(builddesc[s.ID-1])
 		}
 	}
 
@@ -710,8 +707,9 @@ func Read(root string) ([]byte, error) {
 			return data, err
 		}
 		for key := range Data.ThorEvents {
-			if key < len(thorTitle) {
-				Data.ThorEvents[key].Title = filter(thorTitle[key])
+			te := &Data.ThorEvents[key]
+			if te.ID <= len(thorTitle) {
+				te.Title = filter(thorTitle[te.ID-1])
 			}
 		}
 	}
@@ -731,14 +729,14 @@ func Read(root string) ([]byte, error) {
 		lwd := len(weaponDesc)
 		ridx := 0
 		for key := range Data.Weapons {
-			tmpWeap := Data.Weapons[key]
-			lastridx := ridx + tmpWeap.MaxRarity()
+			weap := &Data.Weapons[key]
+			lastridx := ridx + weap.MaxRarity()
 			for i := ridx; i < lastridx; i++ {
 				if i < lwn {
-					Data.Weapons[key].Names = append(Data.Weapons[key].Names, cleanWeaponName(weaponName[i]))
+					weap.Names = append(weap.Names, cleanWeaponName(weaponName[i]))
 				}
 				if i < lwd {
-					Data.Weapons[key].Descriptions = append(Data.Weapons[key].Descriptions, filter(weaponDesc[i]))
+					weap.Descriptions = append(weap.Descriptions, filter(weaponDesc[i]))
 				}
 			}
 			ridx = lastridx
@@ -752,8 +750,9 @@ func Read(root string) ([]byte, error) {
 			return data, err
 		}
 		for key := range Data.WeaponSkills {
-			if key < len(weaponSkill) {
-				Data.WeaponSkills[key].Description = filter(weaponSkill[key])
+			wskill := &Data.WeaponSkills[key]
+			if wskill.ID <= len(weaponSkill) {
+				wskill.Description = filter(weaponSkill[wskill.ID-1])
 			}
 		}
 	}
@@ -765,8 +764,9 @@ func Read(root string) ([]byte, error) {
 			return data, err
 		}
 		for key := range Data.WeaponEvents {
-			if key < len(weaponEvent) {
-				Data.WeaponEvents[key].Title = filter(weaponEvent[key])
+			wevent := &Data.WeaponEvents[key]
+			if wevent.ID <= len(weaponEvent) {
+				wevent.Title = filter(weaponEvent[wevent.ID-1])
 			}
 		}
 	}

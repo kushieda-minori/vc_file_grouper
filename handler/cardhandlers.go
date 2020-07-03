@@ -761,7 +761,7 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 <option value="5">Comet</option>
 <option value="6">Butterfly</option>
 <option value="7">Daisy</option>
-<option value="8">Electric/option>
+<option value="8">Electric</option>
 <option value="9">Sakura</option>
 <option value="10">Leaf</option>
 <option value="11">Ribbon</option>

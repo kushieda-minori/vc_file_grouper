@@ -624,10 +624,10 @@ func CardScan(id int) *Card {
 		return Data.Cards[i]
 	}
 	log.Printf("No card found with ID: %d", id)
-	if id > 0 && id <= l {
-		log.Printf("trying to return card at index: %d/%d", id, l)
-		return Data.Cards[id-1]
-	}
+	//if id > 0 && id <= l {
+	//	log.Printf("trying to return card at index: %d/%d", id, l)
+	//	return Data.Cards[id-1]
+	//}
 	return nil
 }
 
