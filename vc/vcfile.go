@@ -322,16 +322,11 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	if len(Data.Cards) > len(names) {
-		fmt.Fprintf(os.Stdout, "names: %v\n", names)
-		debug.PrintStack()
-		return nil, fmt.Errorf("%s did not match data file. master: %d, strings: %d",
-			"Character Names", len(Data.Cards), len(names))
-	}
-	for key, val := range names {
-		card := CardScan(key + 1)
-		if card != nil {
-			card.Name = cleanCardName(val, card)
+
+	for key := range Data.Cards {
+		card := Data.Cards[key]
+		if card.ID <= len(names) {
+			card.Name = cleanCardName(names[card.ID-1], card)
 		}
 	}
 
@@ -348,23 +343,11 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	for key, val := range description {
-		charc := CardCharacterScan(key + 1)
-		if charc != nil {
-			charc.Description = strings.ReplaceAll(val, "\n", " ")
-		}
-	}
 
 	friendship, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaFriendship_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
-	}
-	for key, val := range friendship {
-		charc := CardCharacterScan(key + 1)
-		if charc != nil {
-			charc.Friendship = val
-		}
 	}
 
 	login, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaWelcome_en.strb"))
@@ -372,23 +355,11 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	for key, val := range login {
-		charc := CardCharacterScan(key + 1)
-		if charc != nil {
-			charc.Login = val
-		}
-	}
 
 	meet, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaMeet_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
-	}
-	for key, val := range meet {
-		charc := CardCharacterScan(key + 1)
-		if charc != nil {
-			charc.Meet = val
-		}
 	}
 
 	battleStart, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaBtlStart_en.strb"))
@@ -396,23 +367,11 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	for key, val := range battleStart {
-		charc := CardCharacterScan(key + 1)
-		if charc != nil {
-			charc.BattleStart = val
-		}
-	}
 
 	battleEnd, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaBtlEnd_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
-	}
-	for key, val := range battleEnd {
-		charc := CardCharacterScan(key + 1)
-		if charc != nil {
-			charc.BattleEnd = val
-		}
 	}
 
 	friendshipMax, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaFriendshipMax_en.strb"))
@@ -420,23 +379,11 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	for key, val := range friendshipMax {
-		charc := CardCharacterScan(key + 1)
-		if charc != nil {
-			charc.FriendshipMax = val
-		}
-	}
 
 	friendshipEvent, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaBonds_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
-	}
-	for key, val := range friendshipEvent {
-		charc := CardCharacterScan(key + 1)
-		if charc != nil {
-			charc.FriendshipEvent = val
-		}
 	}
 
 	rebirthEvent, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaSuperAwaken_en.strb"))
@@ -444,10 +391,34 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
-	for key, val := range rebirthEvent {
-		charc := CardCharacterScan(key + 1)
-		if charc != nil {
-			charc.Rebirth = val
+	for key := range Data.CardCharacters {
+		chara := &Data.CardCharacters[key]
+		if chara.ID <= len(description) {
+			chara.Description = strings.ReplaceAll(description[chara.ID-1], "\n", " ")
+		}
+		if chara.ID <= len(friendship) {
+			chara.Friendship = friendship[chara.ID-1]
+		}
+		if chara.ID <= len(login) {
+			chara.Login = login[chara.ID-1]
+		}
+		if chara.ID <= len(meet) {
+			chara.Meet = meet[chara.ID-1]
+		}
+		if chara.ID <= len(battleStart) {
+			chara.BattleStart = battleStart[chara.ID-1]
+		}
+		if chara.ID <= len(battleEnd) {
+			chara.BattleEnd = battleEnd[chara.ID-1]
+		}
+		if chara.ID <= len(friendshipMax) {
+			chara.FriendshipMax = friendshipMax[chara.ID-1]
+		}
+		if chara.ID <= len(friendshipEvent) {
+			chara.FriendshipEvent = friendshipEvent[chara.ID-1]
+		}
+		if chara.ID <= len(rebirthEvent) {
+			chara.Rebirth = rebirthEvent[chara.ID-1]
 		}
 	}
 
