@@ -254,6 +254,9 @@ func (c *Card) IsRetired() bool {
 
 // Character information of the card
 func (c *Card) Character() *CardCharacter {
+	if c == nil {
+		return nil
+	}
 	if c.character == nil && c.CardCharaID > 0 {
 		for k, val := range Data.CardCharacters {
 			if val.ID == c.CardCharaID {
