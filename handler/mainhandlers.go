@@ -34,7 +34,7 @@ func MasterDataHandler(w http.ResponseWriter, r *http.Request) {
 Formatted Data:<br />
 <a href="/cards/csv">Card List as CSV</a><br />
 <a href="/skills/csv">Skill List as CSV</a><br />
-<a href="/cards/glrcsv">GLR Card List as CSV</a><br />
+<a href="/cards/glrcsv">GLR Card List as CSV</a> <a href="/cards/glrjson"> as JSON</a><br />
 <br />
 <a href="/strb/">Binary String files</a><br />
 <br />

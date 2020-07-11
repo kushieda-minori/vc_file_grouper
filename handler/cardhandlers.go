@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"html"
 	"io"
@@ -14,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"zetsuboushita.net/vc_file_grouper/structout"
 	"zetsuboushita.net/vc_file_grouper/util"
 	"zetsuboushita.net/vc_file_grouper/vc"
 )
@@ -536,6 +538,27 @@ func CardCsvHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	cw.Flush()
+}
+
+//CardJSONStatHandler outputs card stats as JSON
+func CardJSONStatHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Disposition", "attachment; filename=\"vcData-glr-cards-"+strconv.Itoa(vc.Data.Version)+"_"+vc.Data.Common.UnixTime.Format(time.RFC3339)+".json\"")
+	w.Header().Set("Content-Type", "application/json")
+
+	statCards := make([]structout.CardStatInfo, 0)
+
+	for _, card := range vc.Data.Cards {
+		if card.Rarity() == "GLR" || card.EvoIsReborn() {
+			log.Printf("found GLR or Reborn card %d:%s - %s", card.ID, card.Name, card.Rarity())
+			statCards = append(statCards, structout.ToCardStatInfo(card))
+		}
+	}
+	jsonenc, err := json.Marshal(statCards)
+	if err != nil {
+		io.WriteString(w, err.Error())
+		return
+	}
+	w.Write(jsonenc)
 }
 
 // CardCsvGLRHandler outputs GLR and Rebirth cards in a format usable for stat calcuations

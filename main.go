@@ -78,6 +78,7 @@ func main() {
 	http.HandleFunc("/cards/table/", handler.CardTableHandler)
 	http.HandleFunc("/cards/csv/", handler.CardCsvHandler)
 	http.HandleFunc("/cards/glrcsv/", handler.CardCsvGLRHandler)
+	http.HandleFunc("/cards/glrjson/", handler.CardJSONStatHandler)
 	http.HandleFunc("/cards/detail/", handler.CardDetailHandler)
 	http.HandleFunc("/cards/levels/", handler.CardLevelHandler)
 	http.HandleFunc("/archwitches/", handler.ArchwitchHandler)
