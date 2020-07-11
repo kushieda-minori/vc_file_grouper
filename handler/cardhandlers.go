@@ -519,16 +519,24 @@ func CardCsvHandler(w http.ResponseWriter, r *http.Request) {
 	cw := csv.NewWriter(w)
 	cw.UseCRLF = true
 	cw.Write([]string{"ID", "Card #", "Name", "Evo Rank", "TranscardID", "Rarity", "Element", "Deck Cost", "Base ATK",
-		"Base DEF", "Base Sol", "Max ATK", "Max DEF", "Max Sold", "Skill 1 Name", "Skill Min",
-		"Skill Max", "Skill Procs", "Target Scope", "Target Logic", "Skill 2", "Skill 3", "Thor Skill 1", "Skill Special", "Description", "Friendship",
-		"Login", "Meet", "Battle Start", "Battle End", "Friendship Max", "Friendship Event", "Is Closed"})
+		"Base DEF", "Base Sol", "Max ATK", "Max DEF", "Max Sold",
+		"Skill 1 Name", "Skill 1 Fire Min", "Skill 1 Fire Max", "Skill 1 Min", "Skill 1 Max", "Skill 1 Procs", "Target Scope 1", "Target Logic 1",
+		"Skill 2", "Skill 2 Fire Min", "Skill 2 Fire Max", "Skill 2 Min", "Skill 2 Max", "Skill 2 Procs", "Target Scope 2", "Target Logic 2",
+		"Skill 3", "Skill 3 Fire Min", "Skill 3 Fire Max", "Skill 3 Min", "Skill 3 Max", "Skill 3 Procs", "Target Scope 3", "Target Logic 3",
+		"Skill Special", "Skill SP Fire Min", "Skill SP Fire Max", "Skill SP Min", "Skill SP Max", "Skill SP Procs", "Target Scope SP", "Target Logic SP",
+		"Thor Skill 1", "Skill TH Fire",
+		"Description", "Friendship", "Login", "Meet",
+		"Battle Start", "Battle End", "Friendship Max", "Friendship Event",
+		"Is Closed"})
 	for _, card := range vc.Data.Cards {
 		err := cw.Write([]string{strconv.Itoa(card.ID), fmt.Sprintf("cd_%05d", card.CardNo), card.Name, strconv.Itoa(card.EvolutionRank),
 			strconv.Itoa(card.TransCardID), card.Rarity(), card.Element(), strconv.Itoa(card.DeckCost), strconv.Itoa(card.DefaultOffense),
-			strconv.Itoa(card.DefaultDefense), strconv.Itoa(card.DefaultFollower), strconv.Itoa(card.MaxOffense),
-			strconv.Itoa(card.MaxDefense), strconv.Itoa(card.MaxFollower), card.Skill1Name(),
-			card.SkillMin(), card.SkillMax(), card.SkillProcs(), card.SkillTarget(),
-			card.SkillTargetLogic(), card.Skill2Name(), card.Skill3Name(), card.ThorSkill1Name(), card.SpecialSkill1Name(),
+			strconv.Itoa(card.DefaultDefense), strconv.Itoa(card.DefaultFollower), strconv.Itoa(card.MaxOffense), strconv.Itoa(card.MaxDefense), strconv.Itoa(card.MaxFollower),
+			card.Skill1Name(), card.Skill1().FireMin(), card.Skill1().FireMax(), card.SkillMin(), card.SkillMax(), card.SkillProcs(), card.SkillTarget(), card.SkillTargetLogic(),
+			card.Skill2Name(), card.Skill2().FireMin(), card.Skill2().FireMax(), card.Skill2().SkillMin(), card.Skill2().SkillMax(), card.Skill2().ActivationString(), card.Skill2().TargetScope(), card.Skill2().TargetLogic(),
+			card.Skill3Name(), card.Skill3().FireMin(), card.Skill3().FireMax(), card.Skill3().SkillMin(), card.Skill3().SkillMax(), card.Skill3().ActivationString(), card.Skill3().TargetScope(), card.Skill3().TargetLogic(),
+			card.SpecialSkill1Name(), card.SpecialSkill1().FireMin(), card.SpecialSkill1().FireMax(), card.SpecialSkill1().SkillMin(), card.SpecialSkill1().SkillMax(), card.SpecialSkill1().ActivationString(), card.SpecialSkill1().TargetScope(), card.SpecialSkill1().TargetLogic(),
+			card.ThorSkill1Name(),
 			card.Description(), card.Friendship(), card.Login(), card.Meet(),
 			card.BattleStart(), card.BattleEnd(), card.FriendshipMax(), card.FriendshipEvent(),
 			strconv.Itoa(card.IsClosed),
@@ -784,7 +792,7 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 <option value="5">Comet</option>
 <option value="6">Butterfly</option>
 <option value="7">Daisy</option>
-<option value="8">Electric/option>
+<option value="8">Electric</option>
 <option value="9">Sakura</option>
 <option value="10">Leaf</option>
 <option value="11">Ribbon</option>

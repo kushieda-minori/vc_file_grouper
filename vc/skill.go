@@ -75,20 +75,32 @@ type SkillCostIncrementPattern struct {
 
 // Expires true if the skill has an expiration date
 func (s *Skill) Expires() bool {
+	if s == nil {
+		return false
+	}
 	return s.PublicEndDatetime.After(time.Time{})
 }
 
 // Effect of the skill (this is a visual effect, not the ability)
 func (s *Skill) Effect() string {
-	if val, ok := Effect[s.EffectID]; ok {
-		return val
+	if s == nil {
+		return ""
 	}
-	return "New/Unknown"
+	if s.EffectID > 0 {
+		if val, ok := Effect[s.EffectID]; ok {
+			return val
+		}
+		return "New/Unknown"
+	}
+	return ""
 }
 
 // Activations returns the number of times a skill can activate.
 // a negative number indicates infinite procs
 func (s *Skill) Activations() int {
+	if s == nil {
+		return 0
+	}
 	if s.MaxCount > 0 {
 		// battle start skills seem to have random Max Count values. Force it to 1
 		// since they can only proc once anyway
@@ -102,6 +114,9 @@ func (s *Skill) Activations() int {
 
 // ActivationString returns the number of times a skill can activate.
 func (s *Skill) ActivationString() string {
+	if s == nil {
+		return ""
+	}
 	activations := s.Activations()
 	if activations > 0 {
 		return strconv.Itoa(activations)
@@ -114,26 +129,42 @@ func (s *Skill) ActivationString() string {
 
 // SkillMin minimum skill ability
 func (s *Skill) SkillMin() string {
+	if s == nil {
+		return ""
+	}
 	return formatSkill(s.Description, s.EffectDefaultValue, s.DefaultRatio)
 }
 
 // SkillMax maximum skill ability
 func (s *Skill) SkillMax() string {
+	if s == nil {
+		return ""
+	}
 	return formatSkill(s.Description, s.EffectMaxValue, s.MaxRatio)
 }
 
 // FireMin minimum skill ability fire information
 func (s *Skill) FireMin() string {
+	if s == nil {
+		return ""
+	}
 	return formatSkill(s.Fire, s.EffectDefaultValue, -1)
 }
 
 // FireMax maximum skill ability fire information
 func (s *Skill) FireMax() string {
+	if s == nil {
+		return ""
+	}
 	return formatSkill(s.Fire, s.EffectMaxValue, -1)
 }
 
 // Levels level information for the skill
 func (s *Skill) Levels() []SkillLevel {
+	if s == nil {
+		return nil
+	}
+
 	if s._skillLevels == nil {
 		s._skillLevels = make([]SkillLevel, 0)
 		for _, sl := range Data.SkillLevels {
@@ -147,16 +178,28 @@ func (s *Skill) Levels() []SkillLevel {
 
 // TargetScope scope of the target (enemy or allies)
 func (s *Skill) TargetScope() string {
-	if val, ok := TargetScope[s.TargetScopeID]; ok {
-		return val
+	if s == nil {
+		return ""
+	}
+	if s.TargetScopeID > 0 {
+		if val, ok := TargetScope[s.TargetScopeID]; ok {
+			return val
+		}
+		return "Unknown - " + strconv.Itoa(s.TargetScopeID)
 	}
 	return ""
 }
 
 // TargetLogic what target to hit
 func (s *Skill) TargetLogic() string {
-	if val, ok := TargetLogic[s.TargetLogicID]; ok {
-		return val
+	if s == nil {
+		return ""
+	}
+	if s.TargetLogicID > 0 {
+		if val, ok := TargetLogic[s.TargetLogicID]; ok {
+			return val
+		}
+		return "Unknown - " + strconv.Itoa(s.TargetLogicID)
 	}
 	return ""
 }
@@ -190,6 +233,7 @@ func formatSkill(descr string, effect, ratio int) (s string) {
 // TargetScope to hit whom
 var TargetScope = map[int]string{
 	-1: "",
+	0:  "",
 	1:  "Allies",
 	2:  "Enemies",
 }

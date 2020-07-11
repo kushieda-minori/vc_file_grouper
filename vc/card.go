@@ -254,6 +254,9 @@ func (c *Card) IsRetired() bool {
 
 // Character information of the card
 func (c *Card) Character() *CardCharacter {
+	if c == nil {
+		return nil
+	}
 	if c.character == nil && c.CardCharaID > 0 {
 		for k, val := range Data.CardCharacters {
 			if val.ID == c.CardCharaID {
@@ -624,10 +627,10 @@ func CardScan(id int) *Card {
 		return Data.Cards[i]
 	}
 	log.Printf("No card found with ID: %d", id)
-	if id > 0 && id <= l {
-		log.Printf("trying to return card at index: %d/%d", id, l)
-		return Data.Cards[id-1]
-	}
+	//if id > 0 && id <= l {
+	//	log.Printf("trying to return card at index: %d/%d", id, l)
+	//	return Data.Cards[id-1]
+	//}
 	return nil
 }
 
