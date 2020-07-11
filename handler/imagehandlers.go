@@ -127,7 +127,7 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 			if bytes.Equal(b, []byte("CODE")) {
 				relPath, _ := filepath.Rel(fullpath, path)
 				relPath = filepath.ToSlash(relPath)
-				fmt.Fprintf(w, `<div><a href="%[1]s"><img src="%[1]s"/></a><br />%[1]s</div>`, relPath)
+				fmt.Fprintf(w, `<div class="image"><a href="%[1]s"><img src="%[1]s"/></a><br />%[1]s</div>`, relPath)
 			} else {
 				log.Printf("Image is not encoded: %s", fullpath)
 			}
