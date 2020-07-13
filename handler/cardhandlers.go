@@ -561,7 +561,7 @@ func CardJSONStatHandler(w http.ResponseWriter, r *http.Request) {
 			statCards = append(statCards, structout.ToCardStatInfo(card))
 		}
 	}
-	jsonenc, err := json.Marshal(statCards)
+	jsonenc, err := json.MarshalIndent(statCards, "", "  ")
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
