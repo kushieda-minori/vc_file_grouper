@@ -323,9 +323,11 @@ func Read(root string) ([]byte, error) {
 		return nil, err
 	}
 
+	lenNames := len(names)
+
 	for key := range Data.Cards {
 		card := Data.Cards[key]
-		if card.ID <= len(names) {
+		if card.ID <= lenNames {
 			card.Name = cleanCardName(names[card.ID-1], card)
 		}
 	}
@@ -343,6 +345,7 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
+	lenDescriptions := len(description)
 
 	friendship, err := ReadStringFile(filepath.Join(strRoot, "MsgCharaFriendship_en.strb"))
 	if err != nil {
@@ -393,7 +396,7 @@ func Read(root string) ([]byte, error) {
 	}
 	for key := range Data.CardCharacters {
 		chara := &Data.CardCharacters[key]
-		if chara.ID <= len(description) {
+		if chara.ID <= lenDescriptions {
 			chara.Description = strings.ReplaceAll(description[chara.ID-1], "\n", " ")
 		}
 		if chara.ID <= len(friendship) {
@@ -428,27 +431,42 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
+	lenNames = len(names)
 
 	description, err = ReadStringFile(filepath.Join(strRoot, "MsgSkillDesc_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
+	lenDescriptions = len(description)
 
 	fire, err := ReadStringFile(filepath.Join(strRoot, "MsgSkillFire_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
+	lenFire := len(fire)
+
+	// pad out the skill list for skills we have text for, but no data
+	maxSkillID := MaxSkillID(Data.Skills)
+	if lenNames == lenDescriptions && lenNames == lenFire && lenNames > maxSkillID {
+		for i := maxSkillID; i < lenNames; i++ {
+			s := Skill{
+				ID: i + 1,
+			}
+			Data.Skills = append(Data.Skills, s)
+		}
+	}
+
 	for key := range Data.Skills {
 		skill := &Data.Skills[key]
-		if skill.ID <= len(names) {
+		if skill.ID <= lenNames {
 			skill.Name = filterSkill(names[skill.ID-1])
 		}
-		if skill.ID <= len(description) {
+		if skill.ID <= lenDescriptions {
 			skill.Description = filterSkill(description[skill.ID-1])
 		}
-		if skill.ID <= len(fire) {
+		if skill.ID <= lenFire {
 			skill.Fire = filterSkill(fire[skill.ID-1])
 		}
 	}
@@ -459,18 +477,32 @@ func Read(root string) ([]byte, error) {
 		debug.PrintStack()
 		return nil, err
 	}
+	lenNames = len(names)
 
 	description, err = ReadStringFile(filepath.Join(strRoot, "MsgEventDesc_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
 	}
+	lenDescriptions = len(description)
+
+	// pad out the event list for events we have text for, but no data
+	maxEventID := MaxEventID(Data.Events)
+	if lenNames == lenDescriptions && lenNames > maxEventID {
+		for i := maxEventID; i < lenNames; i++ {
+			e := Event{
+				ID: i + 1,
+			}
+			Data.Events = append(Data.Events, e)
+		}
+	}
+
 	for key := range Data.Events {
 		evnt := &Data.Events[key]
-		if evnt.ID <= len(names) {
+		if evnt.ID <= lenNames {
 			evnt.Name = filter(names[evnt.ID-1])
 		}
-		if evnt.ID <= len(description) {
+		if evnt.ID <= lenDescriptions {
 			evnt.Description = filterElementImages(filter(filterColors(description[evnt.ID-1])))
 		}
 	}

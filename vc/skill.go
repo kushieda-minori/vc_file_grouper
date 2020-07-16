@@ -216,6 +216,17 @@ func SkillScan(id int) *Skill {
 	return nil
 }
 
+// MaxSkillID for the skill in the list
+func MaxSkillID(skills []Skill) (max int) {
+	max = 0
+	for _, val := range skills {
+		if val.ID > max {
+			max = val.ID
+		}
+	}
+	return
+}
+
 func formatSkill(descr string, effect, ratio int) (s string) {
 	eff := strconv.Itoa(effect)
 	r := strconv.Itoa(ratio)
