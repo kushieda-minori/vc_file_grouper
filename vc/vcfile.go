@@ -687,7 +687,7 @@ func Read(root string) ([]byte, error) {
 			item.DescriptionSub = filter(itemdscsub[item.ID-1])
 		}
 		if item.ID <= len(itemname) {
-			item.NameEng = filter(itemname[item.ID-1])
+			item.NameEng = filterItemName(filter(itemname[item.ID-1]))
 		}
 		if item.ID <= len(itemuse) {
 			item.MsgUse = filter(itemuse[item.ID-1])
@@ -1023,6 +1023,12 @@ func GetBinFileImages(filename string, idxs ...int) ([]BinImage, error) {
 		ret = append(ret, images[idx-1])
 	}
 	return ret, nil
+}
+
+func filterItemName(s string) string {
+	ret := strings.ReplaceAll(s, "[", "(")
+	ret = strings.ReplaceAll(ret, "]", ")")
+	return ret
 }
 
 //Use this to do common string replacements in the VC data files
