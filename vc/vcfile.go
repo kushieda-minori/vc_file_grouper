@@ -325,6 +325,18 @@ func Read(root string) ([]byte, error) {
 
 	lenNames := len(names)
 
+	// pad out the card list for cards we have text for, but no data
+	maxCardID := Data.Cards.MaxID()
+	if lenNames > maxCardID {
+		for i := maxCardID; i < lenNames; i++ {
+			c := &Card{
+				ID:       i + 1,
+				IsClosed: 1,
+			}
+			Data.Cards = append(Data.Cards, c)
+		}
+	}
+
 	for key := range Data.Cards {
 		card := Data.Cards[key]
 		if card.ID <= lenNames {

@@ -153,14 +153,14 @@ func (c *Card) Rarity() (ret string) {
 	if c == nil {
 		return
 	}
-	if c.CardRareID >= 0 {
+	if c.CardRareID > 0 {
 		ret = Rarity[c.CardRareID-1]
 		// need to handle X cards that have actual Evolutions (Philospher Stone)
 		if ret == "X" && c.EvolutionRank > 0 && c.EvolutionRank == c.LastEvolutionRank && len(c._allEvos) > 1 {
 			ret = "HX"
 		}
 	}
-	return
+	return "?"
 }
 
 // MainRarity gets the main rarity of this card instead of the exact evo rarity
@@ -238,7 +238,7 @@ func CardRarityScan(id int) *CardRarity {
 
 // Element of the card
 func (c *Card) Element() string {
-	if c.CardTypeID >= 0 {
+	if c.CardTypeID > 0 {
 		return Elements[c.CardTypeID-1]
 	}
 	return ""
@@ -859,6 +859,20 @@ func (d CardList) Latest() (max *Card) {
 		if max == nil || max.ID < card.ID {
 			// log.Printf("'Latest' Card: %d, Name: %s\n", card.ID, card.Name)
 			max = d[idx]
+		}
+	}
+	// if max != nil {
+	// log.Printf("-Latest Card: %d, Name: %s\n", max.ID, max.Name)
+	// }
+	return
+}
+
+// MaxID gets the highest card ID from a list of cards.
+func (d CardList) MaxID() (max int) {
+	for _, card := range d {
+		if max < card.ID {
+			// log.Printf("'Latest' Card: %d, Name: %s\n", card.ID, card.Name)
+			max = card.ID
 		}
 	}
 	// if max != nil {

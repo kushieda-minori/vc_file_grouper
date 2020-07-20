@@ -55,6 +55,9 @@ func (s Stats) NotEquals(o Stats) bool {
 }
 
 func (s *Stats) ensureMaxCap(rarity *CardRarity) {
+	if s == nil || rarity == nil {
+		return
+	}
 	if s.Attack > rarity.LimtOffense {
 		s.Attack = rarity.LimtOffense
 	}

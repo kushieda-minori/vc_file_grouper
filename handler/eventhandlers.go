@@ -885,12 +885,20 @@ func genWikiExchange(exchanges []vc.GuildBingoExchangeReward) (ret string) {
 		switch exchange.RewardType {
 		case 1: // card
 			card := vc.CardScan(exchange.RewardID)
-			itemSortCode += fmt.Sprintf("%02d-%s", card.CardRareID, strings.ReplaceAll(card.Name, " ", "_"))
-			ret += fmt.Sprintf("\n|-\n|data-sort-value=\"%s\"| {{Card Icon|%s}} ||data-sort-value=%d| x%[3]d",
-				itemSortCode,
-				card.Name,
-				exchange.RequireNum,
-			)
+			if card == nil {
+				ret += fmt.Sprintf("\n|-\n|data-sort-value=\"%s\"| {{Card Icon|%s}} ||data-sort-value=%d| x%[3]d",
+					"-999",
+					fmt.Sprintf("Unavailable_Card_%d", exchange.RewardID),
+					exchange.RequireNum,
+				)
+			} else {
+				itemSortCode += fmt.Sprintf("%02d-%s", card.CardRareID, strings.ReplaceAll(card.Name, " ", "_"))
+				ret += fmt.Sprintf("\n|-\n|data-sort-value=\"%s\"| {{Card Icon|%s}} ||data-sort-value=%d| x%[3]d",
+					itemSortCode,
+					card.Name,
+					exchange.RequireNum,
+				)
+			}
 		case 2: //item
 			item := vc.ItemScan(exchange.RewardID)
 			if item == nil {

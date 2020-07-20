@@ -327,9 +327,13 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		maxAtk, maxDef, maxSol := maxStats(evo, len(evolutions))
+		maxLvl := 0
+		if evo.CardRarity() != nil {
+			maxLvl = evo.CardRarity().MaxCardLevel
+		}
 		fmt.Fprintf(w, "|max level %[1]s = %[2]d\n|cost %[1]s = %[3]d\n|atk %[1]s = %[4]d%s\n|def %[1]s = %[6]d%s\n|soldiers %[1]s = %[8]d%s\n",
 			strings.ToLower(k),
-			evo.CardRarity().MaxCardLevel,
+			maxLvl,
 			evo.DeckCost,
 			evo.DefaultOffense, maxAtk,
 			evo.DefaultDefense, maxDef,
@@ -988,7 +992,7 @@ func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
 	// sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", stats.Soldiers)
 	// return
 
-	if evo.CardRarity().MaxCardLevel == 1 && numOfEvos == 1 {
+	if evo.CardRarity() != nil && evo.CardRarity().MaxCardLevel == 1 && numOfEvos == 1 {
 		// only X cards have a max level of 1 and they don't evo
 		// only possible amalgamations like Philosopher's Stones
 		if evo.IsAmalgamation() {
