@@ -30,7 +30,7 @@ img {
   border: 1px solid gray;
 }
 .image {
-  display:inline;
+  display:inline-block;
   padding-right: 10px;
   padding-bottom: 10px
 }
