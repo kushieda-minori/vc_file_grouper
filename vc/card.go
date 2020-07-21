@@ -153,14 +153,16 @@ func (c *Card) Rarity() (ret string) {
 	if c == nil {
 		return
 	}
-	if c.CardRareID > 0 {
-		ret = Rarity[c.CardRareID-1]
-		// need to handle X cards that have actual Evolutions (Philospher Stone)
-		if ret == "X" && c.EvolutionRank > 0 && c.EvolutionRank == c.LastEvolutionRank && len(c._allEvos) > 1 {
-			ret = "HX"
-		}
+	if c.CardRareID <= 0 {
+		return "?"
 	}
-	return "?"
+
+	ret = Rarity[c.CardRareID-1]
+	// need to handle X cards that have actual Evolutions (Philospher Stone)
+	if ret == "X" && c.EvolutionRank > 0 && c.EvolutionRank == c.LastEvolutionRank && len(c._allEvos) > 1 {
+		ret = "HX"
+	}
+	return
 }
 
 // MainRarity gets the main rarity of this card instead of the exact evo rarity
