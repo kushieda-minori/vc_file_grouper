@@ -643,10 +643,10 @@ func getEventTemplate(eventType int) string {
 %s%s||Amalgamation Material
 ||Amalgamation
 ||Elemental Hall
-||Event 10/15x damage<br />100/200%% Points+
-||Event 10/15x damage<br />100/200%% Points+
-||Event 10/15x damage<br />50/100%% Points+
-||Event 10/15x damage<br />50/100%% Points+
+||Event 10/15x damage<br/>100/200%% Points+
+||Event 10/15x damage<br/>100/200%% Points+
+||Event 10/15x damage<br/>50/100%% Points+
+||Event 10/15x damage<br/>50/100%% Points+
 }}
 
 %s
@@ -671,8 +671,8 @@ func getEventTemplate(eventType int) string {
 %s
 | %s |Rank Reward
 | %s |Rank Reward
-| %s |Individual Point Reward<br />Ring Exchange
-| %s |Individual Point Reward<br />Ring Exchange
+| %s |Individual Point Reward<br/>Ring Exchange
+| %s |Individual Point Reward<br/>Ring Exchange
 | %s |Individual Point Reward
 | Mirror Maiden (LR) |Ring Exchange
 | Mirror Maiden (UR) |Ring Exchange
@@ -680,8 +680,8 @@ func getEventTemplate(eventType int) string {
 | Mirror Maiden (R) |Ring Exchange
 | Slime Queen |Ring Exchange
 | Mirror Maiden Shard | Ring Exchange
-| %s |Alliance Battle Point Booster<br />+120%%/300%%
-| %s |Alliance Battle Point Booster<br />+40%%/100%%
+| %s |Alliance Battle Point Booster<br/>+120%%/300%%
+| %s |Alliance Battle Point Booster<br/>+40%%/100%%
 }}
 :''The %s [[Alliance Bingo Battle]] was held during the [[%s]] event.''
 
@@ -709,7 +709,7 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 |story=%s
 |enemySymbol=%s
 |image = Banner {{PAGENAME}}.png
-||Ranking Reward<br />Amalgamation
+||Ranking Reward<br/>Amalgamation
 ||Floor Reward
 ||Floor Reward
 ||Amalgamation
@@ -720,12 +720,12 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 ||Floor Reward<br/>Amalgamation Material
 ||Floor Reward<br/>Amalgamation Material
 ||Floor Reward<br/>Amalgamation Material
-||Ranking Reward<br />Amalgamation Material
-||Floor Reward<br />Amalgamation Material
-||Ranking Reward<br />Amalgamation Material
-||Event ATK and DEF 10x <br /> KO Gauge 100%%/200%% <br /> Pass 230%%/550%% UP <br /> Holy Token 100%%/200%%
-||Event ATK and DEF 10x <br /> KO Gauge 100%%/200%% <br /> Pass 230%%/550%% UP <br /> Holy Token 100%%/200%%
-||Event ATK and DEF 10x <br /> KO Gauge 100%% UP
+||Ranking Reward<br/>Amalgamation Material
+||Floor Reward<br/>Amalgamation Material
+||Ranking Reward<br/>Amalgamation Material
+||Event ATK and DEF 10x <br/> KO Gauge 100%%/200%% <br/> Pass 230%%/550%% UP <br/> Holy Token 100%%/200%%
+||Event ATK and DEF 10x <br/> KO Gauge 100%%/200%% <br/> Pass 230%%/550%% UP <br/> Holy Token 100%%/200%%
+||Event ATK and DEF 10x <br/> KO Gauge 100%% UP
 }}
 
 %s
@@ -748,16 +748,16 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 |story=%s
 |enemySymbol=%s
 |image = Banner {{PAGENAME}}.png
-||Ranking Reward<br>Amalgmation
+||Ranking Reward<br/>Amalgmation
 ||Point Rewards
 ||Point Rewards
 ||Point Rewards
 ||Point Rewards
 ||Fantasy Archwitch
 ||Archwitch
-||ATK • DEF 10x<br>Soldiers +50%% / 100%%<br>Demon Core +50%% / 100%%<br>Pts +200%% / 500%%
-||ATK • DEF 10x<br>Soldiers +50%% / 100%%<br>Demon Core +50%% / 100%%<br>Pts +200%% / 500%%
-||ATK • DEF 10x<br>Soldiers +50%% / 100%%
+||ATK • DEF 10x<br/>Soldiers +50%% / 100%%<br/>Demon Core +50%% / 100%%<br/>Pts +200%% / 500%%
+||ATK • DEF 10x<br/>Soldiers +50%% / 100%%<br/>Demon Core +50%% / 100%%<br/>Pts +200%% / 500%%
+||ATK • DEF 10x<br/>Soldiers +50%% / 100%%
 }}
 
 %s
@@ -792,7 +792,7 @@ To exchange Rings for prizes, go to '''Menu > Items > Tickets / Medals''' and u
 ||Soul Weapon
 ||Point Rewards<br/>RankReward
 ||Area Completion Reward
-||Event ATK and DEF 15x<br />Upgrade Material +100%%<br />Subjugation Points 100%% UP
+||Event ATK and DEF 15x<br/>Upgrade Material +100%%<br/>Subjugation Points 100%% UP
 }}
 
 %s
