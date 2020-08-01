@@ -772,44 +772,19 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 <label for="f_name">Name:</label><input id="f_name" name="name" value="%s" />
 <label for="f_rarity">Rarity:</label><select id="f_rarity" name="rarity" value="%s">
 <option value=""></option>
-<option value="X">X</option>
-<option value="N">N</option>
-<option value="R">R</option>
-<option value="SR">SR</option>
-<option value="UR">UR</option>
-<option value="LR">LR</option>
+`+rarityToOptions(qs.Get("rarity"))+`
 </select>
 <label for="f_element">Element:</label><select id="f_element" name="element" value="%s">
 <option value=""></option>
-<option value="Special">Special</option>
-<option value="Cool">Cool</option>
-<option value="Passion">Passion</option>
-<option value="Light">Light</option>
-<option value="Dark">Dark</option>
+`+elementToOptions(qs.Get("element"))+`
 </select>
 <label for="f_symbol">Symbol:</label><select id="f_symbol" name="symbol" value="%s">
 <option value=""></option>
-<option value="1">Sun</option>
-<option value="2">Sea</option>
-<option value="3">Earth</option>
-<option value="4">Air</option>
-<option value="5">Comet</option>
-<option value="6">Butterfly</option>
-<option value="7">Daisy</option>
-<option value="8">Electric</option>
-<option value="9">Sakura</option>
-<option value="10">Leaf</option>
-<option value="11">Ribbon</option>
-<option value="12">Palm</option>
-<option value="13">Ginko</option>
-<option value="14">Clover</option>
-<option value="15">Flower</option>
-<option value="16">Totem</option>
+`+symbolNamesToOptions(qs.Get("symbol"))+`
 </select>
 <label for="f_evos">Evo:</label><select id="f_evos" name="evos" value="%s">
 <option value=""></option>
-<option value="1">1★</option>
-<option value="4">4★</option>
+`+evosToOptions(qs.Get("evos"))+`
 </select>
 <label for="f_skillname">Skill Name:</label><input id="f_skillname" name="skillname" value="%s" />
 <label for="f_skilldesc">Skill Description:</label><input id="f_skilldesc" name="skilldesc" value="%s" />
@@ -927,6 +902,51 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	io.WriteString(w, "</tbody></table></div></body></html>")
+}
+
+func rarityToOptions(selected string) (ret string) {
+	for _, v := range []string{"X", "N", "R", "SR", "UR", "LR"} {
+		if v == selected {
+			ret += fmt.Sprintf(`<option value="%s" selected="selected">%s</option>`, v, v)
+		} else {
+			ret += fmt.Sprintf(`<option value="%s">%s</option>`, v, v)
+		}
+	}
+	return
+}
+
+func elementToOptions(selected string) (ret string) {
+	for _, v := range []string{"Special", "Cool", "Passion", "Light", "Dark"} {
+		if v == selected {
+			ret += fmt.Sprintf(`<option value="%s" selected="selected">%s</option>`, v, v)
+		} else {
+			ret += fmt.Sprintf(`<option value="%s">%s</option>`, v, v)
+		}
+	}
+	return
+}
+
+func symbolNamesToOptions(selected string) (ret string) {
+	for i, v := range vc.Data.SymbolNames {
+		if v == selected || strconv.Itoa(i) == selected {
+			ret += fmt.Sprintf(`<option value="%d" selected="selected">%s</option>`, i, v)
+		} else {
+			ret += fmt.Sprintf(`<option value="%d">%s</option>`, i, v)
+		}
+	}
+	return
+}
+
+func evosToOptions(selected string) (ret string) {
+	evos := map[string]string{"1": "1★", "4": "4★"}
+	for k, v := range evos {
+		if k == selected {
+			ret += fmt.Sprintf(`<option value="%s" selected="selected">%s</option>`, k, v)
+		} else {
+			ret += fmt.Sprintf(`<option value="%s">%s</option>`, k, v)
+		}
+	}
+	return
 }
 
 // getPrevious finds the card before the earliest evolution of this card. Does

@@ -274,6 +274,7 @@ type VFile struct {
 	WeaponStatuses              []WeaponStatus              `json:"mst_weapon_status"`
 	WeaponRewards               []RankRewardSheet           `json:"mst_weapon_ranking_reward"`
 	WeaponArrivalRewards        []RankRewardSheet           `json:"mst_weapon_arrival_point_reward"`
+	SymbolNames                 []string                    `json:"-"`
 }
 
 // Read This reads the main data file and all associated files for strings
@@ -316,8 +317,17 @@ func Read(root string) ([]byte, error) {
 	}
 
 	strRoot := filepath.Join(root, "string")
+
+	// symbol names
+	names, err := ReadStringFile(filepath.Join(strRoot, "MsgCardSymbol_en.strb"))
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
+	Data.SymbolNames = append([]string{"No Symbol"}, names...)
+
 	// card names
-	names, err := ReadStringFile(filepath.Join(strRoot, "MsgCardName_en.strb"))
+	names, err = ReadStringFile(filepath.Join(strRoot, "MsgCardName_en.strb"))
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
