@@ -133,7 +133,7 @@ func (c *Card) PossibleMixedEvo() bool {
 
 // calculateEvoStat calculates the evo stats.
 func (c *Card) calculateEvoStats(material1Stat, material2Stat, resultMax Stats) (ret Stats) {
-	if c.EvolutionRank == c.LastEvolutionRank && c.EvolutionRank == 1 {
+	if c.MainRarity() == "LR" || (c.EvolutionRank == c.LastEvolutionRank && c.EvolutionRank == 1) {
 		// single evo gets no final stage bonus
 		ret = resultMax
 	} else if c.EvolutionRank == c.LastEvolutionRank {
@@ -142,16 +142,16 @@ func (c *Card) calculateEvoStats(material1Stat, material2Stat, resultMax Stats) 
 			// queen of ice, strategist
 			ret = resultMax.Multiply(1.209)
 		} else {
-			// all other N-SR (UR and LR? ATM, there are no UR 4*)
+			// all other N-SR (there are no UR 4*)
 			ret = resultMax.Multiply(1.1)
 		}
 	} else {
 		//4* evo bonus for intermediate stage
 		if c.CardCharaID == 250 || c.CardCharaID == 315 {
 			// queen of ice, strategist
-			ret = resultMax.Multiply(1.155)
+			ret = resultMax.Multiply(1.242)
 		} else {
-			// all other N-SR (UR and LR? ATM, there are no UR 4*)
+			// all other N-SR (there are no UR 4*)
 			ret = resultMax.Multiply(1.05)
 		}
 	}
@@ -348,7 +348,7 @@ func (c *Card) AmalgamationPerfect() (stats Stats) {
 	stats = maxStats(c)
 	for _, mat := range mats {
 		log.Printf("Calculating Perfect Evo for %s Amal Mat: %s\n", c.Name, mat.Name)
-		matStats := mat.EvoPerfect()
+		matStats := mat.AmalgamationPerfect()
 		stats = applyAmal(matStats, stats, true)
 	}
 	stats.ensureMaxCap(c.CardRarity())
@@ -373,7 +373,7 @@ func (c *Card) AmalgamationPerfectLvl1() (stats Stats) {
 	stats = baseStats(c)
 	for _, mat := range mats {
 		log.Printf("Calculating Perfect Evo for lvl1 %s Amal Mat: %s\n", c.Name, mat.Name)
-		matStats := mat.EvoPerfect()
+		matStats := mat.AmalgamationPerfect()
 		stats = applyAmal(matStats, stats, true)
 	}
 	stats.ensureMaxCap(c.CardRarity())
@@ -470,7 +470,7 @@ func (c *Card) EvoStandard() (stats Stats) {
 		firstEvo := c.GetEvolutions()["0"]
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
-		if c.LastEvolutionRank == 4 {
+		if c.MainRarity() != "LR" && c.LastEvolutionRank == 4 {
 			// 4* cards do not use the result card stats
 			stats = c.calculateEvoStats(matStats, maxStats(firstEvo), maxStats(firstEvo))
 		} else {
@@ -536,7 +536,7 @@ func (c *Card) EvoStandardLvl1() (stats Stats) {
 		firstEvo := c.GetEvolutions()["0"]
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
-		if c.LastEvolutionRank == 4 {
+		if c.MainRarity() != "LR" && c.LastEvolutionRank == 4 {
 			// 4* cards do not use the result card stats
 			stats = c.calculateEvoStats(matStats, maxStats(firstEvo), baseStats(firstEvo))
 		} else {
@@ -611,7 +611,7 @@ func (c *Card) EvoMixed() (stats Stats) {
 		}
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
-		if c.LastEvolutionRank == 4 {
+		if c.MainRarity() != "LR" && c.LastEvolutionRank == 4 {
 			// 4* cards do not use the result card stats
 			stats = c.calculateEvoStats(matStats, maxStats(firstEvo), maxStats(firstEvo))
 		} else {
@@ -686,7 +686,7 @@ func (c *Card) EvoMixedLvl1() (stats Stats) {
 		}
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
-		if c.LastEvolutionRank == 4 {
+		if c.MainRarity() != "LR" && c.LastEvolutionRank == 4 {
 			// 4* cards do not use the result card stats
 			stats = c.calculateEvoStats(matStats, maxStats(firstEvo), baseStats(firstEvo))
 		} else {
@@ -755,7 +755,7 @@ func (c *Card) Evo6Card() (stats Stats) {
 
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
-		if c.LastEvolutionRank == 4 {
+		if c.MainRarity() != "LR" && c.LastEvolutionRank == 4 {
 			// 4* cards do not use the result card stats
 			stats = c.calculateEvoStats(mat1Stats, mat2Stats, maxStats(firstEvo))
 		} else {
@@ -822,7 +822,7 @@ func (c *Card) Evo6CardLvl1() (stats Stats) {
 
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
-		if c.LastEvolutionRank == 4 {
+		if c.MainRarity() != "LR" && c.LastEvolutionRank == 4 {
 			// 4* cards do not use the result card stats
 			stats = c.calculateEvoStats(mat1Stats, mat2Stats, baseStats(firstEvo))
 		} else {
@@ -896,7 +896,7 @@ func (c *Card) Evo9Card() (stats Stats) {
 
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
-		if c.LastEvolutionRank == 4 {
+		if c.MainRarity() != "LR" && c.LastEvolutionRank == 4 {
 			// 4* cards do not use the result card stats
 			stats = c.calculateEvoStats(mat1Stats, mat2Stats, maxStats(firstEvo))
 		} else {
@@ -970,7 +970,7 @@ func (c *Card) Evo9CardLvl1() (stats Stats) {
 
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
-		if c.LastEvolutionRank == 4 {
+		if c.MainRarity() != "LR" && c.LastEvolutionRank == 4 {
 			// 4* cards do not use the result card stats
 			stats = c.calculateEvoStats(mat1Stats, mat2Stats, baseStats(firstEvo))
 		} else {
@@ -996,10 +996,8 @@ func (c *Card) EvoPerfect() (stats Stats) {
 		} else if c.RebirthsFrom() != nil {
 			mat := c.RebirthsFrom()
 			// if this is an rebirth, calculate the max...
-			matStats := mat.EvoPerfectLvl1()
-			log.Printf("Material Stats at lvl1: %s", matStats)
-			matStats = matStats.Subtract(baseStats(mat))
-			log.Printf("Material Stats Gains: %s, Rebirth Base Stats: %s / %s", matStats, baseStats(c), maxStats(c))
+			matStats := mat.EvoPerfectLvl1().Subtract(baseStats(mat))
+			log.Printf("Material Stats Gains (Perfect rebirth): %s, Rebirth Base Stats: %s / %s", matStats, baseStats(c), maxStats(c))
 			stats = c.calculateAwakeningStat(matStats, false)
 			log.Printf("Rebirth Perfect card %d (%s) -> %d (%s)\n",
 				mat.ID, matStats, c.ID, stats)
@@ -1007,6 +1005,7 @@ func (c *Card) EvoPerfect() (stats Stats) {
 			// if this is an awakwening, calculate the max...
 			mat := c.AwakensFrom()
 			matStats := mat.EvoPerfectLvl1().Subtract(baseStats(mat))
+			log.Printf("Material Stats Gains (Perfect awakening): %s, Awoken Base Stats: %s / %s", matStats, baseStats(c), maxStats(c))
 			stats = c.calculateAwakeningStat(matStats, false)
 			log.Printf("Awakening Perfect card %d (%s) -> %d (%s)\n",
 				mat.ID, matStats, c.ID, stats)
@@ -1024,16 +1023,17 @@ func (c *Card) EvoPerfect() (stats Stats) {
 			}
 		}
 	} else {
-		//TODO: For LR cards do we want to use level 1 evos for the first 3?
 		matStats := materialCard.EvoPerfect()
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
-		if c.LastEvolutionRank == 4 {
+		if c.MainRarity() != "LR" && c.LastEvolutionRank == 4 {
 			// 4* cards do not use the result card stats
+			log.Printf("Using FIRST Evo of card for base stats")
 			firstEvo := c.GetEvolutions()["0"]
 			stats = c.calculateEvoStats(matStats, matStats, maxStats(firstEvo))
 		} else {
 			// 1* cards use the result card stats
+			log.Printf("Using resulting Evo of card for base stats")
 			stats = c.calculateEvoStats(matStats, matStats, maxStats(c))
 		}
 	}
@@ -1057,7 +1057,7 @@ func (c *Card) EvoPerfectLvl1() (stats Stats) {
 			// if this is an rebirth, calculate the max...
 			matStats := mat.EvoPerfectLvl1().Subtract(baseStats(mat))
 			stats = c.calculateAwakeningStat(matStats, true)
-			log.Printf("Rebirth standard card %d (%s) -> %d (%s)\n",
+			log.Printf("Rebirth Perfect card %d (%s) -> %d (%s)\n",
 				mat.ID, matStats, c.ID, stats)
 		} else if c.AwakensFrom() != nil {
 			// if this is an awakwening, calculate the max...
@@ -1084,7 +1084,7 @@ func (c *Card) EvoPerfectLvl1() (stats Stats) {
 		matStats := materialCard.EvoPerfect()
 		// calculate the transfered stats of the 2 material cards
 		// ret = (0.15 * previous evo max atk) + (0.15 * [0*] max atk) + (newCardMax * bonus)
-		if c.LastEvolutionRank == 4 {
+		if c.MainRarity() != "LR" && c.LastEvolutionRank == 4 {
 			// 4* cards do not use the result card stats
 			firstEvo := c.GetEvolutions()["0"]
 			stats = c.calculateEvoStats(matStats, matStats, baseStats(firstEvo))
