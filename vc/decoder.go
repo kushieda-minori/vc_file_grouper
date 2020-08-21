@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"io"
 	"io/ioutil"
 	"os"
 )
@@ -20,6 +21,8 @@ import (
 //
 // The remainder of the file is encoded 4 bytes by 4 bytes, the last few
 // bytes unencoded if the file's length is not a multiple of 4
+//
+// this method does not return io.EOF as an error.
 func Decode(file string) ([]byte, error) {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -52,7 +55,8 @@ func Decode(file string) ([]byte, error) {
 	return result, nil
 }
 
-// DecodeAndSave Decodes the file and saves the result in the same location as the coded file
+// DecodeAndSave Decodes the file and saves the result in the same location as the coded file.
+// This method does not return io.EOF as an error.
 func DecodeAndSave(file string) (string, []byte, error) {
 	data, err := Decode(file)
 	if err != nil {
@@ -79,6 +83,26 @@ func DecodeAndSave(file string) (string, []byte, error) {
 	}
 
 	return fileName, data, nil
+}
+
+// IsFileEncoded opens a path and reads the first 4 bytes to determin if the file uses VC encoding.
+// Does not return io.OEF as an error
+func IsFileEncoded(path string) (bool, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	b := make([]byte, 4)
+	c, err := f.Read(b)
+	if err != nil && err != io.EOF {
+		return false, err
+	}
+	if c != 4 {
+		return false, errors.New("Unable to read 'magic number' of file to determin encoding")
+	}
+	return bytes.Equal(b, []byte("CODE")), nil
 }
 
 // reads a single 32bit int from the data starting at sliceStart position.

@@ -114,17 +114,11 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 					}
 				}
 			}
-			f, err := os.Open(p)
+			fileEncoded, err := vc.IsFileEncoded(p)
 			if err != nil {
 				return err
 			}
-			b := make([]byte, 4)
-			_, err = f.Read(b)
-			f.Close()
-			if err != nil {
-				return err
-			}
-			if bytes.Equal(b, []byte("CODE")) {
+			if fileEncoded {
 				relPath, _ := filepath.Rel(fullpath, p)
 				relPath = filepath.ToSlash(relPath)
 				fmt.Fprintf(w, `<div class="image"><a href="%[1]s"><img src="%[1]s"/></a><br>`, relPath)

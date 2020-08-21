@@ -75,17 +75,11 @@ func DecodeHandler(w http.ResponseWriter, r *http.Request) {
 		if info.IsDir() {
 			return nil
 		}
-		f, err := os.Open(path)
+		fileEncoded, err := vc.IsFileEncoded(path)
 		if err != nil {
 			return err
 		}
-		b := make([]byte, 4)
-		_, err = f.Read(b)
-		f.Close()
-		if err != nil {
-			return err
-		}
-		if bytes.Equal(b, []byte("CODE")) {
+		if fileEncoded {
 			fmt.Fprintf(w, "Decoding: %s ", path)
 			nf, _, err := vc.DecodeAndSave(path)
 			if err != nil {
