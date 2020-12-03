@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"zetsuboushita.net/vc_file_grouper/vc"
+	"../vc"
 )
 
 // MasterDataHandler Main index page

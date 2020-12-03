@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"zetsuboushita.net/vc_file_grouper/util"
+	"../util"
 )
 
 //HD Images are located at the following URL Pattern:

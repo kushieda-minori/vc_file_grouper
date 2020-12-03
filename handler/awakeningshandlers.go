@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"zetsuboushita.net/vc_file_grouper/vc"
+	"../vc"
 )
 
 // AwakeningsTableHandler displays awakening data as a table

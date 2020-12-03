@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"time"
 
-	"zetsuboushita.net/vc_file_grouper/vc"
+	"../vc"
 )
 
 // RawDataHandler outputs the raw JSON

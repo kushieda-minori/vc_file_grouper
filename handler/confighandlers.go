@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"zetsuboushita.net/vc_file_grouper/vc"
+	"../vc"
 )
 
 // ConfigHandler configures the path for the main VC data file

@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"zetsuboushita.net/vc_file_grouper/vc"
+	"../vc"
 )
 
 // ImageCardSDHandler show SD card images

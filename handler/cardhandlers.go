@@ -15,9 +15,9 @@ import (
 	"strings"
 	"time"
 
-	"zetsuboushita.net/vc_file_grouper/structout"
-	"zetsuboushita.net/vc_file_grouper/util"
-	"zetsuboushita.net/vc_file_grouper/vc"
+	"../structout"
+	"../util"
+	"../vc"
 )
 
 // CardHandler shows cards in order

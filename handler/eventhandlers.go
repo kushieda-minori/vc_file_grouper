@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"zetsuboushita.net/vc_file_grouper/vc"
+	"../vc"
 )
 
 // EventHandler handle event information

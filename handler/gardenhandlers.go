@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"zetsuboushita.net/vc_file_grouper/vc"
+	"../vc"
 )
 
 // StructureListHandler show structures as a list

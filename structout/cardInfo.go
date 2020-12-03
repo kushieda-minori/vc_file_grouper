@@ -1,7 +1,7 @@
 package structout
 
 import (
-	"zetsuboushita.net/vc_file_grouper/vc"
+	"../vc"
 )
 
 // CardStatInfo card info that can be output to JSON

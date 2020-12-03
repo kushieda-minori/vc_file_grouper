@@ -9,8 +9,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"zetsuboushita.net/vc_file_grouper/handler"
-	"zetsuboushita.net/vc_file_grouper/vc"
+	"./handler"
+	"./vc"
 )
 
 // Main function that starts the program

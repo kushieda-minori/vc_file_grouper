@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"zetsuboushita.net/vc_file_grouper/vc"
+	"../vc"
 )
 
 // WeaponHandler handle weapon information
