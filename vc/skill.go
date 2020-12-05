@@ -45,11 +45,24 @@ type Skill struct {
 	// animation info
 	AnimationID             int             `json:"animation_id"`
 	ThorHammerAnimationType json.RawMessage `json:"thorhammer_animation_type"`
+	// Custom Skill info
+	//Cost Custom Skill Cost
+	Cost int `json:"skill_cost"`
+	//ReceiptItemID ID Of the Custom Skill Item that builds this skill
+	ReceiptItemID int `json:"receipt_item_id"`
+	// For complex skills, this is the list of skills that are chained.
+	// i.e. Awoken Burst + DMG
+	ChainFrontSkillIDs []int `json:"chain_front_skills"`
 
-	Name         string `json:"name"`        //skill name from strings file
-	Description  string `json:"description"` // description from strings file
-	Fire         string `json:"fire"`        // fire text from strings file
-	_skillLevels []SkillLevel
+	// v8.0 skill changes
+	// TBD
+
+	// post processed items
+	Name              string `json:"name"`        //skill name from strings file
+	Description       string `json:"description"` // description from strings file
+	Fire              string `json:"fire"`        // fire text from strings file
+	_skillLevels      []SkillLevel
+	_chainFrontSkills []Skill
 }
 
 // SkillLevel information
@@ -71,6 +84,32 @@ type SkillCostIncrementPattern struct {
 	CardLevelInterval int `json:"card_level_interval"`
 	Increment         int `json:"increment"`
 	Max               int `json:"max"`
+}
+
+//ChainFrontSkills Gets the Chain Front Skills
+func (s *Skill) ChainFrontSkills() []Skill {
+	if s == nil {
+		return make([]Skill, 0)
+	}
+
+	if s._chainFrontSkills == nil {
+		s._chainFrontSkills = make([]Skill, 0)
+		for _, cfsid := range s.ChainFrontSkillIDs {
+			sl := SkillScan(cfsid)
+			if sl != nil {
+				s._chainFrontSkills = append(s._chainFrontSkills, *sl)
+			}
+		}
+	}
+	return s._chainFrontSkills
+}
+
+//ReceiptItem Receipt Item
+func (s *Skill) ReceiptItem() *Item {
+	if s == nil {
+		return nil
+	}
+	return ItemScan(s.ReceiptItemID)
 }
 
 // Expires true if the skill has an expiration date

@@ -42,6 +42,8 @@ func SkillCsvHandler(w http.ResponseWriter, r *http.Request) {
 		"CondParam",
 		"DefaultRatio",
 		"MaxRatio",
+		"Cost",
+		"ChainFrontSkills",
 		"PublicStartDatetime",
 		"PublicEndDatetime",
 		"EffectID",
@@ -59,9 +61,11 @@ func SkillCsvHandler(w http.ResponseWriter, r *http.Request) {
 		"TargetParam",
 		"AnimationID",
 		"ThorHammerAnimationType",
+		"ReceiptItemID",
 	})
 	for _, s := range vc.Data.Skills {
-		var startDate, endDate string
+		var startDate, endDate, skillChain string
+		chainIds := make([]string, 0)
 		if s.PublicStartDatetime.IsZero() {
 			startDate = "-1"
 			endDate = "-1"
@@ -69,6 +73,10 @@ func SkillCsvHandler(w http.ResponseWriter, r *http.Request) {
 			startDate = s.PublicStartDatetime.Format(time.RFC3339)
 			endDate = s.PublicEndDatetime.Format(time.RFC3339)
 		}
+		for _, scid := range s.ChainFrontSkillIDs {
+			chainIds = append(chainIds, strconv.Itoa(scid))
+		}
+		skillChain = strings.Join(chainIds, ", ")
 		err := cw.Write([]string{strconv.Itoa(s.ID),
 			s.Name,
 			s.Description,
@@ -88,6 +96,8 @@ func SkillCsvHandler(w http.ResponseWriter, r *http.Request) {
 			strconv.Itoa(s.CondParam),
 			strconv.Itoa(s.DefaultRatio),
 			strconv.Itoa(s.MaxRatio),
+			strconv.Itoa(s.Cost),
+			skillChain,
 			startDate,
 			endDate,
 			strconv.Itoa(s.EffectID),
@@ -105,6 +115,7 @@ func SkillCsvHandler(w http.ResponseWriter, r *http.Request) {
 			strconv.Itoa(s.TargetParam),
 			strconv.Itoa(s.AnimationID),
 			strings.ReplaceAll(string(s.ThorHammerAnimationType[:]), "\"", ""),
+			strconv.Itoa(s.ReceiptItemID),
 		})
 		if err != nil {
 			log.Printf(err.Error() + "\n")

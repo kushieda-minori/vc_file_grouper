@@ -1314,4 +1314,4 @@ var EvoOrder = [10]string{"0", "1", "2", "3", "H", "A", "G", "GA", "X", "XA"}
 var Elements = [5]string{"Light", "Passion", "Cool", "Dark", "Special"}
 
 // Rarity of the cards
-var Rarity = [17]string{"N", "R", "SR", "HN", "HR", "HSR", "X", "UR", "HUR", "GSR", "GUR", "LR", "HLR", "GLR", "XSR", "XUR", "XLR"}
+var Rarity = []string{}

@@ -203,6 +203,7 @@ type VFile struct {
 	Version                     int                         `json:"version"`
 	URLSchemes                  []URLScheme                 `json:"url_scheme"`
 	Cards                       CardList                    `json:"cards"`
+	CardRarities                []CardRarity                `json:"card_rares"`
 	Skills                      []Skill                     `json:"skills"`
 	SkillLevels                 []SkillLevel                `json:"skill_level"`
 	CustomSkillLevels           []CustomSkillLevel          `json:"custom_skill_level"`
@@ -212,7 +213,6 @@ type VFile struct {
 	Rebirths                    []CardAwaken                `json:"card_super_awaken"`
 	CardCharacters              []CardCharacter             `json:"card_character"`
 	FollowerKinds               []FollowerKind              `json:"follower_kinds"`
-	CardRarities                []CardRarity                `json:"card_rares"`
 	CardSpecialComposes         []CardSpecialCompose        `json:"card_special_compose"`
 	Levels                      []Level                     `json:"levels"`
 	LevelupBonuses              []LevelupBonus              `json:"levelup_bonus"`
@@ -314,6 +314,12 @@ func Read(root string) ([]byte, error) {
 	if err != nil {
 		debug.PrintStack()
 		return nil, err
+	}
+
+	// get card rarities
+	Rarity = make([]string, 0)
+	for _, cr := range Data.CardRarities {
+		Rarity = append(Rarity, strings.ToUpper(cr.Signature))
 	}
 
 	strRoot := filepath.Join(root, "string")
