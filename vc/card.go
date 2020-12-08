@@ -40,12 +40,13 @@ type Card struct {
 	SkillID2                  int    `json:"skill_id_2"`                               // second Skill
 	SkillID3                  int    `json:"skill_id_3"`                               // third Skill (LR)
 	SpecialSkillID1           int    `json:"special_skill_id_1"`                       // Awakened Burst type (GSR,GUR,GLR)
+	LeaderSkillID             int    `json:"leader_skill_id"`                          // for VR Card Leader Skills
 	ThorSkillID1              int    `json:"thor_skill_id_1"`                          // Temporary Thor skills used for AAW
 	CustomSkillCost           int    `json:"custom_skill_cost_1"`                      // initial skill cost
 	CustomSkillCostIncPattern int    `json:"custom_skill_cost_increment_pattern_id_1"` // ?
 	MedalRate                 int    `json:"medal_rate"`                               // amount of medals can be traded for
 	Price                     int    `json:"price"`                                    // amount of gold can be traded for
-	StunRate                  int    `json:"stun_rate"`                                // ?
+	IsUnique                  int    `json:"is_unique"`                                // ?
 	IsClosed                  int    `json:"is_closed"`                                // is closed
 	CardSymbolID              int    `json:"card_symbol_id"`                           //
 	Name                      string `json:"name"`                                     // name from the strings file
@@ -58,6 +59,7 @@ type Card struct {
 	skill2        *Skill
 	skill3        *Skill
 	specialSkill1 *Skill
+	leaderSkill   *Skill
 	thorSkill1    *Skill
 	// possible card evolutions
 	prevEvo  *Card

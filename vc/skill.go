@@ -18,6 +18,7 @@ type Skill struct {
 	Type         int `json:"_type"`          // skill type
 	TimingID     int `json:"timing_id"`      // id for timing
 	MaxCount     int `json:"max_count"`      // max procs
+	MinTurn      int `json:"min_turn"`       // min turns needed for activation
 	CondSceneID  int `json:"cond_scene_id"`  // cond scene
 	CondSideID   int `json:"cond_side_id"`   // cond side
 	CondID       int `json:"cond_id"`        // cond
@@ -26,6 +27,8 @@ type Skill struct {
 	CondParam    int `json:"cond_param"`     // cond param
 	DefaultRatio int `json:"default_ratio"`  // default proc rate
 	MaxRatio     int `json:"max_ratio"`      // max proc rate
+	DefaultCost  int `json:"default_cost"`   // default level cost to activate
+	MaxCost      int `json:"max_cost"`       // max level cost to activate
 	// date accessible
 	PublicStartDatetime Timestamp `json:"public_start_datetime"`
 	PublicEndDatetime   Timestamp `json:"public_end_datetime"`
