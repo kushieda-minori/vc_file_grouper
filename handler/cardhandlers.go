@@ -15,9 +15,9 @@ import (
 	"strings"
 	"time"
 
-	"../structout"
-	"../util"
-	"../vc"
+	"vc_file_grouper/structout"
+	"vc_file_grouper/util"
+	"vc_file_grouper/vc"
 )
 
 // CardHandler shows cards in order

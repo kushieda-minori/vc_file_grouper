@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"zetsuboushita.net/vc_file_grouper/vc"
+	"vc_file_grouper/vc"
 )
 
 //Card Main card info

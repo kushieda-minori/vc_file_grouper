@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"../vc"
+	"vc_file_grouper/vc"
 )
 
 // StructureListHandler show structures as a list

@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"../util"
-	"../vc"
+	"vc_file_grouper/util"
+	"vc_file_grouper/vc"
 )
 
 const (

@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"../vc"
+	"vc_file_grouper/vc"
 )
 
 // ImageCardSDHandler show SD card images

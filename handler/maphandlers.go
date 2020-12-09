@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"../vc"
+	"vc_file_grouper/vc"
 )
 
 // MapHandler handle Map requests

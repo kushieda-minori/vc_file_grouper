@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"time"
 
-	"../vc"
+	"vc_file_grouper/vc"
 )
 
 // ItemHandler shows item details as a table

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"../vc"
+	"vc_file_grouper/vc"
 )
 
 // ArchwitchHandler displays archwitch data as a table.

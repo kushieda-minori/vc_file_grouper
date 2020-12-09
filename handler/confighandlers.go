@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"../vc"
+	"vc_file_grouper/vc"
 )
 
 // ConfigHandler configures the path for the main VC data file

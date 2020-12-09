@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"../vc"
+	"vc_file_grouper/vc"
 )
 
 // CharacterTableHandler show character data in a table format

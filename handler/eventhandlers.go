@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"../vc"
+	"vc_file_grouper/vc"
 )
 
 // EventHandler handle event information

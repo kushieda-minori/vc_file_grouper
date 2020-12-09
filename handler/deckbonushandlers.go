@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
-	"../util"
-	"../vc"
+	"vc_file_grouper/util"
+	"vc_file_grouper/vc"
 )
 
 // DeckBonusHandler show deck bonuses as a table

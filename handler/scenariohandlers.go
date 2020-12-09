@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"../vc"
+	"vc_file_grouper/vc"
 )
 
 // ScenarioHandler outputs the raw JSON

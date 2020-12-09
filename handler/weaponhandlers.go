@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"../vc"
+	"vc_file_grouper/vc"
 )
 
 // WeaponHandler handle weapon information

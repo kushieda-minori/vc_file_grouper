@@ -9,8 +9,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"./handler"
-	"./vc"
+	"vc_file_grouper/handler"
+	"vc_file_grouper/vc"
 )
 
 // Main function that starts the program

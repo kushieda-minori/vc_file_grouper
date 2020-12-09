@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"../vc"
+	"vc_file_grouper/vc"
 )
 
 // MasterDataHandler Main index page

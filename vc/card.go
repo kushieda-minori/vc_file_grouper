@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"../util"
+	"vc_file_grouper/util"
 )
 
 //HD Images are located at the following URL Pattern:

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"zetsuboushita.net/vc_file_grouper/vc"
+	"vc_file_grouper/vc"
 )
 
 //CardSkill skill information

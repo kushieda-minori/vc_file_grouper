@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"../vc"
+	"vc_file_grouper/vc"
 )
 
 // ThorHandler handle Thor events
