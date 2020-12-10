@@ -10,11 +10,19 @@ executors:
 jobs:
   build:
     executor: my-executor
+    environment: # environment variables for the build itself
+      TEST_RESULTS: /tmp/test-results
     steps:
       - checkout
 
       # specify any bash command here prefixed with `run:`
       - run: go build -trimpath -o vc_file_grouper > build.log 2>&1
+      - run: mkdir -p $TEST_RESULTS
+      - run: 
+          name: Run unit tests
+          command: |
+            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
+            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
 
       - persist_to_workspace:
           root: ./
@@ -24,6 +32,11 @@ jobs:
           path: ./vc_file_grouper
       - store_artifacts:
           path: ./build.log
+      - store_artifacts: # upload test summary for display in Artifacts
+          path: /tmp/test-results
+          destination: raw-test-output
+      - store_test_results: # upload test results for display in Test Summary
+          path: /tmp/test-results
 
   cross-compile:
     executor: my-executor
