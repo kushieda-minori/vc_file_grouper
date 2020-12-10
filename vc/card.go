@@ -40,7 +40,7 @@ type Card struct {
 	SkillID2                  int    `json:"skill_id_2"`                               // second Skill
 	SkillID3                  int    `json:"skill_id_3"`                               // third Skill (LR)
 	SpecialSkillID1           int    `json:"special_skill_id_1"`                       // Awakened Burst type (GSR,GUR,GLR)
-	LeaderSkillID             int    `json:"leader_skill_id"`                          // for VR Card Leader Skills
+	LeaderSkillID             int    `json:"leader_skill_id"`                          // for VR Card Leader Skills. does not map to normal skill table
 	ThorSkillID1              int    `json:"thor_skill_id_1"`                          // Temporary Thor skills used for AAW
 	CustomSkillCost           int    `json:"custom_skill_cost_1"`                      // initial skill cost
 	CustomSkillCostIncPattern int    `json:"custom_skill_cost_increment_pattern_id_1"` // ?
@@ -191,6 +191,18 @@ func (c *Card) MainRarity() string {
 // CardRarity with full rarity information
 func (c *Card) CardRarity() *CardRarity {
 	return CardRarityScan(c.CardRareID)
+}
+
+// Symbol with full rarity information
+func (c *Card) Symbol() string {
+	if c == nil {
+		return ""
+	}
+	if c.CardSymbolID > 0 && c.CardSymbolID < len(Data.SymbolNames) {
+		return Data.SymbolNames[c.CardSymbolID]
+	}
+	log.Printf("Unknown symbol id %d. Unable to locate name", c.CardSymbolID)
+	return ""
 }
 
 // EvoIsFirst returns true if the Evolution of this card is the first for this card

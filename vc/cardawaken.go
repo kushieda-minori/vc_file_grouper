@@ -62,6 +62,41 @@ func (ca *CardAwaken) Item(i int) *Item {
 	return nil
 }
 
+// ItemAndCount needed to awaken the source card
+func (ca *CardAwaken) ItemAndCount(i int) (*Item, int) {
+	if i < 1 || i > 5 {
+		return nil, 0
+	}
+	switch i {
+	case 1:
+		if ca.Material1Item <= 0 {
+			return nil, 0
+		}
+		return ItemScan(ca.Material1Item), ca.Material1Count
+	case 2:
+		if ca.Material2Item <= 0 {
+			return nil, 0
+		}
+		return ItemScan(ca.Material2Item), ca.Material2Count
+	case 3:
+		if ca.Material3Item <= 0 {
+			return nil, 0
+		}
+		return ItemScan(ca.Material3Item), ca.Material3Count
+	case 4:
+		if ca.Material4Item <= 0 {
+			return nil, 0
+		}
+		return ItemScan(ca.Material4Item), ca.Material4Count
+	case 5:
+		if ca.Material5Item <= 0 {
+			return nil, 0
+		}
+		return ItemScan(ca.Material5Item), ca.Material5Count
+	}
+	return nil, 0
+}
+
 // AwakenItem awaken Item
 type AwakenItem struct {
 	Awakens *CardAwaken

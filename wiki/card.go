@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"vc_file_grouper/vc"
 )
 
 //Card Main card info
@@ -47,12 +49,6 @@ type Card struct {
 	Random34   string `json:"random 3 4"`
 	Random35   string `json:"random 3 5"`
 
-	SkillL     string `json:"skill l"`
-	SkillLLv1  string `json:"skill l lv1"`
-	SkillLLv10 string `json:"skill l lv10"`
-	ProcsL     string `json:"procs l"`
-	SkillLEnd  string `json:"skill l end"`
-
 	SkillG     string `json:"skill g"`
 	SkillGLv1  string `json:"skill g lv1"`
 	SkillGLv10 string `json:"skill g lv10"`
@@ -85,12 +81,6 @@ type Card struct {
 	RandomG34   string `json:"random g3 4"`
 	RandomG35   string `json:"random g3 5"`
 
-	SkillGL     string `json:"skill gl"`
-	SkillGLLv1  string `json:"skill gl lv1"`
-	SkillGLLv10 string `json:"skill gl lv10"`
-	ProcsGL     string `json:"procs gl"`
-	SkillGLEnd  string `json:"skill gl end"`
-
 	SkillX     string `json:"skill x"`
 	SkillXLv1  string `json:"skill x lv1"`
 	SkillXLv10 string `json:"skill x lv10"`
@@ -122,12 +112,6 @@ type Card struct {
 	RandomX33   string `json:"random x3 3"`
 	RandomX34   string `json:"random x3 4"`
 	RandomX35   string `json:"random x3 5"`
-
-	SkillXL     string `json:"skill xl"`
-	SkillXLLv1  string `json:"skill xl lv1"`
-	SkillXLLv10 string `json:"skill xl lv10"`
-	ProcsXL     string `json:"procs xl"`
-	SkillXLEnd  string `json:"skill xl end"`
 
 	SkillT     string `json:"skill t"`
 	SkillTLv1  string `json:"skill t lv1"`
@@ -241,11 +225,12 @@ type Card struct {
 	Likeability4 string `json:"likeability 4"`
 	Likeability5 string `json:"likeability 5"`
 
-	AwakenChance string `json:"awaken chance"`
-	AwakenOrb    string `json:"awaken orb"`
-	AwakenL      string `json:"awaken l"`
-	AwakenM      string `json:"awaken m"`
-	AwakenS      string `json:"awaken s"`
+	AwakenChance  string `json:"awaken chance"`
+	AwakenCrystal string `json:"awaken crystal"`
+	AwakenOrb     string `json:"awaken orb"`
+	AwakenL       string `json:"awaken l"`
+	AwakenM       string `json:"awaken m"`
+	AwakenS       string `json:"awaken s"`
 
 	RebirthChance     string `json:"rebirth chance"`
 	RebirthItem1      string `json:"rebirth item 1"`
@@ -262,6 +247,7 @@ type Card struct {
 	unknownFields map[string]string
 }
 
+//Outputs the struct as a Wiki Template:Card call
 func (c *Card) String() (ret string) {
 	if c == nil {
 		return ""
@@ -302,6 +288,136 @@ func (c *Card) String() (ret string) {
 	ret += "}}\n"
 
 	return ret
+}
+
+//UpdateBaseData Updates the tempalte information from the VC data. Fields updated are `Element`, `Rarity`, `Symbol` and turn over information for evo accidents
+func (c Card) UpdateBaseData(vcCard vc.Card) {
+	c.Element = vcCard.Element()
+	c.Rarity = vcCard.MainRarity()
+	c.Symbol = vcCard.Symbol()
+
+	evolutions := vcCard.GetEvolutions()
+	for _, k := range vc.EvoOrder {
+		if evo, ok := evolutions[k]; ok {
+			turnoverfrom := evo.EvoAccidentOf()
+			if turnoverfrom != nil {
+				c.TurnOverFrom = turnoverfrom.Name
+			}
+			turnoverto := evo.EvoAccident()
+			if turnoverto != nil {
+				c.TurnOverTo = turnoverto.Name
+			}
+		}
+	}
+}
+
+//UpdateExchangeInfo Updates Gold and Medal exchange info for a specific evo
+func (c Card) UpdateExchangeInfo(evolutions map[string]*vc.Card) {
+	for evoCode, vcCard := range evolutions {
+		switch evoCode {
+		case "0":
+			c.Gold0 = strconv.Itoa(vcCard.Price)
+			c.Medals0 = strconv.Itoa(vcCard.MedalRate)
+		case "1":
+			c.Gold1 = strconv.Itoa(vcCard.Price)
+			c.Medals1 = strconv.Itoa(vcCard.MedalRate)
+		case "2":
+			c.Gold2 = strconv.Itoa(vcCard.Price)
+			c.Medals2 = strconv.Itoa(vcCard.MedalRate)
+		case "3":
+			c.Gold3 = strconv.Itoa(vcCard.Price)
+			c.Medals3 = strconv.Itoa(vcCard.MedalRate)
+		case "4":
+			c.Gold4 = strconv.Itoa(vcCard.Price)
+			c.Medals4 = strconv.Itoa(vcCard.MedalRate)
+		case "A":
+			c.GoldA = strconv.Itoa(vcCard.Price)
+			c.MedalsA = strconv.Itoa(vcCard.MedalRate)
+		case "G":
+			c.GoldG = strconv.Itoa(vcCard.Price)
+			c.MedalsG = strconv.Itoa(vcCard.MedalRate)
+		case "GA":
+			c.GoldGA = strconv.Itoa(vcCard.Price)
+			c.MedalsGA = strconv.Itoa(vcCard.MedalRate)
+		case "X":
+			c.GoldX = strconv.Itoa(vcCard.Price)
+			c.MedalsX = strconv.Itoa(vcCard.MedalRate)
+		default:
+			log.Printf("Unknown Evo %s provided for exchange updater", evoCode)
+		}
+	}
+}
+
+//UpdateAwakenRebirthInfo Updates awakening and rebirth information based on the cards provided. The cards provided are expected to only be valid evos of this card.
+func (c Card) UpdateAwakenRebirthInfo(evolutions map[string]*vc.Card) {
+	gevo, ok := evolutions["G"]
+	if !ok {
+		gevo, ok = evolutions["GA"]
+	}
+
+	if gevo != nil {
+		var awakenInfo *vc.CardAwaken
+		for idx, val := range vc.Data.Awakenings {
+			if gevo.ID == val.ResultCardID {
+				awakenInfo = &vc.Data.Awakenings[idx]
+				break
+			}
+		}
+		if awakenInfo != nil {
+			c.AwakenChance = strconv.Itoa(awakenInfo.Percent)
+			for i := 1; i <= 5; i++ {
+				item, count := awakenInfo.ItemAndCount(i)
+				if item != nil {
+					sCount := strconv.Itoa(count)
+					if strings.Contains(item.NameEng, "Crystal") {
+						c.AwakenCrystal = sCount
+					} else if strings.Contains(item.NameEng, "Orb") {
+						c.AwakenOrb = sCount
+					} else if strings.Contains(item.NameEng, "(L)") {
+						c.AwakenL = sCount
+					} else if strings.Contains(item.NameEng, "(M)") {
+						c.AwakenM = sCount
+					} else if strings.Contains(item.NameEng, "(S)") {
+						c.AwakenS = sCount
+					} else {
+						log.Printf("***Unknown Awakening item: %s\n", item.NameEng)
+					}
+				}
+			}
+		}
+	}
+
+	xevo, ok := evolutions["X"]
+	if !ok {
+		xevo, ok = evolutions["XA"]
+	}
+	if xevo != nil {
+		var rebirthInfo *vc.CardAwaken
+		for idx, val := range vc.Data.Rebirths {
+			if xevo.ID == val.ResultCardID {
+				rebirthInfo = &vc.Data.Rebirths[idx]
+				break
+			}
+		}
+		if rebirthInfo != nil {
+			c.RebirthChance = strconv.Itoa(rebirthInfo.Percent)
+			item, count := rebirthInfo.ItemAndCount(1)
+			if item != nil {
+				c.RebirthItem1 = item.NameEng
+				c.RebirthItem1Count = strconv.Itoa(count)
+			}
+			item, count = rebirthInfo.ItemAndCount(2)
+			if item != nil {
+				c.RebirthItem2 = item.NameEng
+				c.RebirthItem2Count = strconv.Itoa(count)
+			}
+			item, count = rebirthInfo.ItemAndCount(3)
+			if item != nil {
+				c.RebirthItem3 = item.NameEng
+				c.RebirthItem3Count = strconv.Itoa(count)
+			}
+		}
+	}
 }
 
 func parseCard(pageText string) (map[string]string, int, error) {
@@ -562,6 +678,7 @@ var cardFieldOrder []string = []string{
 	"likeability 4",
 	"likeability 5",
 	"awaken chance",
+	"awaken crystal",
 	"awaken orb",
 	"awaken l",
 	"awaken m",
