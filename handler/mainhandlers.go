@@ -14,7 +14,10 @@ func MasterDataHandler(w http.ResponseWriter, r *http.Request) {
 	// File header
 	fmt.Fprintf(w, `<html><body>
 <p>Version: %d,&nbsp;&nbsp;&nbsp;&nbsp;Timestamp: %d,&nbsp;&nbsp;&nbsp;&nbsp;JST: %s</p>
-<a href="/config">Configure Data Location</a><br />
+<a href="/config/dataLoc">Configure Data Location</a><br />
+<a href="/config/setBotCreds">Set bot username and password</a>.
+If not set, you won't be able to automate updates to the wiki.
+Please create a "bot key" for your account by using the <a href="https://valkyriecrusade.fandom.com/wiki/Special:BotPasswords" target="_blank">Special:BotPasswords</a> page<br />
 <br />
 <a href="/cards/table">Card List as a Table</a><br />
 <a href="/weapons">Weapon List</a><br />

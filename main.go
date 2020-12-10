@@ -72,7 +72,8 @@ func main() {
 	http.HandleFunc("/images/weaponevent/", handler.ImageHandlerFor("/weaponevent/", "/weaponevent/"))
 
 	// vc master data
-	http.HandleFunc("/config/", handler.ConfigHandler)
+	http.HandleFunc("/config/dataLoc", handler.ConfigDataLocHandler)
+	http.HandleFunc("/config/setBotCreds", handler.ConfigBotCredsHandler)
 	//dynamic pages
 	http.HandleFunc("/cards/", handler.CardHandler)
 	http.HandleFunc("/cards/table/", handler.CardTableHandler)
