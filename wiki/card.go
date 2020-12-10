@@ -1,9 +1,7 @@
 package wiki
 
 import (
-	"container/list"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"sort"
@@ -262,16 +260,11 @@ type Card struct {
 	Availability string `json:"availability"`
 
 	unknownFields map[string]string
-	pageHeader    string
-	pageFooter    string
 }
 
 func (c *Card) String() (ret string) {
 	if c == nil {
 		return ""
-	}
-	if c.pageHeader != "" {
-		ret += c.pageHeader + "\n\n"
 	}
 
 	var inInterface map[string]string
@@ -308,64 +301,10 @@ func (c *Card) String() (ret string) {
 	// end template
 	ret += "}}\n"
 
-	if c.pageFooter != "" {
-		ret += "\n" + c.pageFooter + "\n"
-	}
-
 	return ret
 }
 
-//ParseWikiPage Parses a wiki page into a card. returns `nil` is there is no Card template definition in the page.
-func ParseWikiPage(pageText string) (ret *Card, err error) {
-	pageText = strings.TrimSpace(pageText)
-	// lowercase all the text for comparison reasons.
-	pageLower := strings.ToLower(pageText)
-	cardIdx := strings.Index(pageLower, "{{card")
-	if pageText == "" || cardIdx < 0 {
-		return nil, nil
-	}
-	var pageHeader string
-	if cardIdx > 0 {
-		pageHeader = strings.TrimSpace(pageText[:cardIdx])
-	}
-
-	// convert the page Card template to a map
-	pageContentMap, cardEndIdx, err := parsePage(pageText[cardIdx:])
-	if err != nil {
-		return nil, err
-	}
-
-	// convert the parsed map to JSON
-	datajson, err := json.Marshal(pageContentMap)
-	if err != nil {
-		return nil, err
-	}
-	ret = &Card{}
-	// unmarshall the JSON into our Card object
-	err = json.Unmarshal(datajson, ret)
-	if err != nil {
-		return nil, err
-	}
-
-	for k, v := range pageContentMap {
-		if !fieldIsKnown(k) {
-			if ret.unknownFields == nil {
-				ret.unknownFields = make(map[string]string)
-			}
-			ret.unknownFields[k] = v
-		}
-	}
-
-	ret.pageHeader = pageHeader
-
-	if cardEndIdx+cardIdx < len(pageText) {
-		ret.pageFooter = strings.TrimSpace(pageText[cardEndIdx+cardIdx:])
-	}
-
-	return ret, nil
-}
-
-func parsePage(pageText string) (map[string]string, int, error) {
+func parseCard(pageText string) (map[string]string, int, error) {
 	positionalParamNum := 0
 
 	ret := make(map[string]string)
@@ -381,7 +320,7 @@ func parsePage(pageText string) (map[string]string, int, error) {
 		}
 		if r == '|' {
 			rPos++
-			currentKey, err := getNextKey(&runes, &rPos)
+			currentKey, err := getNextTempalteKey(&runes, &rPos)
 			if err != nil {
 				return nil, 0, err
 			}
@@ -390,7 +329,7 @@ func parsePage(pageText string) (map[string]string, int, error) {
 				positionalParamNum++
 				currentKey = strconv.Itoa(positionalParamNum)
 			}
-			currentVal, err := getNextValue(&runes, &rPos)
+			currentVal, err := getNextTemplateValue(&runes, &rPos)
 			if err != nil {
 				return nil, 0, err
 			}
@@ -410,50 +349,7 @@ func parsePage(pageText string) (map[string]string, int, error) {
 	return ret, cPos, nil
 }
 
-func getNextKey(runes *[]rune, rPos *int) (ret string, err error) {
-	start := *rPos
-	for ; (*rPos) < len(*runes); (*rPos)++ {
-		r := (*runes)[*rPos]
-		if r == '=' {
-			ret = strings.TrimSpace(string((*runes)[start:(*rPos)]))
-			(*rPos)++ // skip past the '='
-			return
-		}
-		if r == '|' || (r == '}' && (*runes)[(*rPos)+1] == '}') {
-			// position parameter instead of keyed.
-			*rPos = start
-			return "", nil
-		}
-	}
-	return "", errors.New("Invalid page format. Unable to locate key separator")
-}
-
-func getNextValue(runes *[]rune, rPos *int) (ret string, err error) {
-	bracketStack := list.List{}
-	start := *rPos
-	for ; (*rPos) < len(*runes); (*rPos)++ {
-		r := (*runes)[*rPos]
-		if bracketStack.Len() == 0 && (r == '|' || (r == '}' && (*runes)[(*rPos)+1] == '}')) {
-			ret = strings.TrimSpace(string((*runes)[start:(*rPos)]))
-			(*rPos)-- // step back so the main parser sees the separator
-			return
-		}
-		if r == '{' {
-			bracketStack.PushFront(r)
-		} else if r == '[' {
-			bracketStack.PushFront(r)
-		} else if r == '}' && bracketStack.Front() != nil && bracketStack.Front().Value == '{' {
-			toRemove := bracketStack.Front()
-			bracketStack.Remove(toRemove)
-		} else if r == ']' && bracketStack.Front() != nil && bracketStack.Front().Value == '[' {
-			toRemove := bracketStack.Front()
-			bracketStack.Remove(toRemove)
-		}
-	}
-	return "", errors.New("Invalid page format. Unable to locate key separator")
-}
-
-func fieldIsKnown(field string) bool {
+func cardFieldIsKnown(field string) bool {
 	for _, f := range cardFieldOrder {
 		if field == f {
 			return true
