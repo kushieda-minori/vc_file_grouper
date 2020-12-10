@@ -2,5 +2,6 @@ vc_file_grouper*
 .idea
 launch.json
 .vscode
+__debug_bin
 debug
 *.log
