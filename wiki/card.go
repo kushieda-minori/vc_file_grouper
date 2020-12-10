@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -265,33 +266,50 @@ type Card struct {
 	pageFooter    string
 }
 
-func (c Card) String() (ret string) {
+func (c *Card) String() (ret string) {
+	if c == nil {
+		return ""
+	}
 	if c.pageHeader != "" {
 		ret += c.pageHeader + "\n\n"
 	}
 
-	var inInterface map[string]interface{}
+	var inInterface map[string]string
 	inrec, _ := json.Marshal(c)
 	json.Unmarshal(inrec, &inInterface)
 
 	// begin template
 	ret += "{{Card\n"
 	// iterate through record fields
-	for field, val := range inInterface {
-		ret += fmt.Sprintf("|%s = %s\n", field, val)
+	for _, field := range cardFieldOrder {
+		if val, ok := inInterface[field]; ok {
+			if strings.TrimSpace(val) != "" {
+				ret += fmt.Sprintf("|%s = %s\n", field, val)
+			}
+		}
 	}
 
 	if len(c.unknownFields) > 0 {
-		ret += "<!-- these fields were known to the bot, but have not been removed -->\n"
-		for field, val := range c.unknownFields {
-			ret += fmt.Sprintf("|%s = %s\n", field, val)
+		ret += "<!-- these fields were unknown to the bot, but have not been removed -->\n"
+		keys := make([]string, len(c.unknownFields))
+		i := 0
+		for k := range c.unknownFields {
+			keys[i] = k
+			i++
+		}
+		sort.Strings(keys)
+		for _, field := range keys {
+			val := c.unknownFields[field]
+			if val != "" {
+				ret += fmt.Sprintf("|%s = %s\n", field, val)
+			}
 		}
 	}
 	// end template
 	ret += "}}\n"
 
 	if c.pageFooter != "" {
-		ret += c.pageFooter + "\n\n"
+		ret += "\n" + c.pageFooter + "\n"
 	}
 
 	return ret
@@ -308,7 +326,7 @@ func ParseWikiPage(pageText string) (ret *Card, err error) {
 	}
 	var pageHeader string
 	if cardIdx > 0 {
-		pageHeader = pageText[:cardIdx]
+		pageHeader = strings.TrimSpace(pageText[:cardIdx])
 	}
 
 	// convert the page Card template to a map
@@ -341,7 +359,7 @@ func ParseWikiPage(pageText string) (ret *Card, err error) {
 	ret.pageHeader = pageHeader
 
 	if cardEndIdx+cardIdx < len(pageText) {
-		ret.pageFooter = pageText[cardEndIdx+cardIdx:]
+		ret.pageFooter = strings.TrimSpace(pageText[cardEndIdx+cardIdx:])
 	}
 
 	return ret, nil
@@ -422,13 +440,14 @@ func getNextValue(runes *[]rune, rPos *int) (ret string, err error) {
 		}
 		if r == '{' {
 			bracketStack.PushFront(r)
-		} else if r == '}' {
-			if bracketStack.Len() > 0 {
-				toRemove := bracketStack.Front()
-				bracketStack.Remove(toRemove)
-			} else {
-				// return "", errors.New("Invalid page format. Unable to locate key separator")
-			}
+		} else if r == '[' {
+			bracketStack.PushFront(r)
+		} else if r == '}' && bracketStack.Front() != nil && bracketStack.Front().Value == '{' {
+			toRemove := bracketStack.Front()
+			bracketStack.Remove(toRemove)
+		} else if r == ']' && bracketStack.Front() != nil && bracketStack.Front().Value == '[' {
+			toRemove := bracketStack.Front()
+			bracketStack.Remove(toRemove)
 		}
 	}
 	return "", errors.New("Invalid page format. Unable to locate key separator")
