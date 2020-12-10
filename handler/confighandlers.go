@@ -54,9 +54,10 @@ func ConfigBotCredsHandler(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("password")
 		if password != "" {
 			wiki.MyCreds.Password = password
+			io.WriteString(w, "<div>Success</div>")
+		} else {
+			io.WriteString(w, "<div>Password can not be blank</div>")
 		}
-
-		io.WriteString(w, "<div>Success</div>")
 	}
 
 	// write out the form
