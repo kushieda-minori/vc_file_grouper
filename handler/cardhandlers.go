@@ -705,9 +705,7 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if rarity := qs.Get("rarity"); rarity != "" {
-			match = match && (card.Rarity() == rarity ||
-				card.Rarity() == ("H"+rarity) ||
-				card.Rarity() == ("G"+rarity))
+			match = match && card.MainRarity() == rarity
 		}
 		if element := qs.Get("element"); element != "" {
 			match = match && card.Element() == element
@@ -905,7 +903,7 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func rarityToOptions(selected string) (ret string) {
-	for _, v := range []string{"X", "N", "R", "SR", "UR", "LR"} {
+	for _, v := range []string{"X", "N", "R", "SR", "UR", "LR", "VR"} {
 		if v == selected {
 			ret += fmt.Sprintf(`<option value="%s" selected="selected">%s</option>`, v, v)
 		} else {
@@ -1298,8 +1296,24 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 		lv10 = ""
 	}
 
+	minturn := ""
+	costlvl1 := ""
+	costlvl10 := ""
+
+	if s.MinTurn > 0 {
+		minturn = fmt.Sprintf("\n|skill %smin turn = %d", evoMod, s.MinTurn)
+	}
+
+	if s.DefaultCost > 0 && s.MaxCost != s.DefaultCost {
+		costlvl1 = fmt.Sprintf("\n|skill %slv1 cost = %d", evoMod, s.DefaultCost)
+	}
+
+	if s.MaxCost > 0 {
+		costlvl10 = fmt.Sprintf("\n|skill %slv10 cost = %d", evoMod, s.MaxCost)
+	}
+
 	ret = fmt.Sprintf(`|skill %[1]s= %[2]s
-|skill %[1]slv1 = %[3]s%[4]s
+|skill %[1]slv1 = %[3]s%[4]s%[6]s%[7]s%[8]s
 |procs %[1]s= %[5]d
 `,
 		evoMod,
@@ -1307,6 +1321,9 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 		skillLvl1,
 		lv10,
 		s.Activations(),
+		minturn,
+		costlvl1,
+		costlvl10,
 	)
 
 	if s.EffectID == 36 {
