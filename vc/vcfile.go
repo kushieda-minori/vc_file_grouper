@@ -154,6 +154,7 @@ var characterNameOverride = map[int]string{
 	2978: "Etna & Flonne",             // fix spacing
 	3060: "Xmas Kyulu Kyula",          // remove the slash
 	3167: "Kiyohime (collab)",         // new Kiyo from a collab
+	3408: "Holy Oracle (New)",         // Holy Oracle VR instead of LR
 }
 
 func init() {
