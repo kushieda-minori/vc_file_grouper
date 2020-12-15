@@ -7,7 +7,7 @@ import (
 
 //CardPage represents a wiki page that is for Card information
 type CardPage struct {
-	CardInfo   Card
+	CardInfo   CardFlat
 	pageHeader string
 	pageFooter string
 }
