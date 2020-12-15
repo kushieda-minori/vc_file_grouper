@@ -1306,11 +1306,11 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 		minturn = fmt.Sprintf("\n|skill %smin turn = %d", evoMod, s.MinTurn)
 	}
 
-	if s.DefaultCost > 0 && s.MaxCost != s.DefaultCost {
+	if s.DefaultCost > 0 {
 		costlvl1 = fmt.Sprintf("\n|skill %slv1 cost = %d", evoMod, s.DefaultCost)
 	}
 
-	if s.MaxCost > 0 {
+	if s.MaxCost > 0 && s.MaxCost != s.DefaultCost {
 		costlvl10 = fmt.Sprintf("\n|skill %slv10 cost = %d", evoMod, s.MaxCost)
 	}
 
