@@ -75,9 +75,9 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	io.WriteString(w, "</select>\n")
 	io.WriteString(w, "<span>\n")
-	fmt.Fprintf(w, "<label for=\"f_whenHappened\">Is Expired:</label><input id=\"f_whenHappened\" name=\"whenHappened\" type=\"checkbox\" value=\"expired\" %s/> ", isChecked(qWhenHappened, "expired"))
-	fmt.Fprintf(w, "<label for=\"f_whenHappened\">Is Active:</label><input id=\"f_whenHappened\" name=\"whenHappened\" type=\"checkbox\" value=\"active\" %s/> ", isChecked(qWhenHappened, "active"))
-	fmt.Fprintf(w, "<label for=\"f_whenHappened\">Is Upcoming:</label><input id=\"f_whenHappened\" name=\"whenHappened\" type=\"checkbox\" value=\"upcoming\" %s/> ", isChecked(qWhenHappened, "upcoming"))
+	fmt.Fprintf(w, "<label for=\"f_whenHappened1\">Is Expired:</label><input id=\"f_whenHappened1\" name=\"whenHappened\" type=\"checkbox\" value=\"expired\" %s/> ", isChecked(qWhenHappened, "expired"))
+	fmt.Fprintf(w, "<label for=\"f_whenHappened2\">Is Active:</label><input id=\"f_whenHappened2\" name=\"whenHappened\" type=\"checkbox\" value=\"active\" %s/> ", isChecked(qWhenHappened, "active"))
+	fmt.Fprintf(w, "<label for=\"f_whenHappened3\">Is Upcoming:</label><input id=\"f_whenHappened3\" name=\"whenHappened\" type=\"checkbox\" value=\"upcoming\" %s/> ", isChecked(qWhenHappened, "upcoming"))
 	io.WriteString(w, "</span>\n")
 	io.WriteString(w, "<button type=\"submit\">Submit</button>\n</form>\n")
 	io.WriteString(w, "<div>\n")
