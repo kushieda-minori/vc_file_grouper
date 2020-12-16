@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -1035,6 +1036,45 @@ func (c *Card) GetEvoImageName(isIcon bool) string {
 		return fileName
 	}
 	return fileName + "_" + thisKey
+}
+
+var sdPath string = filepath.Join(FilePath, "card", "sd")
+var mdPath string = filepath.Join(FilePath, "card", "md")
+var hdPath string = filepath.Join(FilePath, "card", "hd")
+var thumbPath string = filepath.Join(FilePath, "card", "thumb")
+
+//GetImageData gets the image data from disk if it exists.
+func (c *Card) GetImageData(isThumb bool) (imageName string, b []byte, err error) {
+	if c == nil {
+		return
+	}
+	var fullpath string
+	if isThumb {
+		fullpath = filepath.Join(thumbPath, c.Image())
+	} else {
+		fullpath = filepath.Join(hdPath, c.Image())
+		if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+			fullpath = filepath.Join(mdPath, c.Image())
+			if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+				fullpath = filepath.Join(sdPath, c.Image())
+				if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+					return
+				}
+			}
+		}
+	}
+	// decode the file
+	b, err = Decode(fullpath)
+	if err != nil {
+		return
+	}
+	imageName = c.GetEvoImageName(isThumb)
+	if isThumb {
+		imageName += "_icon.png"
+	} else {
+		imageName += ".png"
+	}
+	return
 }
 
 // GetEvolutions gets the evolutions for a card including Awakening and same character(by name) amalgamations

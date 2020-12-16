@@ -15,7 +15,7 @@ type tokenQuery struct {
 
 type tokenInfo struct {
 	LoginToken string `json:"logintoken"`
-	CsrfToken  string `json:"csrftoken"`
+	CSRFToken  string `json:"csrftoken"`
 }
 
 //{"login":{"result":"Failed","reason":"The supplied credentials could not be authenticated."}}
