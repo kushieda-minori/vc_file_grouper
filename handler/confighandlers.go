@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 
 	"vc_file_grouper/vc"
-	"vc_file_grouper/wiki"
+	"vc_file_grouper/wiki/api"
 )
 
 // ConfigDataLocHandler configures the path for the main VC data file
@@ -50,11 +50,12 @@ func ConfigBotCredsHandler(w http.ResponseWriter, r *http.Request) {
 	// check form value and update if valid
 	username := r.FormValue("username")
 	if username != "" {
-		wiki.MyCreds.Username = username
+		api.MyCreds.Username = username
 		password := r.FormValue("password")
 		if password != "" {
-			wiki.MyCreds.Password = password
+			api.MyCreds.Password = password
 			io.WriteString(w, "<div>Success</div>")
+			io.WriteString(w, "<div><a href=\"/wikibot/testLogin\">Test Login</a></div>")
 		} else {
 			io.WriteString(w, "<div>Password can not be blank</div>")
 		}
@@ -72,7 +73,7 @@ func ConfigBotCredsHandler(w http.ResponseWriter, r *http.Request) {
 <button type="submit">Submit</button>
 <p><a href="/">back</a></p>
 </form>`,
-		html.EscapeString(wiki.MyCreds.Username),
+		html.EscapeString(api.MyCreds.Username),
 	)
 	io.WriteString(w, "</body></html>")
 }

@@ -19,6 +19,8 @@ func MasterDataHandler(w http.ResponseWriter, r *http.Request) {
 If not set, you won't be able to automate updates to the wiki.
 Please create a "bot key" for your account by using the <a href="https://valkyriecrusade.fandom.com/wiki/Special:BotPasswords" target="_blank">Special:BotPasswords</a> page<br />
 <br />
+<a href="/wikibot">Use the WikiBot</a><br />
+<br />
 <a href="/cards/table">Card List as a Table</a><br />
 <a href="/weapons">Weapon List</a><br />
 <a href="/events">Event List</a><br />

@@ -30,7 +30,7 @@ func (c *CardPage) String() (ret string) {
 	return
 }
 
-//ParseCardPage Parses a wiki page into a card. returns `nil` is there is no Card template definition in the page.
+//ParseCardPage Parses a wiki page into a card. returns `nil` if there is no Card template definition in the page.
 func ParseCardPage(pageText string) (ret CardPage, err error) {
 	pageText = strings.TrimSpace(pageText)
 	// lowercase all the text for comparison reasons.
