@@ -136,9 +136,9 @@ func Logout() {
 }
 
 //GetCardPage Gets a card page
-func GetCardPage(card *vc.Card) (ret *wiki.CardPage, err error) {
+func GetCardPage(card *vc.Card) (ret *wiki.CardPage, raw string, err error) {
 	if card == nil || card.Name == "" {
-		return nil, nil
+		return
 	}
 	resp, err := client.Get(URL + "/index.php?action=raw&title=" + CardNameToWiki(card.Name))
 
@@ -151,7 +151,9 @@ func GetCardPage(card *vc.Card) (ret *wiki.CardPage, err error) {
 		return
 	}
 
-	*ret, err = wiki.ParseCardPage(string(body))
+	ret = &wiki.CardPage{}
+	raw = string(body)
+	*ret, err = wiki.ParseCardPage(raw)
 	return
 }
 

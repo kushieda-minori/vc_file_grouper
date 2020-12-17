@@ -2,8 +2,10 @@ package handler
 
 import (
 	"fmt"
+	"html"
 	"io"
 	"net/http"
+	"vc_file_grouper/vc"
 	"vc_file_grouper/wiki/api"
 )
 
@@ -14,6 +16,7 @@ func WikibotHandler(w http.ResponseWriter, r *http.Request) {
 	<a href="/">Home</a>
 <ul>
 	<li><a href="/wikibot/testLogin">Test Your Login</a></li>
+	<li><a href="/wikibot/testCardFetch">Test Fetch Oracle (R).</a></li>
 	<li><a href="/wikibot/startMassUpdate">Start a mass update.</a></li>
 </ul>
 `)
@@ -34,6 +37,56 @@ func TestLoginHandler(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "<a href=\"/config/setBotCreds\">Update Login info</a>")
 	} else {
 		io.WriteString(w, "<h1>Success</h1>")
+	}
+	io.WriteString(w, "<br /><a href=\"/wikibot\">Wikibot home</a><br /><a href=\"/\">Home</a>")
+	io.WriteString(w, "</body></html>")
+}
+
+//TestCardFetchHandler tests fetching a single card page
+func TestCardFetchHandler(w http.ResponseWriter, r *http.Request) {
+	/*
+		 313 Oracle R - HR
+		2582 Sulis SR GSR with Amal
+		1879 Oracle Ascendant UR - GUR
+		3493 Summer Oracle UR - XUR
+		8408 New Year Alchemist LR - XLR
+		9490 Cheerleader Pixie VR - GVR
+	*/
+	card := vc.CardScan(2582)
+	cardPage, rawPagebody, err := api.GetCardPage(card)
+	fmt.Fprintf(w, "<html><head><title>Wikibot Test page updates</title><style type=\"text/css\">%s</style></head><body>\n",
+		`
+div.flex {
+	display:flex;
+	max-width:100%;
+	overflow:auto;
+}
+div.flex > div {
+	margin: 2px;
+	min-width: 575px;
+	max-width: 49%;
+	overflow: auto;
+}
+pre {
+	padding:5px;
+	border:solid black 1px;
+	width: 98%;
+	overflow: auto;
+}
+`,
+	)
+	if err != nil {
+		fmt.Fprintf(w, "<h1>%s</h1>", err.Error())
+	} else {
+		fmt.Fprintf(w, "<h1>%s</h1>", card.Name)
+		io.WriteString(w, `<div class="flex">`)
+		fmt.Fprintf(w, "<div>Wiki Version<pre>%s</pre></div>", html.EscapeString(rawPagebody))
+		cardPage.CardInfo.UpdateBaseData(*card)
+		//cardPage.CardInfo.UpdateSkills(*card)
+		cardPage.CardInfo.UpdateExchangeInfo(card.GetEvolutions())
+		cardPage.CardInfo.UpdateAwakenRebirthInfo(card.GetEvolutions())
+		fmt.Fprintf(w, "<div>Adjusted Version<pre>%s</pre></div>", html.EscapeString(cardPage.String()))
+		io.WriteString(w, `</div>`)
 	}
 	io.WriteString(w, "<br /><a href=\"/wikibot\">Wikibot home</a><br /><a href=\"/\">Home</a>")
 	io.WriteString(w, "</body></html>")

@@ -196,7 +196,7 @@ func (c *Card) CardRarity() *CardRarity {
 
 // Symbol with full rarity information
 func (c *Card) Symbol() string {
-	if c == nil {
+	if c == nil || c.CardSymbolID == 0 {
 		return ""
 	}
 	if c.CardSymbolID > 0 && c.CardSymbolID < len(Data.SymbolNames) {

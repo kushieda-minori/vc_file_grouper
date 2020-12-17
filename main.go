@@ -105,6 +105,7 @@ func main() {
 	http.HandleFunc("/events/weaponScenario/", handler.ScenarioHandler("weapon_event", "Weapon Event"))
 
 	http.HandleFunc("/wikibot/", handler.WikibotHandler)
+	http.HandleFunc("/wikibot/testCardFetch/", handler.TestCardFetchHandler)
 	http.HandleFunc("/wikibot/testLogin/", handler.TestLoginHandler)
 
 	http.HandleFunc("/thor/", handler.ThorHandler)

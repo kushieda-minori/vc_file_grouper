@@ -56,6 +56,19 @@ type CardFlat struct {
 	Random34       string `json:"random 3 4"`
 	Random35       string `json:"random 3 5"`
 
+	SkillA         string `json:"skill a"`
+	SkillALv1      string `json:"skill a lv1"`
+	SkillALv10     string `json:"skill a lv10"`
+	SkillALv1Cost  string `json:"skill a lv1 cost"`
+	SkillALv10Cost string `json:"skill a lv10 cost"`
+	ProcsA         string `json:"procs a"`
+	SkillAEnd      string `json:"skill a end"`
+	RandomA1       string `json:"random a 1"`
+	RandomA2       string `json:"random a 2"`
+	RandomA3       string `json:"random a 3"`
+	RandomA4       string `json:"random a 4"`
+	RandomA5       string `json:"random a 5"`
+
 	SkillG         string `json:"skill g"`
 	SkillGLv1      string `json:"skill g lv1"`
 	SkillGLv10     string `json:"skill g lv10"`
@@ -93,6 +106,18 @@ type CardFlat struct {
 	RandomG33       string `json:"random g3 3"`
 	RandomG34       string `json:"random g3 4"`
 	RandomG35       string `json:"random g3 5"`
+
+	SkillGA         string `json:"skill ga"`
+	SkillGALv1      string `json:"skill ga lv1"`
+	SkillGALv10     string `json:"skill ga lv10"`
+	SkillGALv1Cost  string `json:"skill ga lv1 cost"`
+	SkillGALv10Cost string `json:"skill ga lv10 cost"`
+	ProcsGA         string `json:"procs ga"`
+	RandomGA1       string `json:"random ga 1"`
+	RandomGA2       string `json:"random ga 2"`
+	RandomGA3       string `json:"random ga 3"`
+	RandomGA4       string `json:"random ga 4"`
+	RandomGA5       string `json:"random ga 5"`
 
 	SkillX         string `json:"skill x"`
 	SkillXLv1      string `json:"skill x lv1"`
@@ -288,18 +313,18 @@ func (c *CardFlat) String() (ret string) {
 	}
 
 	if len(c.unknownFields) > 0 {
-		ret += "<!-- these fields were unknown to the bot, but have not been removed -->\n"
-		keys := make([]string, len(c.unknownFields))
-		i := 0
-		for k := range c.unknownFields {
-			keys[i] = k
-			i++
+		keys := make([]string, 0)
+		for k, v := range c.unknownFields {
+			// skip blank values
+			if v != "" {
+				keys = append(keys, k)
+			}
 		}
-		sort.Strings(keys)
-		for _, field := range keys {
-			val := c.unknownFields[field]
-			if val != "" {
-				ret += fmt.Sprintf("|%s = %s\n", field, val)
+		if len(keys) > 0 {
+			ret += "<!-- these fields were unknown to the bot, but have not been removed -->\n"
+			sort.Strings(keys)
+			for _, field := range keys {
+				ret += fmt.Sprintf("|%s = %s\n", field, c.unknownFields[field])
 			}
 		}
 	}
@@ -706,7 +731,7 @@ func (c CardFlat) Card() (ret Card) {
 }
 
 //UpdateBaseData Updates the tempalte information from the VC data. Fields updated are `Element`, `Rarity`, `Symbol` and turn over information for evo accidents
-func (c CardFlat) UpdateBaseData(vcCard vc.Card) {
+func (c *CardFlat) UpdateBaseData(vcCard vc.Card) {
 	c.Element = vcCard.Element()
 	c.Rarity = vcCard.MainRarity()
 	c.Symbol = vcCard.Symbol()
@@ -727,8 +752,9 @@ func (c CardFlat) UpdateBaseData(vcCard vc.Card) {
 }
 
 //UpdateExchangeInfo Updates Gold and Medal exchange info for a specific evo
-func (c CardFlat) UpdateExchangeInfo(evolutions map[string]*vc.Card) {
+func (c *CardFlat) UpdateExchangeInfo(evolutions map[string]*vc.Card) {
 	for evoCode, vcCard := range evolutions {
+		log.Printf("Evo %s: Gold %d, Medals %d", evoCode, vcCard.Price, vcCard.MedalRate)
 		switch evoCode {
 		case "0":
 			c.Gold0 = strconv.Itoa(vcCard.Price)
@@ -757,6 +783,7 @@ func (c CardFlat) UpdateExchangeInfo(evolutions map[string]*vc.Card) {
 		case "X":
 			c.GoldX = strconv.Itoa(vcCard.Price)
 			c.MedalsX = strconv.Itoa(vcCard.MedalRate)
+		case "H":
 		default:
 			log.Printf("Unknown Evo %s provided for exchange updater", evoCode)
 		}
@@ -764,7 +791,7 @@ func (c CardFlat) UpdateExchangeInfo(evolutions map[string]*vc.Card) {
 }
 
 //UpdateAwakenRebirthInfo Updates awakening and rebirth information based on the cards provided. The cards provided are expected to only be valid evos of this card.
-func (c CardFlat) UpdateAwakenRebirthInfo(evolutions map[string]*vc.Card) {
+func (c *CardFlat) UpdateAwakenRebirthInfo(evolutions map[string]*vc.Card) {
 	gevo, ok := evolutions["G"]
 	if !ok {
 		gevo, ok = evolutions["GA"]
@@ -963,6 +990,29 @@ var cardFieldOrder []string = []string{
 	"random g3 3",
 	"random g3 4",
 	"random g3 5",
+	"skill a",
+	"skill a lv1",
+	"skill a lv10",
+	"skill a lv1 cost",
+	"skill a lv10 cost",
+	"procs a",
+	"skill a end",
+	"random a 1",
+	"random a 2",
+	"random a 3",
+	"random a 4",
+	"random a 5",
+	"skill ga",
+	"skill ga lv1",
+	"skill ga lv10",
+	"skill ga lv1 cost",
+	"skill ga lv10 cost",
+	"procs ga",
+	"random ga 1",
+	"random ga 2",
+	"random ga 3",
+	"random ga 4",
+	"random ga 5",
 	"skill x",
 	"skill x lv1",
 	"skill x lv10",
