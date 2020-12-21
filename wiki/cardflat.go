@@ -363,386 +363,21 @@ func getTime(s string) *time.Time {
 	return nil
 }
 
-//Card converts the flat card representation to the structured representation
-func (c CardFlat) Card() (ret Card) {
-	ret = Card{
-		IsUnReleased: false,
-		Element:      c.Element,
-		Rarity:       c.Rarity,
-		Symbol:       c.Symbol,
-		Description:  c.Description,
-		Quotes: CardQuotes{
-			Login:           c.Login,
-			Friendship:      c.Friendship,
-			Meet:            c.Meet,
-			BattleStart:     c.BattleStart,
-			BattleEnd:       c.BattleEnd,
-			FriendshipMax:   c.FriendshipMax,
-			FriendshipEvent: c.FriendshipEvent,
-			Rebirth:         c.Rebirth,
-		},
-		TurnoverFrom: c.TurnOverFrom,
-		TurnoverTo:   c.TurnOverTo,
-		Availability: c.Availability,
-		// dynamic items
-		Evolutions:         make([]EvolutionDetails, 0),
-		AwakeningMaterials: make([]AwakenMaterial, 0),
-		RebirthMaterials:   make([]RebirthMaterial, 0),
-		Amalgamations:      make([]Amalgamation, 0),
+//UpdateAll updates all data in the template as possible. The "availablity" is only updated if it's not already populated.
+func (c *CardFlat) UpdateAll(vcCard *vc.Card, availability string) {
+	c.UpdateBaseData(vcCard)
+	c.UpdateEvoStats(vcCard.GetEvolutions())
+	c.UpdateExchangeInfo(vcCard.GetEvolutions())
+	c.UpdateSkills(vcCard.GetEvolutions())
+	c.UpdateQuotes(vcCard)
+	c.UpdateAwakenRebirthInfo(vcCard.GetEvolutions())
+	if strings.TrimSpace(c.Availability) == "" {
+		c.Availability = availability
 	}
-	if c.Cost0 != "" {
-		evo := EvolutionDetails{
-			EvolutionKey: "0",
-			Cost:         getInt(c.Cost0),
-			MaxLevel:     getInt(c.MaxLevel0),
-			Attack:       c.Atk0,
-			Defense:      c.Def0,
-			Soldiers:     c.Soldiers0,
-			Medals:       getInt(c.Medals0),
-			Gold:         getInt(c.Gold0),
-			Skills:       make([]CardSkill, 0),
-		}
-		skill := CardSkill{
-			EvoID:        "",
-			IDMod:        "",
-			Name:         c.Skill,
-			Activations:  getInt(c.SkillProcs),
-			MinEffect:    c.SkillLv1,
-			MaxEffect:    c.SkillLv10,
-			CostLv1:      getInt(c.SkillLv1Cost),
-			CostLv10:     getInt(c.SkillLv10Cost),
-			RandomSkills: []string{c.SkillRandom1, c.SkillRandom2, c.SkillRandom3, c.SkillRandom4, c.SkillRandom5},
-		}
-		evo.Skills = append(evo.Skills, skill)
-		if c.Skill2 != "" {
-			skill := CardSkill{
-				EvoID:        "",
-				IDMod:        "2",
-				Name:         c.Skill2,
-				Activations:  getInt(c.Skill2Procs),
-				MinEffect:    c.Skill2Lv1,
-				MaxEffect:    c.Skill2Lv10,
-				CostLv1:      getInt(c.Skill2Lv1Cost),
-				CostLv10:     getInt(c.Skill2Lv10Cost),
-				RandomSkills: []string{c.Skill2Random1, c.Skill2Random2, c.Skill2Random3, c.Skill2Random4, c.Skill2Random5},
-				Expiration:   getTime(c.Skill2End),
-			}
-			evo.Skills = append(evo.Skills, skill)
-		}
-		if c.Skill3 != "" {
-			skill := CardSkill{
-				EvoID:        "",
-				IDMod:        "3",
-				Name:         c.Skill3,
-				Activations:  getInt(c.Skill3Procs),
-				MinEffect:    c.Skill3Lv1,
-				MaxEffect:    c.Skill3Lv10,
-				CostLv1:      getInt(c.Skill3Lv1Cost),
-				CostLv10:     getInt(c.Skill3Lv10Cost),
-				RandomSkills: []string{c.Skill3Random1, c.Skill3Random2, c.Skill3Random3, c.Skill3Random4, c.Skill3Random5},
-				Expiration:   getTime(c.Skill3End),
-			}
-			evo.Skills = append(evo.Skills, skill)
-		}
-		if c.SkillT != "" {
-			skill := CardSkill{
-				EvoID:        "",
-				IDMod:        "t",
-				Name:         c.SkillT,
-				Activations:  getInt(c.SkillTProcs),
-				MinEffect:    c.SkillTLv1,
-				MaxEffect:    c.SkillTLv10,
-				RandomSkills: []string{},
-				Expiration:   getTime(c.SkillTEnd),
-			}
-			evo.Skills = append(evo.Skills, skill)
-		}
-		ret.Evolutions = append(ret.Evolutions, evo)
-	}
-	if c.Cost1 != "" {
-		evo := EvolutionDetails{
-			EvolutionKey: "1",
-			Cost:         getInt(c.Cost1),
-			MaxLevel:     getInt(c.MaxLevel1),
-			Attack:       c.Atk1,
-			Defense:      c.Def1,
-			Soldiers:     c.Soldiers1,
-			Medals:       getInt(c.Medals1),
-			Gold:         getInt(c.Gold1),
-			Skills:       make([]CardSkill, 0),
-		}
-		ret.Evolutions = append(ret.Evolutions, evo)
-	}
-	if c.Cost2 != "" {
-		evo := EvolutionDetails{
-			EvolutionKey: "2",
-			Cost:         getInt(c.Cost2),
-			MaxLevel:     getInt(c.MaxLevel2),
-			Attack:       c.Atk2,
-			Defense:      c.Def2,
-			Soldiers:     c.Soldiers2,
-			Medals:       getInt(c.Medals2),
-			Gold:         getInt(c.Gold2),
-			Skills:       make([]CardSkill, 0),
-		}
-		ret.Evolutions = append(ret.Evolutions, evo)
-	}
-	if c.Cost3 != "" {
-		evo := EvolutionDetails{
-			EvolutionKey: "3",
-			Cost:         getInt(c.Cost3),
-			MaxLevel:     getInt(c.MaxLevel3),
-			Attack:       c.Atk3,
-			Defense:      c.Def3,
-			Soldiers:     c.Soldiers3,
-			Medals:       getInt(c.Medals3),
-			Gold:         getInt(c.Gold3),
-			Skills:       make([]CardSkill, 0),
-		}
-		ret.Evolutions = append(ret.Evolutions, evo)
-	}
-	if c.Cost4 != "" {
-		evo := EvolutionDetails{
-			EvolutionKey: "4",
-			Cost:         getInt(c.Cost4),
-			MaxLevel:     getInt(c.MaxLevel4),
-			Attack:       c.Atk4,
-			Defense:      c.Def4,
-			Soldiers:     c.Soldiers4,
-			Medals:       getInt(c.Medals4),
-			Gold:         getInt(c.Gold4),
-			Skills:       make([]CardSkill, 0),
-		}
-		if c.Cost0 == "" { // no initial evo
-			skill := CardSkill{
-				EvoID:        "",
-				IDMod:        "",
-				Name:         c.Skill,
-				Activations:  getInt(c.SkillProcs),
-				MinEffect:    c.SkillLv1,
-				MaxEffect:    c.SkillLv10,
-				CostLv1:      getInt(c.SkillLv1Cost),
-				CostLv10:     getInt(c.SkillLv10Cost),
-				RandomSkills: []string{c.SkillRandom1, c.SkillRandom2, c.SkillRandom3, c.SkillRandom4, c.SkillRandom5},
-			}
-			evo.Skills = append(evo.Skills, skill)
-			if c.Skill2 != "" {
-				skill := CardSkill{
-					EvoID:        "",
-					IDMod:        "2",
-					Name:         c.Skill2,
-					Activations:  getInt(c.Skill2Procs),
-					MinEffect:    c.Skill2Lv1,
-					MaxEffect:    c.Skill2Lv10,
-					CostLv1:      getInt(c.Skill2Lv1Cost),
-					CostLv10:     getInt(c.Skill2Lv10Cost),
-					RandomSkills: []string{c.Skill2Random1, c.Skill2Random2, c.Skill2Random3, c.Skill2Random4, c.Skill2Random5},
-					Expiration:   getTime(c.Skill2End),
-				}
-				evo.Skills = append(evo.Skills, skill)
-			}
-			if c.Skill3 != "" {
-				skill := CardSkill{
-					EvoID:        "",
-					IDMod:        "3",
-					Name:         c.Skill3,
-					Activations:  getInt(c.Skill3Procs),
-					MinEffect:    c.Skill3Lv1,
-					MaxEffect:    c.Skill3Lv10,
-					CostLv1:      getInt(c.Skill3Lv1Cost),
-					CostLv10:     getInt(c.Skill3Lv10Cost),
-					RandomSkills: []string{c.Skill3Random1, c.Skill3Random2, c.Skill3Random3, c.Skill3Random4, c.Skill3Random5},
-					Expiration:   getTime(c.Skill3End),
-				}
-				evo.Skills = append(evo.Skills, skill)
-			}
-			if c.SkillT != "" {
-				skill := CardSkill{
-					EvoID:        "",
-					IDMod:        "t",
-					Name:         c.SkillT,
-					Activations:  getInt(c.SkillTProcs),
-					MinEffect:    c.SkillTLv1,
-					MaxEffect:    c.SkillTLv10,
-					RandomSkills: []string{},
-					Expiration:   getTime(c.SkillTEnd),
-				}
-				evo.Skills = append(evo.Skills, skill)
-			}
-		}
-		ret.Evolutions = append(ret.Evolutions, evo)
-	}
-	if c.CostA != "" {
-		evo := EvolutionDetails{
-			EvolutionKey: "a",
-			Cost:         getInt(c.CostA),
-			MaxLevel:     getInt(c.MaxLevelA),
-			Attack:       c.AtkA,
-			Defense:      c.DefA,
-			Soldiers:     c.SoldiersA,
-			Medals:       getInt(c.MedalsA),
-			Gold:         getInt(c.GoldA),
-			Skills:       make([]CardSkill, 0),
-		}
-		ret.Evolutions = append(ret.Evolutions, evo)
-	}
-	if c.CostG != "" {
-		evo := EvolutionDetails{
-			EvolutionKey: "g",
-			Cost:         getInt(c.CostG),
-			MaxLevel:     getInt(c.MaxLevelG),
-			Attack:       c.AtkG,
-			Defense:      c.DefG,
-			Soldiers:     c.SoldiersG,
-			Medals:       getInt(c.MedalsG),
-			Gold:         getInt(c.GoldG),
-			Skills:       make([]CardSkill, 0),
-		}
-		skill := CardSkill{
-			EvoID:        "g",
-			IDMod:        "",
-			Name:         c.SkillG,
-			Activations:  getInt(c.SkillGProcs),
-			MinEffect:    c.SkillGLv1,
-			MaxEffect:    c.SkillGLv10,
-			CostLv1:      getInt(c.SkillGLv1Cost),
-			CostLv10:     getInt(c.SkillGLv10Cost),
-			RandomSkills: []string{c.SkillGRandom1, c.SkillGRandom2, c.SkillGRandom3, c.SkillGRandom4, c.SkillGRandom5},
-		}
-		evo.Skills = append(evo.Skills, skill)
-		if c.Skill2 != "" {
-			skill := CardSkill{
-				EvoID:        "g",
-				IDMod:        "2",
-				Name:         c.SkillG2,
-				Activations:  getInt(c.SkillG2Procs),
-				MinEffect:    c.SkillG2Lv1,
-				MaxEffect:    c.SkillG2Lv10,
-				CostLv1:      getInt(c.SkillG2Lv1Cost),
-				CostLv10:     getInt(c.SkillG2Lv10Cost),
-				RandomSkills: []string{c.SkillG2Random1, c.SkillG2Random2, c.SkillG2Random3, c.SkillG2Random4, c.SkillG2Random5},
-				Expiration:   getTime(c.SkillG2End),
-			}
-			evo.Skills = append(evo.Skills, skill)
-		}
-		if c.Skill3 != "" {
-			skill := CardSkill{
-				EvoID:        "g",
-				IDMod:        "3",
-				Name:         c.SkillG3,
-				Activations:  getInt(c.SkillG3Procs),
-				MinEffect:    c.SkillG3Lv1,
-				MaxEffect:    c.SkillG3Lv10,
-				CostLv1:      getInt(c.SkillG3Lv1Cost),
-				CostLv10:     getInt(c.SkillG3Lv10Cost),
-				RandomSkills: []string{c.SkillG3Random1, c.SkillG3Random2, c.SkillG3Random3, c.SkillG3Random4, c.SkillG3Random5},
-				Expiration:   getTime(c.SkillG3End),
-			}
-			evo.Skills = append(evo.Skills, skill)
-		}
-		if c.SkillT != "" {
-			skill := CardSkill{
-				EvoID:        "g",
-				IDMod:        "t",
-				Name:         c.SkillGT,
-				Activations:  getInt(c.SkillGTProcs),
-				MinEffect:    c.SkillGTLv1,
-				MaxEffect:    c.SkillGTLv10,
-				RandomSkills: []string{},
-				Expiration:   getTime(c.SkillGTEnd),
-			}
-			evo.Skills = append(evo.Skills, skill)
-		}
-		ret.Evolutions = append(ret.Evolutions, evo)
-	}
-	if c.CostGA != "" {
-		evo := EvolutionDetails{
-			EvolutionKey: "ga",
-			Cost:         getInt(c.CostGA),
-			MaxLevel:     getInt(c.MaxLevelGA),
-			Attack:       c.AtkGA,
-			Defense:      c.DefGA,
-			Soldiers:     c.SoldiersGA,
-			Medals:       getInt(c.MedalsGA),
-			Gold:         getInt(c.GoldGA),
-			Skills:       make([]CardSkill, 0),
-		}
-		ret.Evolutions = append(ret.Evolutions, evo)
-	}
-	if c.CostX != "" {
-		evo := EvolutionDetails{
-			EvolutionKey: "x",
-			Cost:         getInt(c.CostX),
-			MaxLevel:     getInt(c.MaxLevelX),
-			Attack:       c.AtkX,
-			Defense:      c.DefX,
-			Soldiers:     c.SoldiersX,
-			Medals:       getInt(c.MedalsX),
-			Gold:         getInt(c.GoldX),
-			Skills:       make([]CardSkill, 0),
-		}
-		skill := CardSkill{
-			EvoID:        "x",
-			IDMod:        "",
-			Name:         c.SkillX,
-			Activations:  getInt(c.SkillXProcs),
-			MinEffect:    c.SkillXLv1,
-			MaxEffect:    c.SkillXLv10,
-			CostLv1:      getInt(c.SkillXLv1Cost),
-			CostLv10:     getInt(c.SkillXLv10Cost),
-			RandomSkills: []string{c.SkillXRandom1, c.SkillXRandom2, c.SkillXRandom3, c.SkillXRandom4, c.SkillXRandom5},
-		}
-		evo.Skills = append(evo.Skills, skill)
-		if c.Skill2 != "" {
-			skill := CardSkill{
-				EvoID:        "x",
-				IDMod:        "2",
-				Name:         c.SkillX2,
-				Activations:  getInt(c.SkillX2Procs),
-				MinEffect:    c.SkillX2Lv1,
-				MaxEffect:    c.SkillX2Lv10,
-				CostLv1:      getInt(c.SkillX2Lv1Cost),
-				CostLv10:     getInt(c.SkillX2Lv10Cost),
-				RandomSkills: []string{c.SkillX2Random1, c.SkillX2Random2, c.SkillX2Random3, c.SkillX2Random4, c.SkillX2Random5},
-				Expiration:   getTime(c.SkillX2End),
-			}
-			evo.Skills = append(evo.Skills, skill)
-		}
-		if c.Skill3 != "" {
-			skill := CardSkill{
-				EvoID:        "x",
-				IDMod:        "3",
-				Name:         c.SkillX3,
-				Activations:  getInt(c.SkillX3Procs),
-				MinEffect:    c.SkillX3Lv1,
-				MaxEffect:    c.SkillX3Lv10,
-				CostLv1:      getInt(c.SkillX3Lv1Cost),
-				CostLv10:     getInt(c.SkillX3Lv10Cost),
-				RandomSkills: []string{c.SkillX3Random1, c.SkillX3Random2, c.SkillX3Random3, c.SkillX3Random4, c.SkillX3Random5},
-				Expiration:   getTime(c.SkillX3End),
-			}
-			evo.Skills = append(evo.Skills, skill)
-		}
-		if c.SkillT != "" {
-			skill := CardSkill{
-				EvoID:        "x",
-				IDMod:        "t",
-				Name:         c.SkillXT,
-				Activations:  getInt(c.SkillXTProcs),
-				MinEffect:    c.SkillXTLv1,
-				MaxEffect:    c.SkillXTLv10,
-				RandomSkills: []string{},
-				Expiration:   getTime(c.SkillXTEnd),
-			}
-			evo.Skills = append(evo.Skills, skill)
-		}
-		ret.Evolutions = append(ret.Evolutions, evo)
-	}
-	return
 }
 
 //UpdateBaseData Updates the tempalte information from the VC data. Fields updated are `Element`, `Rarity`, `Symbol` and turn over information for evo accidents
-func (c *CardFlat) UpdateBaseData(vcCard vc.Card) {
+func (c *CardFlat) UpdateBaseData(vcCard *vc.Card) {
 	c.Element = vcCard.Element()
 	c.Rarity = vcCard.MainRarity()
 	c.Symbol = vcCard.Symbol()
@@ -765,10 +400,9 @@ func (c *CardFlat) UpdateBaseData(vcCard vc.Card) {
 //UpdateExchangeInfo Updates Gold and Medal exchange info for a specific evo
 func (c *CardFlat) UpdateExchangeInfo(evolutions map[string]*vc.Card) {
 	rs := reflect.ValueOf(c).Elem()
+	lenEvos := len(evolutions)
 	for evoCode, evo := range evolutions {
-		if evoCode == "H" {
-			continue
-		}
+		evoCode = fixEvoKey(evoCode, evo, lenEvos)
 		goldField := rs.FieldByName("Gold" + evoCode)
 		if goldField.IsValid() {
 			log.Printf("Evo %s: Gold %d, Medals %d", evoCode, evo.Price, evo.MedalRate)
@@ -778,6 +412,35 @@ func (c *CardFlat) UpdateExchangeInfo(evolutions map[string]*vc.Card) {
 			log.Printf("Unknown evo: %s", evoCode)
 		}
 	}
+}
+
+//UpdateEvoStats updates stats for the evos provided
+func (c *CardFlat) UpdateEvoStats(evolutions map[string]*vc.Card) {
+	rs := reflect.ValueOf(c).Elem()
+
+	lenEvos := len(evolutions)
+	for evoCode, evo := range evolutions {
+		evoCode = fixEvoKey(evoCode, evo, lenEvos)
+
+		log.Printf("******Settings stats for evo %s", evoCode)
+		a, d, s := maxStats(evo, len(evolutions))
+		rs.FieldByName("MaxLevel" + evoCode).SetString(strconv.Itoa(evo.CardRarity().MaxCardLevel))
+		rs.FieldByName("Cost" + evoCode).SetString(strconv.Itoa(evo.DeckCost))
+		rs.FieldByName("Atk" + evoCode).SetString(fmt.Sprintf("%d%s", evo.DefaultOffense, a))
+		rs.FieldByName("Def" + evoCode).SetString(fmt.Sprintf("%d%s", evo.DefaultDefense, d))
+		rs.FieldByName("Soldiers" + evoCode).SetString(fmt.Sprintf("%d%s", evo.DefaultFollower, s))
+	}
+}
+
+func fixEvoKey(evoCode string, evo *vc.Card, len int) string {
+	if evoCode == "H" {
+		if evo.EvolutionRank >= 0 {
+			evoCode = strconv.Itoa(evo.EvolutionRank)
+		} else if len == 1 {
+			evoCode = "1"
+		}
+	}
+	return evoCode
 }
 
 //UpdateAwakenRebirthInfo Updates awakening and rebirth information based on the cards provided. The cards provided are expected to only be valid evos of this card.
@@ -973,6 +636,211 @@ func (c *CardFlat) UpdateQuotes(card *vc.Card) {
 			rs.FieldByName("Likeability" + strconv.Itoa(i)).SetString(cleanVal(q))
 		}
 	}
+}
+
+func maxStats(evo *vc.Card, numOfEvos int) (atk, def, sol string) {
+	// stats := evo.EvoStandard()
+	// atk += fmt.Sprintf(" / %d", stats.Attack)
+	// def += fmt.Sprintf(" / %d", stats.Defense)
+	// sol += fmt.Sprintf(" / %d", stats.Soldiers)
+
+	// stats = evo.EvoMixed()
+	// atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", stats.Attack)
+	// def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", stats.Defense)
+	// sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", stats.Soldiers)
+
+	// stats = evo.AmalgamationPerfect()
+	// atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", stats.Attack)
+	// def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", stats.Defense)
+	// sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", stats.Soldiers)
+	// return
+
+	if evo.CardRarity() != nil && evo.CardRarity().MaxCardLevel == 1 && numOfEvos == 1 {
+		// only X cards have a max level of 1 and they don't evo
+		// only possible amalgamations like Philosopher's Stones
+		if evo.IsAmalgamation() {
+			stats := evo.AmalgamationPerfect()
+			atk = fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", stats.Attack)
+			def = fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", stats.Defense)
+			sol = fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", stats.Soldiers)
+		}
+		return
+	}
+	if evo.IsAmalgamation() {
+		stats := evo.EvoStandard()
+		atk = " / " + strconv.Itoa(stats.Attack)
+		def = " / " + strconv.Itoa(stats.Defense)
+		sol = " / " + strconv.Itoa(stats.Soldiers)
+		if strings.HasSuffix(evo.Rarity(), "LR") {
+			// print LR level1 static material amal
+			pStats := evo.AmalgamationPerfect()
+			if stats.NotEquals(pStats) {
+				if evo.PossibleMixedEvo() {
+					mStats := evo.EvoMixed()
+					if stats.NotEquals(mStats) {
+						atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Attack)
+						def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Defense)
+						sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Soldiers)
+					}
+				}
+				lrStats := evo.AmalgamationLRStaticLvl1()
+				if lrStats.NotEquals(pStats) {
+					atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStats.Attack)
+					def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStats.Defense)
+					sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStats.Soldiers)
+				}
+				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStats.Attack)
+				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStats.Defense)
+				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStats.Soldiers)
+			}
+		} else {
+			pStats := evo.AmalgamationPerfect()
+			if stats.NotEquals(pStats) {
+				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStats.Attack)
+				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStats.Defense)
+				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStats.Soldiers)
+			}
+		}
+	} else if evo.EvolutionRank < 2 {
+		// not an amalgamation.
+		stats := evo.EvoStandard()
+		atk = " / " + strconv.Itoa(stats.Attack)
+		def = " / " + strconv.Itoa(stats.Defense)
+		sol = " / " + strconv.Itoa(stats.Soldiers)
+		pStats := evo.EvoPerfect()
+		if stats.NotEquals(pStats) {
+			var evoType string
+			if evo.PossibleMixedEvo() {
+				evoType = "Amalgamation"
+				mStats := evo.EvoMixed()
+				if stats.NotEquals(mStats) {
+					atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Attack)
+					def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Defense)
+					sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Soldiers)
+				}
+			} else {
+				evoType = "Evolution"
+			}
+			atk += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", pStats.Attack, evoType)
+			def += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", pStats.Defense, evoType)
+			sol += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", pStats.Soldiers, evoType)
+		}
+	} else {
+		// not an amalgamation, Evo Rank >=2 (Awoken cards or 4* evos).
+		stats := evo.EvoStandard()
+		atk = " / " + strconv.Itoa(stats.Attack)
+		def = " / " + strconv.Itoa(stats.Defense)
+		sol = " / " + strconv.Itoa(stats.Soldiers)
+		printedMixed := false
+		printedPerfect := false
+		if strings.HasSuffix(evo.Rarity(), "LR") {
+			// print LR level1 static material amal
+			if evo.PossibleMixedEvo() {
+				mStats := evo.EvoMixed()
+				if stats.NotEquals(mStats) {
+					printedMixed = true
+					atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Attack)
+					def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Defense)
+					sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Soldiers)
+				}
+			}
+			pStats := evo.AmalgamationPerfect()
+			if stats.NotEquals(pStats) {
+				lrStats := evo.AmalgamationLRStaticLvl1()
+				if lrStats.NotEquals(pStats) {
+					atk += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStats.Attack)
+					def += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStats.Defense)
+					sol += fmt.Sprintf(" / {{tooltip|%d|LR 'Special' material Lvl-1, other materials Perfect Amalgamation}}", lrStats.Soldiers)
+				}
+				printedPerfect = true
+				atk += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStats.Attack)
+				def += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStats.Defense)
+				sol += fmt.Sprintf(" / {{tooltip|%d|Perfect Amalgamation}}", pStats.Soldiers)
+			}
+		}
+
+		if !strings.HasSuffix(evo.Rarity(), "LR") &&
+			evo.Rarity()[0] != 'G' && evo.Rarity()[0] != 'X' {
+			// TODO need more logic here to check if it's an Amalg vs evo only.
+			// may need different options depending on the type of card.
+			if evo.EvolutionRank == 4 {
+				//If 4* card, calculate 6 card evo stats
+				stats := evo.Evo6Card()
+				atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Attack, 6)
+				def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Defense, 6)
+				sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Soldiers, 6)
+				if evo.Rarity() != "GLR" {
+					//If SR card, calculate 9 card evo stats
+					stats = evo.Evo9Card()
+					atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Attack, 9)
+					def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Defense, 9)
+					sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Soldiers, 9)
+				}
+			}
+			//If 4* card, calculate 16 card evo stats
+			stats := evo.EvoPerfect()
+			var cards int
+			switch evo.EvolutionRank {
+			case 1:
+				cards = 2
+			case 2:
+				cards = 4
+			case 3:
+				cards = 8
+			case 4:
+				cards = 16
+			}
+			atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Attack, cards)
+			def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Defense, cards)
+			sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Soldiers, cards)
+		}
+		if evo.EvoIsAwoken() || evo.EvoIsReborn() {
+			evo.EvoStandardLvl1() // just to print out the level 1 G stats
+			pStats := evo.EvoPerfect()
+			if stats.NotEquals(pStats) {
+				var evoType string
+				if !printedMixed && evo.PossibleMixedEvo() {
+					evoType = "Amalgamation"
+					mStats := evo.EvoMixed()
+					if stats.NotEquals(mStats) {
+						atk += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Attack)
+						def += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Defense)
+						sol += fmt.Sprintf(" / {{tooltip|%d|Mixed Evolution}}", mStats.Soldiers)
+					}
+				} else {
+					evoType = "Evolution"
+				}
+				if !printedPerfect {
+					atk += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", pStats.Attack, evoType)
+					def += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", pStats.Defense, evoType)
+					sol += fmt.Sprintf(" / {{tooltip|%d|Perfect %s}}", pStats.Soldiers, evoType)
+				}
+			}
+			awakensFrom := evo.AwakensFrom()
+			if awakensFrom == nil && evo.RebirthsFrom() != nil {
+				awakensFrom = evo.RebirthsFrom().AwakensFrom()
+			}
+			if awakensFrom != nil && awakensFrom.LastEvolutionRank == 4 {
+				//If 4* card, calculate 6 card evo stats
+				stats := evo.Evo6Card()
+				atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Attack, 6)
+				def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Defense, 6)
+				sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Soldiers, 6)
+				if evo.MainRarity() != "LR" {
+					//If SR card, calculate 9 and 16 card evo stats
+					stats = evo.Evo9Card()
+					atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Attack, 9)
+					def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Defense, 9)
+					sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Soldiers, 9)
+					stats = evo.EvoPerfect()
+					atk += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Attack, 16)
+					def += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Defense, 16)
+					sol += fmt.Sprintf(" / {{tooltip|%d|%d Card Evolution}}", stats.Soldiers, 16)
+				}
+			}
+		}
+	}
+	return
 }
 
 func parseCard(pageText string) (map[string]string, int, error) {

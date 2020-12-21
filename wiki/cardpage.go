@@ -8,8 +8,8 @@ import (
 //CardPage represents a wiki page that is for Card information
 type CardPage struct {
 	CardInfo   CardFlat
-	pageHeader string
-	pageFooter string
+	PageHeader string
+	PageFooter string
 }
 
 func (c *CardPage) String() (ret string) {
@@ -17,14 +17,14 @@ func (c *CardPage) String() (ret string) {
 		return ""
 	}
 
-	if c.pageHeader != "" {
-		ret += c.pageHeader + "\n\n"
+	if c.PageHeader != "" {
+		ret += c.PageHeader + "\n\n"
 	}
 
 	ret += c.CardInfo.String()
 
-	if c.pageFooter != "" {
-		ret += "\n" + c.pageFooter + "\n"
+	if c.PageFooter != "" {
+		ret += "\n" + c.PageFooter + "\n"
 	}
 
 	return
@@ -40,7 +40,7 @@ func ParseCardPage(pageText string) (ret CardPage, err error) {
 		return
 	}
 	if cardIdx > 0 {
-		ret.pageHeader = strings.TrimSpace(pageText[:cardIdx])
+		ret.PageHeader = strings.TrimSpace(pageText[:cardIdx])
 	}
 
 	// convert the page Card template to a map
@@ -70,7 +70,7 @@ func ParseCardPage(pageText string) (ret CardPage, err error) {
 	}
 
 	if cardEndIdx+cardIdx < len(pageText) {
-		ret.pageFooter = strings.TrimSpace(pageText[cardEndIdx+cardIdx:])
+		ret.PageFooter = strings.TrimSpace(pageText[cardEndIdx+cardIdx:])
 	}
 
 	return

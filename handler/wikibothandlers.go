@@ -46,13 +46,13 @@ func TestLoginHandler(w http.ResponseWriter, r *http.Request) {
 func TestCardFetchHandler(w http.ResponseWriter, r *http.Request) {
 	/*
 		 313 Oracle R - HR
-		2582 Sulis SR GSR with Amal
 		1879 Oracle Ascendant UR - GUR
+		2582 Sulis SR GSR with Amal
 		3493 Summer Oracle UR - XUR
 		8408 New Year Alchemist LR - XLR
 		9490 Cheerleader Pixie VR - GVR
 	*/
-	card := vc.CardScan(9490)
+	card := vc.CardScan(8408)
 	cardPage, rawPagebody, err := api.GetCardPage(card)
 	fmt.Fprintf(w, "<html><head><title>Wikibot Test page updates</title><style type=\"text/css\">%s</style></head><body>\n",
 		`
@@ -81,9 +81,10 @@ pre {
 		fmt.Fprintf(w, "<h1>%s</h1>", card.Name)
 		io.WriteString(w, `<div class="flex">`)
 		fmt.Fprintf(w, "<div>Wiki Version<pre>%s</pre></div>", html.EscapeString(rawPagebody))
-		cardPage.CardInfo.UpdateBaseData(*card)
+		cardPage.CardInfo.UpdateBaseData(card)
 		cardPage.CardInfo.UpdateSkills(card.GetEvolutions())
 		cardPage.CardInfo.UpdateExchangeInfo(card.GetEvolutions())
+		cardPage.CardInfo.UpdateEvoStats(card.GetEvolutions())
 		cardPage.CardInfo.UpdateAwakenRebirthInfo(card.GetEvolutions())
 		cardPage.CardInfo.UpdateQuotes(card)
 		fmt.Fprintf(w, "<div>Adjusted Version<pre>%s</pre></div>", html.EscapeString(cardPage.String()))

@@ -44,11 +44,11 @@ some footer
 	if cardPage.CardInfo.Availability != "{{Tooltip|Saintly Oracle's {{cool}}Celestial Stone Exchange|December 7th ー January 12th 2020}}" {
 		t.Errorf("Invalid value for Availability found: `%s`", cardPage.CardInfo.Availability)
 	}
-	if strings.TrimSpace(cardPage.pageHeader) != "Some Header" {
-		t.Errorf("Invalid value for pageHeader found: `%s`", cardPage.pageHeader)
+	if strings.TrimSpace(cardPage.PageHeader) != "Some Header" {
+		t.Errorf("Invalid value for pageHeader found: `%s`", cardPage.PageHeader)
 	}
-	if strings.TrimSpace(cardPage.pageFooter) != "some footer" {
-		t.Errorf("Invalid value for pageFooter found: `%s`", cardPage.pageFooter)
+	if strings.TrimSpace(cardPage.PageFooter) != "some footer" {
+		t.Errorf("Invalid value for pageFooter found: `%s`", cardPage.PageFooter)
 	}
 
 	expectedUnknownFields := 3 //
