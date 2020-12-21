@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"reflect"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -23,157 +25,157 @@ type CardFlat struct {
 	SkillLv10     string `json:"skill lv10"`
 	SkillLv1Cost  string `json:"skill lv1 cost"`
 	SkillLv10Cost string `json:"skill lv10 cost"`
-	Procs         string `json:"procs"`
-	Random1       string `json:"random 1"`
-	Random2       string `json:"random 2"`
-	Random3       string `json:"random 3"`
-	Random4       string `json:"random 4"`
-	Random5       string `json:"random 5"`
+	SkillProcs    string `json:"procs"`
+	SkillRandom1  string `json:"random 1"`
+	SkillRandom2  string `json:"random 2"`
+	SkillRandom3  string `json:"random 3"`
+	SkillRandom4  string `json:"random 4"`
+	SkillRandom5  string `json:"random 5"`
 
 	Skill2         string `json:"skill 2"`
 	Skill2Lv1      string `json:"skill 2 lv1"`
 	Skill2Lv10     string `json:"skill 2 lv10"`
 	Skill2Lv1Cost  string `json:"skill 2 lv1 cost"`
 	Skill2Lv10Cost string `json:"skill 2 lv10 cost"`
-	Procs2         string `json:"procs 2"`
+	Skill2Procs    string `json:"procs 2"`
 	Skill2End      string `json:"skill 2 end"`
-	Random21       string `json:"random 2 1"`
-	Random22       string `json:"random 2 2"`
-	Random23       string `json:"random 2 3"`
-	Random24       string `json:"random 2 4"`
-	Random25       string `json:"random 2 5"`
+	Skill2Random1  string `json:"random 2 1"`
+	Skill2Random2  string `json:"random 2 2"`
+	Skill2Random3  string `json:"random 2 3"`
+	Skill2Random4  string `json:"random 2 4"`
+	Skill2Random5  string `json:"random 2 5"`
 
 	Skill3         string `json:"skill 3"`
 	Skill3Lv1      string `json:"skill 3 lv1"`
 	Skill3Lv10     string `json:"skill 3 lv10"`
 	Skill3Lv1Cost  string `json:"skill 3 lv1 cost"`
 	Skill3Lv10Cost string `json:"skill 3 lv10 cost"`
-	Procs3         string `json:"procs 3"`
+	Skill3Procs    string `json:"procs 3"`
 	Skill3End      string `json:"skill 3 end"`
-	Random31       string `json:"random 3 1"`
-	Random32       string `json:"random 3 2"`
-	Random33       string `json:"random 3 3"`
-	Random34       string `json:"random 3 4"`
-	Random35       string `json:"random 3 5"`
+	Skill3Random1  string `json:"random 3 1"`
+	Skill3Random2  string `json:"random 3 2"`
+	Skill3Random3  string `json:"random 3 3"`
+	Skill3Random4  string `json:"random 3 4"`
+	Skill3Random5  string `json:"random 3 5"`
 
 	SkillA         string `json:"skill a"`
 	SkillALv1      string `json:"skill a lv1"`
 	SkillALv10     string `json:"skill a lv10"`
 	SkillALv1Cost  string `json:"skill a lv1 cost"`
 	SkillALv10Cost string `json:"skill a lv10 cost"`
-	ProcsA         string `json:"procs a"`
+	SkillAProcs    string `json:"procs a"`
 	SkillAEnd      string `json:"skill a end"`
-	RandomA1       string `json:"random a 1"`
-	RandomA2       string `json:"random a 2"`
-	RandomA3       string `json:"random a 3"`
-	RandomA4       string `json:"random a 4"`
-	RandomA5       string `json:"random a 5"`
+	SkillARandom1  string `json:"random a 1"`
+	SkillARandom2  string `json:"random a 2"`
+	SkillARandom3  string `json:"random a 3"`
+	SkillARandom4  string `json:"random a 4"`
+	SkillARandom5  string `json:"random a 5"`
 
 	SkillG         string `json:"skill g"`
 	SkillGLv1      string `json:"skill g lv1"`
 	SkillGLv10     string `json:"skill g lv10"`
 	SkillGLv1Cost  string `json:"skill g lv1 cost"`
 	SkillGLv10Cost string `json:"skill g lv10 cost"`
-	ProcsG         string `json:"procs g"`
-	RandomG1       string `json:"random g 1"`
-	RandomG2       string `json:"random g 2"`
-	RandomG3       string `json:"random g 3"`
-	RandomG4       string `json:"random g 4"`
-	RandomG5       string `json:"random g 5"`
+	SkillGProcs    string `json:"procs g"`
+	SkillGRandom1  string `json:"random g 1"`
+	SkillGRandom2  string `json:"random g 2"`
+	SkillGRandom3  string `json:"random g 3"`
+	SkillGRandom4  string `json:"random g 4"`
+	SkillGRandom5  string `json:"random g 5"`
 
 	SkillG2         string `json:"skill g2"`
 	SkillG2Lv1      string `json:"skill g2 lv1"`
 	SkillG2Lv10     string `json:"skill g2 lv10"`
 	SkillG2Lv1Cost  string `json:"skill g2 lv1 cost"`
 	SkillG2Lv10Cost string `json:"skill g2 lv10 cost"`
-	ProcsG2         string `json:"procs g2"`
+	SkillG2Procs    string `json:"procs g2"`
 	SkillG2End      string `json:"skill g2 end"`
-	RandomG21       string `json:"random g2 1"`
-	RandomG22       string `json:"random g2 2"`
-	RandomG23       string `json:"random g2 3"`
-	RandomG24       string `json:"random g2 4"`
-	RandomG25       string `json:"random g2 5"`
+	SkillG2Random1  string `json:"random g2 1"`
+	SkillG2Random2  string `json:"random g2 2"`
+	SkillG2Random3  string `json:"random g2 3"`
+	SkillG2Random4  string `json:"random g2 4"`
+	SkillG2Random5  string `json:"random g2 5"`
 
 	SkillG3         string `json:"skill g3"`
 	SkillG3Lv1      string `json:"skill g3 lv1"`
 	SkillG3Lv10     string `json:"skill g3 lv10"`
 	SkillG3Lv1Cost  string `json:"skill g3 lv1 cost"`
 	SkillG3Lv10Cost string `json:"skill g3 lv10 cost"`
-	ProcsG3         string `json:"procs g3"`
+	SkillG3Procs    string `json:"procs g3"`
 	SkillG3End      string `json:"skill g3 end"`
-	RandomG31       string `json:"random g3 1"`
-	RandomG32       string `json:"random g3 2"`
-	RandomG33       string `json:"random g3 3"`
-	RandomG34       string `json:"random g3 4"`
-	RandomG35       string `json:"random g3 5"`
+	SkillG3Random1  string `json:"random g3 1"`
+	SkillG3Random2  string `json:"random g3 2"`
+	SkillG3Random3  string `json:"random g3 3"`
+	SkillG3Random4  string `json:"random g3 4"`
+	SkillG3Random5  string `json:"random g3 5"`
 
 	SkillGA         string `json:"skill ga"`
 	SkillGALv1      string `json:"skill ga lv1"`
 	SkillGALv10     string `json:"skill ga lv10"`
 	SkillGALv1Cost  string `json:"skill ga lv1 cost"`
 	SkillGALv10Cost string `json:"skill ga lv10 cost"`
-	ProcsGA         string `json:"procs ga"`
-	RandomGA1       string `json:"random ga 1"`
-	RandomGA2       string `json:"random ga 2"`
-	RandomGA3       string `json:"random ga 3"`
-	RandomGA4       string `json:"random ga 4"`
-	RandomGA5       string `json:"random ga 5"`
+	SkillGAProcs    string `json:"procs ga"`
+	SkillGARandom1  string `json:"random ga 1"`
+	SkillGARandom2  string `json:"random ga 2"`
+	SkillGARandom3  string `json:"random ga 3"`
+	SkillGARandom4  string `json:"random ga 4"`
+	SkillGARandom5  string `json:"random ga 5"`
 
 	SkillX         string `json:"skill x"`
 	SkillXLv1      string `json:"skill x lv1"`
 	SkillXLv10     string `json:"skill x lv10"`
 	SkillXLv1Cost  string `json:"skill x lv1 cost"`
 	SkillXLv10Cost string `json:"skill x lv10 cost"`
-	ProcsX         string `json:"procs x"`
-	RandomX1       string `json:"random x 1"`
-	RandomX2       string `json:"random x 2"`
-	RandomX3       string `json:"random x 3"`
-	RandomX4       string `json:"random x 4"`
-	RandomX5       string `json:"random x 5"`
+	SkillXProcs    string `json:"procs x"`
+	SkillXRandom1  string `json:"random x 1"`
+	SkillXRandom2  string `json:"random x 2"`
+	SkillXRandom3  string `json:"random x 3"`
+	SkillXRandom4  string `json:"random x 4"`
+	SkillXRandom5  string `json:"random x 5"`
 
 	SkillX2         string `json:"skill x2"`
 	SkillX2Lv1      string `json:"skill x2 lv1"`
 	SkillX2Lv10     string `json:"skill x2 lv10"`
 	SkillX2Lv1Cost  string `json:"skill x2 lv1 cost"`
 	SkillX2Lv10Cost string `json:"skill x2 lv10 cost"`
-	ProcsX2         string `json:"procs x2"`
+	SkillX2Procs    string `json:"procs x2"`
 	SkillX2End      string `json:"skill x2 end"`
-	RandomX21       string `json:"random x2 1"`
-	RandomX22       string `json:"random x2 2"`
-	RandomX23       string `json:"random x2 3"`
-	RandomX24       string `json:"random x2 4"`
-	RandomX25       string `json:"random x2 5"`
+	SkillX2Random1  string `json:"random x2 1"`
+	SkillX2Random2  string `json:"random x2 2"`
+	SkillX2Random3  string `json:"random x2 3"`
+	SkillX2Random4  string `json:"random x2 4"`
+	SkillX2Random5  string `json:"random x2 5"`
 
 	SkillX3         string `json:"skill x3"`
 	SkillX3Lv1      string `json:"skill x3 lv1"`
 	SkillX3Lv10     string `json:"skill x3 lv10"`
 	SkillX3Lv1Cost  string `json:"skill x3 lv1 cost"`
 	SkillX3Lv10Cost string `json:"skill x3 lv10 cost"`
-	ProcsX3         string `json:"procs x3"`
+	SkillX3Procs    string `json:"procs x3"`
 	SkillX3End      string `json:"skill x3 end"`
-	RandomX31       string `json:"random x3 1"`
-	RandomX32       string `json:"random x3 2"`
-	RandomX33       string `json:"random x3 3"`
-	RandomX34       string `json:"random x3 4"`
-	RandomX35       string `json:"random x3 5"`
+	SkillX3Random1  string `json:"random x3 1"`
+	SkillX3Random2  string `json:"random x3 2"`
+	SkillX3Random3  string `json:"random x3 3"`
+	SkillX3Random4  string `json:"random x3 4"`
+	SkillX3Random5  string `json:"random x3 5"`
 
-	SkillT     string `json:"skill t"`
-	SkillTLv1  string `json:"skill t lv1"`
-	SkillTLv10 string `json:"skill t lv10"`
-	ProcsT     string `json:"procs t"`
-	SkillTEnd  string `json:"skill t end"`
+	SkillT      string `json:"skill t"`
+	SkillTLv1   string `json:"skill t lv1"`
+	SkillTLv10  string `json:"skill t lv10"`
+	SkillTProcs string `json:"procs t"`
+	SkillTEnd   string `json:"skill t end"`
 
-	SkillGT     string `json:"skill gt"`
-	SkillGTLv1  string `json:"skill gt lv1"`
-	SkillGTLv10 string `json:"skill gt lv10"`
-	ProcsGT     string `json:"procs gt"`
-	SkillGTEnd  string `json:"skill gt end"`
+	SkillGT      string `json:"skill gt"`
+	SkillGTLv1   string `json:"skill gt lv1"`
+	SkillGTLv10  string `json:"skill gt lv10"`
+	SkillGTProcs string `json:"procs gt"`
+	SkillGTEnd   string `json:"skill gt end"`
 
-	SkillXT     string `json:"skill xt"`
-	SkillXTLv1  string `json:"skill xt lv1"`
-	SkillXTLv10 string `json:"skill xt lv10"`
-	ProcsXT     string `json:"procs xt"`
-	SkillXTEnd  string `json:"skill xt end"`
+	SkillXT      string `json:"skill xt"`
+	SkillXTLv1   string `json:"skill xt lv1"`
+	SkillXTLv10  string `json:"skill xt lv10"`
+	SkillXTProcs string `json:"procs xt"`
+	SkillXTEnd   string `json:"skill xt end"`
 
 	MaxLevel0 string `json:"max level 0"`
 	Cost0     string `json:"cost 0"`
@@ -278,17 +280,24 @@ type CardFlat struct {
 
 	RebirthChance     string `json:"rebirth chance"`
 	RebirthItem1      string `json:"rebirth item 1"`
-	RebirthItem1Count string `json:"rebirth item 1 Count"`
+	RebirthItem1Count string `json:"rebirth item 1 count"`
 	RebirthItem2      string `json:"rebirth item 2"`
-	RebirthItem2Count string `json:"rebirth item 2 Count"`
+	RebirthItem2Count string `json:"rebirth item 2 count"`
 	RebirthItem3      string `json:"rebirth item 3"`
-	RebirthItem3Count string `json:"rebirth item 3 Count"`
+	RebirthItem3Count string `json:"rebirth item 3 count"`
 
 	TurnOverTo   string `json:"turnoverto"`
 	TurnOverFrom string `json:"turnoverfrom"`
 	Availability string `json:"availability"`
 
 	unknownFields map[string]string
+}
+
+//cleanVal repalces all double line breaks with single line breaks
+func cleanVal(v string) string {
+	regexp, _ := regexp.Compile(`([\r\n]\s*)+|(<br\s*[/]?>\s*)+`)
+	return regexp.ReplaceAllString(v, "<br />")
+	//return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(v, "\r\n", "\n"), "\n\n", "\n"), "\n", "<br />")
 }
 
 //String outputs the struct as a Wiki Template:Card call
@@ -307,7 +316,7 @@ func (c *CardFlat) String() (ret string) {
 	for _, field := range cardFieldOrder {
 		if val, ok := inInterface[field]; ok {
 			if strings.TrimSpace(val) != "" {
-				ret += fmt.Sprintf("|%s = %s\n", field, val)
+				ret += fmt.Sprintf("|%s = %s\n", field, cleanVal(val))
 			}
 		}
 	}
@@ -324,7 +333,7 @@ func (c *CardFlat) String() (ret string) {
 			ret += "<!-- these fields were unknown to the bot, but have not been removed -->\n"
 			sort.Strings(keys)
 			for _, field := range keys {
-				ret += fmt.Sprintf("|%s = %s\n", field, c.unknownFields[field])
+				ret += fmt.Sprintf("|%s = %s\n", field, cleanVal(c.unknownFields[field]))
 			}
 		}
 	}
@@ -395,12 +404,12 @@ func (c CardFlat) Card() (ret Card) {
 			EvoID:        "",
 			IDMod:        "",
 			Name:         c.Skill,
-			Activations:  getInt(c.Procs),
+			Activations:  getInt(c.SkillProcs),
 			MinEffect:    c.SkillLv1,
 			MaxEffect:    c.SkillLv10,
 			CostLv1:      getInt(c.SkillLv1Cost),
 			CostLv10:     getInt(c.SkillLv10Cost),
-			RandomSkills: []string{c.Random1, c.Random2, c.Random3, c.Random4, c.Random5},
+			RandomSkills: []string{c.SkillRandom1, c.SkillRandom2, c.SkillRandom3, c.SkillRandom4, c.SkillRandom5},
 		}
 		evo.Skills = append(evo.Skills, skill)
 		if c.Skill2 != "" {
@@ -408,12 +417,12 @@ func (c CardFlat) Card() (ret Card) {
 				EvoID:        "",
 				IDMod:        "2",
 				Name:         c.Skill2,
-				Activations:  getInt(c.Procs2),
+				Activations:  getInt(c.Skill2Procs),
 				MinEffect:    c.Skill2Lv1,
 				MaxEffect:    c.Skill2Lv10,
 				CostLv1:      getInt(c.Skill2Lv1Cost),
 				CostLv10:     getInt(c.Skill2Lv10Cost),
-				RandomSkills: []string{c.Random21, c.Random22, c.Random23, c.Random24, c.Random25},
+				RandomSkills: []string{c.Skill2Random1, c.Skill2Random2, c.Skill2Random3, c.Skill2Random4, c.Skill2Random5},
 				Expiration:   getTime(c.Skill2End),
 			}
 			evo.Skills = append(evo.Skills, skill)
@@ -423,12 +432,12 @@ func (c CardFlat) Card() (ret Card) {
 				EvoID:        "",
 				IDMod:        "3",
 				Name:         c.Skill3,
-				Activations:  getInt(c.Procs3),
+				Activations:  getInt(c.Skill3Procs),
 				MinEffect:    c.Skill3Lv1,
 				MaxEffect:    c.Skill3Lv10,
 				CostLv1:      getInt(c.Skill3Lv1Cost),
 				CostLv10:     getInt(c.Skill3Lv10Cost),
-				RandomSkills: []string{c.Random31, c.Random32, c.Random33, c.Random34, c.Random35},
+				RandomSkills: []string{c.Skill3Random1, c.Skill3Random2, c.Skill3Random3, c.Skill3Random4, c.Skill3Random5},
 				Expiration:   getTime(c.Skill3End),
 			}
 			evo.Skills = append(evo.Skills, skill)
@@ -438,7 +447,7 @@ func (c CardFlat) Card() (ret Card) {
 				EvoID:        "",
 				IDMod:        "t",
 				Name:         c.SkillT,
-				Activations:  getInt(c.ProcsT),
+				Activations:  getInt(c.SkillTProcs),
 				MinEffect:    c.SkillTLv1,
 				MaxEffect:    c.SkillTLv10,
 				RandomSkills: []string{},
@@ -507,12 +516,12 @@ func (c CardFlat) Card() (ret Card) {
 				EvoID:        "",
 				IDMod:        "",
 				Name:         c.Skill,
-				Activations:  getInt(c.Procs),
+				Activations:  getInt(c.SkillProcs),
 				MinEffect:    c.SkillLv1,
 				MaxEffect:    c.SkillLv10,
 				CostLv1:      getInt(c.SkillLv1Cost),
 				CostLv10:     getInt(c.SkillLv10Cost),
-				RandomSkills: []string{c.Random1, c.Random2, c.Random3, c.Random4, c.Random5},
+				RandomSkills: []string{c.SkillRandom1, c.SkillRandom2, c.SkillRandom3, c.SkillRandom4, c.SkillRandom5},
 			}
 			evo.Skills = append(evo.Skills, skill)
 			if c.Skill2 != "" {
@@ -520,12 +529,12 @@ func (c CardFlat) Card() (ret Card) {
 					EvoID:        "",
 					IDMod:        "2",
 					Name:         c.Skill2,
-					Activations:  getInt(c.Procs2),
+					Activations:  getInt(c.Skill2Procs),
 					MinEffect:    c.Skill2Lv1,
 					MaxEffect:    c.Skill2Lv10,
 					CostLv1:      getInt(c.Skill2Lv1Cost),
 					CostLv10:     getInt(c.Skill2Lv10Cost),
-					RandomSkills: []string{c.Random21, c.Random22, c.Random23, c.Random24, c.Random25},
+					RandomSkills: []string{c.Skill2Random1, c.Skill2Random2, c.Skill2Random3, c.Skill2Random4, c.Skill2Random5},
 					Expiration:   getTime(c.Skill2End),
 				}
 				evo.Skills = append(evo.Skills, skill)
@@ -535,12 +544,12 @@ func (c CardFlat) Card() (ret Card) {
 					EvoID:        "",
 					IDMod:        "3",
 					Name:         c.Skill3,
-					Activations:  getInt(c.Procs3),
+					Activations:  getInt(c.Skill3Procs),
 					MinEffect:    c.Skill3Lv1,
 					MaxEffect:    c.Skill3Lv10,
 					CostLv1:      getInt(c.Skill3Lv1Cost),
 					CostLv10:     getInt(c.Skill3Lv10Cost),
-					RandomSkills: []string{c.Random31, c.Random32, c.Random33, c.Random34, c.Random35},
+					RandomSkills: []string{c.Skill3Random1, c.Skill3Random2, c.Skill3Random3, c.Skill3Random4, c.Skill3Random5},
 					Expiration:   getTime(c.Skill3End),
 				}
 				evo.Skills = append(evo.Skills, skill)
@@ -550,7 +559,7 @@ func (c CardFlat) Card() (ret Card) {
 					EvoID:        "",
 					IDMod:        "t",
 					Name:         c.SkillT,
-					Activations:  getInt(c.ProcsT),
+					Activations:  getInt(c.SkillTProcs),
 					MinEffect:    c.SkillTLv1,
 					MaxEffect:    c.SkillTLv10,
 					RandomSkills: []string{},
@@ -591,12 +600,12 @@ func (c CardFlat) Card() (ret Card) {
 			EvoID:        "g",
 			IDMod:        "",
 			Name:         c.SkillG,
-			Activations:  getInt(c.ProcsG),
+			Activations:  getInt(c.SkillGProcs),
 			MinEffect:    c.SkillGLv1,
 			MaxEffect:    c.SkillGLv10,
 			CostLv1:      getInt(c.SkillGLv1Cost),
 			CostLv10:     getInt(c.SkillGLv10Cost),
-			RandomSkills: []string{c.RandomG1, c.RandomG2, c.RandomG3, c.RandomG4, c.RandomG5},
+			RandomSkills: []string{c.SkillGRandom1, c.SkillGRandom2, c.SkillGRandom3, c.SkillGRandom4, c.SkillGRandom5},
 		}
 		evo.Skills = append(evo.Skills, skill)
 		if c.Skill2 != "" {
@@ -604,12 +613,12 @@ func (c CardFlat) Card() (ret Card) {
 				EvoID:        "g",
 				IDMod:        "2",
 				Name:         c.SkillG2,
-				Activations:  getInt(c.ProcsG2),
+				Activations:  getInt(c.SkillG2Procs),
 				MinEffect:    c.SkillG2Lv1,
 				MaxEffect:    c.SkillG2Lv10,
 				CostLv1:      getInt(c.SkillG2Lv1Cost),
 				CostLv10:     getInt(c.SkillG2Lv10Cost),
-				RandomSkills: []string{c.RandomG21, c.RandomG22, c.RandomG23, c.RandomG24, c.RandomG25},
+				RandomSkills: []string{c.SkillG2Random1, c.SkillG2Random2, c.SkillG2Random3, c.SkillG2Random4, c.SkillG2Random5},
 				Expiration:   getTime(c.SkillG2End),
 			}
 			evo.Skills = append(evo.Skills, skill)
@@ -619,12 +628,12 @@ func (c CardFlat) Card() (ret Card) {
 				EvoID:        "g",
 				IDMod:        "3",
 				Name:         c.SkillG3,
-				Activations:  getInt(c.ProcsG3),
+				Activations:  getInt(c.SkillG3Procs),
 				MinEffect:    c.SkillG3Lv1,
 				MaxEffect:    c.SkillG3Lv10,
 				CostLv1:      getInt(c.SkillG3Lv1Cost),
 				CostLv10:     getInt(c.SkillG3Lv10Cost),
-				RandomSkills: []string{c.RandomG31, c.RandomG32, c.RandomG33, c.RandomG34, c.RandomG35},
+				RandomSkills: []string{c.SkillG3Random1, c.SkillG3Random2, c.SkillG3Random3, c.SkillG3Random4, c.SkillG3Random5},
 				Expiration:   getTime(c.SkillG3End),
 			}
 			evo.Skills = append(evo.Skills, skill)
@@ -634,7 +643,7 @@ func (c CardFlat) Card() (ret Card) {
 				EvoID:        "g",
 				IDMod:        "t",
 				Name:         c.SkillGT,
-				Activations:  getInt(c.ProcsGT),
+				Activations:  getInt(c.SkillGTProcs),
 				MinEffect:    c.SkillGTLv1,
 				MaxEffect:    c.SkillGTLv10,
 				RandomSkills: []string{},
@@ -674,12 +683,12 @@ func (c CardFlat) Card() (ret Card) {
 			EvoID:        "x",
 			IDMod:        "",
 			Name:         c.SkillX,
-			Activations:  getInt(c.ProcsX),
+			Activations:  getInt(c.SkillXProcs),
 			MinEffect:    c.SkillXLv1,
 			MaxEffect:    c.SkillXLv10,
 			CostLv1:      getInt(c.SkillXLv1Cost),
 			CostLv10:     getInt(c.SkillXLv10Cost),
-			RandomSkills: []string{c.RandomX1, c.RandomX2, c.RandomX3, c.RandomX4, c.RandomX5},
+			RandomSkills: []string{c.SkillXRandom1, c.SkillXRandom2, c.SkillXRandom3, c.SkillXRandom4, c.SkillXRandom5},
 		}
 		evo.Skills = append(evo.Skills, skill)
 		if c.Skill2 != "" {
@@ -687,12 +696,12 @@ func (c CardFlat) Card() (ret Card) {
 				EvoID:        "x",
 				IDMod:        "2",
 				Name:         c.SkillX2,
-				Activations:  getInt(c.ProcsX2),
+				Activations:  getInt(c.SkillX2Procs),
 				MinEffect:    c.SkillX2Lv1,
 				MaxEffect:    c.SkillX2Lv10,
 				CostLv1:      getInt(c.SkillX2Lv1Cost),
 				CostLv10:     getInt(c.SkillX2Lv10Cost),
-				RandomSkills: []string{c.RandomX21, c.RandomX22, c.RandomX23, c.RandomX24, c.RandomX25},
+				RandomSkills: []string{c.SkillX2Random1, c.SkillX2Random2, c.SkillX2Random3, c.SkillX2Random4, c.SkillX2Random5},
 				Expiration:   getTime(c.SkillX2End),
 			}
 			evo.Skills = append(evo.Skills, skill)
@@ -702,12 +711,12 @@ func (c CardFlat) Card() (ret Card) {
 				EvoID:        "x",
 				IDMod:        "3",
 				Name:         c.SkillX3,
-				Activations:  getInt(c.ProcsX3),
+				Activations:  getInt(c.SkillX3Procs),
 				MinEffect:    c.SkillX3Lv1,
 				MaxEffect:    c.SkillX3Lv10,
 				CostLv1:      getInt(c.SkillX3Lv1Cost),
 				CostLv10:     getInt(c.SkillX3Lv10Cost),
-				RandomSkills: []string{c.RandomX31, c.RandomX32, c.RandomX33, c.RandomX34, c.RandomX35},
+				RandomSkills: []string{c.SkillX3Random1, c.SkillX3Random2, c.SkillX3Random3, c.SkillX3Random4, c.SkillX3Random5},
 				Expiration:   getTime(c.SkillX3End),
 			}
 			evo.Skills = append(evo.Skills, skill)
@@ -717,7 +726,7 @@ func (c CardFlat) Card() (ret Card) {
 				EvoID:        "x",
 				IDMod:        "t",
 				Name:         c.SkillXT,
-				Activations:  getInt(c.ProcsXT),
+				Activations:  getInt(c.SkillXTProcs),
 				MinEffect:    c.SkillXTLv1,
 				MaxEffect:    c.SkillXTLv10,
 				RandomSkills: []string{},
@@ -753,39 +762,18 @@ func (c *CardFlat) UpdateBaseData(vcCard vc.Card) {
 
 //UpdateExchangeInfo Updates Gold and Medal exchange info for a specific evo
 func (c *CardFlat) UpdateExchangeInfo(evolutions map[string]*vc.Card) {
-	for evoCode, vcCard := range evolutions {
-		log.Printf("Evo %s: Gold %d, Medals %d", evoCode, vcCard.Price, vcCard.MedalRate)
-		switch evoCode {
-		case "0":
-			c.Gold0 = strconv.Itoa(vcCard.Price)
-			c.Medals0 = strconv.Itoa(vcCard.MedalRate)
-		case "1":
-			c.Gold1 = strconv.Itoa(vcCard.Price)
-			c.Medals1 = strconv.Itoa(vcCard.MedalRate)
-		case "2":
-			c.Gold2 = strconv.Itoa(vcCard.Price)
-			c.Medals2 = strconv.Itoa(vcCard.MedalRate)
-		case "3":
-			c.Gold3 = strconv.Itoa(vcCard.Price)
-			c.Medals3 = strconv.Itoa(vcCard.MedalRate)
-		case "4":
-			c.Gold4 = strconv.Itoa(vcCard.Price)
-			c.Medals4 = strconv.Itoa(vcCard.MedalRate)
-		case "A":
-			c.GoldA = strconv.Itoa(vcCard.Price)
-			c.MedalsA = strconv.Itoa(vcCard.MedalRate)
-		case "G":
-			c.GoldG = strconv.Itoa(vcCard.Price)
-			c.MedalsG = strconv.Itoa(vcCard.MedalRate)
-		case "GA":
-			c.GoldGA = strconv.Itoa(vcCard.Price)
-			c.MedalsGA = strconv.Itoa(vcCard.MedalRate)
-		case "X":
-			c.GoldX = strconv.Itoa(vcCard.Price)
-			c.MedalsX = strconv.Itoa(vcCard.MedalRate)
-		case "H":
-		default:
-			log.Printf("Unknown Evo %s provided for exchange updater", evoCode)
+	rs := reflect.ValueOf(c).Elem()
+	for evoCode, evo := range evolutions {
+		if evoCode == "H" {
+			continue
+		}
+		goldField := rs.FieldByName("Gold" + evoCode)
+		if goldField.IsValid() {
+			log.Printf("Evo %s: Gold %d, Medals %d", evoCode, evo.Price, evo.MedalRate)
+			goldField.SetString(strconv.Itoa(evo.Price))
+			rs.FieldByName("Medals" + evoCode).SetString(strconv.Itoa(evo.MedalRate))
+		} else {
+			log.Printf("Unknown evo: %s", evoCode)
 		}
 	}
 }
@@ -858,6 +846,128 @@ func (c *CardFlat) UpdateAwakenRebirthInfo(evolutions map[string]*vc.Card) {
 				c.RebirthItem3 = item.NameEng
 				c.RebirthItem3Count = strconv.Itoa(count)
 			}
+		}
+	}
+}
+
+//UpdateSkills Update skills for the card
+func (c *CardFlat) UpdateSkills(evolutions map[string]*vc.Card) {
+	skillsSeen := make(tmpSkillsSeen)
+	rs := reflect.ValueOf(c).Elem()
+
+	setSkill := func(s *vc.Skill, ls *vc.Skill, evoKey string, num int, mod string) {
+		if s == nil && ls == nil {
+			return
+		}
+		if _, seen := (skillsSeen)[s]; seen {
+			return
+		}
+		(skillsSeen)[s] = tmpSkillHolder{
+			Skill:         s,
+			SkillNum:      num,
+			SkillFirstEvo: evoKey,
+		}
+		// need to find if this is an evo-maxed skill
+		min := s.SkillMin()
+		max := s.SkillMax()
+		// thor skills use the "Fire" text
+		if mod == "t" {
+			min = s.FireMax() + " / 100% chance"
+			max = s.FireMax() + " / 100% chance"
+		}
+		if ls != nil {
+			// thor skills use the "Fire" text
+			if mod == "t" {
+				max = ls.FireMax() + " / 100% chance"
+			} else {
+				max = ls.SkillMax()
+			}
+			(skillsSeen)[ls] = tmpSkillHolder{
+				Skill:         ls,
+				SkillNum:      num,
+				SkillFirstEvo: evoKey,
+			}
+		}
+
+		if min == max {
+			max = ""
+		}
+
+		if evoKey == "0" {
+			evoKey = ""
+		}
+
+		// set the value of the skill
+		skillPrefix := "Skill" + strings.ToUpper(evoKey+mod)
+		skillNameField := rs.FieldByName(skillPrefix)
+		if skillNameField.IsValid() {
+			skillNameField.SetString(cleanVal(s.Name))
+			rs.FieldByName(skillPrefix + "Lv1").SetString(cleanVal(min))
+			rs.FieldByName(skillPrefix + "Lv10").SetString(cleanVal(max))
+			if s.DefaultCost > 0 {
+				rs.FieldByName(skillPrefix + "Lv1Cost").SetString(strconv.Itoa(s.DefaultCost))
+			} else {
+				rs.FieldByName(skillPrefix + "Lv1Cost").SetString("")
+			}
+			if s.MaxCost > 0 {
+				rs.FieldByName(skillPrefix + "Lv10Cost").SetString(strconv.Itoa(s.MaxCost))
+			} else {
+				rs.FieldByName(skillPrefix + "Lv10Cost").SetString("")
+			}
+			rs.FieldByName(skillPrefix + "Procs").SetString(s.ActivationString())
+
+			if s.EffectID == 36 {
+				// Random Skill
+				for i, v := range []int{s.EffectParam, s.EffectParam2, s.EffectParam3, s.EffectParam4, s.EffectParam5} {
+					sr := vc.SkillScan(v)
+					if sr != nil {
+						rs.FieldByName(skillPrefix + "Random" + strconv.Itoa(i)).SetString(cleanVal(sr.FireMin()))
+					}
+				}
+			}
+			if s.Expires() {
+				endField := rs.FieldByName(skillPrefix + "End")
+				if endField.IsValid() {
+					rs.SetString(fmt.Sprintf("%v", s.PublicEndDatetime))
+				} else {
+					log.Printf(skillPrefix + " had an end date set, but the template is not configured to accept end dates for that skill.")
+				}
+			}
+		} else {
+			log.Println(skillPrefix + " expected but not found in template")
+		}
+	}
+
+	for _, evoID := range vc.EvoOrder {
+		if evo, ok := evolutions[evoID]; ok {
+			var lastEvo *vc.Card
+			if evo.EvoIsFirst() {
+				lastEvo = evo.LastEvo()
+			}
+			setSkill(evo.Skill1(), lastEvo.Skill1(), evoID, 1, "")
+			setSkill(evo.Skill2(), lastEvo.Skill2(), evoID, 2, "2")
+			setSkill(evo.Skill3(), lastEvo.Skill3(), evoID, 3, "3")
+			setSkill(evo.ThorSkill1(), lastEvo.ThorSkill1(), evoID, 4, "t")
+		}
+	}
+}
+
+//UpdateQuotes Updates the card quotes
+func (c *CardFlat) UpdateQuotes(card *vc.Card) {
+	c.Friendship = cleanVal(card.Friendship())
+	c.Login = cleanVal(card.Login())
+	c.Meet = cleanVal(card.Meet())
+	c.BattleStart = cleanVal(card.BattleStart())
+	c.BattleEnd = cleanVal(card.BattleEnd())
+	c.FriendshipMax = cleanVal(card.FriendshipMax())
+	c.FriendshipEvent = cleanVal(card.FriendshipEvent())
+	c.Rebirth = cleanVal(card.RebirthEvent())
+
+	lQuotes := getLikabilityQuotes(card)
+	if len(lQuotes) > 0 {
+		rs := reflect.ValueOf(c).Elem()
+		for i, q := range lQuotes {
+			rs.FieldByName("Likeability" + strconv.Itoa(i)).SetString(cleanVal(q))
 		}
 	}
 }
@@ -1135,16 +1245,16 @@ var cardFieldOrder []string = []string{
 	"friendship max",
 	"friendship event",
 	"rebirth",
-	"quote misc 1",
-	"quote misc 2",
-	"quote misc 3",
-	"quote misc 4",
 	"likeability 0",
 	"likeability 1",
 	"likeability 2",
 	"likeability 3",
 	"likeability 4",
 	"likeability 5",
+	"quote misc 1",
+	"quote misc 2",
+	"quote misc 3",
+	"quote misc 4",
 	"awaken chance",
 	"awaken crystal",
 	"awaken orb",
@@ -1153,11 +1263,11 @@ var cardFieldOrder []string = []string{
 	"awaken s",
 	"rebirth chance",
 	"rebirth item 1",
-	"rebirth item 1 Count",
+	"rebirth item 1 count",
 	"rebirth item 2",
-	"rebirth item 2 Count",
+	"rebirth item 2 count",
 	"rebirth item 3",
-	"rebirth item 3 Count",
+	"rebirth item 3 count",
 	"turnoverto",
 	"turnoverfrom",
 	"availability",

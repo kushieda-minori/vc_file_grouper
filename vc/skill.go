@@ -162,7 +162,7 @@ func (s *Skill) ActivationString() string {
 	activations := s.Activations()
 	if activations > 0 {
 		return strconv.Itoa(activations)
-	} else if strings.Contains(s.SkillMin(), "【Autoskill】") {
+	} else if strings.Contains(s.SkillMin(), "【Autoskill】") && !strings.Contains(strings.ToLower(s.SkillMin()), "% chance") {
 		return "Always On"
 	} else {
 		return "Infinite"

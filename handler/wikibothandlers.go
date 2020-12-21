@@ -52,7 +52,7 @@ func TestCardFetchHandler(w http.ResponseWriter, r *http.Request) {
 		8408 New Year Alchemist LR - XLR
 		9490 Cheerleader Pixie VR - GVR
 	*/
-	card := vc.CardScan(2582)
+	card := vc.CardScan(9490)
 	cardPage, rawPagebody, err := api.GetCardPage(card)
 	fmt.Fprintf(w, "<html><head><title>Wikibot Test page updates</title><style type=\"text/css\">%s</style></head><body>\n",
 		`
@@ -82,9 +82,10 @@ pre {
 		io.WriteString(w, `<div class="flex">`)
 		fmt.Fprintf(w, "<div>Wiki Version<pre>%s</pre></div>", html.EscapeString(rawPagebody))
 		cardPage.CardInfo.UpdateBaseData(*card)
-		//cardPage.CardInfo.UpdateSkills(*card)
+		cardPage.CardInfo.UpdateSkills(card.GetEvolutions())
 		cardPage.CardInfo.UpdateExchangeInfo(card.GetEvolutions())
 		cardPage.CardInfo.UpdateAwakenRebirthInfo(card.GetEvolutions())
+		cardPage.CardInfo.UpdateQuotes(card)
 		fmt.Fprintf(w, "<div>Adjusted Version<pre>%s</pre></div>", html.EscapeString(cardPage.String()))
 		io.WriteString(w, `</div>`)
 	}
