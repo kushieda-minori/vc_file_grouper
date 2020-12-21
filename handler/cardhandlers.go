@@ -257,7 +257,11 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	if card.IsClosed != 0 {
 		io.WriteString(w, "{{Unreleased}}")
 	}
-	fmt.Fprintf(w, "{{Card\n|element = %s\n|rarity = %s\n|symbol = %d\n", card.Element(), card.MainRarity(), card.CardSymbolID)
+	if card.CardSymbolID > 0 {
+		fmt.Fprintf(w, "{{Card\n|element = %s\n|rarity = %s\n|symbol = %s\n", card.Element(), card.MainRarity(), card.Symbol())
+	} else {
+		fmt.Fprintf(w, "{{Card\n|element = %s\n|rarity = %s\n", card.Element(), card.MainRarity())
+	}
 
 	skillMap := make(map[string]string)
 
@@ -358,20 +362,25 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	fmt.Fprintf(w, "|friendship points = %d\n", card.Character().MaxFriendship)
+
 	fmt.Fprintf(w, "|description = %s\n|friendship = %s\n",
 		html.EscapeString(card.Description()), html.EscapeString(strings.ReplaceAll(card.Friendship(), "\n", "<br />")))
 	login := card.Login()
 	if len(strings.TrimSpace(login)) > 0 {
 		fmt.Fprintf(w, "|login = %s\n", html.EscapeString(strings.ReplaceAll(login, "\n", "<br />")))
 	}
-	fmt.Fprintf(w, "|meet = %s\n|battle start = %s\n|battle end = %s\n|friendship max = %s\n|friendship event = %s\n|rebirth = %s\n",
+	fmt.Fprintf(w, "|meet = %s\n|battle start = %s\n|battle end = %s\n|friendship max = %s\n|friendship event = %s\n",
 		html.EscapeString(strings.ReplaceAll(card.Meet(), "\n", "<br />")),
 		html.EscapeString(strings.ReplaceAll(card.BattleStart(), "\n", "<br />")),
 		html.EscapeString(strings.ReplaceAll(card.BattleEnd(), "\n", "<br />")),
 		html.EscapeString(strings.ReplaceAll(card.FriendshipMax(), "\n", "<br />")),
 		html.EscapeString(strings.ReplaceAll(card.FriendshipEvent(), "\n", "<br />")),
-		html.EscapeString(strings.ReplaceAll(card.RebirthEvent(), "\n", "<br />")),
 	)
+	rebirth := card.RebirthEvent()
+	if len(strings.TrimSpace(rebirth)) > 0 {
+		fmt.Fprintf(w, "|rebirth = %s\n", html.EscapeString(strings.ReplaceAll(rebirth, "\n", "<br />")))
+	}
 
 	gevo, ok := evolutions["G"]
 	if !ok {
@@ -1316,13 +1325,13 @@ func printWikiSkill(s *vc.Skill, ls *vc.Skill, evoMod string) (ret string) {
 
 	ret = fmt.Sprintf(`|skill %[1]s= %[2]s
 |skill %[1]slv1 = %[3]s%[4]s%[6]s%[7]s%[8]s
-|procs %[1]s= %[5]d
+|procs %[1]s= %[5]s
 `,
 		evoMod,
 		html.EscapeString(sName),
 		skillLvl1,
 		lv10,
-		s.Activations(),
+		s.ActivationString(),
 		minturn,
 		costlvl1,
 		costlvl10,

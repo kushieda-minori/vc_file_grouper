@@ -249,6 +249,8 @@ type CardFlat struct {
 	MedalsX   string `json:"medals x"`
 	GoldX     string `json:"gold x"`
 
+	FriendshipPoints string `json:"friendship points"`
+
 	Login           string `json:"login"`
 	Description     string `json:"description"`
 	Friendship      string `json:"friendship"`
@@ -954,6 +956,7 @@ func (c *CardFlat) UpdateSkills(evolutions map[string]*vc.Card) {
 
 //UpdateQuotes Updates the card quotes
 func (c *CardFlat) UpdateQuotes(card *vc.Card) {
+	c.FriendshipPoints = strconv.Itoa(card.Character().MaxFriendship)
 	c.Friendship = cleanVal(card.Friendship())
 	c.Login = cleanVal(card.Login())
 	c.Meet = cleanVal(card.Meet())
@@ -1236,9 +1239,10 @@ var cardFieldOrder []string = []string{
 	"soldiers x",
 	"medals x",
 	"gold x",
-	"login",
+	"friendship points",
 	"description",
 	"friendship",
+	"login",
 	"meet",
 	"battle start",
 	"battle end",

@@ -203,7 +203,7 @@ func (c *Card) Symbol() string {
 		return Data.SymbolNames[c.CardSymbolID]
 	}
 	log.Printf("Unknown symbol id %d. Unable to locate name", c.CardSymbolID)
-	return ""
+	return strconv.Itoa(c.CardSymbolID)
 }
 
 // EvoIsFirst returns true if the Evolution of this card is the first for this card
