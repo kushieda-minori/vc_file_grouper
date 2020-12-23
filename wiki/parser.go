@@ -33,7 +33,7 @@ func getNextTemplateValue(runes *[]rune, rPos *int) (ret string, err error) {
 	lenRunes := len(*runes)
 	for ; (*rPos) < lenRunes; (*rPos)++ {
 		r := (*runes)[*rPos]
-		rLookAhead := (*runes)[(*rPos) : (*rPos)+4]
+		rLookAhead := (*runes)[(*rPos):intMin(lenRunes, (*rPos)+4)]
 		if bracketStack.Len() == 0 && (r == '|' || (r == '}' && rLookAhead[1] == '}')) {
 			ret = strings.TrimSpace(string((*runes)[start:(*rPos)]))
 			ret = linebreakRegEx.ReplaceAllString(ret, " ")
@@ -65,8 +65,9 @@ func getNextTemplateValue(runes *[]rune, rPos *int) (ret string, err error) {
 func skipPast(runes *[]rune, rPos *int, find string) {
 	findRunes := []rune(find)
 	lenFind := len(findRunes)
-	for ; (*rPos) < len(*runes)-lenFind; (*rPos)++ {
-		r := (*runes)[*rPos : (*rPos)+lenFind]
+	lenRunes := len(*runes)
+	for ; (*rPos) < lenRunes-lenFind; (*rPos)++ {
+		r := (*runes)[*rPos:intMin(lenRunes, (*rPos)+lenFind)]
 		if runeSame(r, findRunes) {
 			(*rPos) += lenFind
 			return
@@ -86,4 +87,11 @@ func runeSame(r1, r2 []rune) bool {
 		}
 	}
 	return true
+}
+
+func intMin(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
 }
