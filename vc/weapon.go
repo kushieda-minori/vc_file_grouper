@@ -350,7 +350,7 @@ func (d WeaponSkillUnlockRankList) Copy() WeaponSkillUnlockRankList {
 }
 
 // WeaponSkillTypes types of weapon skills.
-var WeaponSkillTypes = []string{"0", "KO Gauge", "Poison Aid", "Elemental Aid", "Elemental ATK", "Skill Unleash", "Burst Chance"}
+var WeaponSkillTypes = []string{"0", "KO Gauge", "Poison Aid", "Elemental Aid", "Elemental ATK", "Skill Boost", "Burst Chance"}
 
 // WeaponStatusTypes descriptions for weapon statuses
 var WeaponStatusTypes = []string{"", "Balanced", "Attack", "Defense", "Soldier"}
