@@ -62,7 +62,7 @@ func TestCardFetchHandler(w http.ResponseWriter, r *http.Request) {
 		9517 Christmas Lum Lum - XSR - ABB (skill expire)
 	*/
 	card := vc.CardScan(3934)
-	writeCardReviewForm(w, card, 1, 1)
+	writeCardReviewForm(w, card, 1, 1, "", nil)
 }
 
 var botCardList vc.CardList = nil
@@ -78,19 +78,20 @@ func StartMassUpdateCardsHandler(w http.ResponseWriter, r *http.Request) {
 			botCardList = append(botCardList, cl.Earliest())
 		}
 		botCardList = botCardList.Filter(func(c vc.Card) bool {
-			return c.CardCharaID > 0 && c.IsClosed == 0 && c.Name != ""
+			return c.CardCharaID > 0 && c.IsClosed == 0 && c.Name != "" && c.SkillID1 > 0
 		})
 	}
 	qs := r.URL.Query()
 	var card *vc.Card
 	currentID := 0
+	lenCardList := len(botCardList)
 	if pos := qs.Get("pos"); pos != "" {
 		posID, err := strconv.Atoi(pos)
 		if err != nil {
 			io.WriteString(w, "Requested position is invalid: "+err.Error())
 			return
 		}
-		if posID < 0 || posID >= len(botCardList) {
+		if posID < 0 || posID >= lenCardList {
 			io.WriteString(w, "Requested position is invalid: "+pos)
 			return
 		}
@@ -100,8 +101,7 @@ func StartMassUpdateCardsHandler(w http.ResponseWriter, r *http.Request) {
 		card = botCardList[0]
 	}
 
-	lenCardList := len(botCardList)
-
+	var err error
 	if r.Method == "POST" {
 		if currentID == 0 || botLogRoot == "" {
 			botLogRoot = "changelog/"
@@ -136,25 +136,29 @@ func StartMassUpdateCardsHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			log.Printf("*****Card %s has updates, will be saved to the wiki", card.Name)
 			json, _ := json.MarshalIndent(diff, "", "\t")
-			fName := fmt.Sprintf("%s/%d.%s.diff.json", botLogRoot, currentID, card.Name)
+			fName := fmt.Sprintf("%s/%06d.%s.diff.json", botLogRoot, currentID, card.Name)
 			err = ioutil.WriteFile(fName, json, 0700)
 			// only save pages that actually have changes to page content.
 			//
 			//TODO SAVE PAGE
 		}
 
-		if currentID+1 == lenCardList {
-			http.Redirect(w, r, `/wikibot/`, http.StatusSeeOther)
-		} else {
-			http.Redirect(w, r, fmt.Sprintf(`?pos=%d`, currentID+1), http.StatusSeeOther)
+		if err == nil {
+			if currentID+1 == lenCardList {
+				// if we are at the last item, go back to the bot menu
+				http.Redirect(w, r, `/wikibot/`, http.StatusSeeOther)
+			} else {
+				// bring up the next card
+				http.Redirect(w, r, fmt.Sprintf(`?pos=%d&auto=%s`, currentID+1, r.FormValue("auto")), http.StatusSeeOther)
+			}
+			return
 		}
-		return
 	}
 
-	writeCardReviewForm(w, card, currentID, lenCardList)
+	writeCardReviewForm(w, card, currentID, lenCardList, r.FormValue("auto"), err)
 }
 
-func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int) {
+func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int, isAuto string, err error) {
 	fmt.Fprintf(w, `<html>
 	<head>
 		<title>Wikibot updates %d of %d</title>
@@ -173,8 +177,8 @@ func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int) 
 			pre,textarea {
 				padding:5px;
 				border:solid black 1px;
-				width: 98%%;
-				height: 450px;
+				width: 100%%;
+				height: 600px;
 				overflow: auto;
 			}
 			textarea {
@@ -182,27 +186,52 @@ func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int) 
 				overflow-wrap: normal;
 				overflow-x: scroll;
 			}
-			div.nav a, div.nav button{
-				padding: 2px;
+			div.nav span, div.nav div {
+				margin-left: 15px;
 			}
 		</style>
+		<script type="text/javascript">
+		var vc = vc || {};
+		var pageTimer;
+		vc.onPageLoad = function() {
+			var autoF = document.getElementById("f_auto");
+			if (autoF && autoF.checked) {
+				pageTimer = setTimeout(vc.submit, 2*1000)
+			}
+		}
+		vc.submit = function() {
+			// disable the timer in case the user pressed submit so we don't double submit.
+			if (pageTimer) { clearTimeout(pageTimer); }
+			var f = document.getElementById("cardChanges");
+			f.submit();
+			return false;
+		}
+		</script>
 	</head>
-	<body>
+	<body onload="vc.onPageLoad()">
 `,
 		currentID+1,
 		listLength,
 	)
-
-	cardPage, rawPagebody, err := api.GetCardPage(card)
 	if err != nil {
 		fmt.Fprintf(w, "<h1>%s</h1>", err.Error())
+		io.WriteString(w, `<br /><a href="/wikibot">Wikibot home</a><br /><a href="/">Home</a>
+		</body>
+	</html>
+	`)
+		return
+	}
+	cardPage, rawPagebody, err := api.GetCardPage(card)
+	if err != nil {
+		fmt.Fprintf(w, "<h1>%s: %s</h1>", card.Name, err.Error())
 	} else {
 		fmt.Fprintf(w, "<h1>%s</h1>\n", card.Name)
-		io.WriteString(w, `<form method="post">`)
-		io.WriteString(w, `<div class="nav"><a href="/wikibot">Cancel</a>`)
+		io.WriteString(w, `<form id="cardChanges" name="cardChanges" method="post" onsubmit="return vc.submit();">`)
+		io.WriteString(w, `<div class="nav"><span><a href="/wikibot">Cancel</a></span>`)
 		if currentID < listLength {
-			fmt.Fprintf(w, `<a href="?pos=%d">Skip with no update</a>`, currentID+1)
-			io.WriteString(w, `<button name="submit" type="submit">Submit and move Next</button>`)
+			fmt.Fprintf(w, `<span><a href="?pos=%d">Skip with no update</a></span>`, currentID+1)
+			io.WriteString(w, `<span><button name="s" type="submit">Submit and move Next</button></span>`)
+			fmt.Fprintf(w, `<span><label for="f_auto">Auto Advance:</label><input id="f_auto" name="auto" type="checkbox" value="checked" %s /><small>(every 2 seconds)</small></span>`, isAuto)
 		} else {
 			io.WriteString(w, `<button name="submit" type="submit">Submit and End</button>`)
 		}
@@ -219,8 +248,7 @@ func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int) 
 		io.WriteString(w, `</div>`)
 		io.WriteString(w, `</form>`)
 	}
-	io.WriteString(w, "<br /><a href=\"/wikibot\">Wikibot home</a><br /><a href=\"/\">Home</a>")
-	io.WriteString(w, `
+	io.WriteString(w, `<br /><a href="/wikibot">Wikibot home</a><br /><a href="/">Home</a>
 	</body>
 </html>
 `)

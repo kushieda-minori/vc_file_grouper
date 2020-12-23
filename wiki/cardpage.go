@@ -2,6 +2,7 @@ package wiki
 
 import (
 	"encoding/json"
+	"errors"
 	"strings"
 )
 
@@ -39,6 +40,7 @@ func ParseCardPage(pageText string) (ret CardPage, err error) {
 	if pageText == "" || cardIdx < 0 {
 		cardIdx = strings.Index(pageLower, "{{template:card")
 		if cardIdx < 0 {
+			err = errors.New("Unable to find card tempalte on page: " + pageText)
 			return
 		}
 	}
