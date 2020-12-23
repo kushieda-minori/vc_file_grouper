@@ -12,7 +12,7 @@ Some Header
 {{Card|element=cool|rarity=R|unknown key = Some UnknownValue|position 1|
 	|quote misc 1 = {{Quote|my quote | another param}}
  | quote misc 2 = [[Quote|my quote {{!}} another param]]
-	|quote misc 3 = [http://some.link/ nice text]
+	|quote misc 3 = [http://some.link/ nice text]<!-- comment {[|]} || } { -->
 |availability={{Tooltip|Saintly Oracle's {{cool}}Celestial Stone Exchange|December 7th ー January 12th 2020}}}}
 
 
@@ -32,13 +32,13 @@ some footer
 	if cardPage.CardInfo.Rarity != "R" {
 		t.Errorf("Invalid value for Rarity found: `%s`", cardPage.CardInfo.Rarity)
 	}
-	if cardPage.CardInfo.QuoteMisc1 != "{{Quote|my quote | another param}}" {
+	if cardPage.CardInfo.QuoteMisc1 != "{{Quote|my quote| another param}}" {
 		t.Errorf("Invalid value for QuoteMisc1 found: `%s`", cardPage.CardInfo.QuoteMisc1)
 	}
 	if cardPage.CardInfo.QuoteMisc2 != "[[Quote|my quote {{!}} another param]]" {
 		t.Errorf("Invalid value for QuoteMisc2 found: `%s`", cardPage.CardInfo.QuoteMisc2)
 	}
-	if cardPage.CardInfo.QuoteMisc3 != "[http://some.link/ nice text]" {
+	if cardPage.CardInfo.QuoteMisc3 != "[http://some.link/ nice text]<!-- comment {[|]}|| } { -->" {
 		t.Errorf("Invalid value for QuoteMisc3 found: `%s`", cardPage.CardInfo.QuoteMisc3)
 	}
 	if cardPage.CardInfo.Availability != "{{Tooltip|Saintly Oracle's {{cool}}Celestial Stone Exchange|December 7th ー January 12th 2020}}" {
@@ -85,11 +85,11 @@ some footer
 {{Card
 |element = cool
 |rarity = R
-|quote misc 1 = {{Quote|my quote | another param}}
+|quote misc 1 = {{Quote|my quote| another param}}
 |quote misc 2 = [[Quote|my quote {{!}} another param]]
-|quote misc 3 = [http://some.link/ nice text]
+|quote misc 3 = [http://some.link/ nice text]<!-- comment {[|]}|| } { -->
 |availability = {{Tooltip|Saintly Oracle's {{cool}}Celestial Stone Exchange|December 7th ー January 12th 2020}}
-<!-- these fields were unknown to the bot, but have not been removed -->
+
 |1 = position 1
 |unknown key = Some UnknownValue
 }}

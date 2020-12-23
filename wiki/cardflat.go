@@ -295,11 +295,23 @@ type CardFlat struct {
 	unknownFields map[string]string
 }
 
+//OldNew old and new value
+type OldNew struct {
+	Old string `json:"old"`
+	New string `json:"new"`
+}
+
 //cleanVal repalces all double line breaks with single line breaks
 func cleanVal(v string) string {
-	regexp, _ := regexp.Compile(`([\r\n]\s*)+|(<br\s*[/]?>\s*)+`)
-	return regexp.ReplaceAllString(v, "<br />")
-	//return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(v, "\r\n", "\n"), "\n\n", "\n"), "\n", "<br />")
+	linebreakRegEx, _ := regexp.Compile(`(\s*[\r\n]\s*)+|(\s*<br\s*[/]?>\s*)+`)
+	return linebreakRegEx.ReplaceAllString(strings.TrimSpace(v), "<br />")
+}
+
+func (c CardFlat) asMap() map[string]string {
+	var inInterface map[string]string
+	inrec, _ := json.Marshal(c)
+	json.Unmarshal(inrec, &inInterface)
+	return inInterface
 }
 
 //String outputs the struct as a Wiki Template:Card call
@@ -308,9 +320,7 @@ func (c *CardFlat) String() (ret string) {
 		return ""
 	}
 
-	var inInterface map[string]string
-	inrec, _ := json.Marshal(c)
-	json.Unmarshal(inrec, &inInterface)
+	inInterface := c.asMap()
 
 	// begin template
 	ret += "{{Card\n"
@@ -327,12 +337,13 @@ func (c *CardFlat) String() (ret string) {
 		keys := make([]string, 0)
 		for k, v := range c.unknownFields {
 			// skip blank values
-			if v != "" {
+			if strings.TrimSpace(v) != "" {
 				keys = append(keys, k)
 			}
 		}
 		if len(keys) > 0 {
-			ret += "<!-- these fields were unknown to the bot, but have not been removed -->\n"
+			//ret += "<!-- these fields were unknown to the bot, but have not been removed -->\n"
+			ret += "\n"
 			sort.Strings(keys)
 			for _, field := range keys {
 				ret += fmt.Sprintf("|%s = %s\n", field, cleanVal(c.unknownFields[field]))
@@ -343,6 +354,58 @@ func (c *CardFlat) String() (ret string) {
 	ret += "}}\n"
 
 	return ret
+}
+
+//Equals validates that one card flat equals another
+func (c CardFlat) Equals(that CardFlat) bool {
+	thism := c.asMap()
+	thatm := that.asMap()
+
+	if len(thism) != len(thatm) {
+		return false
+	}
+	for k, thisv := range thism {
+		thatv, ok := thatm[k]
+		if !ok || thisv != thatv {
+			return false
+		}
+	}
+	return true
+}
+
+//Differences validates that one card flat equals another
+func (c CardFlat) Differences(that CardFlat) (ret map[string]OldNew) {
+	thism := c.asMap()
+	thatm := that.asMap()
+
+	ret = make(map[string]OldNew, 0)
+	seen := make(map[string]bool)
+
+	for k, thisv := range thism {
+		seen[k] = true
+		thatv, ok := thatm[k]
+		if !ok {
+			ret[k] = OldNew{thisv, ""}
+		} else if thisv != thatv {
+			ret[k] = OldNew{thisv, thatv}
+		}
+	}
+
+	if len(thism) != len(thatm) {
+		for k, thatv := range thatm {
+			// check if we've already recorded the change
+			if _, ok := seen[k]; !ok {
+				// check that it's in this
+				thisv, ok := thism[k]
+				if !ok {
+					ret[k] = OldNew{"", thatv}
+				} else if thisv != thatv {
+					ret[k] = OldNew{thisv, thatv}
+				}
+			}
+		}
+	}
+	return
 }
 
 func getInt(s string) int {
@@ -586,14 +649,15 @@ func (c *CardFlat) UpdateSkills(evolutions map[string]*vc.Card) {
 				for i, v := range []int{s.EffectParam, s.EffectParam2, s.EffectParam3, s.EffectParam4, s.EffectParam5} {
 					sr := vc.SkillScan(v)
 					if sr != nil {
-						rs.FieldByName(skillPrefix + "Random" + strconv.Itoa(i)).SetString(cleanVal(sr.FireMin()))
+						rs.FieldByName(skillPrefix + "Random" + strconv.Itoa(i+1)).SetString(cleanVal(sr.FireMin()))
 					}
 				}
 			}
 			if s.Expires() {
 				endField := rs.FieldByName(skillPrefix + "End")
 				if endField.IsValid() {
-					rs.SetString(fmt.Sprintf("%v", s.PublicEndDatetime))
+					ed := fmt.Sprintf("%v", s.PublicEndDatetime)
+					endField.SetString(ed)
 				} else {
 					log.Printf(skillPrefix + " had an end date set, but the template is not configured to accept end dates for that skill.")
 				}
@@ -872,7 +936,7 @@ func parseCard(pageText string) (map[string]string, int, error) {
 			if err != nil {
 				return nil, 0, err
 			}
-			log.Printf("Found `%s` : `%s`", currentKey, currentVal)
+			//log.Printf("Found `%s` : `%s`", currentKey, currentVal)
 			ret[currentKey] = currentVal
 		}
 	}

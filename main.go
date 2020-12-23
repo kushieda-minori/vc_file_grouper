@@ -107,6 +107,7 @@ func main() {
 	http.HandleFunc("/wikibot/", handler.WikibotHandler)
 	http.HandleFunc("/wikibot/testCardFetch/", handler.TestCardFetchHandler)
 	http.HandleFunc("/wikibot/testLogin/", handler.TestLoginHandler)
+	http.HandleFunc("/wikibot/startMassUpdate/", handler.StartMassUpdateCardsHandler)
 
 	http.HandleFunc("/thor/", handler.ThorHandler)
 

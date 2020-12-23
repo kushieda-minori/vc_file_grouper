@@ -37,7 +37,10 @@ func ParseCardPage(pageText string) (ret CardPage, err error) {
 	pageLower := strings.ToLower(pageText)
 	cardIdx := strings.Index(pageLower, "{{card")
 	if pageText == "" || cardIdx < 0 {
-		return
+		cardIdx = strings.Index(pageLower, "{{template:card")
+		if cardIdx < 0 {
+			return
+		}
 	}
 	if cardIdx > 0 {
 		ret.PageHeader = strings.TrimSpace(pageText[:cardIdx])

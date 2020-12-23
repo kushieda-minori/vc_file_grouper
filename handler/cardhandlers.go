@@ -217,8 +217,8 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 		cardName = firstEvo.Image()
 	}
 
-	prevCard, prevCardName := getPrevious(card)
-	nextCard, nextCardName := getNext(card)
+	prevCard, prevCardName := getPreviousCard(card)
+	nextCard, nextCardName := getNextCard(card)
 
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", cardName)
 
@@ -757,10 +757,10 @@ func evosToOptions(selected string) (ret string) {
 	return
 }
 
-// getPrevious finds the card before the earliest evolution of this card. Does
+// getPreviousCard finds the card before the earliest evolution of this card. Does
 // not take into account cards that were released for awakening at a later date
 // maybe should do this by character ID instead?
-func getPrevious(card *vc.Card) (prev *vc.Card, prevName string) {
+func getPreviousCard(card *vc.Card) (prev *vc.Card, prevName string) {
 	if card == nil {
 		return nil, ""
 	}
@@ -780,10 +780,10 @@ func getPrevious(card *vc.Card) (prev *vc.Card, prevName string) {
 	return
 }
 
-// getNext finds the card before the latest evolution of this card. Does
+// getNextCard finds the card before the latest evolution of this card. Does
 // not take into account cards that were released for awakening at a later date
 // maybe should do this by character ID instead?
-func getNext(card *vc.Card) (next *vc.Card, nextName string) {
+func getNextCard(card *vc.Card) (next *vc.Card, nextName string) {
 	if card == nil {
 		return nil, ""
 	}
