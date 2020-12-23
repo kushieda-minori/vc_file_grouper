@@ -103,7 +103,7 @@ func EventHandler(w http.ResponseWriter, r *http.Request) {
 	<td>%d</td>
 </tr>`,
 			e.ID,
-			e.Name,
+			cleanEventName(&e),
 			e.EventTypeID,
 			e.StartDatetime.Format(time.RFC3339),
 			e.EndDatetime.Format(time.RFC3339),
@@ -153,7 +153,7 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	prevEventName := ""
 	if prevEvent != nil {
-		prevEventName = cleanEventName(prevEvent.Name)
+		prevEventName = cleanEventName(prevEvent)
 	}
 
 	for i := event.ID + 1; i <= vc.MaxEventID(vc.Data.Events); i++ {
@@ -166,10 +166,10 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 	nextEventName := ""
 	if nextEvent != nil {
-		nextEventName = cleanEventName(nextEvent.Name)
+		nextEventName = cleanEventName(nextEvent)
 	}
 
-	eventName := cleanEventName(event.Name)
+	eventName := cleanEventName(event)
 
 	fmt.Fprintf(w, "<html><head><title>%s</title></head><body><h1>%[1]s</h1>\n", eventName)
 	if event.BannerID > 0 {
@@ -297,15 +297,15 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 			event.StartDatetime.Format(wikiFmt),
 			event.EndDatetime.Format(wikiFmt),
 			getGuildDoublePointCampain(bb),
-			"",    // RR 1
-			"",    // RR 2
-			"",    // Individual Card 1
-			"",    // Individual Card 2
-			"",    // Individual Card 3
-			"",    // Booster 1
-			"",    // Booster 2
-			"#th", // Guild Battle Number spelled out (first, second, third, etc)
-			"",    // Overlap AW Event
+			"",                          // RR 1
+			"",                          // RR 2
+			"",                          // Individual Card 1
+			"",                          // Individual Card 2
+			"",                          // Individual Card 3
+			"",                          // Booster 1
+			"",                          // Booster 2
+			nth(event.GuildBattleID-32), // Guild Battle Number spelled out (first, second, third, etc)
+			"",                          // Overlap AW Event
 			html.EscapeString(strings.ReplaceAll(event.Description, "\n", "\n\n")),
 			genWikiExchange(bb.ExchangeRewards()), // Ring Exchange
 			rankRewards,                           // Rewards (combined)
@@ -434,9 +434,24 @@ func EventDetailHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func cleanEventName(name string) string {
-	name = strings.ReplaceAll(name, "【New Event】", "")
-	name = strings.ReplaceAll(name, "[Updated] ", "")
+func cleanEventName(event *vc.Event) string {
+	name := event.Name
+	switch event.EventTypeID {
+	case 10: // Alliance Battle
+		name = fmt.Sprintf("Alliance Battle %d", event.GuildBattleID)
+	case 12: // Alliance Duel
+		name = fmt.Sprintf("Alliance Duel %d", event.GuildBattleID-5)
+	case 13: //AUB
+		name = fmt.Sprintf("Alliance Ultimate Battle %d", event.GuildBattleID-13)
+	case 16: //ABB
+		name = fmt.Sprintf("Alliance Bingo Battle %d", event.GuildBattleID-32)
+	default:
+		name = strings.ReplaceAll(name, "【New Event】", "")
+		name = strings.ReplaceAll(name, "[Updated]", "")
+		name = strings.ReplaceAll(name, "(Updated)", "")
+		name = strings.ReplaceAll(name, "  ", " ")
+		name = strings.TrimSpace(name)
+	}
 	return name
 }
 

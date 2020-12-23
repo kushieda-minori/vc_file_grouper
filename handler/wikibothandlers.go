@@ -155,37 +155,42 @@ func StartMassUpdateCardsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int) {
-	fmt.Fprintf(w, "<html><head><title>Wikibot updates %d of %d</title><style type=\"text/css\">%s</style></head><body>\n",
+	fmt.Fprintf(w, `<html>
+	<head>
+		<title>Wikibot updates %d of %d</title>
+		<style type="text/css">
+			div.flex {
+				display:flex;
+				max-width:100%%;
+				overflow:auto;
+			}
+			div.flex > div {
+				margin: 2px;
+				min-width: 575px;
+				max-width: 49%%;
+				overflow: auto;
+			}
+			pre,textarea {
+				padding:5px;
+				border:solid black 1px;
+				width: 98%%;
+				height: 450px;
+				overflow: auto;
+			}
+			textarea {
+				white-space: pre;
+				overflow-wrap: normal;
+				overflow-x: scroll;
+			}
+			div.nav a, div.nav button{
+				padding: 2px;
+			}
+		</style>
+	</head>
+	<body>
+`,
 		currentID+1,
 		listLength,
-		`
-	div.flex {
-		display:flex;
-		max-width:100%;
-		overflow:auto;
-	}
-	div.flex > div {
-		margin: 2px;
-		min-width: 575px;
-		max-width: 49%;
-		overflow: auto;
-	}
-	pre,textarea {
-		padding:5px;
-		border:solid black 1px;
-		width: 98%;
-		height: 450px;
-		overflow: auto;
-	}
-	textarea {
-		white-space: pre;
-		overflow-wrap: normal;
-		overflow-x: scroll;
-	}
-	div.nav a, div.nav button{
-		padding: 2px;
-	}
-	`,
 	)
 
 	cardPage, rawPagebody, err := api.GetCardPage(card)
@@ -215,5 +220,8 @@ func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int) 
 		io.WriteString(w, `</form>`)
 	}
 	io.WriteString(w, "<br /><a href=\"/wikibot\">Wikibot home</a><br /><a href=\"/\">Home</a>")
-	io.WriteString(w, "</body></html>")
+	io.WriteString(w, `
+	</body>
+</html>
+`)
 }
