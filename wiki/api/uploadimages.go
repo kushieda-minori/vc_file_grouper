@@ -26,10 +26,13 @@ func UploadNewCardUniqueImages(card *vc.Card) (ret *wiki.CardPage, err error) {
 		}
 	}
 
+	// upload full card images
 	err = uploadImages(card, false)
 	if err != nil {
 		return
 	}
+
+	// upload thumbnails
 	err = uploadImages(card, true)
 
 	return

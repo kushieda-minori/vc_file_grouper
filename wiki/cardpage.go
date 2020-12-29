@@ -8,6 +8,7 @@ import (
 
 //CardPage represents a wiki page that is for Card information
 type CardPage struct {
+	PageName   string
 	CardInfo   CardFlat
 	PageHeader string
 	PageFooter string
@@ -31,8 +32,8 @@ func (c *CardPage) String() (ret string) {
 	return
 }
 
-//ParseCardPage Parses a wiki page into a card. returns `nil` if there is no Card template definition in the page.
-func ParseCardPage(pageText string) (ret CardPage, err error) {
+//Parse Parses a wiki page into a card. returns `nil` if there is no Card template definition in the page.
+func (c *CardPage) Parse(pageText string) (err error) {
 	pageText = strings.TrimSpace(pageText)
 	// lowercase all the text for comparison reasons.
 	pageLower := strings.ToLower(pageText)
@@ -45,7 +46,7 @@ func ParseCardPage(pageText string) (ret CardPage, err error) {
 		}
 	}
 	if cardIdx > 0 {
-		ret.PageHeader = strings.TrimSpace(pageText[:cardIdx])
+		c.PageHeader = strings.TrimSpace(pageText[:cardIdx])
 	}
 
 	// convert the page Card template to a map
@@ -60,22 +61,22 @@ func ParseCardPage(pageText string) (ret CardPage, err error) {
 		return
 	}
 	// unmarshall the JSON into our Card object
-	err = json.Unmarshal(datajson, &(ret.CardInfo))
+	err = json.Unmarshal(datajson, &(c.CardInfo))
 	if err != nil {
 		return
 	}
 
 	for k, v := range pageContentMap {
 		if !cardFieldIsKnown(k) {
-			if ret.CardInfo.unknownFields == nil {
-				ret.CardInfo.unknownFields = make(map[string]string)
+			if c.CardInfo.unknownFields == nil {
+				c.CardInfo.unknownFields = make(map[string]string)
 			}
-			ret.CardInfo.unknownFields[k] = v
+			c.CardInfo.unknownFields[k] = v
 		}
 	}
 
 	if cardEndIdx+cardIdx < len(pageText) {
-		ret.PageFooter = strings.TrimSpace(pageText[cardEndIdx+cardIdx:])
+		c.PageFooter = strings.TrimSpace(pageText[cardEndIdx+cardIdx:])
 	}
 
 	return

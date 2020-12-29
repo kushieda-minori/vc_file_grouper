@@ -21,10 +21,16 @@ some footer
 
 
 	`
-	cardPage, err := ParseCardPage(testPage)
+	cardPage := CardPage{
+		PageName: "Test Page",
+	}
+	err := cardPage.Parse(testPage)
 	if err != nil {
 		t.Errorf("Parse returned an error: %s", err.Error())
 		return
+	}
+	if cardPage.PageName != "Test Page" {
+		t.Errorf("Invalid value for PageName found: `%s`", cardPage.PageName)
 	}
 	if cardPage.CardInfo.Element != "cool" {
 		t.Errorf("Invalid value for Element found: `%s`", cardPage.CardInfo.Element)

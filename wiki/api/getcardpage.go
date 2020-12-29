@@ -12,7 +12,9 @@ func GetCardPage(card *vc.Card) (ret *wiki.CardPage, raw string, err error) {
 	if card == nil || card.Name == "" {
 		return
 	}
-	resp, err := client.Get(URL + "/index.php?action=raw&title=" + CardNameToWiki(card.Name))
+
+	pageName := CardNameToWiki(card.Name)
+	resp, err := client.Get(URL + "/index.php?action=raw&title=" + pageName)
 
 	if err != nil {
 		return
@@ -27,8 +29,10 @@ func GetCardPage(card *vc.Card) (ret *wiki.CardPage, raw string, err error) {
 		return
 	}
 
-	ret = &wiki.CardPage{}
+	ret = &wiki.CardPage{
+		PageName: pageName,
+	}
 	raw = string(body)
-	*ret, err = wiki.ParseCardPage(raw)
+	err = ret.Parse(raw)
 	return
 }

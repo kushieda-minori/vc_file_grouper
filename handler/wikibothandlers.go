@@ -62,7 +62,7 @@ func TestCardFetchHandler(w http.ResponseWriter, r *http.Request) {
 		9517 Christmas Lum Lum - XSR - ABB (skill expire)
 	*/
 	card := vc.CardScan(3934)
-	writeCardReviewForm(w, card, 1, 1, "", nil)
+	writeCardReviewForm(w, card, 1, 1, "", "checked", nil)
 }
 
 var botCardList vc.CardList = nil
@@ -81,11 +81,11 @@ func StartMassUpdateCardsHandler(w http.ResponseWriter, r *http.Request) {
 			return c.CardCharaID > 0 && c.IsClosed == 0 && c.Name != "" && c.SkillID1 > 0
 		})
 	}
-	qs := r.URL.Query()
+
 	var card *vc.Card
 	currentID := 0
 	lenCardList := len(botCardList)
-	if pos := qs.Get("pos"); pos != "" {
+	if pos := r.FormValue("pos"); pos != "" {
 		posID, err := strconv.Atoi(pos)
 		if err != nil {
 			io.WriteString(w, "Requested position is invalid: "+err.Error())
@@ -119,12 +119,18 @@ func StartMassUpdateCardsHandler(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, "Can not update with a blank page using this BOT")
 			return
 		}
-		origCardPage, err := wiki.ParseCardPage(origPage)
+		origCardPage := wiki.CardPage{
+			PageName: api.CardNameToWiki(card.Name),
+		}
+		err = origCardPage.Parse(origPage)
 		if err != nil {
 			io.WriteString(w, "Error parsing the original page for comparisson: "+err.Error())
 			return
 		}
-		newCardPage, err := wiki.ParseCardPage(fixedPage)
+		newCardPage := &wiki.CardPage{
+			PageName: api.CardNameToWiki(card.Name),
+		}
+		err = newCardPage.Parse(fixedPage)
 		if err != nil {
 			io.WriteString(w, "Error parsing the updated page for comparisson: "+err.Error())
 			return
@@ -140,7 +146,9 @@ func StartMassUpdateCardsHandler(w http.ResponseWriter, r *http.Request) {
 			err = ioutil.WriteFile(fName, json, 0700)
 			// only save pages that actually have changes to page content.
 			//
-			//TODO SAVE PAGE
+			if r.FormValue("dryrun") != "checked" {
+				err = api.EditCardPage(newCardPage)
+			}
 		}
 
 		if err == nil {
@@ -149,16 +157,19 @@ func StartMassUpdateCardsHandler(w http.ResponseWriter, r *http.Request) {
 				http.Redirect(w, r, `/wikibot/`, http.StatusSeeOther)
 			} else {
 				// bring up the next card
-				http.Redirect(w, r, fmt.Sprintf(`?pos=%d&auto=%s`, currentID+1, r.FormValue("auto")), http.StatusSeeOther)
+				http.Redirect(w, r,
+					fmt.Sprintf(`?pos=%d&auto=%s&dryrun=%s`, currentID+1, r.FormValue("auto"), r.FormValue("dryrun")),
+					http.StatusSeeOther,
+				)
 			}
 			return
 		}
 	}
 
-	writeCardReviewForm(w, card, currentID, lenCardList, r.FormValue("auto"), err)
+	writeCardReviewForm(w, card, currentID, lenCardList, r.FormValue("auto"), r.FormValue("dryrun"), err)
 }
 
-func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int, isAuto string, err error) {
+func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int, isAuto string, isDryRun string, err error) {
 	fmt.Fprintf(w, `<html>
 	<head>
 		<title>Wikibot updates %d of %d</title>
@@ -192,16 +203,16 @@ func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int, 
 		</style>
 		<script type="text/javascript">
 		var vc = vc || {};
-		var pageTimer;
+		vc.pageTimer = null;
 		vc.onPageLoad = function() {
 			var autoF = document.getElementById("f_auto");
 			if (autoF && autoF.checked) {
-				pageTimer = setTimeout(vc.submit, 2*1000)
+				vc.pageTimer = setTimeout(vc.submit, 2*1000)
 			}
 		}
 		vc.submit = function() {
 			// disable the timer in case the user pressed submit so we don't double submit.
-			if (pageTimer) { clearTimeout(pageTimer); }
+			if (vc.pageTimer) { clearTimeout(vc.pageTimer); }
 			var f = document.getElementById("cardChanges");
 			f.submit();
 			return false;
@@ -226,12 +237,14 @@ func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int, 
 		fmt.Fprintf(w, "<h1>%s: %s</h1>", card.Name, err.Error())
 	} else {
 		fmt.Fprintf(w, "<h1>%s</h1>\n", card.Name)
-		io.WriteString(w, `<form id="cardChanges" name="cardChanges" method="post" onsubmit="return vc.submit();">`)
+		io.WriteString(w, `<form id="cardChanges" action="./" name="cardChanges" method="post" onsubmit="return vc.submit();">`)
+		fmt.Fprintf(w, `<input type="hidden" name="pos" value="%d" />`, currentID)
 		io.WriteString(w, `<div class="nav"><span><a href="/wikibot">Cancel</a></span>`)
 		if currentID < listLength {
 			fmt.Fprintf(w, `<span><a href="?pos=%d">Skip with no update</a></span>`, currentID+1)
 			io.WriteString(w, `<span><button name="s" type="submit">Submit and move Next</button></span>`)
-			fmt.Fprintf(w, `<span><label for="f_auto">Auto Advance:</label><input id="f_auto" name="auto" type="checkbox" value="checked" %s /><small>(every 2 seconds)</small></span>`, isAuto)
+			fmt.Fprintf(w, `<span><label for="f_auto">Auto Advance:</label><input id="f_auto" name="auto" type="checkbox" value="checked" %s onchange="clearTimeout(vc.pageTimer)"/><small>(every 2 seconds)</small></span>`, isAuto)
+			fmt.Fprintf(w, `<span><label for="f_dryrun">Dry Run:</label><input id="f_dryrun" name="dryrun" type="checkbox" value="checked" %s /><small>(no actual edits)</small></span>`, isDryRun)
 		} else {
 			io.WriteString(w, `<button name="submit" type="submit">Submit and End</button>`)
 		}
