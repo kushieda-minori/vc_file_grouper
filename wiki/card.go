@@ -149,16 +149,16 @@ func getTurnoverTo(c *vc.Card) string {
 	return result.Name
 }
 func getLikabilityQuotes(c *vc.Card) (ret []string) {
-	ret = make([]string, 0, 5)
+	ret = make([]string, 0)
 	exists := make(map[string]struct{}, 0)
 	evolutions := c.GetEvolutionCards()
 	for _, evo := range evolutions {
 		aws := evo.ArchwitchesWithLikeabilityQuotes()
 		for _, aw := range aws {
 			for _, like := range aw.Likeability() {
-				if _, ok := exists[like.Likability]; !ok {
+				if _, ok := exists[strings.ToLower(like.Likability)]; !ok {
 					ret = append(ret, like.Likability)
-					exists[like.Likability] = struct{}{}
+					exists[strings.ToLower(like.Likability)] = struct{}{}
 				}
 			}
 		}

@@ -272,6 +272,8 @@ type CardFlat struct {
 	Likeability3 string `json:"likeability 3"`
 	Likeability4 string `json:"likeability 4"`
 	Likeability5 string `json:"likeability 5"`
+	Likeability6 string `json:"likeability 6"`
+	Likeability7 string `json:"likeability 7"`
 
 	AwakenChance  string `json:"awaken chance"`
 	AwakenCrystal string `json:"awaken crystal"`
@@ -584,7 +586,7 @@ func (c *CardFlat) UpdateSkills(evolutions map[string]*vc.Card) {
 	rs := reflect.ValueOf(c).Elem()
 
 	setSkill := func(s *vc.Skill, ls *vc.Skill, evoKey string, num int, mod string) {
-		if s == nil && ls == nil {
+		if s == nil {
 			return
 		}
 		if _, seen := (skillsSeen)[s]; seen {
@@ -600,13 +602,13 @@ func (c *CardFlat) UpdateSkills(evolutions map[string]*vc.Card) {
 		max := s.SkillMax()
 		// thor skills use the "Fire" text
 		if mod == "t" {
-			min = s.FireMax() + " / 100% chance"
-			max = s.FireMax() + " / 100% chance"
+			min = s.FireMax()
+			max = s.FireMax()
 		}
 		if ls != nil {
 			// thor skills use the "Fire" text
 			if mod == "t" {
-				max = ls.FireMax() + " / 100% chance"
+				max = ls.FireMax()
 			} else {
 				max = ls.SkillMax()
 			}
@@ -632,15 +634,22 @@ func (c *CardFlat) UpdateSkills(evolutions map[string]*vc.Card) {
 			skillNameField.SetString(cleanVal(s.Name))
 			rs.FieldByName(skillPrefix + "Lv1").SetString(cleanVal(min))
 			rs.FieldByName(skillPrefix + "Lv10").SetString(cleanVal(max))
-			if s.DefaultCost > 0 {
-				rs.FieldByName(skillPrefix + "Lv1Cost").SetString(strconv.Itoa(s.DefaultCost))
-			} else {
-				rs.FieldByName(skillPrefix + "Lv1Cost").SetString("")
+			f := rs.FieldByName(skillPrefix + "Lv1Cost")
+			if f.IsValid() {
+				if s.DefaultCost > 0 {
+					f.SetString(strconv.Itoa(s.DefaultCost))
+				} else {
+					f.SetString("")
+				}
 			}
-			if s.MaxCost > 0 {
-				rs.FieldByName(skillPrefix + "Lv10Cost").SetString(strconv.Itoa(s.MaxCost))
-			} else {
-				rs.FieldByName(skillPrefix + "Lv10Cost").SetString("")
+
+			f = rs.FieldByName(skillPrefix + "Lv10Cost")
+			if f.IsValid() {
+				if s.MaxCost > 0 {
+					f.SetString(strconv.Itoa(s.MaxCost))
+				} else {
+					f.SetString("")
+				}
 			}
 			rs.FieldByName(skillPrefix + "Procs").SetString(s.ActivationString())
 
@@ -697,7 +706,12 @@ func (c *CardFlat) UpdateQuotes(card *vc.Card) {
 	if len(lQuotes) > 0 {
 		rs := reflect.ValueOf(c).Elem()
 		for i, q := range lQuotes {
-			rs.FieldByName("Likeability" + strconv.Itoa(i)).SetString(cleanVal(q))
+			f := rs.FieldByName("Likeability" + strconv.Itoa(i))
+			if f.IsValid() {
+				f.SetString(cleanVal(q))
+			} else {
+				log.Fatalf("Unable to find liability quote for %d", i)
+			}
 		}
 	}
 }
@@ -1187,6 +1201,8 @@ var cardFieldOrder []string = []string{
 	"likeability 3",
 	"likeability 4",
 	"likeability 5",
+	"likeability 6",
+	"likeability 7",
 	"quote misc 1",
 	"quote misc 2",
 	"quote misc 3",
