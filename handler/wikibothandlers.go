@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -62,7 +63,7 @@ func TestCardFetchHandler(w http.ResponseWriter, r *http.Request) {
 		9517 Christmas Lum Lum - XSR - ABB (skill expire)
 	*/
 	card := vc.CardScan(3934)
-	writeCardReviewForm(w, card, 1, 1, "", "checked", nil)
+	writeCardReviewForm(w, card, 1, 1, "", "checked", "", nil)
 }
 
 var botCardList vc.CardList = nil
@@ -147,7 +148,7 @@ func StartMassUpdateCardsHandler(w http.ResponseWriter, r *http.Request) {
 			// only save pages that actually have changes to page content.
 			//
 			if r.FormValue("dryrun") != "checked" {
-				err = api.EditCardPage(newCardPage)
+				err = api.EditCardPage(newCardPage, r.FormValue("summary"))
 			}
 		}
 
@@ -158,7 +159,7 @@ func StartMassUpdateCardsHandler(w http.ResponseWriter, r *http.Request) {
 			} else {
 				// bring up the next card
 				http.Redirect(w, r,
-					fmt.Sprintf(`?pos=%d&auto=%s&dryrun=%s`, currentID+1, r.FormValue("auto"), r.FormValue("dryrun")),
+					fmt.Sprintf(`?pos=%d&auto=%s&dryrun=%s&summary=%s`, currentID+1, r.FormValue("auto"), r.FormValue("dryrun"), url.QueryEscape(r.FormValue("summary"))),
 					http.StatusSeeOther,
 				)
 			}
@@ -166,10 +167,10 @@ func StartMassUpdateCardsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	writeCardReviewForm(w, card, currentID, lenCardList, r.FormValue("auto"), r.FormValue("dryrun"), err)
+	writeCardReviewForm(w, card, currentID, lenCardList, r.FormValue("auto"), r.FormValue("dryrun"), r.FormValue("summary"), err)
 }
 
-func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int, isAuto string, isDryRun string, err error) {
+func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int, isAuto string, isDryRun string, summary string, err error) {
 	fmt.Fprintf(w, `<html>
 	<head>
 		<title>Wikibot updates %d of %d</title>
@@ -207,7 +208,7 @@ func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int, 
 		vc.onPageLoad = function() {
 			var autoF = document.getElementById("f_auto");
 			if (autoF && autoF.checked) {
-				vc.pageTimer = setTimeout(vc.submit, 2*1000)
+				vc.pageTimer = setTimeout(vc.submit, 3 * 1000)
 			}
 		}
 		vc.submit = function() {
@@ -239,12 +240,13 @@ func writeCardReviewForm(w io.Writer, card *vc.Card, currentID, listLength int, 
 		fmt.Fprintf(w, "<h1>%s</h1>\n", card.Name)
 		io.WriteString(w, `<form id="cardChanges" action="./" name="cardChanges" method="post" onsubmit="return vc.submit();">`)
 		fmt.Fprintf(w, `<input type="hidden" name="pos" value="%d" />`, currentID)
+		fmt.Fprintf(w, `<div><label for="f_summary">Bot Edit Summary:<input id="f_summary" name="summary" type="text" value="%s"/></label></div>`, html.EscapeString(summary))
 		io.WriteString(w, `<div class="nav"><span><a href="/wikibot">Cancel</a></span>`)
 		if currentID < listLength {
 			fmt.Fprintf(w, `<span><a href="?pos=%d">Skip with no update</a></span>`, currentID+1)
 			io.WriteString(w, `<span><button name="s" type="submit">Submit and move Next</button></span>`)
-			fmt.Fprintf(w, `<span><label for="f_auto">Auto Advance:</label><input id="f_auto" name="auto" type="checkbox" value="checked" %s onchange="clearTimeout(vc.pageTimer)"/><small>(every 2 seconds)</small></span>`, isAuto)
-			fmt.Fprintf(w, `<span><label for="f_dryrun">Dry Run:</label><input id="f_dryrun" name="dryrun" type="checkbox" value="checked" %s /><small>(no actual edits)</small></span>`, isDryRun)
+			fmt.Fprintf(w, `<span><label for="f_auto">Auto Advance:<input id="f_auto" name="auto" type="checkbox" value="checked" %s onchange="clearTimeout(vc.pageTimer)"/></label><small>(every 3 seconds)</small></span>`, isAuto)
+			fmt.Fprintf(w, `<span><label for="f_dryrun">Dry Run:<input id="f_dryrun" name="dryrun" type="checkbox" value="checked" %s /></label><small>(no actual edits)</small></span>`, isDryRun)
 		} else {
 			io.WriteString(w, `<button name="submit" type="submit">Submit and End</button>`)
 		}

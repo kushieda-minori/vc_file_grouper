@@ -14,11 +14,11 @@ var client *http.Client = &http.Client{
 	Jar: getCookieJar(),
 }
 
-func getCookieJar() *cookiejar.Jar {
-	j, _ := cookiejar.New(&cookiejar.Options{
+func getCookieJar() (j *cookiejar.Jar) {
+	j, _ = cookiejar.New(&cookiejar.Options{
 		PublicSuffixList: nil,
 	})
-	return j
+	return
 }
 
 //CardNameToWiki Converts a card name to a wiki name. The result is safe to use in URL paths
