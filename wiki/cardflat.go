@@ -437,7 +437,16 @@ func (c *CardFlat) UpdateAll(vcCard *vc.Card, availability string) {
 	c.UpdateQuotes(vcCard)
 	c.UpdateAwakenRebirthInfo(vcCard.GetEvolutions())
 	if strings.TrimSpace(c.Availability) == "" {
-		c.Availability = availability
+		if availability != "" {
+			c.Availability = availability
+		} else {
+			for _, evo := range vcCard.GetEvolutionCards() {
+				if evo.IsAmalgamation() {
+					c.Availability = "[[Amalgamation]]"
+					break
+				}
+			}
+		}
 	}
 }
 
@@ -693,6 +702,7 @@ func (c *CardFlat) UpdateSkills(evolutions map[string]*vc.Card) {
 //UpdateQuotes Updates the card quotes
 func (c *CardFlat) UpdateQuotes(card *vc.Card) {
 	c.FriendshipPoints = strconv.Itoa(card.Character().MaxFriendship)
+	c.Description = cleanVal(card.Description())
 	c.Friendship = cleanVal(card.Friendship())
 	c.Login = cleanVal(card.Login())
 	c.Meet = cleanVal(card.Meet())

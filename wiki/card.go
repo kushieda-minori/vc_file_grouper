@@ -85,6 +85,9 @@ type RebirthMaterial struct {
 	Count    int
 }
 
+//Amalgamations list of amalgamations
+type Amalgamations []Amalgamation
+
 // Amalgamation Single amalgamation
 type Amalgamation struct {
 	Materials []AmalgamationMaterial
@@ -95,6 +98,36 @@ type Amalgamation struct {
 type AmalgamationMaterial struct {
 	Name   string
 	Rarity string
+}
+
+//AmalgamationToWiki outputs amalgamations as a wiki template
+func (a Amalgamations) String() (ret string) {
+	if a == nil || len(a) == 0 {
+		return
+	}
+	for _, amal := range a {
+		ret += amal.String()
+	}
+	return
+}
+
+func (a Amalgamation) String() (ret string) {
+	l := len(a.Materials)
+	ret += fmt.Sprintf("{{Amalgamation|matcount = %d\n", l)
+	for i, m := range a.Materials {
+		ret += m.String(i + 1)
+	}
+	ret += a.Result.String(l + 1)
+	ret += "}}\n"
+	return
+}
+
+func (a AmalgamationMaterial) String(i int) (ret string) {
+	return fmt.Sprintf("|name %[1]d = %[2]s|rarity %[1]d = %[3]s\n",
+		i,
+		a.Name,
+		a.Rarity,
+	)
 }
 
 //From Creates a template card from a VC card
@@ -126,7 +159,7 @@ func (Card) From(c *vc.Card) Card {
 		TurnoverFrom:       getTurnoverFrom(c),
 		TurnoverTo:         getTurnoverTo(c),
 		Evolutions:         getEvolutions(c, &skillsSeen),
-		Amalgamations:      getAmalgamations(c),
+		Amalgamations:      GetAmalgamations(c),
 		AwakeningMaterials: getAwakeningMaterials(c),
 		RebirthMaterials:   getRebirthMaterials(c),
 		Availability:       availability,
@@ -383,8 +416,9 @@ func getStats(evo *vc.Card) (atk, def, sol string) {
 	return
 }
 
-func getAmalgamations(c *vc.Card) []Amalgamation {
-	ret := make([]Amalgamation, 0)
+//GetAmalgamations Gets the amalgamations for a card
+func GetAmalgamations(c *vc.Card) Amalgamations {
+	ret := make(Amalgamations, 0)
 	for _, evo := range c.GetEvolutionCards() {
 		for _, amal := range evo.Amalgamations() {
 			mats := amal.MaterialsOnly()

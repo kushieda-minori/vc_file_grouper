@@ -18,6 +18,7 @@ import (
 	"vc_file_grouper/util"
 	"vc_file_grouper/vc"
 	"vc_file_grouper/wiki"
+	"vc_file_grouper/wiki/api"
 )
 
 // CardHandler shows cards in order
@@ -235,6 +236,24 @@ func CardDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "<div style=\"clear:both;float:left\">Edit on the <a href=\"https://valkyriecrusade.fandom.com/wiki/%s?action=edit\">fandom</a>\n<br /></div>", cardName)
+	fmt.Fprintf(w, "<div style=\"clear:left;float:left\"><a href=\"?action=uploadImages\">Upload Missing Images</a>\n<br /></div>")
+	fmt.Fprintf(w, "<div style=\"float:left;padding-left:15px;\"><a href=\"?action=createOnWiki\">Create New Wiki Page</a></div>")
+
+	if action := r.FormValue("action"); action != "" {
+		if action == "uploadImages" {
+			err = api.UploadNewCardUniqueImages(card)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+			}
+		}
+		if action == "createOnWiki" {
+			err = api.CreateCardPage(card, "New Card")
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+			}
+		}
+	}
+
 	io.WriteString(w, "<div><textarea readonly=\"readonly\" style=\"width:100%;height:450px\">")
 
 	cardPage := wiki.CardPage{}

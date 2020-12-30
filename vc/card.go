@@ -1038,16 +1038,16 @@ func (c *Card) GetEvoImageName(isIcon bool) string {
 	return fileName + "_" + thisKey
 }
 
-var sdPath string = filepath.Join(FilePath, "card", "sd")
-var mdPath string = filepath.Join(FilePath, "card", "md")
-var hdPath string = filepath.Join(FilePath, "card", "hd")
-var thumbPath string = filepath.Join(FilePath, "card", "thumb")
-
 //GetImageData gets the image data from disk if it exists.
 func (c *Card) GetImageData(isThumb bool) (imageName string, b []byte, err error) {
 	if c == nil {
 		return
 	}
+	var sdPath string = filepath.Join(FilePath, "card", "sd")
+	var mdPath string = filepath.Join(FilePath, "card", "md")
+	var hdPath string = filepath.Join(FilePath, "card", "hd")
+	var thumbPath string = filepath.Join(FilePath, "card", "thumb")
+
 	var fullpath string
 	if isThumb {
 		fullpath = filepath.Join(thumbPath, c.Image())
