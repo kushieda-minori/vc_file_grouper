@@ -70,11 +70,6 @@ func uploadImages(card *vc.Card, thumbs bool) (err error) {
 
 		//log.Println(string(formData))
 
-		// query := fmt.Sprintf("/api.php?action=upload&format=json&filename=%s&token=%s",
-		// 	url.QueryEscape(name),
-		// 	url.QueryEscape(MyCreds.CSRFToken),
-		// )
-
 		var resp *http.Response
 		resp, err = client.Post(URL+"/api.php?action=upload&format=json&ignorewarnings=true", contentType, bytes.NewReader(formData.Bytes()))
 		if err != nil {

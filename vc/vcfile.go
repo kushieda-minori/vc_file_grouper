@@ -114,6 +114,7 @@ var newCards = []int{
 	4721, 4722, 4734, // Spinner
 	4752, 4753, 4785, // Sparky
 	4711, 4712, // Diana
+	8969, 8970, 8971, 8972, // Lapis Lazuli
 }
 
 // ID is the character ID, not the card ID
