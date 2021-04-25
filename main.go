@@ -72,7 +72,8 @@ func main() {
 	http.HandleFunc("/images/weaponevent/", handler.ImageHandlerFor("/weaponevent/", "/weaponevent/"))
 
 	// vc master data
-	http.HandleFunc("/config/", handler.ConfigHandler)
+	http.HandleFunc("/config/dataLoc", handler.ConfigDataLocHandler)
+	http.HandleFunc("/config/setBotCreds", handler.ConfigBotCredsHandler)
 	//dynamic pages
 	http.HandleFunc("/cards/", handler.CardHandler)
 	http.HandleFunc("/cards/table/", handler.CardTableHandler)
@@ -102,6 +103,11 @@ func main() {
 	http.HandleFunc("/events/dungeonScenario/", handler.ScenarioHandler("dungeon", "DRV"))
 	http.HandleFunc("/events/towerScenario/", handler.ScenarioHandler("tower", "Tower"))
 	http.HandleFunc("/events/weaponScenario/", handler.ScenarioHandler("weapon_event", "Weapon Event"))
+
+	http.HandleFunc("/wikibot/", handler.WikibotHandler)
+	http.HandleFunc("/wikibot/testCardFetch/", handler.TestCardFetchHandler)
+	http.HandleFunc("/wikibot/testLogin/", handler.TestLoginHandler)
+	http.HandleFunc("/wikibot/startMassUpdate/", handler.StartMassUpdateCardsHandler)
 
 	http.HandleFunc("/thor/", handler.ThorHandler)
 

@@ -15,9 +15,11 @@ import java.nio.file.StandardOpenOption;
 public class Decoder {
 	public static void main(String[] args) throws IOException {
 		Path imageDir = Paths.get("hd");
-		for (Path child : Files.newDirectoryStream(imageDir)) {
-			if (child.toFile().isFile()) {
-				decodeDataFile(child.toString());
+		try(DirectoryStream<Path> files = Files.newDirectoryStream(imageDir)) {
+			for (Path child : files) {
+				if (child.toFile().isFile()) {
+					decodeDataFile(child.toString());
+				}
 			}
 		}
 	}

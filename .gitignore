@@ -5,3 +5,4 @@ launch.json
 __debug_bin
 debug
 *.log
+changelog/*

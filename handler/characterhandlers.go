@@ -70,6 +70,7 @@ func CharacterTableHandler(w http.ResponseWriter, r *http.Request) {
 <div>
 <table><thead><tr>
 <th>_id</th>
+<th>card_IDs</th>
 <th>card_nos</th>
 <th>name</th>
 <th>Description</th>
@@ -101,8 +102,8 @@ func CharacterTableHandler(w http.ResponseWriter, r *http.Request) {
 		firstCards := vc.CardList(first.Cards())
 		secondCards := vc.CardList(second.Cards())
 
-		maxFirst := firstCards.Latest()
-		maxSecond := secondCards.Latest()
+		maxFirst := firstCards.Earliest()
+		maxSecond := secondCards.Earliest()
 
 		if maxFirst == nil && maxSecond == nil {
 			return first.ID > second.ID
@@ -134,8 +135,13 @@ func CharacterTableHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		cardIDs := ""
 		cardNos := ""
 		for _, card := range character.Cards() {
+			if len(cardIDs) > 0 {
+				cardIDs = cardIDs + ", "
+			}
+			cardIDs = cardIDs + strconv.Itoa(card.ID)
 			if len(cardNos) > 0 {
 				cardNos = cardNos + ", "
 			}
@@ -152,8 +158,10 @@ func CharacterTableHandler(w http.ResponseWriter, r *http.Request) {
 			"<td>%s</td>"+
 			"<td>%s</td>"+
 			"<td>%s</td>"+
+			"<td>%s</td>"+
 			"<td>%s</td></tr>\n",
 			character.ID,
+			cardIDs,
 			cardNos,
 			cardName,
 			character.Description,

@@ -114,13 +114,14 @@ var newCards = []int{
 	4721, 4722, 4734, // Spinner
 	4752, 4753, 4785, // Sparky
 	4711, 4712, // Diana
+	8969, 8970, 8971, 8972, // Lapis Lazuli
 }
 
 // ID is the character ID, not the card ID
 var characterNameOverride = map[int]string{
 	62:   "Kung-Fu Master",            // Kung Fu Master
 	181:  "Ariel (Light)",             // Ariel
-	254:  "Duckling Look-a-Like",      //Duckling Look-A-Like
+	254:  "Duckling Look-a-Like",      // Duckling Look-A-Like -> H = Swan Look-a-Like
 	352:  "Ariel (Dark)",              // Ariel
 	452:  "Joker",                     // Joker
 	465:  "Joker (Cane)",              // Joker
@@ -145,14 +146,15 @@ var characterNameOverride = map[int]string{
 	2025: "Playful Hades (Green)",     // Playful Hades
 	2026: "Playful Hades (Blue)",      // Playful Hades
 	2080: "Eunice",                    // X Eunice = Yunice? Why Mynet...
+	2357: "Empress Slime",             // G Empress Slime = Queen Slime...
 	2397: "PM Demise",                 // Pm Demise
+	2468: "One-piece Swimsuit",        // fix case of Piece
 	2479: "DIY Ninja",                 // Diy Ninja
 	2549: "Thunder Stone Shard (L)",   // Thunderstone Shard (L)
 	2550: "Thunder Stone Shard (D)",   // Thunderstone Shard (D)
 	2554: "Lightning Stone Shard (L)", // Lightning Shard (L)
 	2555: "Lightning Stone Shard (D)", // Lightning Shard (D)
 	2978: "Etna & Flonne",             // fix spacing
-	3060: "Xmas Kyulu Kyula",          // remove the slash
 	3167: "Kiyohime (collab)",         // new Kiyo from a collab
 	3408: "Holy Oracle (New)",         // new Holy Oracle
 }
@@ -993,6 +995,7 @@ func cleanCardName(name string, card *Card) string {
 		ret = strings.ReplaceAll(ret, "(Sr)", "(SR)")
 		ret = strings.ReplaceAll(ret, "(Ur)", "(UR)")
 		ret = strings.ReplaceAll(ret, "(Lr)", "(LR)")
+		ret = strings.ReplaceAll(ret, "/", " ")
 		if card.CardCharaID < 1450 {
 			// use lowecase prepositions and articles as these are cards in the wiki before this program.
 			ret = strings.ReplaceAll(ret, " Of ", " of ")

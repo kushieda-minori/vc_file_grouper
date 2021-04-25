@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -40,7 +41,7 @@ type Card struct {
 	SkillID2                  int    `json:"skill_id_2"`                               // second Skill
 	SkillID3                  int    `json:"skill_id_3"`                               // third Skill (LR)
 	SpecialSkillID1           int    `json:"special_skill_id_1"`                       // Awakened Burst type (GSR,GUR,GLR)
-	LeaderSkillID             int    `json:"leader_skill_id"`                          // for VR Card Leader Skills
+	LeaderSkillID             int    `json:"leader_skill_id"`                          // for VR Card Leader Skills. does not map to normal skill table
 	ThorSkillID1              int    `json:"thor_skill_id_1"`                          // Temporary Thor skills used for AAW
 	CustomSkillCost           int    `json:"custom_skill_cost_1"`                      // initial skill cost
 	CustomSkillCostIncPattern int    `json:"custom_skill_cost_increment_pattern_id_1"` // ?
@@ -191,6 +192,18 @@ func (c *Card) MainRarity() string {
 // CardRarity with full rarity information
 func (c *Card) CardRarity() *CardRarity {
 	return CardRarityScan(c.CardRareID)
+}
+
+// Symbol with full rarity information
+func (c *Card) Symbol() string {
+	if c == nil || c.CardSymbolID == 0 {
+		return ""
+	}
+	if c.CardSymbolID > 0 && c.CardSymbolID < len(Data.SymbolNames) {
+		return Data.SymbolNames[c.CardSymbolID]
+	}
+	log.Printf("Unknown symbol id %d. Unable to locate name", c.CardSymbolID)
+	return strconv.Itoa(c.CardSymbolID)
 }
 
 // EvoIsFirst returns true if the Evolution of this card is the first for this card
@@ -1023,6 +1036,45 @@ func (c *Card) GetEvoImageName(isIcon bool) string {
 		return fileName
 	}
 	return fileName + "_" + thisKey
+}
+
+//GetImageData gets the image data from disk if it exists.
+func (c *Card) GetImageData(isThumb bool) (imageName string, b []byte, err error) {
+	if c == nil {
+		return
+	}
+	var sdPath string = filepath.Join(FilePath, "card", "sd")
+	var mdPath string = filepath.Join(FilePath, "card", "md")
+	var hdPath string = filepath.Join(FilePath, "card", "hd")
+	var thumbPath string = filepath.Join(FilePath, "card", "thumb")
+
+	var fullpath string
+	if isThumb {
+		fullpath = filepath.Join(thumbPath, c.Image())
+	} else {
+		fullpath = filepath.Join(hdPath, c.Image())
+		if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+			fullpath = filepath.Join(mdPath, c.Image())
+			if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+				fullpath = filepath.Join(sdPath, c.Image())
+				if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+					return
+				}
+			}
+		}
+	}
+	// decode the file
+	b, err = Decode(fullpath)
+	if err != nil {
+		return
+	}
+	imageName = c.GetEvoImageName(isThumb)
+	if isThumb {
+		imageName += "_icon.png"
+	} else {
+		imageName += ".png"
+	}
+	return
 }
 
 // GetEvolutions gets the evolutions for a card including Awakening and same character(by name) amalgamations

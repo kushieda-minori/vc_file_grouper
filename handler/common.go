@@ -148,3 +148,17 @@ func addQueryMark(query string) string {
 	}
 	return "?" + query
 }
+
+//nth Gets the ordinal value for a number. modified from https://stackoverflow.com/a/31615643
+func nth(n int) string {
+	th := []string{"th", "st", "nd", "rd"}
+	v := n % 100
+	l := (v - 20) % 10
+	e := th[0]
+	if l >= 0 && l < 4 {
+		e = th[l]
+	} else if v >= 0 && v < 4 {
+		e = th[v]
+	}
+	return fmt.Sprintf("%d%s", n, e)
+}

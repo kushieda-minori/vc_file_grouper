@@ -1,7 +1,6 @@
 package wiki
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"sort"
@@ -16,9 +15,10 @@ type Card struct {
 	IsUnReleased       bool // true to mark as NOT released
 	Element            string
 	Rarity             string
+	Symbol             string
 	Description        string
-	Quotes             CardQuotes
 	Evolutions         []EvolutionDetails
+	Quotes             CardQuotes
 	AwakeningMaterials []AwakenMaterial
 	RebirthMaterials   []RebirthMaterial
 	TurnoverFrom       string
@@ -85,6 +85,9 @@ type RebirthMaterial struct {
 	Count    int
 }
 
+//Amalgamations list of amalgamations
+type Amalgamations []Amalgamation
+
 // Amalgamation Single amalgamation
 type Amalgamation struct {
 	Materials []AmalgamationMaterial
@@ -95,6 +98,36 @@ type Amalgamation struct {
 type AmalgamationMaterial struct {
 	Name   string
 	Rarity string
+}
+
+//AmalgamationToWiki outputs amalgamations as a wiki template
+func (a Amalgamations) String() (ret string) {
+	if a == nil || len(a) == 0 {
+		return
+	}
+	for _, amal := range a {
+		ret += amal.String()
+	}
+	return
+}
+
+func (a Amalgamation) String() (ret string) {
+	l := len(a.Materials)
+	ret += fmt.Sprintf("{{Amalgamation|matcount = %d\n", l)
+	for i, m := range a.Materials {
+		ret += m.String(i + 1)
+	}
+	ret += a.Result.String(l + 1)
+	ret += "}}\n"
+	return
+}
+
+func (a AmalgamationMaterial) String(i int) (ret string) {
+	return fmt.Sprintf("|name %[1]d = %[2]s|rarity %[1]d = %[3]s\n",
+		i,
+		a.Name,
+		a.Rarity,
+	)
 }
 
 //From Creates a template card from a VC card
@@ -126,7 +159,7 @@ func (Card) From(c *vc.Card) Card {
 		TurnoverFrom:       getTurnoverFrom(c),
 		TurnoverTo:         getTurnoverTo(c),
 		Evolutions:         getEvolutions(c, &skillsSeen),
-		Amalgamations:      getAmalgamations(c),
+		Amalgamations:      GetAmalgamations(c),
 		AwakeningMaterials: getAwakeningMaterials(c),
 		RebirthMaterials:   getRebirthMaterials(c),
 		Availability:       availability,
@@ -149,16 +182,16 @@ func getTurnoverTo(c *vc.Card) string {
 	return result.Name
 }
 func getLikabilityQuotes(c *vc.Card) (ret []string) {
-	ret = make([]string, 0, 5)
+	ret = make([]string, 0)
 	exists := make(map[string]struct{}, 0)
 	evolutions := c.GetEvolutionCards()
 	for _, evo := range evolutions {
 		aws := evo.ArchwitchesWithLikeabilityQuotes()
 		for _, aw := range aws {
 			for _, like := range aw.Likeability() {
-				if _, ok := exists[like.Likability]; !ok {
+				if _, ok := exists[strings.ToLower(like.Likability)]; !ok {
 					ret = append(ret, like.Likability)
-					exists[like.Likability] = struct{}{}
+					exists[strings.ToLower(like.Likability)] = struct{}{}
 				}
 			}
 		}
@@ -383,8 +416,9 @@ func getStats(evo *vc.Card) (atk, def, sol string) {
 	return
 }
 
-func getAmalgamations(c *vc.Card) []Amalgamation {
-	ret := make([]Amalgamation, 0)
+//GetAmalgamations Gets the amalgamations for a card
+func GetAmalgamations(c *vc.Card) Amalgamations {
+	ret := make(Amalgamations, 0)
 	for _, evo := range c.GetEvolutionCards() {
 		for _, amal := range evo.Amalgamations() {
 			mats := amal.MaterialsOnly()
@@ -513,17 +547,10 @@ func (c Card) String() (ret string) {
 	if c.IsUnReleased {
 		ret += "{{Unreleased}}"
 	}
-	data, err := json.MarshalIndent(c, "", " ")
-	if err == nil {
-		ret += fmt.Sprintf(`{{#invoke:Card|detail
-|<nowiki>%s</nowiki>
+	ret += fmt.Sprintf(`{{Card
 |availability=%s
 }}`,
-			string(data),
-			c.Availability,
-		)
-	} else {
-		ret = err.Error()
-	}
+		c.Availability,
+	)
 	return
 }

@@ -17,6 +17,9 @@ type CardSkill struct {
 	Activations  int
 	MinEffect    string
 	MaxEffect    string
+	MinTurn      int
+	CostLv1      int
+	CostLv10     int
 	RandomSkills []string
 	Expiration   *time.Time
 }
@@ -120,8 +123,24 @@ func (s CardSkill) String() string {
 		)
 	}
 
+	minturn := ""
+	costlvl1 := ""
+	costlvl10 := ""
+
+	if s.MinTurn > 0 {
+		minturn = fmt.Sprintf("\n|skill %smin turn = %d", evoMod, s.MinTurn)
+	}
+
+	if s.CostLv1 > 0 {
+		costlvl1 = fmt.Sprintf("\n|skill %slv1 cost = %d", evoMod, s.CostLv1)
+	}
+
+	if s.CostLv10 > 0 && s.CostLv1 != s.CostLv10 {
+		costlvl10 = fmt.Sprintf("\n|skill %slv10 cost = %d", evoMod, s.CostLv10)
+	}
+
 	ret := fmt.Sprintf(`|skill %[1]s= %[2]s
-|skill %[1]slv1 = %[3]s%[4]s
+|skill %[1]slv1 = %[3]s%[4]s%[6]s%[7]s%[8]s
 |procs %[1]s= %[5]d
 `,
 		evoMod,
@@ -129,6 +148,9 @@ func (s CardSkill) String() string {
 		html.EscapeString(strings.ReplaceAll(s.MinEffect, "\n", "<br />")),
 		lvl10,
 		s.Activations,
+		minturn,
+		costlvl1,
+		costlvl10,
 	)
 
 	for k, v := range s.RandomSkills {
