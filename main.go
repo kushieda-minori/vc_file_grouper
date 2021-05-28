@@ -123,6 +123,8 @@ func main() {
 
 	http.HandleFunc("/decode/", handler.DecodeHandler)
 
+	http.HandleFunc("/zipData/", handler.ZipDataHandler)
+
 	http.HandleFunc("/raw/", handler.RawDataHandler)
 	http.HandleFunc("/raw/KEYS", handler.RawDataKeysHandler)
 

@@ -1,6 +1,10 @@
 package vc
 
 import (
+	"fmt"
+	"log"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 )
@@ -47,6 +51,26 @@ func ItemScan(id int) *Item {
 	return nil
 }
 
+//GetImageData gets the image data for the item
+func (i Item) GetImageData() (imageName string, data []byte, err error) {
+	if i.ItemNo < 1 || i.NameEng == "" {
+		return
+	}
+	var path string = filepath.Join(FilePath, "item", "shop")
+	fileName := fmt.Sprintf("%d", i.ItemNo)
+	fullpath := filepath.Join(path, fileName)
+	if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+		log.Printf("Unable to find Item %s : %s", i.NameEng, fileName)
+		return
+	}
+	data, err = Decode(fullpath)
+	if err != nil {
+		return
+	}
+	imageName = strings.ReplaceAll(CleanCustomSkillNoImage(i.NameEng), "/", "-") + ".png"
+	return
+}
+
 // CleanCustomSkillNoImage cleans VC images and replaces with the element name
 func CleanCustomSkillNoImage(name string) string {
 	ret := name
@@ -65,4 +89,58 @@ func CleanCustomSkillImage(name string) string {
 	ret = strings.ReplaceAll(ret, "<img=26>", "{{Dark}}")
 	ret = strings.ReplaceAll(ret, "<img=27>", "{{Light}}")
 	return ret
+}
+
+var ItemGroups = map[int]string{
+	1:  "Resource",
+	2:  "Resource",
+	3:  "Resource",
+	4:  "Other",
+	5:  "Enhancement",
+	6:  "Recovery",
+	7:  "Recovery",
+	8:  "Deck Enhancement",
+	9:  "Arcana",
+	10: "Arcana",
+	11: "Arcana",
+	12: "Arcana",
+	13: "Arcana",
+	14: "Arcana",
+	15: "Arcana",
+	16: "Arcana",
+	17: "Tickets",
+	18: "Exchange",
+	19: "Exchange",
+	20: "Event",
+	22: "Recovery",
+	23: "Event",
+	24: "Deck Enhancement",
+	25: "Event",
+
+	29: "Awakening and Rebirth",
+	30: "Arcana",
+	31: "Recovery",
+	32: "Exchange",
+
+	36: "Recovery",
+	37: "Resource",
+	38: "Custom Skill Recipe",
+	39: "Custom Skill",
+	40: "Other",
+
+	42: "Other",
+	43: "Exchange",
+	44: "Other",
+
+	47: "Recovery",
+	48: "Recovery",
+
+	50: "Recovery",
+	51: "Exchange",
+	52: "Memory Core",
+	53: "Other",
+	54: "Other",
+	55: "Enhancement",
+	56: "Enhancement",
+	57: "Enhancement",
 }

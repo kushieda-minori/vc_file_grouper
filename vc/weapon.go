@@ -2,6 +2,9 @@ package vc
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -340,6 +343,62 @@ func WeaponEventScan(id int) *WeaponEvent {
 		}
 	}
 	return nil
+}
+
+//Image gets the raw image name
+func (w Weapon) Image(rarity int) string {
+	return fmt.Sprintf("wp_%05[1]d_%02[2]d", w.ID, rarity)
+}
+
+//ImageName gets the nice image name
+func (w Weapon) ImageName(rarity int, isThumb bool) string {
+	if isThumb {
+		return fmt.Sprintf("%s_%02[2]d_icon.png", strings.Replace(w.MaxRarityName(), " (Weapon)", "", -1), rarity)
+	}
+	return fmt.Sprintf("%s_%02[2]d.png", strings.Replace(w.MaxRarityName(), " (Weapon)", "", -1), rarity)
+}
+
+//GetImageData Gets the image data for weapons by rank
+func (w Weapon) GetImageData(isThumb bool) map[string][]byte {
+	ret := make(map[string][]byte)
+	var sdPath string = filepath.Join(FilePath, "weapon", "sd")
+	var mdPath string = filepath.Join(FilePath, "weapon", "md")
+	var hdPath string = filepath.Join(FilePath, "weapon", "hd")
+	var thumbPath string = filepath.Join(FilePath, "weapon", "thumb")
+
+	for i := 1; i <= w.MaxRarity(); i++ {
+		fileName := w.Image(i)
+		var fullpath string
+		var err error
+		if isThumb {
+			fullpath = filepath.Join(thumbPath, fileName)
+			if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+				log.Printf("Unable to find Weapon icon %s : %s", w.MaxRarityName(), fileName)
+				continue
+			}
+		} else {
+			fullpath = filepath.Join(hdPath, fileName)
+			if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+				fullpath = filepath.Join(mdPath, fileName)
+				if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+					fullpath = filepath.Join(sdPath, fileName)
+					if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+						log.Printf("Unable to find Weapon image %s : %s", w.MaxRarityName(), fileName)
+						continue
+					}
+				}
+			}
+		}
+		// decode the file
+		var b []byte
+		b, err = Decode(fullpath)
+		if err != nil {
+			return nil
+		}
+		imageName := w.ImageName(i, isThumb)
+		ret[imageName] = b
+	}
+	return ret
 }
 
 //Copy returns a copy of this list. Useful for local sorting
