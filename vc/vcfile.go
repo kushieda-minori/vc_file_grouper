@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"vc_file_grouper/util"
 )
 
 // FilePath path to the main VC file
@@ -869,8 +870,13 @@ func ReadStringFileFilter(fname string, filtered bool) ([]string, error) {
 	return ret, nil
 }
 
+var binImageCache = make(map[string][]BinImage)
+
 //ReadBinFileImages reads a binary file and returns the image data (PNG only)
 func ReadBinFileImages(filename string) ([]BinImage, error) {
+	if cache, ok := binImageCache[filename]; ok {
+		return cache, nil
+	}
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
@@ -878,6 +884,7 @@ func ReadBinFileImages(filename string) ([]BinImage, error) {
 	l := len(data)
 
 	nameStart := []byte("\x00\x00\x00")
+	//nameStart := []byte("\x00")
 	lnameStart := len(nameStart)
 	nameEnd := byte('\000')
 
@@ -891,7 +898,7 @@ func ReadBinFileImages(filename string) ([]BinImage, error) {
 			if bytes.Equal(data[i:i+lnameStart], nameStart) {
 				if i+lnameStart+1 < l {
 					c := data[i+lnameStart]
-					if c >= 'a' && c <= 'z' {
+					if c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' {
 						return i + lnameStart // exclude the 3 null bytes
 					}
 				}
@@ -923,13 +930,31 @@ func ReadBinFileImages(filename string) ([]BinImage, error) {
 		}
 		return -1
 	}
+
+	isValidName := func(name string) bool {
+		if len(name) < 4 {
+			return false
+		}
+		// for _, c := range name {
+		// 	if c < '\x20' || c > '\x7E' {
+		// 		//if c > unicode.MaxASCII {
+		// 		return false
+		// 	}
+		// }
+
+		return true
+	}
+
 	//start of the PNG image
 	firstPng := findPngStart(data, 0)
 	if firstPng < 0 {
 		return nil, errors.New("unable to locate any images")
 	}
 	//parse names
-	start := 0
+
+	lheader := 12         // header is 12 bytes
+	lNamePrefixData := 95 // data prefixing a filename is 95 bytes
+	start := lheader + lNamePrefixData
 	names := make([]string, 0)
 	for start < firstPng {
 		start = findNameStart(data, start)
@@ -940,20 +965,19 @@ func ReadBinFileImages(filename string) ([]BinImage, error) {
 		if end < 0 || end > firstPng {
 			break
 		}
-		if end-start < 5 { // none of the names are shorter than 5 characters
-			start = end
-			continue
-		}
 		name := string(data[start:end])
-		names = append(names, name)
-		//log.Printf("found image name '%s', idx: %d-%d\n", name, start, end)
+		if isValidName(name) {
+			//log.Printf("found image name '%s', idx: %d-%d\n", name, start, end)
+			names = append(names, name)
+		}
 		start = end
 	}
+	//log.Printf("End idx: %d, firstPng idx: %d", start, firstPng)
 
 	lnames := len(names)
 	getImageName := func(idx int) string {
 		if idx < lnames && names[idx] != "" {
-			return names[idx] + ".png"
+			return strings.TrimSuffix(names[idx], ".png") + ".png"
 		}
 		return fmt.Sprintf("structure_%05d.png", idx+1)
 	}
@@ -962,26 +986,34 @@ func ReadBinFileImages(filename string) ([]BinImage, error) {
 	// look for PNG images
 	ret := make([]BinImage, 0)
 	i := 0 // skip the "dummy" name
+	deadIds := [19]int{10, 11, 12, 234, 235, 237, 238, 239, 240, 241, 242, 243, 260, 261, 262, 268, 269, 270, 272}
 	for start < (l - (lpngStart + lpngEnd)) {
 		i++
-		start = findPngStart(data, start)
-		if start < 0 {
+		if util.ContainsInt(deadIds[:], i) {
+			ret = append(ret, BinImage{ID: i, Name: getImageName(i), Data: []byte{}})
+			continue
+		}
+		nstart := findPngStart(data, start)
+		if nstart < 0 {
 			break
 		}
+
+		if start != nstart {
+			log.Printf("expected PNG Start: %d, but got %d", start, nstart)
+			start = nstart
+		}
+
 		end := findPngEnd(data, start)
-		if end < 0 {
+		if end < start {
 			return nil, errors.New("unable to locate the end of an image")
 		}
 
-		ret = append(ret, BinImage{ID: i, Name: getImageName(i), Data: data[start:end]})
+		ret = append(ret, BinImage{ID: i, Name: getImageName(i - 1), Data: data[start:end]})
 		//log.Printf("found image, idx: %d\n", start)
 		start = end
 	}
-	log.Printf("found %d image names and %d images\n",
-		lnames,
-		len(ret),
-	)
-
+	//log.Printf("found %d image names and %d images\n", lnames, len(ret))
+	binImageCache[filename] = ret
 	return ret, nil
 }
 
@@ -1040,7 +1072,10 @@ func GetBinFileImages(filename string, idxs ...int) ([]BinImage, error) {
 		if idx < 1 || idx > len(images) {
 			return nil, errors.New("Index out of bounds")
 		}
-		ret = append(ret, images[idx-1])
+		img := images[idx-1]
+		if len(img.Data) > 0 {
+			ret = append(ret, img)
+		}
 	}
 	return ret, nil
 }

@@ -552,6 +552,9 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 		if isThor := qs.Get("isThor"); isThor != "" {
 			match = match && card.ThorSkillID1 > 0
 		}
+		if isClosed := qs.Get("isClosed"); isClosed != "" {
+			match = match && card.IsClosed > 0
+		}
 		if hasRebirth := qs.Get("hasRebirth"); hasRebirth != "" {
 			match = match && card.HasRebirth()
 		}
@@ -615,6 +618,7 @@ func CardTableHandler(w http.ResponseWriter, r *http.Request) {
 <label for="f_skilldesc">Skill Description:</label><input id="f_skilldesc" name="skilldesc" value="%s" />
 <label for="f_skillisthor">Has Thor Skill:</label><input id="f_skillisthor" name="isThor" type="checkbox" value="checked" %s />
 <label for="f_hasrebirth">Has Rebirth:</label><input id="f_hasrebirth" name="hasRebirth" type="checkbox" value="checked" %s />
+<label for="f_isclosed">Closed (not released):</label><input id="f_isclosed" name="isClosed" type="checkbox" value="checked" %s />
 <button type="submit">Submit</button>
 </form>
 `,

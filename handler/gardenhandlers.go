@@ -136,11 +136,12 @@ func StructureDetailHandler(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "No details...")
 	}
 
-	gardenBin := filepath.Join(vc.FilePath, "garden", "map_01.bin")
-	texIds := structure.TextureIDs()
-	images, err := vc.GetBinFileImages(gardenBin, texIds...)
-
-	log.Printf("Found %d images for structure %d: %s", len(images), structure.ID, structure.Name)
+	images, err := structure.GetImageData()
+	if err != nil {
+		http.Error(w, "Error getting images: "+err.Error(), http.StatusNotFound)
+		return
+	}
+	//log.Printf("Found %d images for structure %d: %s", len(images), structure.ID, structure.Name)
 
 	io.WriteString(w, "<div class=\"images\">")
 	for idx, image := range images {
@@ -148,6 +149,7 @@ func StructureDetailHandler(w http.ResponseWriter, r *http.Request) {
 			w,
 			inlineImageTag(
 				fmt.Sprintf("%s_%d.png", structure.Name, idx+1),
+				"<br/>TexId: "+strconv.Itoa(image.ID)+"<br/>"+image.Name,
 				&image.Data,
 			),
 		)
@@ -203,6 +205,9 @@ func StructureImagesHandler(w http.ResponseWriter, r *http.Request) {
 		// Add some files to the archive.
 		for i := 0; i < len(images); i++ {
 			image := images[i]
+			if len(image.Data) == 0 {
+				continue
+			}
 			p := ""
 			if withDir {
 				p = image.Name[0:strings.Index(image.Name, "_")]
@@ -270,6 +275,7 @@ func StructureImagesHandler(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w,
 			inlineImageTag(
 				image.Name,
+				"<br/>TexId: "+strconv.Itoa(image.ID)+"<br/>"+image.Name,
 				&image.Data,
 			),
 		)
@@ -278,9 +284,9 @@ func StructureImagesHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "</div></body></html>")
 }
 
-func inlineImageTag(imageName string, data *[]byte) string {
+func inlineImageTag(imageName string, optional string, data *[]byte) string {
 	return fmt.Sprintf(
-		"<div class=\"image-wrapper\"><a download=\"%[1]s\" href=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\"><img src=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\" /><br/>%[1]s</a></div>\n",
+		"<div class=\"image-wrapper\"><a download=\"%[1]s\" href=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\"><img src=\"data:image/png;name=%[1]s;charset=utf-8;base64, %[2]s\" /><br/>%[1]s"+optional+"</a></div>\n",
 		imageName,
 		base64.StdEncoding.EncodeToString(*data),
 	)

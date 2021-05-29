@@ -45,6 +45,12 @@ func (c *CardCharacter) Cards() CardList {
 	return c._cards
 }
 
+func (c *CardCharacter) HasQuotes() bool {
+	return c.Description != "" || c.Login != "" || c.Meet != "" || c.Friendship != "" ||
+		c.FriendshipMax != "" || c.FriendshipEvent != "" || c.BattleStart != "" ||
+		c.BattleEnd != "" || c.Rebirth != ""
+}
+
 // FirstEvoCard first evolution of the cards under this character
 func (c *CardCharacter) FirstEvoCard() (card *Card) {
 	card = nil

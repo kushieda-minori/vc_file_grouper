@@ -2,7 +2,9 @@ package vc
 
 import (
 	"log"
+	"path/filepath"
 	"time"
+	"vc_file_grouper/util"
 )
 
 // Garden the "garden" field lists some details about the kindoms available to the players
@@ -90,8 +92,7 @@ func (s *Structure) TextureIDs() []int {
 				ret = append(ret, b.HiTexID)
 				seen[b.HiTexID] = struct{}{}
 			}
-		}
-		if level.Resource != nil {
+		} else if level.Resource != nil {
 			r := level.Resource
 			if _, ok := seen[r.JobTexID]; !ok && r.JobTexID > 0 {
 				ret = append(ret, r.JobTexID)
@@ -103,8 +104,26 @@ func (s *Structure) TextureIDs() []int {
 			}
 		}
 	}
-	log.Printf("Tex IDs: %v", ret)
+	ret = util.RemoveDuplicateInts(ret)
+	//log.Printf("Tex IDs: %v", ret)
 	return ret
+}
+
+//GetImageData gets the images for the structure
+func (s *Structure) GetImageData() ([]BinImage, error) {
+	gardenBin := filepath.Join(FilePath, "garden", "map_01.bin")
+	texIds := s.TextureIDs()
+	if len(texIds) == 0 {
+		return make([]BinImage, 0), nil
+	}
+	ret, err := GetBinFileImages(gardenBin, texIds...)
+	if err != nil {
+		return nil, err
+	}
+	if len(ret) != len(texIds) {
+		log.Printf("Structure %d: %s expected %d textures but only %d found", s.ID, s.Name, len(texIds), len(ret))
+	}
+	return ret, err
 }
 
 // "event_structures" lists any structures available in the current event
@@ -384,4 +403,12 @@ var StructureType = []string{
 	"Gem Mine",            // 20
 	"Gem Storage",         // 21
 	"Treasure Hunt",       // 22
+}
+
+var ShopGroup = map[int]string{
+	0: "Main Structures",
+	1: "Paths - Tiles",
+	2: "Trees - Greenery",
+	3: "Ramparts - Towers",
+	4: "Special",
 }

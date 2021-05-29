@@ -870,6 +870,20 @@ func (d CardList) Earliest() (min *Card) {
 	return
 }
 
+// Earliest gets the ealiest released card from a list of cards. Determined by ID
+func (d CardList) EarliestOpen() (min *Card) {
+	for idx, card := range d {
+		if card.IsClosed == 0 && (min == nil || min.ID > card.ID) {
+			// log.Printf("'Earliest' Card: %d, Name: %s\n", card.ID, card.Name)
+			min = d[idx]
+		}
+	}
+	// if min != nil {
+	// log.Printf("-Earliest Card: %d, Name: %s\n", min.ID, min.Name)
+	// }
+	return
+}
+
 // Latest gets the latest released card from a list of cards. Determined by ID
 func (d CardList) Latest() (max *Card) {
 	for idx, card := range d {
