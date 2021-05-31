@@ -719,10 +719,10 @@ http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_02591.1373942406
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_02593.1373942406
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_02594.1373942406
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_02595.1373942407
-http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_02600.1374634123
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_02600.1365994697
-http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_02601.1374634123
+http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_02600.1374634123
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_02601.1365994698
+http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_02601.1374634123
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_02610.1387346921
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_02611.1387346921
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_02613.1387346921
@@ -1210,8 +1210,8 @@ http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_04091.1381805570
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_04100.1366981286
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_04101.1366981287
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_04106.1443063457
-http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_04111.1382335122
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_04111.1381805570
+http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_04111.1382335122
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_04120.1391741937
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_04121.1391741938
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_04122.1391741938
@@ -2884,8 +2884,8 @@ http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_09971.1419476181
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_09980.1414724691
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_09990.1415933787
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_09996.1443063457
-http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_10000.1379570842
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_100000.1565924257
+http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_10000.1379570842
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_10001.1379570842
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_12000.1415933788
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_12010.1417142939
@@ -3088,9 +3088,7 @@ http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_12686.1523847518
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_12690.1427770780
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_12691.1427770780
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_12696.1427770787
-http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_12700.1425265034
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_12700.1425970032
-http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_12701.1425265034
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_12701.1425970032
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_12703.1425970032
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_12704.1425970033
@@ -6856,8 +6854,8 @@ http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_29986.1537412094
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_29990.1537412094
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_29991.1537412094
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_29996.1537412094
-http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_30000.1534906653
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_300000.1581476001
+http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_30000.1534906653
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_30001.1534906653
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_30006.1534906654
 http://webview.valkyriecrusade.nubee.com/download/CardHD.zip/cd_30010.1537412090
