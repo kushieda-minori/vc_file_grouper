@@ -638,6 +638,10 @@ func Read(root string) ([]byte, error) {
 	}
 
 	kingDescription, err := ReadStringFile(filepath.Join(strRoot, "MsgKingTitle_en.strb"))
+	if err != nil {
+		debug.PrintStack()
+		return nil, err
+	}
 	// king series descriptions
 	for key := range Data.ArchwitchSeries {
 		aws := &Data.ArchwitchSeries[key]
@@ -1061,7 +1065,7 @@ func cleanWeaponName(name string) string {
 // GetBinFileImages gets a subset of images from the bin index. 1-based index.
 func GetBinFileImages(filename string, idxs ...int) ([]BinImage, error) {
 	if len(idxs) == 0 {
-		return nil, errors.New("Index out of bounds")
+		return nil, errors.New("index out of bounds")
 	}
 	images, err := ReadBinFileImages(filename)
 	if err != nil {
@@ -1070,7 +1074,7 @@ func GetBinFileImages(filename string, idxs ...int) ([]BinImage, error) {
 	ret := make([]BinImage, 0, len(idxs))
 	for _, idx := range idxs {
 		if idx < 1 || idx > len(images) {
-			return nil, errors.New("Index out of bounds")
+			return nil, errors.New("index out of bounds")
 		}
 		img := images[idx-1]
 		if len(img.Data) > 0 {
@@ -1135,7 +1139,7 @@ func filterElementImages(s string) string {
 	return ret
 }
 
-var regexpSlash = regexp.MustCompile("\\s*[/]\\s*")
+var regexpSlash = regexp.MustCompile(`\s*[/]\s*`)
 
 func filterSkill(s string) string {
 	ret := filterElementImages(s)
@@ -1154,10 +1158,10 @@ func filterSkill(s string) string {
 
 func filterColors(s string) string {
 	ret := strings.TrimSpace(s)
-	rc, _ := regexp.Compile("<col=(.+?)>\\n*")
+	rc, _ := regexp.Compile(`<col=(.+?)>\n*`)
 	ret = rc.ReplaceAllString(ret, "<span class=\"vc_color$1\">")
 
-	rc, _ = regexp.Compile("<colrgb=(.+?)>\\n*")
+	rc, _ = regexp.Compile(`<colrgb=(.+?)>\n*`)
 	ret = rc.ReplaceAllString(ret, "<span style=\"color:rgb($1);\">")
 
 	ret = strings.ReplaceAll(ret, "</col>", "</span>")

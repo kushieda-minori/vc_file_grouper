@@ -32,7 +32,7 @@ func RawDataHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "filename="+"vcData-raw-"+strconv.Itoa(vc.Data.Version)+"_"+vc.Data.Common.UnixTime.Format(time.RFC3339)+".json")
 	w.Header().Set("Content-Type", "application/json")
 
-	io.WriteString(w, string(prettyJSON.Bytes()))
+	io.WriteString(w, prettyJSON.String())
 }
 
 // RawDataKeysHandler outputs all keys in the main JSON object
@@ -72,6 +72,9 @@ func RawDataKeysHandler(w http.ResponseWriter, r *http.Request) {
 func DecodeHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "<html><head><title>File Decode</title></head><body>\nDecodng files<br />\n")
 	err := filepath.Walk(vc.FilePath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 		if info.IsDir() {
 			return nil
 		}

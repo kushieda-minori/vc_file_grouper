@@ -402,7 +402,7 @@ func (wsil *weaponSkillInfoList) String() string {
 		return ""
 	}
 	l := len(*wsil)
-	asString := make([]string, l, l)
+	asString := make([]string, l)
 	// make sure the ranks are in order (although they should be)
 	sort.Ints(*wsil)
 	for i, v := range *wsil {

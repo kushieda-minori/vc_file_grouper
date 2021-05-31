@@ -72,7 +72,7 @@ type Structure struct { // structures
 func (s *Structure) TextureIDs() []int {
 	levels := s.Levels()
 	ret := make([]int, 0)
-	seen := make(map[int]struct{}, 0)
+	seen := make(map[int]struct{})
 	for _, level := range levels {
 		if _, ok := seen[level.TexID]; !ok {
 			ret = append(ret, level.TexID)

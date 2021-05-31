@@ -100,7 +100,7 @@ func IsFileEncoded(path string) (bool, error) {
 		return false, err
 	}
 	if c != 4 {
-		return false, errors.New("Unable to read 'magic number' of file to determin encoding")
+		return false, errors.New("unable to read 'magic number' of file to determin encoding")
 	}
 	return bytes.Equal(b, []byte("CODE")), nil
 }

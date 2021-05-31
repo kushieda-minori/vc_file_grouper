@@ -20,7 +20,7 @@ func GetCardPage(card *vc.Card) (ret *wiki.CardPage, raw string, err error) {
 		return
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		err = fmt.Errorf("Invalid HTTP Status returned - %d: %s", resp.StatusCode, resp.Status)
+		err = fmt.Errorf("invalid HTTP Status returned - %d: %s", resp.StatusCode, resp.Status)
 		return
 	}
 	defer resp.Body.Close()

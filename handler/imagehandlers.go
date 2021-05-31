@@ -104,14 +104,15 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 </head>
 <body class="stary-night">`)
 		err := filepath.Walk(fullpath, func(p string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
 			if info.IsDir() {
 				return nil
 			}
-			if filters != nil {
-				for _, filter := range filters {
-					if !filter(info) {
-						return nil
-					}
+			for _, filter := range filters {
+				if !filter(info) {
+					return nil
 				}
 			}
 			fileEncoded, err := vc.IsFileEncoded(p)
@@ -122,7 +123,7 @@ func servImageDir(w http.ResponseWriter, r *http.Request, urlPath string, root s
 				relPath, _ := filepath.Rel(fullpath, p)
 				relPath = filepath.ToSlash(relPath)
 				fmt.Fprintf(w, `<div class="image"><a href="%[1]s"><img src="%[1]s"/></a><br>`, relPath)
-				if "/card/" == urlPath {
+				if urlPath == "/card/" {
 					fmt.Fprintf(w, `<a href="../cardthumb/%[1]s"><img src="../cardthumb/%[1]s" /></a><br />`, relPath)
 				}
 				fmt.Fprintf(w, `%[1]s</div>`, relPath)

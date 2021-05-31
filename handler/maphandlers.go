@@ -41,7 +41,7 @@ func MapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(pathParts) >= 3 && "WIKI" == pathParts[2] {
+	if len(pathParts) >= 3 && pathParts[2] == "WIKI" {
 		MapDetailWikiHandler(w, r, m)
 		return
 	}

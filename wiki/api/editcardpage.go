@@ -12,11 +12,11 @@ import (
 func EditCardPage(cp *wiki.CardPage, editSummary string) (err error) {
 	// verify basic page information is available
 	if cp == nil {
-		err = errors.New("Page is nil")
+		err = errors.New("page is nil")
 		return
 	}
 	if cp.PageName == "" {
-		err = errors.New("Page name can not be blank")
+		err = errors.New("page name can not be blank")
 		return
 	}
 

@@ -13,11 +13,11 @@ import (
 func CreateCardPage(c *vc.Card, editSummary string) (err error) {
 	// verify basic page information is available
 	if c == nil {
-		err = errors.New("Page is nil")
+		err = errors.New("page is nil")
 		return
 	}
 	if c.Name == "" {
-		err = errors.New("Page name can not be blank")
+		err = errors.New("page name can not be blank")
 		return
 	}
 

@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 
 	"vc_file_grouper/util"
@@ -14,10 +13,10 @@ const (
 	wikiFmt = "15:04 January 2 2006"
 )
 
-func isInt(s string) bool {
-	_, err := strconv.Atoi(s)
-	return err == nil
-}
+// func isInt(s string) bool {
+// 	_, err := strconv.Atoi(s)
+// 	return err == nil
+// }
 
 func cleanCustomSkillRecipe(name string) string {
 	ret := ""

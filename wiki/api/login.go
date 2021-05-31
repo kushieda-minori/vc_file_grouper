@@ -13,7 +13,7 @@ import (
 //Login uses the MyCreds to perform a login.
 func Login() (err error) {
 	if MyCreds.Username == "" || MyCreds.Password == "" {
-		return errors.New("User information not setup")
+		return errors.New("user information not setup")
 	}
 	if MyCreds.LoginToken == "" {
 		MyCreds.LoginToken, err = getToken("login")
@@ -44,7 +44,7 @@ func Login() (err error) {
 	if resp.StatusCode != 200 {
 		MyCreds.LoginToken = ""
 		MyCreds.CSRFToken = ""
-		return fmt.Errorf("Invalid response. Expected HTTP 200, instead got %d", resp.StatusCode)
+		return fmt.Errorf("invalid response. Expected HTTP 200, instead got %d", resp.StatusCode)
 	}
 	lr := loginResponse{}
 	err = json.Unmarshal(body, &lr)
@@ -89,7 +89,7 @@ func getToken(tokenType string) (token string, err error) {
 		return
 	}
 	if tr.Warnings != nil {
-		err = errors.New("Unable to fetch token")
+		err = errors.New("unable to fetch token")
 	}
 	if tokenType == "login" {
 		token = tr.Query.Tokens.LoginToken

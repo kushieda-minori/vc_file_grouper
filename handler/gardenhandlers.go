@@ -463,7 +463,7 @@ Max quantity: %d
 
 func printGenericStructureLevel(w http.ResponseWriter, structure *vc.Structure) {
 	levels := structure.Levels()
-	if levels == nil || len(levels) == 0 {
+	if len(levels) == 0 {
 		return
 	}
 
