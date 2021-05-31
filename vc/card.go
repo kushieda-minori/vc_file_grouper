@@ -3,6 +3,7 @@ package vc
 import (
 	"bytes"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -117,7 +118,7 @@ func (c *Card) Image() string {
 func (c *Card) EvosWithDistinctImages(icons bool) []string {
 	ret := make([]string, 0)
 	evos := c.GetEvolutions()
-	images := make(map[string][]byte, 0)
+	images := make(map[string][]byte)
 	for _, evoID := range EvoOrder {
 		if evo, ok := evos[evoID]; ok {
 			file := filepath.Join(FilePath, "card")
@@ -914,7 +915,7 @@ func (d CardList) MaxID() (max int) {
 
 //Copy returns a copy of this list. Useful for local sorting
 func (d CardList) Copy() CardList {
-	ret := make(CardList, len(d), len(d))
+	ret := make(CardList, len(d))
 	copy(ret, d)
 	return ret
 }
@@ -1053,7 +1054,7 @@ func (c *Card) GetEvoImageName(isIcon bool) string {
 }
 
 //GetImageData gets the image data from disk if it exists.
-func (c *Card) GetImageData(isThumb bool) (imageName string, b []byte, err error) {
+func (c *Card) GetImageData(isThumb bool) (imageName string, b []byte, info fs.FileInfo, err error) {
 	if c == nil {
 		return
 	}
@@ -1065,13 +1066,16 @@ func (c *Card) GetImageData(isThumb bool) (imageName string, b []byte, err error
 	var fullpath string
 	if isThumb {
 		fullpath = filepath.Join(thumbPath, c.Image())
+		if info, err = os.Stat(fullpath); os.IsNotExist(err) {
+			return
+		}
 	} else {
 		fullpath = filepath.Join(hdPath, c.Image())
-		if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+		if info, err = os.Stat(fullpath); os.IsNotExist(err) {
 			fullpath = filepath.Join(mdPath, c.Image())
-			if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+			if info, err = os.Stat(fullpath); os.IsNotExist(err) {
 				fullpath = filepath.Join(sdPath, c.Image())
-				if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+				if info, err = os.Stat(fullpath); os.IsNotExist(err) {
 					return
 				}
 			}
@@ -1268,7 +1272,7 @@ func (c *Card) GetEvolutionCards() CardList {
 
 //CardsByName gets the cards by name. If multiple cards have the same name, they are groupped together
 func CardsByName() map[string]CardList {
-	ret := make(map[string]CardList, 0)
+	ret := make(map[string]CardList)
 
 	for _, card := range Data.Cards {
 		if _, ok := ret[card.Name]; !ok {
@@ -1282,7 +1286,7 @@ func CardsByName() map[string]CardList {
 
 //CardsByName returns the current list of cards sorted by name
 func (d CardList) CardsByName() map[string]CardList {
-	ret := make(map[string]CardList, 0)
+	ret := make(map[string]CardList)
 
 	for _, card := range d {
 		if _, ok := ret[card.Name]; !ok {

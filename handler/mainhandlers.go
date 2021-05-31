@@ -3,6 +3,8 @@ package handler
 import (
 	"archive/zip"
 	"fmt"
+	"io"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -147,9 +149,9 @@ func zipCards(z *zip.Writer) error {
 		}
 		cardPathNameBase := ""
 		if firstEvo.IsClosed > 0 {
-			cardPathNameBase = "Cards/Inactive or Unreleased/" + firstEvo.MainRarity() + "/" + firstEvo.Name + "/"
+			cardPathNameBase = "Cards/Inactive or Unreleased/" + firstEvo.MainRarity() + "/" + firstEvo.Element() + "/" + firstEvo.Name + "/"
 		} else {
-			cardPathNameBase = "Cards/" + firstEvo.MainRarity() + "/" + firstEvo.Name + "/"
+			cardPathNameBase = "Cards/" + firstEvo.MainRarity() + "/" + firstEvo.Element() + "/" + firstEvo.Name + "/"
 		}
 		character := firstEvo.Character()
 		if character != nil && character.HasQuotes() {
@@ -162,7 +164,7 @@ func zipCards(z *zip.Writer) error {
 			characterQuotes += "\nBattleStart: " + character.BattleStart + "\n"
 			characterQuotes += "\nBattleEnd: " + character.BattleEnd + "\n"
 			characterQuotes += "\nRebirth: " + character.Rebirth + "\n"
-			err := addFileToZip(z, cardPathNameBase+firstEvo.Name+" Quotes.txt", []byte(characterQuotes))
+			err := addFileToZip(z, cardPathNameBase+firstEvo.Name+" Quotes.txt", nil, []byte(characterQuotes))
 			if err != nil {
 				return err
 			}
@@ -170,22 +172,22 @@ func zipCards(z *zip.Writer) error {
 		evolutions := firstEvo.GetEvolutions()
 		for _, iconEvos := range firstEvo.EvosWithDistinctImages(true) {
 			evo := evolutions[iconEvos]
-			imgName, data, err := evo.GetImageData(true)
+			imgName, data, fsInfo, err := evo.GetImageData(true)
 			if err != nil {
 				return err
 			}
-			err = addFileToZip(z, cardPathNameBase+imgName, data)
+			err = addFileToZip(z, cardPathNameBase+imgName, &fsInfo, data)
 			if err != nil {
 				return err
 			}
 		}
 		for _, iconEvos := range firstEvo.EvosWithDistinctImages(false) {
 			evo := evolutions[iconEvos]
-			imgName, data, err := evo.GetImageData(false)
+			imgName, data, fsInfo, err := evo.GetImageData(false)
 			if err != nil {
 				return err
 			}
-			err = addFileToZip(z, cardPathNameBase+imgName, data)
+			err = addFileToZip(z, cardPathNameBase+imgName, &fsInfo, data)
 			if err != nil {
 				return err
 			}
@@ -228,7 +230,7 @@ func zipCards(z *zip.Writer) error {
 			if !strings.HasSuffix(strings.ToLower(relPath), ".png") {
 				relPath += ".png"
 			}
-			e = addFileToZip(z, "Cards/Unused Images/"+relPath, b)
+			e = addFileToZip(z, "Cards/Unused Images/"+relPath, &info, b)
 			if e != nil {
 				return
 			}
@@ -254,18 +256,18 @@ func zipWeapons(z *zip.Writer) error {
 				quotes += "\nDescription " + strconv.Itoa(r) + ": " + strings.ReplaceAll(descriptions[r-1], "\n", " ") + "\n"
 			}
 		}
-		err := addFileToZip(z, pathNameBase+"Quotes.txt", []byte(quotes))
+		err := addFileToZip(z, pathNameBase+"Quotes.txt", nil, []byte(quotes))
 		if err != nil {
 			return err
 		}
 		for imageName, data := range weapon.GetImageData(true) {
-			err = addFileToZip(z, pathNameBase+imageName, data)
+			err = addFileToZip(z, pathNameBase+imageName, nil, data)
 			if err != nil {
 				return err
 			}
 		}
 		for imageName, data := range weapon.GetImageData(false) {
-			err = addFileToZip(z, pathNameBase+imageName, data)
+			err = addFileToZip(z, pathNameBase+imageName, nil, data)
 			if err != nil {
 				return err
 			}
@@ -283,7 +285,7 @@ func zipItems(z *zip.Writer) error {
 		} else {
 			pathNameBase += "Other-" + strconv.Itoa(item.GroupID) + "/"
 		}
-		imageName, data, err := item.GetImageData()
+		imageName, data, fsInfo, err := item.GetImageData()
 		if err != nil {
 			return err
 		}
@@ -293,7 +295,7 @@ func zipItems(z *zip.Writer) error {
 				continue
 			}
 			itemsSeen = append(itemsSeen, outputName)
-			err = addFileToZip(z, outputName, data)
+			err = addFileToZip(z, outputName, &fsInfo, data)
 			if err != nil {
 				return err
 			}
@@ -328,7 +330,7 @@ func zipStructures(z *zip.Writer) error {
 					continue
 				}
 				seen = append(seen, outputName)
-				err = addFileToZip(z, outputName, binImg.Data)
+				err = addFileToZip(z, outputName, nil, binImg.Data)
 				if err != nil {
 					return err
 				}
@@ -361,7 +363,8 @@ func zipAudio(z *zip.Writer) error {
 			if e != nil {
 				return
 			}
-			e = addFileToZip(z, "Audio/"+relPath, b)
+			fsInfo, _ := os.Stat(p)
+			e = addFileToZip(z, "Audio/"+relPath, &fsInfo, b)
 			if e != nil {
 				return
 			}
@@ -370,14 +373,28 @@ func zipAudio(z *zip.Writer) error {
 	})
 }
 
-func addFileToZip(w *zip.Writer, filePathAndName string, data []byte) error {
-	f, err := w.Create(filePathAndName)
-	if err != nil {
-		return err
+func addFileToZip(w *zip.Writer, filePathAndName string, fsInfo *fs.FileInfo, data []byte) (err error) {
+	var f io.Writer
+	if fsInfo == nil {
+		f, err = w.Create(filePathAndName)
+		if err != nil {
+			return
+		}
+	} else {
+		var fih *zip.FileHeader
+		fih, err = zip.FileInfoHeader(*fsInfo)
+		if err != nil {
+			return
+		}
+		fih.Name = filePathAndName
+		f, err = w.CreateHeader(fih)
+		if err != nil {
+			return
+		}
 	}
 	_, err = f.Write(data)
 	if err != nil {
-		return err
+		return
 	}
 	return nil
 }

@@ -2,6 +2,7 @@ package vc
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -52,14 +53,14 @@ func ItemScan(id int) *Item {
 }
 
 //GetImageData gets the image data for the item
-func (i Item) GetImageData() (imageName string, data []byte, err error) {
+func (i Item) GetImageData() (imageName string, data []byte, fsInfo fs.FileInfo, err error) {
 	if i.ItemNo < 1 || i.NameEng == "" {
 		return
 	}
 	var path string = filepath.Join(FilePath, "item", "shop")
 	fileName := fmt.Sprintf("%d", i.ItemNo)
 	fullpath := filepath.Join(path, fileName)
-	if _, err = os.Stat(fullpath); os.IsNotExist(err) {
+	if fsInfo, err = os.Stat(fullpath); os.IsNotExist(err) {
 		log.Printf("Unable to find Item %s : %s", i.NameEng, fileName)
 		return
 	}

@@ -42,7 +42,7 @@ func uploadImages(card *vc.Card, thumbs bool) (err error) {
 		evo := evos[evoID]
 		var name string
 		var data []byte
-		name, data, err = evo.GetImageData(thumbs)
+		name, data, _, err = evo.GetImageData(thumbs)
 		if err != nil {
 			return
 		}
