@@ -89,7 +89,7 @@ Images:<br />
 
 func ZipDataHandler(w http.ResponseWriter, r *http.Request) {
 	// Get a Buffer to Write To
-	w.Header().Set("Content-Disposition", "attachment; filename=\"vcData-"+strconv.Itoa(vc.Data.Version)+"_"+vc.Data.Common.UnixTime.Format(time.RFC3339)+".zip\"")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"Valkyrie Crusade Fan Archive - Final - 2021-05-30.zip\"")
 	w.Header().Set("Content-Type", "application/zip")
 
 	// Create a new zip archive.
@@ -127,8 +127,15 @@ func ZipDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = zipAudio(z)
 	if err != nil {
-		log.Printf("Structure zip error: " + err.Error() + "\n")
-		http.Error(w, "Structure zip error: "+err.Error(), http.StatusInternalServerError)
+		log.Printf("Audio zip error: " + err.Error() + "\n")
+		http.Error(w, "Audio zip error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = zipAlliance(z)
+	if err != nil {
+		log.Printf("Alliance zip error: " + err.Error() + "\n")
+		http.Error(w, "Alliance zip error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -141,6 +148,7 @@ func ZipDataHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func zipCards(z *zip.Writer) error {
+	seen := make([]string, 0)
 	cardImageNames := make([]string, 0)
 	for _, cardEvos := range vc.Data.Cards.CardsByName() {
 		firstEvo := cardEvos.EarliestOpen()
@@ -176,7 +184,14 @@ func zipCards(z *zip.Writer) error {
 			if err != nil {
 				return err
 			}
-			err = addFileToZip(z, cardPathNameBase+imgName, &fsInfo, data)
+
+			outputName := cardPathNameBase + imgName
+			if util.Contains(seen, outputName) {
+				continue
+			}
+			seen = append(seen, outputName)
+
+			err = addFileToZip(z, outputName, &fsInfo, data)
 			if err != nil {
 				return err
 			}
@@ -187,7 +202,14 @@ func zipCards(z *zip.Writer) error {
 			if err != nil {
 				return err
 			}
-			err = addFileToZip(z, cardPathNameBase+imgName, &fsInfo, data)
+
+			outputName := cardPathNameBase + imgName
+			if util.Contains(seen, outputName) {
+				continue
+			}
+			seen = append(seen, outputName)
+
+			err = addFileToZip(z, outputName, &fsInfo, data)
 			if err != nil {
 				return err
 			}
@@ -277,7 +299,7 @@ func zipWeapons(z *zip.Writer) error {
 }
 
 func zipItems(z *zip.Writer) error {
-	itemsSeen := make([]string, 0)
+	seen := make([]string, 0)
 	for _, item := range vc.Data.Items {
 		pathNameBase := "Items/"
 		if group, ok := vc.ItemGroups[item.GroupID]; ok {
@@ -291,10 +313,10 @@ func zipItems(z *zip.Writer) error {
 		}
 		if len(imageName) > 0 {
 			outputName := pathNameBase + imageName
-			if util.Contains(itemsSeen, outputName) {
+			if util.Contains(seen, outputName) {
 				continue
 			}
-			itemsSeen = append(itemsSeen, outputName)
+			seen = append(seen, outputName)
 			err = addFileToZip(z, outputName, &fsInfo, data)
 			if err != nil {
 				return err
@@ -373,6 +395,78 @@ func zipAudio(z *zip.Writer) error {
 	})
 }
 
+func zipAlliance(z *zip.Writer) error {
+	return filepath.Walk(vc.FilePath+"/guild/texture/", func(p string, info os.FileInfo, err error) (e error) {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(vc.FilePath+"/guild/texture/", p)
+		if err != nil {
+			return err
+		}
+		relPath = filepath.ToSlash(relPath)
+		lrelPath := strings.ToLower(relPath)
+		if strings.HasPrefix(lrelPath, "menu") {
+			return
+		}
+
+		fsInfo, _ := os.Stat(p)
+
+		pathName := ""
+		if strings.HasPrefix(lrelPath, "sym_a") {
+			pathName = "Alliance/Background Symbol/" + relPath
+		} else if strings.HasPrefix(lrelPath, "sym_b") {
+			pathName = "Alliance/Main Symbol/" + relPath
+		} else if strings.HasPrefix(lrelPath, "sym_c") {
+			pathName = "Alliance/Decoration Symbol/" + relPath
+		} else if strings.HasPrefix(lrelPath, "stamp_1") {
+			pathName = "Alliance/Stamp/Oracle" + strings.Replace(relPath, "stamp_1", "_", -1)
+		} else if strings.HasPrefix(lrelPath, "stamp_2") {
+			pathName = "Alliance/Stamp/Alchemist" + strings.Replace(relPath, "stamp_2", "_", -1)
+		} else if strings.HasPrefix(lrelPath, "stamp_3") {
+			pathName = "Alliance/Stamp/Pixie" + strings.Replace(relPath, "stamp_3", "_", -1)
+		} else if strings.HasPrefix(lrelPath, "stamp_4") {
+			pathName = "Alliance/Stamp/Hades" + strings.Replace(relPath, "stamp_4", "_", -1)
+		} else if strings.HasPrefix(lrelPath, "stamp_5") {
+			pathName = "Alliance/Stamp/Circo" + strings.Replace(relPath, "stamp_5", "_", -1)
+		} else if strings.HasPrefix(lrelPath, "stamp_6") {
+			if strings.HasSuffix(lrelPath, "9") {
+				pathName = "Alliance/Stamp/Calamity" + strings.Replace(relPath, "stamp_6", "_", -1)
+			} else {
+				pathName = "Alliance/Stamp/Fenrir and Skoll" + strings.Replace(relPath, "stamp_6", "_", -1)
+			}
+		} else if strings.HasPrefix(lrelPath, "stamp_7") {
+			if strings.HasSuffix(lrelPath, "7") || strings.HasSuffix(lrelPath, "8") || strings.HasSuffix(lrelPath, "9") {
+				pathName = "Alliance/Stamp/Demon Ministers" + strings.Replace(relPath, "stamp_7", "_", -1)
+			} else {
+				pathName = "Alliance/Stamp/Calamity" + strings.Replace(relPath, "stamp_7", "_", -1)
+			}
+		} else if strings.HasPrefix(lrelPath, "stamp_8") {
+			pathName = "Alliance/Stamp/Demon Ministers" + strings.Replace(relPath, "stamp_8", "_", -1)
+		}
+
+		if pathName != "" {
+			var b []byte
+			b, e = vc.Decode(p)
+			if e != nil && strings.HasSuffix(e.Error(), "is not encoded") {
+				b, e = ioutil.ReadFile(p)
+			} else {
+				pathName += ".png"
+			}
+			if e != nil {
+				return
+			}
+			e = addFileToZip(z, pathName, &fsInfo, b)
+		}
+
+		return
+	})
+}
+
 func addFileToZip(w *zip.Writer, filePathAndName string, fsInfo *fs.FileInfo, data []byte) (err error) {
 	var f io.Writer
 	if fsInfo == nil {
@@ -387,6 +481,7 @@ func addFileToZip(w *zip.Writer, filePathAndName string, fsInfo *fs.FileInfo, da
 			return
 		}
 		fih.Name = filePathAndName
+		fih.Method = zip.Deflate
 		f, err = w.CreateHeader(fih)
 		if err != nil {
 			return
