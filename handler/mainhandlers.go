@@ -98,13 +98,6 @@ func ZipDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
-	err = zipEventStory(z)
-	if err != nil {
-		log.Printf("Scenario zip error: " + err.Error() + "\n")
-		http.Error(w, "Scenario zip error: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	err = zipCards(z)
 	if err != nil {
 		log.Printf("Card zip error: " + err.Error() + "\n")
@@ -154,10 +147,24 @@ func ZipDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = zipEventStory(z)
+	if err != nil {
+		log.Printf("Story zip error: " + err.Error() + "\n")
+		http.Error(w, "Story zip error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	err = zipNavi(z)
 	if err != nil {
 		log.Printf("Navi zip error: " + err.Error() + "\n")
 		http.Error(w, "Navi zip error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = zipApkImages(z)
+	if err != nil {
+		log.Printf("ApkImages zip error: " + err.Error() + "\n")
+		http.Error(w, "ApkImages zip error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -689,6 +696,36 @@ func zipEventStory(z *zip.Writer) (err error) {
 	}
 
 	return
+}
+
+func zipApkImages(z *zip.Writer) error {
+	return filepath.Walk(vc.FilePath+"/apk_images/", func(p string, info os.FileInfo, err error) (e error) {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() || !strings.HasSuffix(strings.ToLower(p), ".png") || strings.HasSuffix(strings.ToLower(p), "template.png") {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(vc.FilePath, p)
+		if err != nil {
+			return err
+		}
+		relPath = filepath.ToSlash(relPath)
+
+		fsInfo, _ := os.Stat(p)
+
+		if relPath != "" {
+			var b []byte
+			b, e = ioutil.ReadFile(p)
+			if e != nil {
+				return
+			}
+			e = addFileToZip(z, relPath, &fsInfo, b)
+		}
+
+		return
+	})
 }
 
 func addFileToZip(w *zip.Writer, filePathAndName string, fsInfo *fs.FileInfo, data []byte) (err error) {
