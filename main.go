@@ -125,6 +125,8 @@ func main() {
 
 	http.HandleFunc("/zipData/", handler.ZipDataHandler)
 
+	http.HandleFunc("/downloadMaps/", handler.DownloadAwMapsHandler)
+
 	http.HandleFunc("/raw/", handler.RawDataHandler)
 	http.HandleFunc("/raw/KEYS", handler.RawDataKeysHandler)
 

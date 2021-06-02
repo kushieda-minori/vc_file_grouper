@@ -79,6 +79,8 @@ Images:<br />
 <br />
 <a href="/zipData">Decode All Files and store them in a Zip archive</a><br />
 <br />
+<a href="/downloadMaps">Download Maps</a><br />
+<br />
 <a href="/SHUTDOWN">SHUTDOWN</a><br />
 </body></html>`,
 		vc.Data.Version,
@@ -155,6 +157,20 @@ func ZipDataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = zipNavi(z)
+	if err != nil {
+		log.Printf("Navi zip error: " + err.Error() + "\n")
+		http.Error(w, "Navi zip error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//err = zipGardenSprites(z)
+	if err != nil {
+		log.Printf("Navi zip error: " + err.Error() + "\n")
+		http.Error(w, "Navi zip error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//err = zipBattleImages(z) // dungeon, weapon event, battle backgrounds, battle maps
 	if err != nil {
 		log.Printf("Navi zip error: " + err.Error() + "\n")
 		http.Error(w, "Navi zip error: "+err.Error(), http.StatusInternalServerError)
@@ -753,4 +769,89 @@ func addFileToZip(w *zip.Writer, filePathAndName string, fsInfo *fs.FileInfo, da
 		return
 	}
 	return nil
+}
+
+//DownloadAwMapsHandler
+func DownloadAwMapsHandler(w http.ResponseWriter, r *http.Request) {
+	numJobs := len(vc.Data.Maps)
+	maps := make(chan *vc.Map, numJobs)
+	results := make(chan bool, numJobs)
+
+	// set up my worker pool
+	for i := 0; i < numJobs; i++ {
+		go findAndDownloadAwMap(maps, results)
+	}
+	queued := 0
+	for i, m := range vc.Data.Maps {
+		if !m.PublicStartDatetime.IsZero() {
+			log.Printf("Searching for maps for event: %s", m.EventName())
+			maps <- &(vc.Data.Maps[i])
+			queued++
+		}
+	}
+	close(maps)
+
+	found := 0
+	completed := 0
+	for r := range results {
+		completed++
+		if r {
+			found++
+		}
+		if completed == queued {
+			close(results)
+		}
+	}
+	log.Printf("Found %d of %d map files", found, completed)
+}
+
+func findAndDownloadAwMap(maps chan *vc.Map, results chan bool) {
+	for m := range maps {
+		eventName := m.EventName()
+		fileName := fmt.Sprintf("AreaMap_002.%s.%s", eventName, m.Name)
+		fileLoc := filepath.Join(vc.FilePath, "battle", "map", fileName)
+		if _, err := os.Stat(fileLoc); err == nil {
+			log.Printf("File already exists on disk: %s", fileName)
+			results <- true
+			return
+		}
+
+		timestamp := int(m.PublicStartDatetime.Unix())
+		end := timestamp - (60 * 60 * 24)
+		//found := make(chan bool)
+		for i := timestamp; i > end; i-- {
+			if downloadAwMap(i, eventName, m.Name) {
+				results <- true
+				return
+			}
+		}
+		results <- false
+	}
+}
+
+func downloadAwMap(timestamp int, eventName, mapName string) bool {
+	fileName := fmt.Sprintf("AreaMap_002.%s.%s", eventName, mapName)
+	fileName = filepath.Join(vc.FilePath, "battle", "map", fileName)
+	resp, err := http.Get(fmt.Sprintf("http://webview.valkyriecrusade.nubee.com/download/BattleMap.zip/AreaMap_002.%d", timestamp))
+	if err != nil {
+		log.Printf("Err for map %d: %s", timestamp, err.Error())
+		return false
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		var b []byte
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("Err for map %d: %s", timestamp, err.Error())
+			return false
+		}
+		err = ioutil.WriteFile(fileName, b, 0755)
+		if err != nil {
+			log.Printf("Err for map %d: %s", timestamp, err.Error())
+			return false
+		}
+		log.Printf("***Found for map %d", timestamp)
+		return true
+	}
+	return false
 }
