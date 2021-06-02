@@ -48,7 +48,6 @@ type GuildBingoBattle struct {
 	KingSeriesID                  int       `json:"king_series_id"`
 	CampaignID                    int       `json:"campaign_id"`
 	LoserPoint                    int       `json:"loser_point"`
-	archwitches                   []Archwitch
 	_campaigns                    []GuildBingoPointCampaign
 }
 

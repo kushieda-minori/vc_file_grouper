@@ -61,7 +61,7 @@ func MapDetailHandler(w http.ResponseWriter, r *http.Request, m *vc.Map) {
 	io.WriteString(w, "<th>No</th><th>Name</th><th>Long Name</th><th>Start</th><th>End</th><th>Story</th><th>Boss Start</th><th>Boss End</th>\n")
 	io.WriteString(w, "</tr></thead>\n")
 	io.WriteString(w, "<tbody>\n")
-	for _, e := range m.Areas(vc.Data) {
+	for _, e := range m.Areas() {
 		fmt.Fprintf(w, "<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>",
 			e.AreaNo,
 			e.Name,
@@ -120,8 +120,8 @@ BattleBG %d.png
 		fmt.Fprintf(w, "|-\n| align=\"center\" |%s\n|%s\n", m.Name, html.EscapeString(strings.ReplaceAll(m.StartMsg, "\n", " ")))
 	}
 
-	for _, e := range m.Areas(vc.Data) {
-		if e.Story != "" || e.Start != "" || e.End != "" || e.BossStart != "" || e.BossEnd != "" {
+	for _, e := range m.Areas() {
+		if e.HasStory() {
 			fmt.Fprintf(w, "|-\n| align=\"center\" |%s\n|\n", e.LongName)
 
 			if e.Story != "" {

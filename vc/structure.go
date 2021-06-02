@@ -65,7 +65,6 @@ type Structure struct { // structures
 	_levels         []StructureLevel
 	_numCosts       []StructureCost
 	_castleBonus    []CastleLevel
-	_debris         *GardenDebris
 }
 
 // TextureIDs gets the texture IDs for this structure

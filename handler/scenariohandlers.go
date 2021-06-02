@@ -28,8 +28,8 @@ func ScenarioHandler(folder, title string) func(w http.ResponseWriter, r *http.R
 		io.WriteString(w, "<pre>")
 		scenario := 1
 		fmt.Fprintf(w, "</pre><h1>Scenario %d</h1><pre>", scenario)
-		//llines := len(lines)
-		for _, line := range lines {
+		llines := len(lines)
+		for l, line := range lines {
 			if line == "" {
 				io.WriteString(w, "\n")
 			}
@@ -51,10 +51,9 @@ func ScenarioHandler(folder, title string) func(w http.ResponseWriter, r *http.R
 					}
 				}
 			}
-			if strings.Contains(line, "To be continued……") {
+			if strings.Contains(line, "To be continued……") && l != llines-1 {
 				scenario++
 				fmt.Fprintf(w, "</pre><h1>Scenario %d</h1><pre>", scenario)
-
 			}
 		}
 		io.WriteString(w, "</pre></body></html>")

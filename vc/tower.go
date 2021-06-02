@@ -49,3 +49,27 @@ func TowerScan(id int) *Tower {
 	}
 	return nil
 }
+
+//EventName Name of this event
+func (t *Tower) EventName() string {
+	if t == nil {
+		return ""
+	}
+	for _, evt := range Data.Events {
+		if evt.TowerEventID == t.ID {
+			return evt.Name
+		}
+	}
+	return ""
+}
+
+//ScenarioHtml ScenarioHtml
+func (t *Tower) ScenarioHtml() (string, error) {
+	if t == nil {
+		return "", nil
+	}
+	if t.ID == 26 {
+		t.ScenarioID = 1
+	}
+	return t.SubEvent.GetScenarioHtml(t.EventName(), "tower")
+}

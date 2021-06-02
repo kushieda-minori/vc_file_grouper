@@ -936,17 +936,18 @@ func ReadBinFileImages(filename string) ([]BinImage, error) {
 	}
 
 	isValidName := func(name string) bool {
-		if len(name) < 4 {
-			return false
-		}
+		return len(name) >= 4
+		// if len(name) < 4 {
+		// 	return false
+		// }
 		// for _, c := range name {
 		// 	if c < '\x20' || c > '\x7E' {
 		// 		//if c > unicode.MaxASCII {
 		// 		return false
 		// 	}
 		// }
-
-		return true
+		//
+		// return true
 	}
 
 	//start of the PNG image

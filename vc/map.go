@@ -27,16 +27,39 @@ type Map struct {
 }
 
 // Areas of the map
-func (m *Map) Areas(v *VFile) []Area {
+func (m *Map) Areas() []Area {
 	if m.areas == nil {
 		m.areas = make([]Area, 0)
-		for k, a := range v.Areas {
+		for k, a := range Data.Areas {
 			if a.MapID == m.ID {
-				m.areas = append(m.areas, v.Areas[k])
+				m.areas = append(m.areas, Data.Areas[k])
 			}
 		}
 	}
 	return m.areas
+}
+
+//HasStory HasStory
+func (m *Map) HasStory() bool {
+	if m == nil {
+		return false
+	}
+	for _, a := range m.Areas() {
+		if a.HasStory() {
+			return true
+		}
+	}
+	return m.StartMsg != ""
+}
+
+//EventName event name
+func (m *Map) EventName() string {
+	for _, e := range Data.Events {
+		if e.MapID == m.ID {
+			return e.Name
+		}
+	}
+	return ""
 }
 
 // Area on a map
@@ -66,4 +89,11 @@ func MapScan(mapID int, maps []Map) *Map {
 		}
 	}
 	return nil
+}
+
+func (a *Area) HasStory() bool {
+	if a == nil {
+		return false
+	}
+	return a.Story != "" || a.Start != "" || a.End != "" || a.BossStart != "" || a.BossEnd != ""
 }

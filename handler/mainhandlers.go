@@ -3,6 +3,7 @@ package handler
 import (
 	"archive/zip"
 	"fmt"
+	"html"
 	"io"
 	"io/fs"
 	"io/ioutil"
@@ -96,6 +97,13 @@ func ZipDataHandler(w http.ResponseWriter, r *http.Request) {
 	z := zip.NewWriter(w)
 
 	var err error
+
+	err = zipEventStory(z)
+	if err != nil {
+		log.Printf("Scenario zip error: " + err.Error() + "\n")
+		http.Error(w, "Scenario zip error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err = zipCards(z)
 	if err != nil {
@@ -573,6 +581,114 @@ func zipNavi(z *zip.Writer) error {
 
 		return
 	})
+}
+
+func zipEventStory(z *zip.Writer) (err error) {
+	var txt string
+
+	for _, m := range vc.Data.Maps {
+		if !m.HasStory() || m.EventName() == "" {
+			continue
+		}
+
+		txt = fmt.Sprintf("<html><head><title>%[1]s : %[2]s</title><style>table,th,td{border:1px solid black;}</style></head></body><h1>%[1]s : %[2]s</h1>\n\n", m.EventName(), m.Name)
+		if m.StartMsg != "" {
+			txt += "<dl><dt>Introduction:</dt><dd>" + m.StartMsg + "</dd></dl>"
+		}
+		txt += `<table style="border-collapse:collapse;">`
+		for _, a := range m.Areas() {
+			if a.HasStory() {
+				story := ""
+				if a.Story != "" {
+					story += fmt.Sprintf("<dl><dt>Prologue:</dt><dd>%s</dd></dl>\n", html.EscapeString(strings.ReplaceAll(a.Story, "\n", " ")))
+					if a.Start != "" || a.End != "" || a.BossStart != "" || a.BossEnd != "" {
+						story += "<hr/>\n\n"
+					}
+				}
+				if a.Start != "" || a.End != "" {
+					story += "<dl><dt>Guide Dialogue:</dt>"
+					if a.Start != "" {
+						story += fmt.Sprintf("\n<dd>%s</dd>\n", html.EscapeString(strings.ReplaceAll(a.Start, "\n", " ")))
+						if a.End != "" {
+							story += "<br />&nbsp;<br />"
+						}
+					}
+					if a.End != "" {
+						story += fmt.Sprintf("\n<dd>%s</dd>\n", html.EscapeString(strings.ReplaceAll(a.End, "\n", " ")))
+					} else {
+						story += "\n"
+					}
+					if a.BossStart != "" || a.BossEnd != "" {
+						story += "<hr/>\n\n"
+					}
+				}
+
+				if a.BossStart != "" || a.BossEnd != "" {
+					story += "<dl><dt>Boss Dialogue:</dt>"
+					if a.BossStart != "" {
+						story += fmt.Sprintf("\n<dd>%s</dd>", html.EscapeString(strings.ReplaceAll(a.BossStart, "\n", " ")))
+						if a.BossEnd != "" {
+							story += "<br />&nbsp;<br />"
+						}
+					}
+					if a.BossEnd != "" {
+						story += fmt.Sprintf("\n<dd>%s</dd>", html.EscapeString(strings.ReplaceAll(a.BossEnd, "\n", " ")))
+					} else {
+						story += "\n"
+					}
+				}
+				txt += fmt.Sprintf("<tr><td>%s</td><td>%s</td></tr>", a.Name, story)
+			}
+		}
+		txt += "</table>\n</body>\n</html>\n"
+
+		err = addFileToZip(z, "Event Stories/Archwitch/"+m.PublicStartDatetime.Format("2006-01-02")+" - "+m.EventName()+".html", nil, []byte(txt))
+		if err != nil {
+			return
+		}
+	}
+
+	for _, t := range vc.Data.Towers {
+		txt, err = t.ScenarioHtml()
+		if err != nil {
+			return
+		}
+		if txt == "" {
+			continue
+		}
+		err = addFileToZip(z, "Event Stories/Tower/"+t.PublicStartDatetime.Format("2006-01-02")+" - "+t.EventName()+".html", nil, []byte(txt))
+		if err != nil {
+			return
+		}
+	}
+
+	for _, d := range vc.Data.Dungeons {
+		if d.ScenarioID > 0 {
+			txt, err = d.ScenarioHtml()
+			if err != nil {
+				return
+			}
+			err = addFileToZip(z, "Event Stories/DRV/"+d.PublicStartDatetime.Format("2006-01-02")+" - "+d.EventName()+".html", nil, []byte(txt))
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	for _, w := range vc.Data.WeaponEvents {
+		if w.ScenarioID > 0 {
+			txt, err = w.ScenarioHtml()
+			if err != nil {
+				return
+			}
+			err = addFileToZip(z, "Event Stories/Weapon/"+w.PublicStartDatetime.Format("2006-01-02")+" - "+w.EventName()+".html", nil, []byte(txt))
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	return
 }
 
 func addFileToZip(w *zip.Writer, filePathAndName string, fsInfo *fs.FileInfo, data []byte) (err error) {

@@ -321,6 +321,27 @@ func (we *WeaponEvent) RankRewards() []RankRewardSheet {
 	return rewards
 }
 
+//EventName Name of this event
+func (we *WeaponEvent) EventName() string {
+	if we == nil {
+		return ""
+	}
+	for _, evt := range Data.Events {
+		if evt.WeaponEventID == we.ID {
+			return evt.Name
+		}
+	}
+	return ""
+}
+
+// ScenarioHtml ScenarioHtml
+func (we *WeaponEvent) ScenarioHtml() (string, error) {
+	if we == nil {
+		return "", nil
+	}
+	return we.SubEvent.GetScenarioHtml(we.EventName(), "weapon_event")
+}
+
 // WeaponScan searches for a weapon by ID
 func WeaponScan(id int) *Weapon {
 	if id > 0 {
@@ -403,7 +424,7 @@ func (w Weapon) GetImageData(isThumb bool) map[string][]byte {
 
 //Copy returns a copy of this list. Useful for local sorting
 func (d WeaponSkillUnlockRankList) Copy() WeaponSkillUnlockRankList {
-	ret := make(WeaponSkillUnlockRankList, len(d), len(d))
+	ret := make(WeaponSkillUnlockRankList, len(d))
 	copy(ret, d)
 	return ret
 }

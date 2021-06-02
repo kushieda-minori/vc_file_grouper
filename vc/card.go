@@ -61,7 +61,6 @@ type Card struct {
 	skill2        *Skill
 	skill3        *Skill
 	specialSkill1 *Skill
-	leaderSkill   *Skill
 	thorSkill1    *Skill
 	// possible card evolutions
 	prevEvo  *Card

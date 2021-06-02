@@ -60,3 +60,24 @@ func DungeonScan(id int) *Dungeon {
 	return nil
 
 }
+
+//EventName Name of this event
+func (d *Dungeon) EventName() string {
+	if d == nil {
+		return ""
+	}
+	for _, evt := range Data.Events {
+		if evt.DungeonEventID == d.ID {
+			return evt.Name
+		}
+	}
+	return ""
+}
+
+//ScenarioHtml ScenarioHtml
+func (d *Dungeon) ScenarioHtml() (string, error) {
+	if d == nil {
+		return "", nil
+	}
+	return d.SubEvent.GetScenarioHtml(d.EventName(), "dungeon")
+}

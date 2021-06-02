@@ -162,11 +162,11 @@ func (c *Card) calculateEvoStats(material1Stat, material2Stat, resultMax Stats) 
 
 // calculateLrAmalStat calculates amalgamation where one of the material is not max stat.
 // this is generaly used for GUR+LR=LR or GLR+LR=GLR
-func calculateLrAmalStat(sourceMatStat, lrMatStat, resultMax int) (ret int) {
-	ret = resultMax
-	ret += int(float64(sourceMatStat)*0.08) + int(float64(lrMatStat)*0.03)
-	return
-}
+// func calculateLrAmalStat(sourceMatStat, lrMatStat, resultMax int) (ret int) {
+// 	ret = resultMax
+// 	ret += int(float64(sourceMatStat)*0.08) + int(float64(lrMatStat)*0.03)
+// 	return
+// }
 
 // calculateAwakeningStat calculated the stats after awakening
 func (c *Card) calculateAwakeningStat(materialStatGain Stats, atLevel1 bool) (stats Stats) {
