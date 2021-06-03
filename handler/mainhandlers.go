@@ -801,8 +801,14 @@ func DownloadAwMapsHandler(w http.ResponseWriter, r *http.Request) {
 		if completed == queued {
 			close(results)
 		}
+		log.Printf("completed %d (found %d) of %d map files", completed, found, queued)
 	}
-	log.Printf("Found %d of %d map files", found, completed)
+	fmt.Fprintf(w, "Found %d of %d map files", found, completed)
+}
+
+type mapDl struct {
+	Timestamp int
+	DestName  string
 }
 
 func findAndDownloadAwMap(maps chan *vc.Map, results chan bool) {
@@ -816,25 +822,53 @@ func findAndDownloadAwMap(maps chan *vc.Map, results chan bool) {
 			return
 		}
 
+		const numJobs = 10
+		timestamps := make(chan mapDl, numJobs*2)
+		done := make(chan bool)
+		// set up my worker pool
+		for i := 0; i < numJobs; i++ {
+			go downloadWorker(timestamps, done)
+		}
 		timestamp := int(m.PublicStartDatetime.Unix())
 		end := timestamp - (60 * 60 * 24)
 		//found := make(chan bool)
 		for i := timestamp; i > end; i-- {
-			if downloadAwMap(i, eventName, m.Name) {
-				results <- true
+			select {
+			case found := <-done:
+				results <- found
+				close(timestamps)
 				return
+			default:
+				timestamps <- mapDl{Timestamp: i, DestName: fileLoc}
 			}
+			// if downloadAwMap(i, fileLoc) {
+			// 	results <- true
+			// 	return
+			// }
 		}
-		results <- false
+		close(timestamps)
+		results <- <-done
 	}
 }
 
-func downloadAwMap(timestamp int, eventName, mapName string) bool {
-	fileName := fmt.Sprintf("AreaMap_002.%s.%s", eventName, mapName)
-	fileName = filepath.Join(vc.FilePath, "battle", "map", fileName)
-	resp, err := http.Get(fmt.Sprintf("http://webview.valkyriecrusade.nubee.com/download/BattleMap.zip/AreaMap_002.%d", timestamp))
+func downloadWorker(timestamps chan mapDl, done chan bool) {
+	for dl := range timestamps {
+		if downloadAwMap(dl.Timestamp, dl.DestName) {
+			done <- true
+			return
+		}
+	}
+	done <- false
+}
+
+func downloadAwMap(timestamp int, fileName string) bool {
+	url := fmt.Sprintf("http://webview.valkyriecrusade.nubee.com/download/BattleMap.zip/AreaMap_002.%d", timestamp)
+	if timestamp%10 == 0 {
+		log.Printf("***Trying to DL %s", url)
+	}
+	resp, err := http.Get(url)
 	if err != nil {
-		log.Printf("Err for map %d: %s", timestamp, err.Error())
+		log.Printf("Get Err for map %d: %s", timestamp, err.Error())
 		return false
 	}
 	defer resp.Body.Close()
@@ -842,16 +876,19 @@ func downloadAwMap(timestamp int, eventName, mapName string) bool {
 		var b []byte
 		b, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Printf("Err for map %d: %s", timestamp, err.Error())
+			log.Printf("Read Err for map %d: %s", timestamp, err.Error())
 			return false
 		}
 		err = ioutil.WriteFile(fileName, b, 0755)
 		if err != nil {
-			log.Printf("Err for map %d: %s", timestamp, err.Error())
+			log.Printf("Write Err for map %d: %s", timestamp, err.Error())
 			return false
 		}
 		log.Printf("***Found for map %d", timestamp)
 		return true
+	}
+	if resp.StatusCode != 403 && resp.StatusCode != 404 {
+		log.Printf("Http Status Err for map %d: %d %s", timestamp, resp.StatusCode, resp.Status)
 	}
 	return false
 }
