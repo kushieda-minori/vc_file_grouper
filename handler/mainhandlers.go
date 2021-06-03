@@ -825,6 +825,7 @@ type mapDl struct {
 
 func findAndDownloadAwMap(wkId int, maps chan *vc.Map, results chan mapDlResult) {
 	defer log.Printf("Shutting down findAndDownloadAwMap worker process %d", wkId)
+map_loop:
 	for m := range maps {
 		eventName := m.CleanedEventName()
 		fileName := fmt.Sprintf("AreaMap_002_%02d.%s.%s", m.ID, eventName, m.CleanedName())
@@ -832,7 +833,7 @@ func findAndDownloadAwMap(wkId int, maps chan *vc.Map, results chan mapDlResult)
 		if s, err := os.Stat(fileLoc); err == nil {
 			log.Printf("File already exists on disk: %s", fileName)
 			results <- mapDlResult{Success: true, Map: m, Timestamp: int(s.ModTime().Unix())}
-			continue
+			continue map_loop
 		}
 
 		const numJobs = 10
@@ -845,22 +846,20 @@ func findAndDownloadAwMap(wkId int, maps chan *vc.Map, results chan mapDlResult)
 		}
 		timestamp := int(m.PublicStartDatetime.Unix()) + 3600
 		end := timestamp - (60 * 60 * 24) - 3600
-		//found := make(chan bool)
-	ts_loop:
+		//ts_loop:
 		for i := timestamp; i > end; i-- {
 			select {
 			case found := <-done:
+				close(timestamps)
 				cancel <- true
 				results <- mapDlResult{Success: found > 0, Map: m, Timestamp: found}
-				close(timestamps)
-				break ts_loop
+				continue map_loop
+			// case <-cancel:
+			// 	cancel <- true
+			// 	break ts_loop
 			default:
 				timestamps <- mapDl{Timestamp: i, DestName: fileLoc}
 			}
-			// if downloadAwMap(i, fileLoc) {
-			// 	results <- true
-			// 	return
-			// }
 		}
 		close(timestamps)
 		found := <-done
@@ -890,9 +889,6 @@ func downloadWorker(parentWkId int, m *vc.Map, timestamps chan mapDl, done chan 
 
 func downloadAwMap(timestamp int, fileName string) bool {
 	url := fmt.Sprintf("http://webview.valkyriecrusade.nubee.com/download/BattleMap.zip/AreaMap_002.%d", timestamp)
-	// if timestamp%50 == 0 {
-	// 	log.Printf("***Trying to DL %s", url)
-	// }
 	var resp *http.Response
 	var err error
 	retries := 0 // retry on timeouts
