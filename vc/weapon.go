@@ -321,6 +321,11 @@ func (we *WeaponEvent) RankRewards() []RankRewardSheet {
 	return rewards
 }
 
+//CleanedEventName event name cleaned for file systems
+func (we *WeaponEvent) CleanedEventName() string {
+	return cleanForFileName(we.EventName())
+}
+
 //EventName Name of this event
 func (we *WeaponEvent) EventName() string {
 	if we == nil {

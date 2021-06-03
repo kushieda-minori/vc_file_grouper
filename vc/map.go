@@ -1,5 +1,7 @@
 package vc
 
+import "strings"
+
 // Map information
 type Map struct {
 	ID                  int       `json:"_id"`
@@ -52,14 +54,44 @@ func (m *Map) HasStory() bool {
 	return m.StartMsg != ""
 }
 
-//EventName event name
+//CleanedEventName event name cleaned for file systems
+func (m *Map) CleanedEventName() string {
+	return cleanForFileName(m.EventName())
+}
+
+//CleanedEventName event name cleaned for file systems
 func (m *Map) EventName() string {
-	for _, e := range Data.Events {
+	if m == nil {
+		return ""
+	}
+	e := m.Event()
+	if e == nil {
+		return ""
+	}
+	return e.Name
+}
+
+//CleanedName name cleaned for file systems
+func (m *Map) CleanedName() string {
+	return cleanForFileName(m.Name)
+}
+func cleanForFileName(n string) string {
+	rem := []string{"【New Event】", "(Updated)", "Limited time map", "Limited Time Map", "Exclusive Map", `"`, "!", "'", "[", "]", "(", ")"}
+	for _, r := range rem {
+		n = strings.ReplaceAll(n, r, "")
+	}
+	return strings.TrimSpace(strings.ReplaceAll(n, "  ", " "))
+}
+
+//EventName event name
+func (m *Map) Event() *Event {
+	for i := range Data.Events {
+		e := &(Data.Events[i])
 		if e.MapID == m.ID {
-			return e.Name
+			return e
 		}
 	}
-	return ""
+	return nil
 }
 
 // Area on a map

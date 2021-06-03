@@ -58,7 +58,11 @@ func DungeonScan(id int) *Dungeon {
 		}
 	}
 	return nil
+}
 
+//CleanedEventName event name cleaned for file systems
+func (d *Dungeon) CleanedEventName() string {
+	return cleanForFileName(d.EventName())
 }
 
 //EventName Name of this event

@@ -50,6 +50,11 @@ func TowerScan(id int) *Tower {
 	return nil
 }
 
+//CleanedEventName event name cleaned for file systems
+func (t *Tower) CleanedEventName() string {
+	return cleanForFileName(t.EventName())
+}
+
 //EventName Name of this event
 func (t *Tower) EventName() string {
 	if t == nil {

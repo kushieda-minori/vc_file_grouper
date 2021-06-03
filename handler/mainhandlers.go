@@ -610,7 +610,7 @@ func zipEventStory(z *zip.Writer) (err error) {
 	var txt string
 
 	for _, m := range vc.Data.Maps {
-		if !m.HasStory() || m.EventName() == "" {
+		if !m.HasStory() || m.CleanedEventName() == "" {
 			continue
 		}
 
@@ -665,7 +665,7 @@ func zipEventStory(z *zip.Writer) (err error) {
 		}
 		txt += "</table>\n</body>\n</html>\n"
 
-		err = addFileToZip(z, "Event Stories/Archwitch/"+m.PublicStartDatetime.Format("2006-01-02")+" - "+m.EventName()+".html", nil, []byte(txt))
+		err = addFileToZip(z, "Event Stories/Archwitch/"+m.PublicStartDatetime.Format("2006-01-02")+" - "+m.CleanedEventName()+".html", nil, []byte(txt))
 		if err != nil {
 			return
 		}
@@ -679,7 +679,7 @@ func zipEventStory(z *zip.Writer) (err error) {
 		if txt == "" {
 			continue
 		}
-		err = addFileToZip(z, "Event Stories/Tower/"+t.PublicStartDatetime.Format("2006-01-02")+" - "+t.EventName()+".html", nil, []byte(txt))
+		err = addFileToZip(z, "Event Stories/Tower/"+t.PublicStartDatetime.Format("2006-01-02")+" - "+t.CleanedEventName()+".html", nil, []byte(txt))
 		if err != nil {
 			return
 		}
@@ -691,7 +691,7 @@ func zipEventStory(z *zip.Writer) (err error) {
 			if err != nil {
 				return
 			}
-			err = addFileToZip(z, "Event Stories/DRV/"+d.PublicStartDatetime.Format("2006-01-02")+" - "+d.EventName()+".html", nil, []byte(txt))
+			err = addFileToZip(z, "Event Stories/DRV/"+d.PublicStartDatetime.Format("2006-01-02")+" - "+d.CleanedEventName()+".html", nil, []byte(txt))
 			if err != nil {
 				return
 			}
@@ -704,7 +704,7 @@ func zipEventStory(z *zip.Writer) (err error) {
 			if err != nil {
 				return
 			}
-			err = addFileToZip(z, "Event Stories/Weapon/"+w.PublicStartDatetime.Format("2006-01-02")+" - "+w.EventName()+".html", nil, []byte(txt))
+			err = addFileToZip(z, "Event Stories/Weapon/"+w.PublicStartDatetime.Format("2006-01-02")+" - "+w.CleanedEventName()+".html", nil, []byte(txt))
 			if err != nil {
 				return
 			}
@@ -792,7 +792,7 @@ func DownloadAwMapsHandler(w http.ResponseWriter, r *http.Request) {
 	for i := range vc.Data.Maps {
 		m := &(vc.Data.Maps[i])
 		if !m.PublicStartDatetime.IsZero() {
-			log.Printf("Searching for maps for event: %s", m.EventName())
+			log.Printf("Searching for maps for event: %s", m.CleanedEventName())
 			maps <- m
 			queued++
 		}
@@ -823,8 +823,8 @@ type mapDl struct {
 
 func findAndDownloadAwMap(maps chan *vc.Map, results chan mapDlResult) {
 	for m := range maps {
-		eventName := m.EventName()
-		fileName := fmt.Sprintf("AreaMap_002_%02d.%s.%s", m.ID, eventName, m.Name)
+		eventName := m.CleanedEventName()
+		fileName := fmt.Sprintf("AreaMap_002_%02d.%s.%s", m.ID, eventName, m.CleanedName())
 		fileLoc := filepath.Join(vc.FilePath, "battle", "map", fileName)
 		if s, err := os.Stat(fileLoc); err == nil {
 			log.Printf("File already exists on disk: %s", fileName)
