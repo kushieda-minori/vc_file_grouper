@@ -846,13 +846,14 @@ func findAndDownloadAwMap(wkId int, maps chan *vc.Map, results chan mapDlResult)
 		timestamp := int(m.PublicStartDatetime.Unix()) + 3600
 		end := timestamp - (60 * 60 * 24) - 3600
 		//found := make(chan bool)
+	ts_loop:
 		for i := timestamp; i > end; i-- {
 			select {
 			case found := <-done:
 				cancel <- true
 				results <- mapDlResult{Success: found > 0, Map: m, Timestamp: found}
 				close(timestamps)
-				return
+				break ts_loop
 			default:
 				timestamps <- mapDl{Timestamp: i, DestName: fileLoc}
 			}
