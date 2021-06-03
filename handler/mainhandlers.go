@@ -829,7 +829,7 @@ func findAndDownloadAwMap(maps chan *vc.Map, results chan bool) {
 		for i := 0; i < numJobs; i++ {
 			go downloadWorker(timestamps, done)
 		}
-		timestamp := int(m.PublicStartDatetime.Unix())
+		timestamp := int(m.PublicStartDatetime.Unix()) + 3600
 		end := timestamp - (60 * 60 * 24)
 		//found := make(chan bool)
 		for i := timestamp; i > end; i-- {
@@ -863,15 +863,22 @@ func downloadWorker(timestamps chan mapDl, done chan bool) {
 
 func downloadAwMap(timestamp int, fileName string) bool {
 	url := fmt.Sprintf("http://webview.valkyriecrusade.nubee.com/download/BattleMap.zip/AreaMap_002.%d", timestamp)
-	if timestamp%10 == 0 {
-		log.Printf("***Trying to DL %s", url)
+	// if timestamp%50 == 0 {
+	// 	log.Printf("***Trying to DL %s", url)
+	// }
+	var resp *http.Response
+	var err error
+	retries := 0 // retry on timeouts
+	for ok := true; ok; ok = resp.StatusCode == 408 && retries < 10 {
+		resp, err = http.Get(url)
+		if err != nil {
+			log.Printf("Get Err for map %d: %s", timestamp, err.Error())
+			return false
+		}
+		defer resp.Body.Close()
+		retries++
+		//log.Printf("download try %d: %d", timestamp, retries)
 	}
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Printf("Get Err for map %d: %s", timestamp, err.Error())
-		return false
-	}
-	defer resp.Body.Close()
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		var b []byte
 		b, err := ioutil.ReadAll(resp.Body)
