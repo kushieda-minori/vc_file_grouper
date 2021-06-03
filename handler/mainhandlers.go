@@ -771,21 +771,29 @@ func addFileToZip(w *zip.Writer, filePathAndName string, fsInfo *fs.FileInfo, da
 	return nil
 }
 
+type mapDlResult struct {
+	Success   bool
+	Map       *vc.Map
+	Timestamp int
+}
+
 //DownloadAwMapsHandler
 func DownloadAwMapsHandler(w http.ResponseWriter, r *http.Request) {
-	numJobs := len(vc.Data.Maps)
-	maps := make(chan *vc.Map, numJobs)
-	results := make(chan bool, numJobs)
+	lMaps := len(vc.Data.Maps)
+	numJobs := 40
+	maps := make(chan *vc.Map, lMaps)
+	results := make(chan mapDlResult, lMaps)
 
 	// set up my worker pool
 	for i := 0; i < numJobs; i++ {
 		go findAndDownloadAwMap(maps, results)
 	}
 	queued := 0
-	for i, m := range vc.Data.Maps {
+	for i := range vc.Data.Maps {
+		m := &(vc.Data.Maps[i])
 		if !m.PublicStartDatetime.IsZero() {
 			log.Printf("Searching for maps for event: %s", m.EventName())
-			maps <- &(vc.Data.Maps[i])
+			maps <- m
 			queued++
 		}
 	}
@@ -795,13 +803,15 @@ func DownloadAwMapsHandler(w http.ResponseWriter, r *http.Request) {
 	completed := 0
 	for r := range results {
 		completed++
-		if r {
+		if r.Success {
 			found++
+		} else {
+			log.Printf("Failed to DL Map %d: %s %s", r.Map.ID, r.Map.EventName(), r.Map.Name)
 		}
 		if completed == queued {
 			close(results)
 		}
-		log.Printf("completed %d (found %d) of %d map files", completed, found, queued)
+		log.Printf("completed %d (found %d) of %d map files: map %d : %d", completed, found, queued, r.Map.ID, r.Timestamp)
 	}
 	fmt.Fprintf(w, "Found %d of %d map files", found, completed)
 }
@@ -811,31 +821,31 @@ type mapDl struct {
 	DestName  string
 }
 
-func findAndDownloadAwMap(maps chan *vc.Map, results chan bool) {
+func findAndDownloadAwMap(maps chan *vc.Map, results chan mapDlResult) {
 	for m := range maps {
 		eventName := m.EventName()
-		fileName := fmt.Sprintf("AreaMap_002.%s.%s", eventName, m.Name)
+		fileName := fmt.Sprintf("AreaMap_002_%02d.%s.%s", m.ID, eventName, m.Name)
 		fileLoc := filepath.Join(vc.FilePath, "battle", "map", fileName)
-		if _, err := os.Stat(fileLoc); err == nil {
+		if s, err := os.Stat(fileLoc); err == nil {
 			log.Printf("File already exists on disk: %s", fileName)
-			results <- true
+			results <- mapDlResult{Success: true, Map: m, Timestamp: int(s.ModTime().Unix())}
 			return
 		}
 
 		const numJobs = 10
 		timestamps := make(chan mapDl, numJobs*2)
-		done := make(chan bool)
+		done := make(chan int)
 		// set up my worker pool
 		for i := 0; i < numJobs; i++ {
 			go downloadWorker(timestamps, done)
 		}
 		timestamp := int(m.PublicStartDatetime.Unix()) + 3600
-		end := timestamp - (60 * 60 * 24)
+		end := timestamp - (60 * 60 * 24) - 3600
 		//found := make(chan bool)
 		for i := timestamp; i > end; i-- {
 			select {
 			case found := <-done:
-				results <- found
+				results <- mapDlResult{Success: found > 0, Map: m, Timestamp: found}
 				close(timestamps)
 				return
 			default:
@@ -847,18 +857,21 @@ func findAndDownloadAwMap(maps chan *vc.Map, results chan bool) {
 			// }
 		}
 		close(timestamps)
-		results <- <-done
+		found := <-done
+		results <- mapDlResult{Success: found > 0, Map: m, Timestamp: found}
 	}
+	log.Printf("Shutting down findAndDownloadAwMap worker process")
 }
 
-func downloadWorker(timestamps chan mapDl, done chan bool) {
+func downloadWorker(timestamps chan mapDl, done chan int) {
 	for dl := range timestamps {
 		if downloadAwMap(dl.Timestamp, dl.DestName) {
-			done <- true
+			done <- dl.Timestamp
 			return
 		}
 	}
-	done <- false
+	done <- 0
+	log.Printf("Shutting down downloadWorker worker process")
 }
 
 func downloadAwMap(timestamp int, fileName string) bool {
@@ -869,7 +882,7 @@ func downloadAwMap(timestamp int, fileName string) bool {
 	var resp *http.Response
 	var err error
 	retries := 0 // retry on timeouts
-	for ok := true; ok; ok = resp.StatusCode == 408 && retries < 10 {
+	for ok := true; ok; ok = resp.StatusCode == 408 && retries <= 10 {
 		resp, err = http.Get(url)
 		if err != nil {
 			log.Printf("Get Err for map %d: %s", timestamp, err.Error())
@@ -877,7 +890,10 @@ func downloadAwMap(timestamp int, fileName string) bool {
 		}
 		defer resp.Body.Close()
 		retries++
-		//log.Printf("download try %d: %d", timestamp, retries)
+		if resp.StatusCode == 408 && retries <= 10 {
+			log.Printf("download %d failed. Retry: %d", timestamp, retries)
+			time.Sleep(100 * time.Millisecond)
+		}
 	}
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		var b []byte
@@ -891,7 +907,9 @@ func downloadAwMap(timestamp int, fileName string) bool {
 			log.Printf("Write Err for map %d: %s", timestamp, err.Error())
 			return false
 		}
-		log.Printf("***Found for map %d", timestamp)
+		t := time.Unix(int64(timestamp), 0)
+		os.Chtimes(fileName, t, t)
+		//log.Printf("***Found for map %d", timestamp)
 		return true
 	}
 	if resp.StatusCode != 403 && resp.StatusCode != 404 {
