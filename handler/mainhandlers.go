@@ -780,13 +780,13 @@ type mapDlResult struct {
 //DownloadAwMapsHandler
 func DownloadAwMapsHandler(w http.ResponseWriter, r *http.Request) {
 	lMaps := len(vc.Data.Maps)
-	numJobs := 40
+	numJobs := 30
 	maps := make(chan *vc.Map, lMaps)
 	results := make(chan mapDlResult, lMaps)
 
 	// set up my worker pool
 	for i := 0; i < numJobs; i++ {
-		go findAndDownloadAwMap(maps, results)
+		go findAndDownloadAwMap(i, maps, results)
 	}
 	queued := 0
 	for i := range vc.Data.Maps {
@@ -807,11 +807,13 @@ func DownloadAwMapsHandler(w http.ResponseWriter, r *http.Request) {
 			found++
 		} else {
 			log.Printf("Failed to DL Map %d: %s %s", r.Map.ID, r.Map.EventName(), r.Map.Name)
+			fmt.Fprintf(w, "Failed to DL Map %d: %s %s", r.Map.ID, r.Map.EventName(), r.Map.Name)
 		}
 		if completed == queued {
 			close(results)
 		}
 		log.Printf("completed %d (found %d) of %d map files: map %d : %d", completed, found, queued, r.Map.ID, r.Timestamp)
+		fmt.Fprintf(w, "completed %d (found %d) of %d map files: map %d : %d", completed, found, queued, r.Map.ID, r.Timestamp)
 	}
 	fmt.Fprintf(w, "Found %d of %d map files", found, completed)
 }
@@ -821,7 +823,8 @@ type mapDl struct {
 	DestName  string
 }
 
-func findAndDownloadAwMap(maps chan *vc.Map, results chan mapDlResult) {
+func findAndDownloadAwMap(wkId int, maps chan *vc.Map, results chan mapDlResult) {
+	defer log.Printf("Shutting down findAndDownloadAwMap worker process %d", wkId)
 	for m := range maps {
 		eventName := m.CleanedEventName()
 		fileName := fmt.Sprintf("AreaMap_002_%02d.%s.%s", m.ID, eventName, m.CleanedName())
@@ -829,15 +832,16 @@ func findAndDownloadAwMap(maps chan *vc.Map, results chan mapDlResult) {
 		if s, err := os.Stat(fileLoc); err == nil {
 			log.Printf("File already exists on disk: %s", fileName)
 			results <- mapDlResult{Success: true, Map: m, Timestamp: int(s.ModTime().Unix())}
-			return
+			continue
 		}
 
 		const numJobs = 10
 		timestamps := make(chan mapDl, numJobs*2)
 		done := make(chan int)
+		cancel := make(chan bool)
 		// set up my worker pool
 		for i := 0; i < numJobs; i++ {
-			go downloadWorker(timestamps, done)
+			go downloadWorker(wkId, m, timestamps, done, cancel)
 		}
 		timestamp := int(m.PublicStartDatetime.Unix()) + 3600
 		end := timestamp - (60 * 60 * 24) - 3600
@@ -845,6 +849,7 @@ func findAndDownloadAwMap(maps chan *vc.Map, results chan mapDlResult) {
 		for i := timestamp; i > end; i-- {
 			select {
 			case found := <-done:
+				cancel <- true
 				results <- mapDlResult{Success: found > 0, Map: m, Timestamp: found}
 				close(timestamps)
 				return
@@ -858,20 +863,28 @@ func findAndDownloadAwMap(maps chan *vc.Map, results chan mapDlResult) {
 		}
 		close(timestamps)
 		found := <-done
+		cancel <- true
 		results <- mapDlResult{Success: found > 0, Map: m, Timestamp: found}
 	}
-	log.Printf("Shutting down findAndDownloadAwMap worker process")
 }
 
-func downloadWorker(timestamps chan mapDl, done chan int) {
+func downloadWorker(parentWkId int, m *vc.Map, timestamps chan mapDl, done chan int, cancel chan bool) {
+	defer log.Printf("Shutting down downloadWorker worker process under parent %d for map %d", parentWkId, m.ID)
 	for dl := range timestamps {
-		if downloadAwMap(dl.Timestamp, dl.DestName) {
-			done <- dl.Timestamp
+		select {
+		case <-cancel:
+			cancel <- true
 			return
+		default:
+			if downloadAwMap(dl.Timestamp, dl.DestName) {
+				cancel <- true
+				done <- dl.Timestamp
+				close(done)
+				return
+			}
 		}
 	}
 	done <- 0
-	log.Printf("Shutting down downloadWorker worker process")
 }
 
 func downloadAwMap(timestamp int, fileName string) bool {
