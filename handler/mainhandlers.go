@@ -163,14 +163,14 @@ func ZipDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//err = zipGardenSprites(z)
+	err = zipGardenSprites(z)
 	if err != nil {
 		log.Printf("Navi zip error: " + err.Error() + "\n")
 		http.Error(w, "Navi zip error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	//err = zipBattleImages(z) // dungeon, weapon event, battle backgrounds, battle maps
+	err = zipBattleImages(z) // dungeon, weapon event, battle backgrounds, battle maps
 	if err != nil {
 		log.Printf("Navi zip error: " + err.Error() + "\n")
 		http.Error(w, "Navi zip error: "+err.Error(), http.StatusInternalServerError)
@@ -203,6 +203,12 @@ Some notes about this archive's structure:
 * Audio: contains 2 folders.
   "Stream" which is the background music
   "Sound" which is the sound effects from the game, like battle noises and buttons
+* Battle contains images relating to different battle scenarios within the game.
+  Most of the graphics are related to the Archwitch hunts as there were the most
+  of those types of events. The "Background" folder contains the images that were
+  used as backgrounds for the actual battles against the enemies. The "Map"
+  folder holds mostly just Archwitch maps, but also contains a few others used
+  outside of AW events.
 * Cards: holds all the game gards organized by rarity, then element. Each card
   has it's own folder which contain the main card graphics, icons, and the main
   quotes of the cards.
@@ -210,12 +216,17 @@ Some notes about this archive's structure:
   date. At this time, there is no matching of characters to parts in the stories.
 * Items: contains images of all the items in the game. At the moment there are no
   textdescriptions for the items, but if wanted, I can add them in.
+* Kingdom: This has 2 main folders:
+  * The Structure folder contains graphics that could be found in the shop and
+    in the kigndom.
+  * The Sprites folder contains graphics that relate to movement within your
+    kingdom. For example the people that walk around the town, the "Magic Ghost"
+    that would show up during Halloween events, the windmil blades on the farms
+    and more.
 * Navi-Sprites: These are the sprite parts used for the dynamic Character Navi.
   It also includes some static character pictures that were used during story
   line display.
 * Sacred Treasure: These are the sacred treasures that Duels were fought over
-* Structures: These are a structure graphics that could be found in the shop and
-  in the kigndom.
 * Weapons: Weapon cards/icons that could be equiped to character cards for battle
 * apk_images: Images extracted from the APK. Generally these are things like
   navigation buttons, Intro-story sprites and some items that were required for
@@ -460,7 +471,7 @@ func zipStructures(z *zip.Writer) error {
 		if strings.HasPrefix(structure.Name, "Honorable Plaque") || strings.HasPrefix(structure.Name, "Shield of Honor") {
 			group = "Special/Honorable Plaque"
 		}
-		pathNameBase := "Structures/" + group + "/"
+		pathNameBase := "Kingdom/Structures/" + group + "/"
 		binImages, err := structure.GetImageData()
 		if err != nil {
 			return err
@@ -632,6 +643,191 @@ func zipNavi(z *zip.Writer) error {
 
 		return
 	})
+}
+
+func zipGardenSprites(z *zip.Writer) error {
+	return filepath.Walk(vc.FilePath+"/garden/", func(p string, info os.FileInfo, err error) (e error) {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		// skip files that are obviously not images
+		if strings.HasSuffix(p, ".valb") || strings.HasSuffix(p, ".bin") || strings.HasSuffix(p, ".txa") || strings.HasSuffix(p, ".swfb") {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(vc.FilePath+"/garden/", p)
+		if err != nil {
+			return err
+		}
+		relPath = filepath.ToSlash(relPath)
+
+		fsInfo, _ := os.Stat(p)
+
+		if strings.HasPrefix(relPath, "flash/") {
+			relPath = strings.TrimPrefix(relPath, "flash/")
+		} else {
+			relPath = strings.TrimPrefix(relPath, "texture/")
+		}
+
+		pathName := "Kingdom/Sprites/" + relPath + ".png"
+
+		if pathName != "" {
+			var b []byte
+			b, e = vc.Decode(p)
+			if e != nil {
+				if strings.HasSuffix(e.Error(), "is not encoded") {
+					return nil
+				}
+				//b, e = ioutil.ReadFile(p)
+				return
+			}
+			e = addFileToZip(z, pathName, &fsInfo, b)
+		}
+
+		return
+	})
+}
+
+func zipBattleImages(z *zip.Writer) (err error) {
+	err = filepath.Walk(vc.FilePath+"/battle/", func(p string, info os.FileInfo, err error) (e error) {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		// skip files that are obviously not images
+		if strings.HasSuffix(p, ".valb") || strings.HasSuffix(p, ".bin") || strings.HasSuffix(p, ".txa") || strings.HasSuffix(p, ".swfb") || strings.HasSuffix(p, ".fcam") {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(vc.FilePath+"/battle/", p)
+		if err != nil {
+			return err
+		}
+		relPath = filepath.ToSlash(relPath)
+
+		fsInfo, _ := os.Stat(p)
+
+		if strings.HasPrefix(relPath, "guildbingo/") {
+			return
+		} else if strings.HasPrefix(relPath, "bg/") {
+			relPath = "Background/" + strings.TrimPrefix(relPath, "bg/")
+		} else if strings.HasPrefix(relPath, "card_symbol/") {
+			relPath = "Card Symbol/" + strings.TrimPrefix(relPath, "card_symbol/")
+		} else if strings.HasPrefix(relPath, "cell/") {
+			relPath = "Effects/" + strings.TrimPrefix(relPath, "cell/")
+		} else if strings.HasPrefix(relPath, "flash/") {
+			relPath = "Effects/" + strings.TrimPrefix(relPath, "flash/")
+		} else if strings.HasPrefix(relPath, "elementalhall/") {
+			relPath = "Elemental Hall/" + strings.TrimPrefix(relPath, "elementalhall/")
+		} else if strings.HasPrefix(relPath, "map/") {
+			relPath = "Map/" + strings.TrimPrefix(relPath, "map/")
+		}
+
+		pathName := "Battle/" + relPath + ".png"
+
+		if pathName != "" {
+			var b []byte
+			b, e = vc.Decode(p)
+			if e != nil {
+				if strings.HasSuffix(e.Error(), "is not encoded") {
+					return nil
+				}
+				//b, e = ioutil.ReadFile(p)
+				return
+			}
+			e = addFileToZip(z, pathName, &fsInfo, b)
+		}
+
+		return
+	})
+	if err != nil {
+		return
+	}
+
+	err = filepath.Walk(vc.FilePath+"/dungeon/", func(p string, info os.FileInfo, err error) (e error) {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		// skip files that are obviously not images
+		if strings.HasSuffix(p, ".valb") || strings.HasSuffix(p, ".bin") || strings.HasSuffix(p, ".txa") || strings.HasSuffix(p, ".swfb") || strings.HasSuffix(p, ".fcam") {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(vc.FilePath+"/dungeon/", p)
+		if err != nil {
+			return err
+		}
+		relPath = filepath.ToSlash(relPath)
+
+		fsInfo, _ := os.Stat(p)
+
+		pathName := "Battle/DRV/" + relPath + ".png"
+
+		if pathName != "" {
+			var b []byte
+			b, e = vc.Decode(p)
+			if e != nil {
+				if strings.HasSuffix(e.Error(), "is not encoded") {
+					return nil
+				}
+				//b, e = ioutil.ReadFile(p)
+				return
+			}
+			e = addFileToZip(z, pathName, &fsInfo, b)
+		}
+
+		return
+	})
+	if err != nil {
+		return
+	}
+
+	return filepath.Walk(vc.FilePath+"/weaponevent/", func(p string, info os.FileInfo, err error) (e error) {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		// skip files that are obviously not images
+		if strings.HasSuffix(p, ".valb") || strings.HasSuffix(p, ".bin") || strings.HasSuffix(p, ".txa") || strings.HasSuffix(p, ".swfb") || strings.HasSuffix(p, ".fcam") {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(vc.FilePath+"/weaponevent/", p)
+		if err != nil {
+			return err
+		}
+		relPath = filepath.ToSlash(relPath)
+
+		fsInfo, _ := os.Stat(p)
+
+		pathName := "Battle/Soul Weapon/" + relPath + ".png"
+
+		if pathName != "" {
+			var b []byte
+			b, e = vc.Decode(p)
+			if e != nil {
+				if strings.HasSuffix(e.Error(), "is not encoded") {
+					return nil
+				}
+				//b, e = ioutil.ReadFile(p)
+				return
+			}
+			e = addFileToZip(z, pathName, &fsInfo, b)
+		}
+
+		return
+	})
+
 }
 
 func zipEventStory(z *zip.Writer) (err error) {
