@@ -92,7 +92,7 @@ Images:<br />
 
 func ZipDataHandler(w http.ResponseWriter, r *http.Request) {
 	// Get a Buffer to Write To
-	w.Header().Set("Content-Disposition", "attachment; filename=\"Valkyrie Crusade Fan Archive - Final - 2021-05-30.zip\"")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"Valkyrie Crusade Fan Archive - Final - "+time.Now().Format("2006-01-02")+".zip\"")
 	w.Header().Set("Content-Type", "application/zip")
 
 	// Create a new zip archive.
@@ -195,7 +195,35 @@ meet many of you.
 I tried to make this archive as complete as possible, but as always, something
 feels missing. Perhaps it's just that we can't play the game anymore.
 
-Hope you all have fun in the future!`))
+Hope you all have fun in the future!
+
+Some notes about this archive's structure:
+* Alliance: Stamps used in in-game chat plus the components to create Alliance
+  emblems
+* Audio: contains 2 folders.
+  "Stream" which is the background music
+  "Sound" which is the sound effects from the game, like battle noises and buttons
+* Cards: holds all the game gards organized by rarity, then element. Each card
+  has it's own folder which contain the main card graphics, icons, and the main
+  quotes of the cards.
+* Event Stories: contains the stories for each event organized by event type and
+  date. At this time, there is no matching of characters to parts in the stories.
+* Items: contains images of all the items in the game. At the moment there are no
+  textdescriptions for the items, but if wanted, I can add them in.
+* Navi-Sprites: These are the sprite parts used for the dynamic Character Navi.
+  It also includes some static character pictures that were used during story
+  line display.
+* Sacred Treasure: These are the sacred treasures that Duels were fought over
+* Structures: These are a structure graphics that could be found in the shop and
+  in the kigndom.
+* Weapons: Weapon cards/icons that could be equiped to character cards for battle
+* apk_images: Images extracted from the APK. Generally these are things like
+  navigation buttons, Intro-story sprites and some items that were required for
+  game start before the secondary game data was downloaded. The most intersting
+  items are found under the /assets/texture/ sub folder. These include graphics
+  for the Amusement parts of the game (like the cute fish), card icons
+  (N, R, UR, LR), Summon backgrounds and art for the intro story.
+`))
 
 	if err != nil {
 		log.Printf("Readme zip error: " + err.Error() + "\n")
@@ -608,17 +636,52 @@ func zipNavi(z *zip.Writer) error {
 
 func zipEventStory(z *zip.Writer) (err error) {
 	var txt string
+	var lines []string
+
+	lines, err = vc.ReadStringFile(filepath.Join(vc.FilePath, "bundle", "string", "MsgDemoString_en.strb"))
+	if err != nil {
+		return
+	}
+	err = addFileToZip(z, "Event Stories/Celestial Realm Campaign 1.html", nil, []byte(buildStoryHtml("Celestial Realm Campaign 1", lines[:131])))
+	if err != nil {
+		return
+	}
+
+	err = addFileToZip(z, "Event Stories/Celestial Realm Campaign 2.html", nil, []byte(buildStoryHtml("Celestial Realm Campaign 2", lines[131:])))
+	if err != nil {
+		return
+	}
 
 	for _, m := range vc.Data.Maps {
 		if !m.HasStory() || m.CleanedEventName() == "" {
 			continue
 		}
 
-		txt = fmt.Sprintf("<html><head><title>%[1]s : %[2]s</title><style>table,th,td{border:1px solid black;}</style></head></body><h1>%[1]s : %[2]s</h1>\n\n", m.EventName(), m.Name)
+		txt = fmt.Sprintf(`<html>
+<head>
+<title>%[1]s : %[2]s</title>
+<style>
+table{border-collapse:collapse;}
+table,th,td{border:1px solid black;}
+/* VC Color Codes */
+.vc_color1 { color:gray; }
+.vc_color2 { color:black; }
+.vc_color3 { color:#ee0405; } /* red */
+.vc_color4 { color:#189218; } /* green */
+.vc_color5 { color:#268BD2; } /* blue */
+.vc_color6 { color:#f0f17c; } /* gold */
+.vc_color7 { color:#6ad1d5; } /* cyan */
+.vc_color8 { color:#c93bcb; } /* purple */
+</style>
+</head>
+</body>
+<h1>%[1]s : %[2]s</h1>
+
+`, m.EventName(), m.Name)
 		if m.StartMsg != "" {
-			txt += "<dl><dt>Introduction:</dt><dd>" + m.StartMsg + "</dd></dl>"
+			txt += "<dl><dt>Introduction:</dt><dd>" + m.StartMsg + "</dd></dl>\n\n"
 		}
-		txt += `<table style="border-collapse:collapse;">`
+		txt += `<table>`
 		for _, a := range m.Areas() {
 			if a.HasStory() {
 				story := ""
@@ -644,6 +707,7 @@ func zipEventStory(z *zip.Writer) (err error) {
 					if a.BossStart != "" || a.BossEnd != "" {
 						story += "<hr/>\n\n"
 					}
+					story += "</dl>\n"
 				}
 
 				if a.BossStart != "" || a.BossEnd != "" {
@@ -659,8 +723,9 @@ func zipEventStory(z *zip.Writer) (err error) {
 					} else {
 						story += "\n"
 					}
+					story += "</dl>\n"
 				}
-				txt += fmt.Sprintf("<tr><td>%s</td><td>%s</td></tr>", a.Name, story)
+				txt += fmt.Sprintf("<tr><td>%s</td><td>%s</td></tr>\n", a.Name, story)
 			}
 		}
 		txt += "</table>\n</body>\n</html>\n"
@@ -711,6 +776,37 @@ func zipEventStory(z *zip.Writer) (err error) {
 		}
 	}
 
+	return
+}
+
+func buildStoryHtml(title string, lines []string) (story string) {
+	story = fmt.Sprintf(`<html>
+<head>
+<title>%[1]s</title>
+<style>
+/* VC Color Codes */
+.vc_color1 { color:gray; }
+.vc_color2 { color:black; }
+.vc_color3 { color:#ee0405; } /* red */
+.vc_color4 { color:#189218; } /* green */
+.vc_color5 { color:#268BD2; } /* blue */
+.vc_color6 { color:#f0f17c; } /* gold */
+.vc_color7 { color:#6ad1d5; } /* cyan */
+.vc_color8 { color:#c93bcb; } /* purple */
+</style>
+</head>
+<body>
+<h1>%[1]s</h1>
+
+`, title)
+
+	for _, line := range lines {
+		story += "<p>" + vc.FilterColorCodesToHtml(line) + "<p>\n"
+	}
+	story += `
+</body>
+</html>
+`
 	return
 }
 

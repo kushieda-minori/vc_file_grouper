@@ -1,6 +1,7 @@
 package vc
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 )
@@ -43,7 +44,25 @@ func (se *SubEvent) GetScenarioHtml(eventTitle, eventType string) (ret string, e
 	if err != nil {
 		return
 	}
-	ret += "<html>\n<head>\n<title>" + eventTitle + " Story</title>\n</head>\n<body>\n<h1>" + eventTitle + "</h1>\n"
+	ret += fmt.Sprintf(`<html>
+<head>
+<title>%[1]s Story</title>
+<style>
+/* VC Color Codes */
+.vc_color1 { color:gray; }
+.vc_color2 { color:black; }
+.vc_color3 { color:#ee0405; } /* red */
+.vc_color4 { color:#189218; } /* green */
+.vc_color5 { color:#268BD2; } /* blue */
+.vc_color6 { color:#f0f17c; } /* gold */
+.vc_color7 { color:#6ad1d5; } /* cyan */
+.vc_color8 { color:#c93bcb; } /* purple */
+</style>
+</head>
+<body>
+<h1>%[1]s</h1>
+
+`, eventTitle)
 
 	scenario := 1
 	llines := len(lines)
@@ -70,7 +89,7 @@ func (se *SubEvent) GetScenarioHtml(eventTitle, eventType string) (ret string, e
 					for _, l := range ls {
 						ret += l + "<br/>\n"
 					}
-					ret += "</dd>\n<dl>\n"
+					ret += "</dd>\n</dl>\n"
 				}
 			}
 		}
@@ -87,6 +106,7 @@ func filterStoryLine(line string) []string {
 	line = strings.ReplaceAll(line, "  ", " ")
 	line = strings.ReplaceAll(line, "<i><break>", "\n")
 	line = strings.TrimSpace(line)
+	line = filterColors(line)
 	lines := strings.Split(line, "\n")
 
 	ll := len(lines)

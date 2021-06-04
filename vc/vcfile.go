@@ -1157,6 +1157,11 @@ func filterSkill(s string) string {
 	return ret
 }
 
+//FilterColorCodesToHtml filters VC color codes to HTML <span> tags and strips size tags
+func FilterColorCodesToHtml(s string) string {
+	return filterColors(s)
+}
+
 func filterColors(s string) string {
 	ret := strings.TrimSpace(s)
 	rc, _ := regexp.Compile(`<col=(.+?)>\n*`)
