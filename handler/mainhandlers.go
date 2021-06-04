@@ -780,7 +780,7 @@ type mapDlResult struct {
 //DownloadAwMapsHandler
 func DownloadAwMapsHandler(w http.ResponseWriter, r *http.Request) {
 	lMaps := len(vc.Data.Maps)
-	numJobs := 30
+	numJobs := 4
 	maps := make(chan *vc.Map, lMaps)
 	results := make(chan mapDlResult, lMaps)
 
@@ -791,8 +791,8 @@ func DownloadAwMapsHandler(w http.ResponseWriter, r *http.Request) {
 	queued := 0
 	for i := range vc.Data.Maps {
 		m := &(vc.Data.Maps[i])
-		if !m.PublicStartDatetime.IsZero() {
-			log.Printf("Searching for maps for event: %s", m.CleanedEventName())
+		if !m.PublicStartDatetime.IsZero() && !mapIsOnDisk(m) {
+			log.Printf("Searching for maps for event: %d: %s : %s", m.ID, m.CleanedEventName(), m.CleanedName())
 			maps <- m
 			queued++
 		}
@@ -818,6 +818,14 @@ func DownloadAwMapsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Found %d of %d map files", found, completed)
 }
 
+func mapIsOnDisk(m *vc.Map) bool {
+	eventName := m.CleanedEventName()
+	fileName := fmt.Sprintf("AreaMap_002_%03d.%s.%s", m.ID, eventName, m.CleanedName())
+	fileLoc := filepath.Join(vc.FilePath, "battle", "map", fileName)
+	_, err := os.Stat(fileLoc)
+	return err == nil
+}
+
 type mapDl struct {
 	Timestamp int
 	DestName  string
@@ -828,7 +836,7 @@ func findAndDownloadAwMap(wkId int, maps chan *vc.Map, results chan mapDlResult)
 map_loop:
 	for m := range maps {
 		eventName := m.CleanedEventName()
-		fileName := fmt.Sprintf("AreaMap_002_%02d.%s.%s", m.ID, eventName, m.CleanedName())
+		fileName := fmt.Sprintf("AreaMap_002_%03d.%s.%s", m.ID, eventName, m.CleanedName())
 		fileLoc := filepath.Join(vc.FilePath, "battle", "map", fileName)
 		if s, err := os.Stat(fileLoc); err == nil {
 			log.Printf("File already exists on disk: %s", fileName)
@@ -836,7 +844,7 @@ map_loop:
 			continue map_loop
 		}
 
-		const numJobs = 10
+		const numJobs = 50
 		timestamps := make(chan mapDl, numJobs*2)
 		done := make(chan int)
 		cancel := make(chan bool)
@@ -844,10 +852,21 @@ map_loop:
 		for i := 0; i < numJobs; i++ {
 			go downloadWorker(wkId, m, timestamps, done, cancel)
 		}
-		timestamp := int(m.PublicStartDatetime.Unix()) + 3600
-		end := timestamp - (60 * 60 * 24) - 3600
+		extendWindow := (3 * time.Hour) + (2 * (24 * time.Hour)) // 3 hours
+		eventDuration := m.PublicEndDatetime.Sub(m.PublicStartDatetime.Time)
+		// start looking at the halfway point of the event
+		start := m.PublicStartDatetime.Add(eventDuration / 2)
+		// end 2 days before event start
+		end := m.PublicStartDatetime.Add(-extendWindow)
+		endTs := int(end.Unix())
+		log.Printf("Map: %02d start: %s   end: %s  totalTicks: %d",
+			m.ID,
+			start.Format("2006-01-02 15:04:05"),
+			end.Format("2006-01-02 15:04:05"),
+			(start.Sub(end) / time.Second),
+		)
 		//ts_loop:
-		for i := timestamp; i > end; i-- {
+		for i := int(start.Unix()); i > endTs; i-- {
 			select {
 			case found := <-done:
 				close(timestamps)
